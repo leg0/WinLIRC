@@ -813,6 +813,7 @@ void Clearndlg::LearnThreadProc(void)
 	EndDialog(IDOK);
 	DEBUG("LearnThread terminating\n");
 	AfxEndThread(0);
+	return;
 }
 
 void Clearndlg::RawThreadProc(void)
@@ -907,6 +908,7 @@ void Clearndlg::AnalyzeThreadProc(void)
 	EndDialog(IDOK);
 	DEBUG("AnalyzeThread terminating\n");
 	AfxEndThread(0);
+	return;
 }
 
 /* Analysis stuff from here down */
