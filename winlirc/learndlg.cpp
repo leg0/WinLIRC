@@ -809,8 +809,7 @@ void Clearndlg::LearnThreadProc(void)
 	
 	MessageBox("Configuration successfully written.","Success");
 	fclose(fout);
-	//OnClose();//
-	EndDialog(IDOK);
+	PostMessage(WM_SYSCOMMAND,SC_CLOSE,0);
 	DEBUG("LearnThread terminating\n");
 	AfxEndThread(0);
 	return;
@@ -904,8 +903,7 @@ void Clearndlg::AnalyzeThreadProc(void)
 	MessageBox("Analysis successful.\n","Success");
 	
 	fclose(fout);
-	//OnClose();
-	EndDialog(IDOK);
+	PostMessage(WM_SYSCOMMAND,SC_CLOSE,0);
 	DEBUG("AnalyzeThread terminating\n");
 	AfxEndThread(0);
 	return;
