@@ -362,6 +362,7 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	struct ir_ncode *codes;
 	struct ir_remote *sender;
 	int i,j;
+	bool success=false;
 
 	i=tosend.FindOneOf(" \t");
 	if (i!=-1)
@@ -376,10 +377,11 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 			codename=codename.Left(j);
 			j=atoi(times);
 		} else j=0;						//should replace with min reps when that's implemented
+		codename.TrimRight();
 
 		sender=global_remotes;
-		while (sender!=NULL && sender->next!=NULL && stricmp(remotename,sender->name)) sender=sender->next;
-		if (sender!=NULL && !stricmp(remotename,sender->name))
+		while (sender!=NULL /*&& sender->next!=NULL*/ && stricmp(remotename,sender->name)) sender=sender->next;
+		if (sender!=NULL /*&& !stricmp(remotename,sender->name)*/)
 		{
 			codes=sender->codes;
 			while (codes->name!=NULL && stricmp(codename,codes->name)) codes++;
@@ -388,10 +390,12 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 				if (j < sender->min_repeat) j=sender->min_repeat;  //set minimum number of repeats
 				send(codes,sender,j);					//transmit the code
 				GoBlue();								//turn icon blue to indicate a transmission
+				success=true;
 			}
 		}
 	}
-	return CDialog::OnCopyData(pWnd, pCopyDataStruct);
+	return(success);
+//	return CDialog::OnCopyData(pWnd, pCopyDataStruct);
 }
 
 void Cdrvdlg::UpdateRemoteComboLists()

@@ -46,6 +46,7 @@ public:
 	void ThreadProc(void);
 
 private:
+	void reply(const char *command,int client,bool success,const char *data);
 	SOCKET server;
 	SOCKET clients[MAX_CLIENTS];
 	CString password; //password for transmission

@@ -145,6 +145,26 @@ void Cserver::send(const char *s)
 			::send(clients[i],s,strlen(s),0);
 }
 
+void Cserver::reply(const char *command,int client,bool success,const char *data)
+{
+	int length=strlen(command);
+	if (data) length+=strlen(data);
+	if (success) length+=19;
+	else length+=17;
+	char *packet=new char[length+1];
+	if (!packet) return;
+	strcpy(packet,"BEGIN\n");
+	strcat(packet,command);
+	if (success) strcat(packet,"\nSUCCESS\n");
+	else strcat(packet,"\nERROR\n");
+	if (data) strcat(packet,data);
+	strcat(packet,"END\n");
+	
+	if (clients[client]!=INVALID_SOCKET) ::send(clients[client],packet,length,0);
+	if (packet) delete packet;
+	return;
+}
+
 void Cserver::ThreadProc(void)
 {
 	if(server==INVALID_SOCKET) return;
@@ -154,6 +174,7 @@ void Cserver::ThreadProc(void)
 	CEvent ClientEvent[MAX_CLIENTS];
 #define MAX_DATA 1024	// longest message a client can send
 	char ClientData[MAX_CLIENTS][MAX_DATA];
+	char toparse[MAX_DATA];
 	HANDLE events[MAX_CLIENTS+2];
 	bool server_running=true;
 	
@@ -258,28 +279,101 @@ void Cserver::ThreadProc(void)
 									// ----------------------------
 									// Do something with the received line (cur)
 									DEBUG("Got string: %s\n",cur);
+									LRESULT copyDataResult=false;
+									char *response=NULL;
+									strcpy(toparse,cur);
+									char *command=NULL;
+									char *remotename=NULL;
+									if (toparse) command=strtok(toparse," \t\r");
+									if (!command) //ignore lines with only whitespace
+									{
+										cur=nl+1;
+										break;
+									}
+									else if (stricmp(command,"VERSION")==0)
+									{
+
+										if (strtok(NULL," \t\r")==NULL)
+										{
+											copyDataResult = true;
+											response = new char[strlen(id)+9];
+											if (response) sprintf(response,"DATA\n1\n%s\n",id);
+										}
+									}
+									else if (stricmp(command,"LIST")==0)
+									{
+										remotename=strtok(NULL," \t\r");
+										struct ir_remote *all=global_remotes;
+										int n=0;
+										if (!remotename)
+										{
+											copyDataResult = true;
+											while(all)
+											{
+												n++;
+												all=all->next;
+											}
+											if (n!=0)
+											{
+												response = new char[n*(LINE_LEN+2)+7];
+												sprintf(response,"DATA\n%d\n",n);
+												all=global_remotes;
+												while(all)
+												{
+													strcat(response,all->name);
+													strcat(response,"\n");
+													all=all->next;
+												}
+											}
+										}
+										else
+										{
+											while (all!=NULL && stricmp(remotename,all->name)) all=all->next;
+											if (all)
+											{
+												copyDataResult = true;
+												struct ir_ncode *allcodes=all->codes;
+												while (allcodes->name)
+												{
+													n++;
+													allcodes++;
+												}
+												if (n!=0)
+												{
+													response = new char[n*(LINE_LEN+2)+7];
+													sprintf(response,"DATA\n%d\n",n);
+													allcodes=all->codes;
+													while(allcodes->name)
+													{
+														strcat(response,allcodes->name);
+														strcat(response,"\n");
+														allcodes++;
+													}
+												}
+											}
+										}
+									}
+
 									if (!password.IsEmpty()) //only accept commands if a password is set
 									{
 										CString incoming = (LPCSTR) (cur);
 										int j=incoming.FindOneOf(" \t");
-										if (j!=-1 && password==incoming.Left(j++)) //check if the password matches
+										if (j!=-1 && !password.CompareNoCase(incoming.Left(j++))) //check if the password matches
 										{
-											memmove(cur,&cur[j],strlen(&cur[j])+1); //remove the password from the string
-											LRESULT copyDataResult;
 											HWND pOtherWnd = FindWindow(NULL, "WinLirc");
 											if (pOtherWnd)
 											{
 												COPYDATASTRUCT cpd;
 												cpd.dwData = 0;
-												cpd.cbData = strlen(cur);
-												cpd.lpData = (void*)cur;
+												cpd.cbData = strlen(&cur[j]);
+												cpd.lpData = (void*)&cur[j];
 												copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,NULL,(LPARAM)&cpd);
-											// copyDataResult has value returned by other app
-											// this wasn't the most elegant way to code this, but it's certainly the simplest
 											}
-										}
+										}										
 									// ----------------------------
-									}
+									}									
+									reply(cur,i,copyDataResult,response);
+									if (response) delete(response);
 									cur=nl+1;
 								}
 							}
