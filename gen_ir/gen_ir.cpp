@@ -59,7 +59,7 @@ void config(void) { AFX_MANAGE_STATE(AfxGetStaticModuleState()); theApp.winampCo
 void quit(void) { AFX_MANAGE_STATE(AfxGetStaticModuleState()); theApp.winampQuit(); }
 winampGeneralPurposePlugin gen_ir = {
 	DS_VERSION,							// Data structure version
-	"WinLIRC Plugin 0.2",				// Description
+	"WinLIRC Plugin 0.3",				// Description
 	init,								// Initialization function
 	config,								// Configuration function
 	quit								// Deinitialization function

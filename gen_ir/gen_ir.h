@@ -29,19 +29,57 @@ const struct act {
 	LPARAM lparam;
 };
 
-#define TOTAL_ACTIONS 11
+#define TOTAL_ACTIONS 45
 const act acts[TOTAL_ACTIONS] = {
-	{ "Volume Up",		true,	1,	WM_COMMAND,	WINAMP_VOLUMEUP,		0	},
-	{ "Volume Down",	true,	1,	WM_COMMAND,	WINAMP_VOLUMEDOWN,		0	},
-	{ "Volume Up 5",	true,	5,	WM_COMMAND,	WINAMP_VOLUMEUP,		0	},
-	{ "Volume Down 5",	true,	5,	WM_COMMAND,	WINAMP_VOLUMEDOWN,		0	},
-	{ "Play",			false,	1,	WM_COMMAND, WINAMP_BUTTON2,			0	},
-	{ "Stop",			false,	1,	WM_COMMAND,	WINAMP_BUTTON4,			0	},
-	{ "Previous Track",	false,	1,	WM_COMMAND,	WINAMP_BUTTON1,			0	},
-	{ "Next Track",		false,	1,	WM_COMMAND, WINAMP_BUTTON5,			0	},
-	{ "Fast Forward",	true,	1,	WM_COMMAND, WINAMP_BUTTON5_SHIFT,	0	},
-	{ "Rewind",      	true,	1,	WM_COMMAND, WINAMP_BUTTON1_SHIFT,	0	},
-	{ "Pause",			false,	1,	WM_COMMAND,	WINAMP_BUTTON3,			0	},
+	{ "Volume Up",					true,	1,	WM_COMMAND,	WINAMP_VOLUMEUP,			0	},
+	{ "Volume Down",				true,	1,	WM_COMMAND,	WINAMP_VOLUMEDOWN,			0	},
+	{ "Volume Up 5",				true,	5,	WM_COMMAND,	WINAMP_VOLUMEUP,			0	},
+	{ "Volume Down 5",				true,	5,	WM_COMMAND,	WINAMP_VOLUMEDOWN,			0	},
+	{ "Play",						false,	1,	WM_COMMAND, WINAMP_PLAY,				0	},
+	{ "Stop",						false,	1,	WM_COMMAND,	WINAMP_STOP,				0	},
+	{ "Previous Track",				false,	1,	WM_COMMAND,	WINAMP_PREV,				0	},
+	{ "Next Track",					false,	1,	WM_COMMAND, WINAMP_NEXT,				0	},
+	{ "Fast Forward",				true,	1,	WM_COMMAND, WINAMP_FF,					0	},
+	{ "Rewind",      				true,	1,	WM_COMMAND, WINAMP_REW,					0	},
+	{ "Pause",						false,	1,	WM_COMMAND,	WINAMP_PAUSE,				0	},
+																						
+	{ "Fast Forward 5 seconds",		true,	1,	WM_COMMAND,	WINAMP_FF_5S,				0	},
+	{ "Rewind 5 seconds",			true,	1,	WM_COMMAND,	WINAMP_REW_5S,				0	},
+	{ "Fade out and Stop",			false,	1,	WM_COMMAND,	WINAMP_FADEOUTSTOP,			0	},
+	{ "Stop after current Track",	false,	1,	WM_COMMAND,	WINAMP_STOPAFTCURTRK,		0	},
+	{ "Start current Vis-PlugIn",	false,	1,	WM_COMMAND,	WINAMP_STARTVISPLUGIN,		0	},
+	{ "Close Winamp",				false,	1,	WM_COMMAND,	WINAMP_CLOSEWINAMP,			0	},
+	{ "Current track as bookmark",	false,	1,	WM_COMMAND,	WINAMP_ADDCURBOOKMARK,		0	},
+	{ "Play Audio-CD",				false,	1,	WM_COMMAND,	WINAMP_PLAYCD,				0	},
+	{ "Toggle Playlist-Editor",		false,	1,	WM_COMMAND,	WINAMP_PLAYLIST_TOGGLE,		0	},
+	{ "Go to Top of Playlist",		false,	1,	WM_COMMAND,	WINAMP_PLAYLISTTOP,			0	},
+	{ "Go to End of Playlist",		false,	1,	WM_COMMAND,	WINAMP_PLAYLISTEND,			0	},
+	{ "Move back 10 tracks",		false,	1,	WM_COMMAND,	WINAMP_PREV10,				0	},
+																						
+	{ "Open URL Dialog",			false,	1,	WM_COMMAND,	WINAMP_DLG_OPENURL,			0	},
+	{ "Load File Dialog",			false,	1,	WM_COMMAND,	WINAMP_DLG_OPENFILE,		0	},
+	{ "Toggle Preferences Dialog",	false,	1,	WM_COMMAND,	WINAMP_DLG_PREFS_TOGGLE,	0	},
+	{ "Open File Info Dialog",		false,	1,	WM_COMMAND,	WINAMP_DLG_FILEINFO,		0	},
+	{ "Open Visualization options", false,	1,	WM_COMMAND,	WINAMP_DLG_VISOPTIONS,		0	},
+	{ "Open Vis-PlugIn options",	false,	1,	WM_COMMAND,	WINAMP_DLG_VISPLUGIN,		0	},
+	{ "Toggle About Box",			false,	1,	WM_COMMAND,	WINAMP_DLG_ABOUT_TOGGLE,	0	},
+	{ "Open 'Jump to time'-Dialog", false,	1,	WM_COMMAND,	WINAMP_DLG_JUMPTOTIME,		0	},
+	{ "Open 'Jump to file'-Dialog", false,	1,	WM_COMMAND,	WINAMP_DLG_JUMPTOFILE,		0	},
+	{ "Open 'Select Skin'-Dialog",	false,	1,	WM_COMMAND,	WINAMP_DLG_SELECTSKIN,		0	},
+	{ "Conigure current Vis-PlugIn",false,	1,	WM_COMMAND,	WINAMP_DLG_VISPLUGINCFG,	0	},
+	{ "Load an Equalizer-Preset",	false,	1,	WM_COMMAND,	WINAMP_DLG_EQLOADPRESET,	0	},
+	{ "Save Equalizer as",			false,	1,	WM_COMMAND,	WINAMP_DLG_EQSAVEAS,		0	},
+
+	{ "Toggle always on top",		false,	1,	WM_COMMAND,	WINAMP_AOT_TOGGLE,			0	},
+	{ "Display: Elapsed Time",		false,	1,	WM_COMMAND,	WINAMP_DISPLAYELAPSED,		0	},
+	{ "Display: Remaining Time",	false,	1,	WM_COMMAND,	WINAMP_DISPLAYREMAIN,		0	},
+	{ "Toggle DoubleSize-Mode",		false,	1,	WM_COMMAND,	WINAMP_DOUBLESIZE_TOGGLE,	0	},
+	{ "Toggle Equalizer",			false,	1,	WM_COMMAND,	WINAMP_EQ_TOGGLE,			0	},
+	{ "Toggle main window visible", false,	1,	WM_COMMAND,	WINAMP_VISIBLE_TOGGLE,		0	},
+	{ "Toggle Minibrowser",			false,	1,	WM_COMMAND,	WINAMP_BROWSER_TOGGLE,		0	},
+	{ "Toggle Repeat Mode",			false,	1,	WM_COMMAND,	WINAMP_REPEAT_TOGGLE,		0	},
+	{ "Toggle Shuffle Mode",		false,	1,	WM_COMMAND,	WINAMP_SHUFFLE_TOGGLE,		0	},
+
 };
 
 /*****************/

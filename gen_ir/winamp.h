@@ -302,36 +302,59 @@
 ** SendMessage(hwnd_winamp, WM_COMMAND,command_name,0);
 */
 
-#define WINAMP_OPTIONS_EQ               40036 // toggles the EQ window
-#define WINAMP_OPTIONS_PLEDIT           40040 // toggles the playlist window
-#define WINAMP_VOLUMEUP                 40058 // turns the volume up a little
-#define WINAMP_VOLUMEDOWN               40059 // turns the volume down a little
-#define WINAMP_FFWD5S                   40060 // fast forwards 5 seconds
-#define WINAMP_REW5S                    40061 // rewinds 5 seconds
 
-// the following are the five main control buttons, with optionally shift 
-// or control pressed
-// (for the exact functions of each, just try it out)
-#define WINAMP_BUTTON1                  40044
-#define WINAMP_BUTTON2                  40045
-#define WINAMP_BUTTON3                  40046
-#define WINAMP_BUTTON4                  40047
-#define WINAMP_BUTTON5                  40048
-#define WINAMP_BUTTON1_SHIFT            40144
-#define WINAMP_BUTTON2_SHIFT            40145
-#define WINAMP_BUTTON3_SHIFT            40146
-#define WINAMP_BUTTON4_SHIFT            40147
-#define WINAMP_BUTTON5_SHIFT            40148
-#define WINAMP_BUTTON1_CTRL             40154
-#define WINAMP_BUTTON2_CTRL             40155
-#define WINAMP_BUTTON3_CTRL             40156
-#define WINAMP_BUTTON4_CTRL             40157
-#define WINAMP_BUTTON5_CTRL             40158
+// basic operations
+#define WINAMP_PREV						40044	// Previous Track
+#define WINAMP_PLAY						40045	// Play
+#define WINAMP_PAUSE					40046	// Pause
+#define WINAMP_STOP						40047	// Stop
+#define WINAMP_NEXT						40048	// Next Track
+#define WINAMP_REW						40144	// Rewind
+#define WINAMP_FF						40148	// Fast Forward
+#define WINAMP_VOLUMEUP                 40058	// Volume Up
+#define WINAMP_VOLUMEDOWN               40059	// Volume Down
 
-#define WINAMP_FILE_PLAY                40029 // pops up the load file(s) box
-#define WINAMP_OPTIONS_PREFS            40012 // pops up the preferences
-#define WINAMP_OPTIONS_AOT              40019 // toggles always on top
-#define WINAMP_HELP_ABOUT               40041 // pops up the about box :)
+// special operations
+#define WINAMP_FF_5S					40060	// Fast Forward 5 seconds
+#define WINAMP_REW_5S					40061	// Rewind 5 seconds
+#define WINAMP_FADEOUTSTOP				40147	// Fade out and Stop
+#define WINAMP_STOPAFTCURTRK			40157	// Stop after current Track
+#define WINAMP_STARTVISPLUGIN			40192	// Start current Visualization-PlugIn
+#define WINAMP_CLOSEWINAMP				40001	// Close Winamp
+#define WINAMP_ADDCURBOOKMARK			40323	// Current track as bookmark
+#define WINAMP_PLAYCD					403223	// Play Audio-CD
+
+// playlist operations
+#define WINAMP_PLAYLIST_TOGGLE			40040	// Toggle Playlist-Editor
+#define WINAMP_PLAYLISTTOP				40154	// Go to Top of Playlist
+#define WINAMP_PLAYLISTEND				40158	// Go to End of Playlist
+#define WINAMP_PREV10					40197	// Move back 10 tracks
+
+// dialogs
+#define WINAMP_DLG_OPENURL				40155	// Open URL Dialog
+#define WINAMP_DLG_OPENFILE             40029	// Load File Dialog
+#define WINAMP_DLG_PREFS_TOGGLE			40012	// Toggle Preferences Dialog
+#define WINAMP_DLG_FILEINFO				40188	// Open File Info Dialog
+#define WINAMP_DLG_VISOPTIONS			40190	// Open Visualization options
+#define WINAMP_DLG_VISPLUGIN			40191	// Open Vis-PlugIn options
+#define WINAMP_DLG_ABOUT_TOGGLE			40041	// Toggle About Box
+#define WINAMP_DLG_JUMPTOTIME			40193	// Open "Jump to time"-Dialog
+#define WINAMP_DLG_JUMPTOFILE			40194	// Open "Jump to file"-Dialog
+#define WINAMP_DLG_SELECTSKIN			40219	// Open "Select Skin"-Dialog
+#define WINAMP_DLG_VISPLUGINCFG			40221	// Conigure current Vis-PlugIn
+#define WINAMP_DLG_EQLOADPRESET			40253	// Load an Equalizer-Preset
+#define WINAMP_DLG_EQSAVEAS				40254	// Save Equalizer as
+
+// options
+#define WINAMP_AOT_TOGGLE				40019	// Toggle always on top
+#define WINAMP_DISPLAYELAPSED			40037	// Display: Elapsed Time
+#define WINAMP_DISPLAYREMAIN			40038	// Display: Remaining Time
+#define WINAMP_DOUBLESIZE_TOGGLE		40165	// Toggle DoubleSize-Mode
+#define WINAMP_EQ_TOGGLE				40036	// Toggle Equalizer
+#define WINAMP_VISIBLE_TOGGLE			40258	// Toggle main window visible
+#define WINAMP_BROWSER_TOGGLE			40298	// Toggle Minibrowser
+#define WINAMP_REPEAT_TOGGLE			40022	// Toggle Repeat Mode
+#define WINAMP_SHUFFLE_TOGGLE			40023	// Toggle Shuffle Mode
 
 
 /*
