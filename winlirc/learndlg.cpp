@@ -64,6 +64,7 @@ Clearndlg::Clearndlg(CIRDriver *ndrv, const char *nfilename,
 Clearndlg::~Clearndlg()
 {
 	KillThread(&LearnThreadHandle,&LearnThreadEvent);
+	if(fout!=NULL) { fclose(fout); fout=NULL; }
 	if(GotInput) { CloseHandle(GotInput); GotInput=NULL; }
 }
 
@@ -98,14 +99,13 @@ BOOL Clearndlg::OnInitDialog()
 	if((fout=fopen(filename,mode))==NULL)
 	{
 		MessageBox("Could not open configuration file.");
-		OnCancel();
+		EndDialog2(IDCANCEL);
 	}
 
 	if((GotInput=CreateEvent(NULL,FALSE,FALSE,NULL))==NULL)
 	{
 		MessageBox("Could not create event.");
-		fclose(fout); fout=NULL;
-		OnCancel();
+		EndDialog2(IDCANCEL);
 	}
 
 	/* THREAD_PRIORITY_IDLE combined with the REALTIME_PRIORITY_CLASS */
@@ -122,9 +122,8 @@ BOOL Clearndlg::OnInitDialog()
 		(void *)this,THREAD_PRIORITY_IDLE))==NULL)
 	{
 		CloseHandle(GotInput); GotInput=NULL;
-		fclose(fout); fout=NULL;
 		MessageBox("Could not initialize thread.");
-		OnCancel();
+		EndDialog2(IDCANCEL);
 	}	
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -413,7 +412,7 @@ void Clearndlg::DoGetGap(void)
 					"1) This remote can't be automatically learned (sorry)\n"
 					"2) The system is too slow or bogged down to accurately record\n"
 					"      times (try closing all other programs)","Error");
-				OnCancel();
+				EndDialog2(IDCANCEL);
 				DEBUG("LearnThread terminating\n");
 				AfxEndThread(0);
 				return;
@@ -498,7 +497,7 @@ void Clearndlg::DoGetGap(void)
 					"2) The system is too slow or bogged down to accurately record\n"
 					"      times (try closing all other programs)\n"
 					"3) The detection got off to a bad start (try again)","Error");
-				OnCancel();
+				EndDialog2(IDCANCEL);
 				DEBUG("LearnThread terminating\n");
 				AfxEndThread(0);
 				return;
@@ -808,8 +807,7 @@ void Clearndlg::LearnThreadProc(void)
 	DoGetButtons();
 	
 	MessageBox("Configuration successfully written.","Success");
-	fclose(fout);
-	PostMessage(WM_SYSCOMMAND,SC_CLOSE,0);
+	EndDialog2(IDOK);
 	DEBUG("LearnThread terminating\n");
 	AfxEndThread(0);
 	return;
@@ -859,9 +857,8 @@ void Clearndlg::AnalyzeThreadProc(void)
 	}
 	if(!ok)
 	{
-		fclose(fout); fout=NULL;
 		MessageBox("Error parsing configuration file.\n","Error");
-		OnCancel();
+		EndDialog2(IDCANCEL);
 		DEBUG("AnalyzeThread terminating\n");
 		AfxEndThread(0);
 		return;
@@ -876,7 +873,7 @@ void Clearndlg::AnalyzeThreadProc(void)
 		myremotes=NULL;
 		MessageBox("Analysis failed.  This remote is probably only\n"
 			"supported in raw mode.  Configuration file is unchanged.","Error");
-		OnCancel();
+		EndDialog2(IDCANCEL);
 		DEBUG("AnalyzeThread terminating\n");
 		AfxEndThread(0);
 		return;
@@ -890,7 +887,7 @@ void Clearndlg::AnalyzeThreadProc(void)
 		myremotes=NULL;
 		MessageBox("Analysis succeeded, but re-open of file failed."
 			"Configuration file is unchanged.","Error");
-		OnCancel();
+		EndDialog2(IDCANCEL);
 		DEBUG("AnalyzeThread terminating\n");
 		AfxEndThread(0);
 		return;
@@ -901,9 +898,8 @@ void Clearndlg::AnalyzeThreadProc(void)
 	myremotes=NULL;
 
 	MessageBox("Analysis successful.\n","Success");
-	
-	fclose(fout);
-	PostMessage(WM_SYSCOMMAND,SC_CLOSE,0);
+
+	EndDialog2(IDOK);
 	DEBUG("AnalyzeThread terminating\n");
 	AfxEndThread(0);
 	return;
@@ -1506,19 +1502,18 @@ unsigned long Clearndlg::readdata(unsigned long maxusec)
 	return(0);
 }
 
-void Clearndlg::get_pre_data(struct ir_remote *remote)
+void Clearndlg::get_pre_data(struct ir_remote *remote) 
 {
 	struct ir_ncode *codes;
 	ir_code mask,last;
 	int count,i;
 	
+	if(remote->bits==0) return;
 	mask=(-1);
 	codes=remote->codes;
-	if(codes->name!=NULL)
-	{
-		last=codes->code;
-		codes++;
-	}
+	if(codes->name==NULL) return; /* at least 2 codes needed */
+	last=codes->code;
+	codes++;
 	if(codes->name==NULL) return; /* at least 2 codes needed */
 	while(codes->name!=NULL)
 	{
@@ -1537,6 +1532,12 @@ void Clearndlg::get_pre_data(struct ir_remote *remote)
 		mask=mask<<1;
 	}
 	count-=sizeof(ir_code)*CHAR_BIT-remote->bits;
+
+	/* only "even" numbers should go to pre/post data */
+	if(count%8 && (remote->bits-count)%8)
+	{
+		count-=count%8;
+	}
 	if(count>0)
 	{
 		mask=0;
@@ -1565,13 +1566,13 @@ void Clearndlg::get_post_data(struct ir_remote *remote)
 	ir_code mask,last;
 	int count,i;
 	
+	if(remote->bits==0) return;
+
 	mask=(-1);
 	codes=remote->codes;
-	if(codes->name!=NULL)
-	{
-		last=codes->code;
-		codes++;
-	}
+	if(codes->name==NULL) return; /* at least 2 codes needed */
+	last=codes->code;
+	codes++;
 	if(codes->name==NULL) return; /* at least 2 codes needed */
 	while(codes->name!=NULL)
 	{
@@ -1584,6 +1585,11 @@ void Clearndlg::get_post_data(struct ir_remote *remote)
 	{
 		count++;
 		mask=mask>>1;
+	}
+	/* only "even" numbers should go to pre/post data */
+	if(count%8 && (remote->bits-count)%8)
+	{
+		count-=count%8;
 	}
 	if(count>0)
 	{
@@ -1604,4 +1610,13 @@ void Clearndlg::get_post_data(struct ir_remote *remote)
 			codes++;
 		}
 	}
+}
+
+void Clearndlg::EndDialog2( int nResult )
+{
+	if(fout!=NULL) { fclose(fout); fout=NULL; }
+	if (nResult==IDOK)
+		PostMessage(WM_COMMAND,IDOK,0);
+	else
+		PostMessage(WM_SYSCOMMAND,SC_CLOSE,0);
 }
