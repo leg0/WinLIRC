@@ -1,0 +1,14 @@
+new in version 0.6.1pre3
+-------------------------------
+The "animax" serial port receiver is now supported.  This receiver uses DTR and RTS pin for power. If you have an animax receiver, check the animax box at the configuration screen. Note that animax receivers are incompatible with the current winlirc transmitter.
+
+You can now tell WinLIRC to transmit codes from the TCP/IP port
+The format is:
+password remotename codename reps
+(just like transmit.exe, but with a password in front). To enable this, you need to use regedit to add a key software\LIRC\password  it should be a string that contains no spaces or tabs.  If the password key is not set, or the password is wrong WinLIRC won't accept commands from the TCP interface
+
+WinLIRC can now transmit codes from raw (unanalyzed) remotes.
+
+Hopefully, the win2k/xp crashes are gone.
+
+Some user interface improvements.
