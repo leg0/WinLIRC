@@ -49,6 +49,7 @@ CIRDriver::~CIRDriver()
 
 bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 {
+	struct ir_remote *tmp;
 	if(cfg==NULL) return false;
 
 	DEBUG("Initializing port...\n");
@@ -103,6 +104,11 @@ bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 		hPort=NULL;
 		DEBUG("SetCommState failed.\n");
 		return false;
+	}
+	tmp=global_remotes;
+	while (tmp!=NULL && tmp->next!=NULL) {
+		if (!(tmp->flags&SPECIAL_TRANSMITTER)) tmp->transmitter=cfg->transmittertype;
+		tmp=tmp->next;
 	}
 	SetTransmitPort(hPort,cfg->transmittertype);
 

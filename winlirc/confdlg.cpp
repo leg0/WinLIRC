@@ -47,6 +47,7 @@ Cconfdlg::Cconfdlg(Cdrvdlg *nparent, CWnd* pParent /*=NULL*/)
 	m_virtpulse = 0;
 	m_transmitterpin = -1;
 	m_hardcarrier = FALSE;
+	m_inverted = FALSE;
 	//}}AFX_DATA_INIT
 	parent=nparent;
 }
@@ -69,6 +70,7 @@ void Cconfdlg::DoDataExchange(CDataExchange* pDX)
 	DDV_MinMaxInt(pDX, m_virtpulse, 0, 16777215);
 	DDX_Radio(pDX, IDC_RADIODTR, m_transmitterpin);
 	DDX_Check(pDX, IDC_CHECKHARDCARRIER, m_hardcarrier);
+	DDX_Check(pDX, IDC_INVERTED, m_inverted);
 	//}}AFX_DATA_MAP
 }
 
@@ -128,6 +130,7 @@ BOOL Cconfdlg::OnInitDialog()
 	m_animax=parent->config.animax;
 	m_hardcarrier=parent->config.transmittertype&HARDCARRIER;
 	m_transmitterpin=(parent->config.transmittertype&TXTRANSMITTER)>>1;
+	m_inverted=(parent->config.transmittertype&INVERTED)>>2;
 	m_filename=parent->config.conf;
 	m_speed.Format("%d",parent->config.speed);		
 	m_devicetype = parent->config.devicetype;		
@@ -305,7 +308,7 @@ void Cconfdlg::WriteSettingsToParent()
 {
 	parent->config.port=m_port;
 	parent->config.animax=m_animax;
-	parent->config.transmittertype=(m_transmitterpin<<1)|m_hardcarrier;
+	parent->config.transmittertype=(m_inverted<<2)|(m_transmitterpin<<1)|m_hardcarrier;
 	parent->config.conf=m_filename;
 	int sense=((CComboBox *)GetDlgItem(IDC_SENSE))->GetCurSel();
 	if(sense>=1 && sense<=2) sense--;

@@ -58,6 +58,7 @@ public:
 	int		m_virtpulse;
 	int		m_transmitterpin;
 	BOOL	m_hardcarrier;
+	BOOL	m_inverted;
 	//}}AFX_DATA
 
 
