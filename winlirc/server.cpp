@@ -64,14 +64,18 @@ bool Cserver::init()
 
 	/* begin password stuff */
 	CRegKey key;
+	bool haveKey=true;
 	if(key.Open(HKEY_CURRENT_USER,"Software\\LIRC")!=ERROR_SUCCESS) //First try HKCU, then HKLM
 		if(key.Open(HKEY_LOCAL_MACHINE,"Software\\LIRC")
 		   !=ERROR_SUCCESS)
-		return false;
+		{
+			haveKey=false;
+			DEBUG("warning: can't open Software\\LIRC key");
+		}
 
 	char s[512];
 	DWORD len=512;
-	if(key.QueryValue(s,"password",&len)!=ERROR_SUCCESS)
+	if(!haveKey || key.QueryValue(s,"password",&len)!=ERROR_SUCCESS)
 		password.Empty();
 	else
 		password=s;
