@@ -28,6 +28,7 @@
 #include "winlirc.h"
 #include "drvdlg.h"
 #include "irdriver.h"
+#include <atlbase.h> //password stuff
 
 
 class Cserver {
@@ -47,6 +48,7 @@ public:
 private:
 	SOCKET server;
 	SOCKET clients[MAX_CLIENTS];
+	CString password; //password for transmission
 };
 
 #endif
