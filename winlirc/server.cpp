@@ -62,6 +62,21 @@ bool Cserver::init()
 		return false;
 	}
 
+	/* begin password stuff */
+	CRegKey key;
+	if(key.Open(HKEY_CURRENT_USER,"Software\\LIRC")!=ERROR_SUCCESS) //First try HKCU, then HKLM
+		if(key.Open(HKEY_LOCAL_MACHINE,"Software\\LIRC")
+		   !=ERROR_SUCCESS)
+		return false;
+
+	char s[512];
+	DWORD len=512;
+	if(key.QueryValue(s,"password",&len)!=ERROR_SUCCESS)
+		password.Empty();
+	else
+		password=s;
+	/* end password stuff */
+
 	if(startserver()==false)
 		return false;
 
@@ -74,7 +89,7 @@ bool Cserver::init()
 		DEBUG("AfxBeginThread failed\n");
 		return false;
 	}	
-
+    
 	return true;
 }
 
@@ -235,7 +250,28 @@ void Cserver::ThreadProc(void)
 									// ----------------------------
 									// Do something with the received line (cur)
 									DEBUG("Got string: %s\n",cur);
+									if (!password.IsEmpty()) //only accept commands if a password is set
+									{
+										CString incoming = (LPCSTR) (cur);
+										int j=incoming.FindOneOf(" \t");
+										if (j!=-1 && password==incoming.Left(j++)) //check if the password matches
+										{
+											memmove(cur,&cur[j],strlen(&cur[j])+1); //remove the password from the string
+											LRESULT copyDataResult;
+											HWND pOtherWnd = FindWindow(NULL, "WinLirc");
+											if (pOtherWnd)
+											{
+												COPYDATASTRUCT cpd;
+												cpd.dwData = 0;
+												cpd.cbData = strlen(cur);
+												cpd.lpData = (void*)cur;
+												copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,NULL,(LPARAM)&cpd);
+											// copyDataResult has value returned by other app
+											// this wasn't the most elegant way to code this, but it's certainly the simplest
+											}
+										}
 									// ----------------------------
+									}
 									cur=nl+1;
 								}
 							}
