@@ -1,3 +1,7 @@
+new in version 0.6.2
+--------------------
+fixed bug where server expects the LIRC key to exist and fails to start.
+
 new in version 0.6.1pre3
 -------------------------------
 The "animax" serial port receiver is now supported.  This receiver uses DTR and RTS pin for power. If you have an animax receiver, check the animax box at the configuration screen. Note that animax receivers are incompatible with the current winlirc transmitter.
