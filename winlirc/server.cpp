@@ -80,7 +80,11 @@ bool Cserver::init()
 	else
 		password=s;
 	/* end password stuff */
-
+	DWORD x;
+	if(!haveKey || key.QueryValue(x,"tcp_port")!=ERROR_SUCCESS)
+		tcp_port=IR_PORT;
+	else
+		tcp_port=x;
 	if(startserver()==false)
 		return false;
 
@@ -114,7 +118,7 @@ bool Cserver::startserver(void)
 	memset(&serv_addr,0,sizeof(struct sockaddr_in));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(IR_PORT);
+	serv_addr.sin_port = htons(tcp_port);
 	if(bind(server,(struct sockaddr *)&serv_addr,sizeof(serv_addr))==SOCKET_ERROR)
 		{ DEBUG("bind failed\n"); return false; }
 
