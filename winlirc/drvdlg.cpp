@@ -52,6 +52,8 @@ void Cdrvdlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(Cdrvdlg)
+	DDX_Control(pDX, IDC_IRCODE_EDIT, m_IrCodeEditCombo);
+	DDX_Control(pDX, IDC_REMOTE_EDIT, m_remote_DropDown);
 	DDX_Text(pDX, IDC_IRCODE_EDIT, m_ircode_edit);
 	DDV_MaxChars(pDX, m_ircode_edit, 64);
 	DDX_Text(pDX, IDC_REMOTE_EDIT, m_remote_edit);
@@ -72,6 +74,7 @@ BEGIN_MESSAGE_MAP(Cdrvdlg, CDialog)
 	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_SENDCODE, OnSendcode)
 	ON_WM_COPYDATA()
+	ON_CBN_DROPDOWN(IDC_IRCODE_EDIT, OnDropdownIrcodeEdit)
 	ON_MESSAGE(WM_TRAY, OnTrayNotification)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -216,6 +219,7 @@ void Cdrvdlg::OnConfig()
 	dlg.DoModal();
 	if(DoInitializeDaemon()==false)
 		OnCancel();
+	UpdateRemoteComboLists();
 }
 
 
@@ -231,8 +235,22 @@ BOOL Cdrvdlg::OnInitDialog()
 	m_ircode_edit="";
 	UpdateData(FALSE);
 	GetDlgItem(IDC_VERSION)->SetWindowText(WINLIRC_VERSION);
-	
+	UpdateRemoteComboLists();
 	return TRUE;
+}
+
+static struct ir_remote * Remotes_GetRemote(struct ir_remote* remotes, const char* const name)
+{
+	ir_remote* iter = remotes;
+	while (iter != NULL)
+	{
+		if (stricmp(name,iter->name) == 0)
+		{
+			return iter;
+		}
+		iter=iter->next;	//look for remote
+	}
+	return NULL;
 }
 
 void Cdrvdlg::OnSendcode() 
@@ -246,8 +264,10 @@ void Cdrvdlg::OnSendcode()
 	m_ircode_edit.TrimRight();
 	m_remote_edit.TrimLeft();
 	m_ircode_edit.TrimLeft();
-	while (sender!=NULL && sender->next!=NULL && stricmp(m_remote_edit,sender->name)) sender=sender->next;	//look for remote
-	if (sender==NULL || stricmp(m_remote_edit,sender->name) )	MessageBox("No match found for remote!");
+	//while (sender!=NULL && sender->next!=NULL && stricmp(m_remote_edit,sender->name)) sender=sender->next;	//look for remote
+	sender = Remotes_GetRemote(global_remotes, m_remote_edit);
+	//if (sender==NULL || stricmp(m_remote_edit,sender->name) )	MessageBox("No match found for remote!");
+	if (sender==NULL) MessageBox("No match found for remote!");
 	else
 	{
 		codes=sender->codes;
@@ -310,4 +330,60 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 		}
 	}
 	return CDialog::OnCopyData(pWnd, pCopyDataStruct);
+}
+
+void Cdrvdlg::UpdateRemoteComboLists()
+{
+	UpdateData(TRUE);
+	m_remote_DropDown.ResetContent();
+
+	//Fill remote combo box
+	struct ir_remote* sender=global_remotes;
+	while (sender!=NULL)
+	{
+		m_remote_DropDown.AddString(sender->name);
+		sender=sender->next;
+	}
+	//Set selected item
+	if (m_remote_DropDown.SelectString(-1,m_remote_edit) == CB_ERR)
+	{
+		//Did not find remote selected before, select first
+		m_remote_DropDown.SetCurSel(0);
+	}
+	UpdateData(FALSE);
+
+	UpdateIrCodeComboLists();
+}
+
+void Cdrvdlg::UpdateIrCodeComboLists()
+{
+	UpdateData(TRUE);
+	
+	//Retrieve pointer to remote by name
+	struct ir_remote* selected_remote = Remotes_GetRemote(global_remotes,m_remote_edit);
+
+	m_IrCodeEditCombo.ResetContent();
+
+	if (selected_remote)
+	{
+		ir_ncode* codes = selected_remote->codes;
+		while (codes && codes->name!=NULL)
+		{
+			m_IrCodeEditCombo.AddString(codes->name);
+			codes++;
+		}
+	}
+
+	if (m_IrCodeEditCombo.SelectString(-1,m_ircode_edit) == CB_ERR)
+	{
+		m_IrCodeEditCombo.SetCurSel(0);
+	}
+
+	UpdateData(FALSE);
+}
+
+void Cdrvdlg::OnDropdownIrcodeEdit() 
+{
+	// TODO: Add your control notification handler code here
+	UpdateIrCodeComboLists();
 }
