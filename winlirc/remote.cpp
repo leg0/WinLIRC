@@ -695,6 +695,7 @@ void send (ir_ncode *data,struct ir_remote *rem, unsigned int reps)
 	mythreadpriority=GetPriorityClass(myprocess);  //store priority settings
     mypriorityclass=GetThreadPriority(mythread);
 	config_transmitter(rem);
+    if(rem->toggle_bit>0) rem->repeat_state=!rem->repeat_state; //select toggle_bit state
     SetPriorityClass(myprocess,REALTIME_PRIORITY_CLASS);		//boost priority
     SetThreadPriority(mythread,THREAD_PRIORITY_TIME_CRITICAL);
 
