@@ -1,0 +1,7 @@
+; gen_ir.def : Declares the module parameters for the DLL.
+
+LIBRARY      "gen_ir"
+DESCRIPTION  'gen_ir Windows Dynamic Link Library'
+
+EXPORTS
+    ; Explicit exports can go here
