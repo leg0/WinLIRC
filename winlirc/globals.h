@@ -42,7 +42,7 @@ extern void winlirc_debug(char *format, ...);
 #define LINE_LEN 1024
 #define CBUF_LEN 1024
 #include "version.h"
-#define LIRC_VERSION "WinLIRC " WINLIRC_VERSION " (LIRC 0.6.1pre2)"
+#define LIRC_VERSION "WinLIRC " WINLIRC_VERSION " (LIRC 0.6.1pre3)"
 #define BUTTON 80
 #define MAX_SIGNALS 200
 #define AEPS 100
