@@ -62,6 +62,8 @@ public:
 // Dialog Data
 	//{{AFX_DATA(Cdrvdlg)
 	enum { IDD = IDD_DIALOG };
+	CComboBox	m_IrCodeEditCombo;
+	CComboBox	m_remote_DropDown;
 	CString	m_ircode_edit;
 	CString	m_remote_edit;
 	UINT	m_reps_edit;
@@ -92,7 +94,10 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSendcode();
 	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
+	afx_msg void OnDropdownIrcodeEdit();
 	//}}AFX_MSG
+	void UpdateRemoteComboLists();
+	void UpdateIrCodeComboLists();
 	LRESULT OnTrayNotification(WPARAM uID, LPARAM lEvent);
 	DECLARE_MESSAGE_MAP()
 };
