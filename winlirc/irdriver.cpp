@@ -106,7 +106,7 @@ bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 		return false;
 	}
 	tmp=global_remotes;
-	while (tmp!=NULL && tmp->next!=NULL) {
+	while (tmp!=NULL) {
 		if (!(tmp->flags&SPECIAL_TRANSMITTER)) tmp->transmitter=cfg->transmittertype;
 		tmp=tmp->next;
 	}
