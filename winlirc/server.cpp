@@ -20,7 +20,6 @@
  */
 
 #include "server.h"
-#include "globals.h"
 
 unsigned int ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
 
@@ -284,6 +283,8 @@ void Cserver::ThreadProc(void)
 									strcpy(toparse,cur);
 									char *command=NULL;
 									char *remotename=NULL;
+									char *buttonname=NULL;
+									char *repeats=NULL;
 									if (toparse) command=strtok(toparse," \t\r");
 									if (!command) //ignore lines with only whitespace
 									{
@@ -299,6 +300,7 @@ void Cserver::ThreadProc(void)
 											response = new char[strlen(id)+9];
 											if (response) sprintf(response,"DATA\n1\n%s\n",id);
 										}
+										else copyDataResult=-100;
 									}
 									else if (stricmp(command,"LIST")==0)
 									{
@@ -351,28 +353,64 @@ void Cserver::ThreadProc(void)
 													}
 												}
 											}
+											else copyDataResult=-1; //unknown remote
 										}
 									}
 
-									if (!password.IsEmpty()) //only accept commands if a password is set
+									else if (!password.IsEmpty() && !password.CompareNoCase(command)) //only accept commands if a password is set and matches
 									{
 										CString incoming = (LPCSTR) (cur);
-										int j=incoming.FindOneOf(" \t");
-										if (j!=-1 && !password.CompareNoCase(incoming.Left(j++))) //check if the password matches
+										int j=incoming.FindOneOf(" \t")+1;
+										remotename=strtok(NULL," \t\r");
+										if (remotename==NULL)
 										{
-											HWND pOtherWnd = FindWindow(NULL, "WinLirc");
-											if (pOtherWnd)
+											response = new char[14];
+											if (response) sprintf(response,"DATA\n1\nremote missing\n");
+										}
+										else 
+										{
+											buttonname=strtok(NULL," \t\r");
+											if (buttonname==NULL)
 											{
-												COPYDATASTRUCT cpd;
-												cpd.dwData = 0;
-												cpd.cbData = strlen(&cur[j]);
-												cpd.lpData = (void*)&cur[j];
-												copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,NULL,(LPARAM)&cpd);
+												response = new char[12];
+												if (response) sprintf(response,"DATA\n1\ncode missing\n");
 											}
-										}										
-									// ----------------------------
-									}									
-									reply(cur,i,copyDataResult,response);
+											else
+											{
+
+												HWND pOtherWnd = FindWindow(NULL, "WinLirc");
+												if (pOtherWnd)
+												{
+													COPYDATASTRUCT cpd;
+													cpd.dwData = 0;
+													cpd.cbData = strlen(&cur[j]);
+													cpd.lpData = (void*)&cur[j];
+													copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,NULL,(LPARAM)&cpd);
+												}
+											}
+										}
+									}
+									else
+									{
+										response = new char[strlen(command)+26];
+										if (response) sprintf(response,"DATA\n1\n%s%s\n","unknown command: ",command);
+									}
+									if (copyDataResult==-1)
+									{
+										response = new char[strlen(remotename)+25];
+										if (response) sprintf(response,"DATA\n1\n%s%s\n","unknown remote: ",remotename);
+									}
+									else if (copyDataResult==-2)
+									{
+										response = new char[strlen(buttonname)+23];
+										if (response) sprintf(response,"DATA\n1\n%s%s\n","unknown code: ",buttonname);
+									}
+									else if (copyDataResult==-100)
+									{
+											response = new char[15];
+											if (response) sprintf(response,"DATA\n1\nbad send packet\n");
+									}
+									reply(cur,i,copyDataResult==1,response);
 									if (response) delete(response);
 									cur=nl+1;
 								}

@@ -29,6 +29,7 @@
 #include "remote.h"
 #include "globals.h"
 #include <pbt.h> // power management stuff ??
+#include "server.h" //so we can send SIGHUP
 
 /////////////////////////////////////////////////////////////////////////////
 // Cdrvdlg dialog
@@ -268,7 +269,7 @@ bool Cdrvdlg::InitializeDaemon()
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
 		return false;
 	}
-
+	((Cwinlirc *)AfxGetApp())->server->send("BEGIN\nSIGHUP\nEND\n");
 	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
 	return true;
 }
@@ -350,7 +351,7 @@ void Cdrvdlg::OnSendcode()
 	}
 }
 
-BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
+LRESULT Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 // handles a transmission command recieved from another application
 // pCopyDataStruct->lpData should point to a string of the following format
 // remotename	ircodename	reps
@@ -362,7 +363,7 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	struct ir_ncode *codes;
 	struct ir_remote *sender;
 	int i,j;
-	bool success=false;
+	LRESULT success=0;
 
 	i=tosend.FindOneOf(" \t");
 	if (i!=-1)
@@ -390,9 +391,9 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 				if (j < sender->min_repeat) j=sender->min_repeat;  //set minimum number of repeats
 				send(codes,sender,j);					//transmit the code
 				GoBlue();								//turn icon blue to indicate a transmission
-				success=true;
-			}
-		}
+				success=1;
+			} else success=-2; //unknown code
+		} else success=-1; //unknown remote
 	}
 	return(success);
 //	return CDialog::OnCopyData(pWnd, pCopyDataStruct);
