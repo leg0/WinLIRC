@@ -59,13 +59,15 @@ extern void winlirc_debug(char *format, ...);
 #define LONG_IR_CODE
 #define NR_FLAGS 7
 #define RC5				0x0001      /* IR data follows RC5 protocol */
-#define SPACE_ENC		0x0002	    /* IR data is space encoded */
-#define REVERSE			0x0004
-#define NO_HEAD_REP		0x0008	    /* no header for key repeates */
-#define NO_FOOT_REP		0x0010	    /* no foot for key repeates */
-#define CONST_LENGTH    0x0020      /* signal length+gap is always constant */
-#define RAW_CODES       0x0040      /* for internal use only */
-#define REPEAT_HEADER   0x0080		/* header is also sent before repeat code */
+#define RC6				0x0002      /* IR data follows RC6 protocol */
+#define RCMM			0x0004      /* IR data follows RC-MM protocol */
+#define SPACE_ENC		0x0008	    /* IR data is space encoded */
+#define REVERSE			0x0010
+#define NO_HEAD_REP		0x0020	    /* no header for key repeates */
+#define NO_FOOT_REP		0x0040	    /* no foot for key repeates */
+#define CONST_LENGTH    0x0080      /* signal length+gap is always constant */
+#define RAW_CODES       0x0100      /* for internal use only */
+#define REPEAT_HEADER   0x0200		/* header is also sent before repeat code */
 #define SHIFT_ENC		RC5			/* IR data is shift encoded (name obsolete) */
 
 #define LIRC_SERIAL_TRANSMITTER
@@ -101,7 +103,7 @@ struct sbuf {
 	unsigned long data[WBUF_SIZE];
 	int wptr;
 	int too_long;
-	int is_shift;
+	int is_biphase;
 	unsigned long pendingp;
 	unsigned long pendings;
 	unsigned long sum;
@@ -111,7 +113,7 @@ struct rbuf {
 	int rptr;
 	int wptr;
 	int too_long;
-	int is_shift;
+	int is_biphase;
 	unsigned long pendingp;
 	unsigned long pendings;
 	unsigned long sum;
@@ -131,6 +133,8 @@ struct ir_remote
 	int eps;                    /* eps (_relative_ tolerance) */
 	int aeps;                   /* aeps (_absolute_ tolerance) */
 	int phead,shead;            /* header */
+	int pthree,sthree;			/* 3 (only used for RC-MM) */
+	int ptwo,stwo;				/* 2 (only used for RC-MM) */
 	int pone,sone;              /* 1 */
 	int pzero,szero;            /* 0 */
 	int plead;				    /* leading pulse */
