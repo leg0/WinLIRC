@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
 #include "irconfig.h"
@@ -34,6 +35,9 @@ CIRConfig::CIRConfig()
 	sense=-1;
 	port="COM2";
 	animax=0;
+	speed = 115200;			
+	devicetype = 1;			
+	virtpulse = 300;		
 	global_remotes=NULL;
 }
 
@@ -81,6 +85,22 @@ bool CIRConfig::ReadConfig(CIRDriver *driver)
 	if(key.QueryValue(s,"conf",&len)!=ERROR_SUCCESS)
 		return false;
 	conf=s;
+
+	if(key.QueryValue(a,"speed")!=ERROR_SUCCESS)		
+		return false;									
+	speed = a;											
+
+	if(key.QueryValue(a,"devicetype")!=ERROR_SUCCESS)	
+		return false;									
+	devicetype = a;										
+
+	if(key.QueryValue(a,"notrayicon")!=ERROR_SUCCESS)	
+		return false;									
+	notrayicon = a;										
+
+	if(key.QueryValue(a,"virtpulse")!=ERROR_SUCCESS)	
+		return false;									
+	virtpulse = a;										
 
 	FILE *tmp;
 	if(conf=="" || (tmp=fopen(conf,"r"))==NULL)
@@ -142,6 +162,18 @@ bool CIRConfig::WriteConfig(void)
 
 	if(key.SetValue(conf,"conf")!=ERROR_SUCCESS)
 		return false;
+
+    if(key.SetValue(speed,"speed")!=ERROR_SUCCESS)		
+		return false;									
+
+    if(key.SetValue(devicetype,"devicetype")!=ERROR_SUCCESS)	
+		return false;											
+
+    if(key.SetValue(notrayicon,"notrayicon")!=ERROR_SUCCESS)	
+		return false;											
+
+    if(key.SetValue(virtpulse,"virtpulse")!=ERROR_SUCCESS)		
+		return false;											
 
 	return true;
 }

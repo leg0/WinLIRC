@@ -33,6 +33,8 @@ public:
 	CTrayIcon(unsigned int uID);
 	~CTrayIcon();
 
+	unsigned long notrayicon;
+
 	void SetNotificationWnd(CWnd *notifywnd, unsigned int message);
 
 	bool SetIcon(unsigned int uID);

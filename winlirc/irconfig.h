@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
 #ifndef IRCONFIG_H
@@ -33,6 +34,11 @@ public:
 	int sense;
 	BOOL animax;
 	CString conf;
+
+	unsigned long speed;			
+	unsigned long devicetype;		
+	unsigned long notrayicon;		
+	unsigned long virtpulse;		
 
 	CIRConfig();
 	~CIRConfig();

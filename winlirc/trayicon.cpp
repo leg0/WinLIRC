@@ -18,6 +18,7 @@
  *
  * Derived from published code by Paul DiLascia.
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
 #include "stdafx.h"
@@ -76,6 +77,7 @@ bool CTrayIcon::SetIcon(HICON icon, const char *tip)
 
 	if(icon)
 	{
+		if (notrayicon) return true;			
 		if(icondata.hIcon) msg=NIM_MODIFY;
 		else msg=NIM_ADD;
 		icondata.hIcon=icon;

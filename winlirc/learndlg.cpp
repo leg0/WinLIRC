@@ -763,7 +763,7 @@ void Clearndlg::LearnThreadProc(void)
 	unsigned long data;
 		
 	output("This will record the signals from your remote control");
-	output("and create a config file for LIRC.");
+	output("and create a config file for WinLIRC.");
 	output("");
 	remote.flags=RAW_CODES;
 	remote.aeps=AEPS;
