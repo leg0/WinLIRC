@@ -100,7 +100,7 @@ CCriticalSection CS_global_remotes;
 
 void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 {
-	if(*ThreadHandle!=NULL)
+	while(*ThreadHandle!=NULL)
 	{
 		DWORD result=0;
 		if(GetExitCodeThread((*ThreadHandle)->m_hThread,&result)==0) 
@@ -112,7 +112,7 @@ void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 		if(result==STILL_ACTIVE)
 		{
 			ThreadEvent->SetEvent();
-			WaitForSingleObject((*ThreadHandle)->m_hThread,INFINITE);
+			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,250/*INFINITE*/)) break; //maybe we just need to give it some time to quit
 			ThreadEvent->ResetEvent();
 			*ThreadHandle=NULL;
 		}

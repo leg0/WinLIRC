@@ -133,7 +133,7 @@ BOOL Clearndlg::OnInitDialog()
 void Clearndlg::output(const char *s, bool replacelast)
 {
 	CEdit *out=(CEdit *)GetDlgItem(IDC_OUT);
-
+	if (out==NULL) return;
 	if(s==NULL)
 	{
 		/* clear output */
