@@ -66,7 +66,7 @@ void CMySocket::OnReceive(int nErrorCode)
 		if(curr>=MAXLEN) // too much data, lose it
 			curr=0;
 		int res;
-		res=Receive(buf,MAXLEN-curr);
+		res=Receive(buf+curr,MAXLEN-curr);
 		if(res==SOCKET_ERROR || res==0) return;
 		curr+=res;
 		// find a newline
