@@ -61,6 +61,7 @@ bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 		SetEvent(ov.hEvent);	// singal it
 		Sleep(100);				// wait a tiny bit
 		CloseHandle(ov.hEvent);	// and close it
+		ov.hEvent=NULL;
 	}
 
 	if(hPort)
@@ -68,6 +69,7 @@ bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 		SetCommMask(hPort,0);	// stop any waiting on the port
 		Sleep(100);				// wait a tiny bit
 		CloseHandle(hPort);		// and close it
+		hPort=NULL;
 	}
 
 	if((hPort=CreateFile(
@@ -166,8 +168,14 @@ void CIRDriver::ResetPort(void)
 	KillThread(&IRThreadHandle,&IRThreadEvent);
 	KillThread(&DaemonThreadHandle,&DaemonThreadEvent);
 	
-	if(ov.hEvent) CloseHandle(ov.hEvent);
-	if(hPort) CloseHandle(hPort);
+	if(ov.hEvent) {
+		CloseHandle(ov.hEvent);
+		ov.hEvent=NULL;
+	}
+	if(hPort) {
+		CloseHandle(hPort);
+		hPort=NULL;
+	}
 }
 
 void CIRDriver::ThreadProc(void)
