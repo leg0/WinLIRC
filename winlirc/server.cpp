@@ -129,10 +129,14 @@ void Cserver::ThreadProc(void)
 	
 	CEvent ServerEvent;
 	CEvent ClientEvent[MAX_CLIENTS];
+#define MAX_DATA 1024	// longest message a client can send
+	char ClientData[MAX_CLIENTS][MAX_DATA];
 	HANDLE events[MAX_CLIENTS+2];
 	bool server_running=true;
 	
 	WSAEventSelect(server,ServerEvent,FD_ACCEPT);
+
+	for(i=0;i<MAX_CLIENTS;i++) ClientData[i][0]=0;
 	
 	for(;;)
 	{		
@@ -167,7 +171,9 @@ void Cserver::ThreadProc(void)
 				continue;
 			}
 
-			WSAEventSelect(clients[i],ClientEvent[i],FD_CLOSE);
+			WSAEventSelect(clients[i],ClientEvent[i],FD_CLOSE|FD_READ);
+			ClientEvent[i].ResetEvent();
+			ClientData[i][0]='\0';
 			DEBUG("Client connection %d accepted\n",i);
 
 			for(i=0;i<MAX_CLIENTS;i++)
@@ -179,7 +185,7 @@ void Cserver::ThreadProc(void)
 				server_running=false;
 			}
 		}
-		else /* client closed */
+		else /* client closed or data received */
 		{
 			count=server_running?2:1;
 			for(i=0;i<MAX_CLIENTS;i++)
@@ -188,23 +194,52 @@ void Cserver::ThreadProc(void)
 				{
 					if(res==(WAIT_OBJECT_0+(count++)))
 					{
-						closesocket(clients[i]);
-						clients[i]=INVALID_SOCKET;
-						DEBUG("Client connection %d closed\n",i);
-
-						if(server_running==false)
+						/* either we got data or the connection closed */
+						int curlen=strlen(ClientData[i]);
+						int maxlen=MAX_DATA-curlen-1;
+						int bytes=recv(	clients[i], ClientData[i]+curlen, maxlen, 0);
+						if(bytes==0 || bytes==SOCKET_ERROR)
 						{
-							DEBUG("Slot open.  Restarting server.\n");
-							if(startserver()==true)
+							/* Connection was closed or something's screwy */
+							closesocket(clients[i]);
+							clients[i]=INVALID_SOCKET;
+							DEBUG("Client connection %d closed\n",i);
+
+							if(server_running==false)
 							{
-								WSAEventSelect(server,ServerEvent,FD_ACCEPT);
-								server_running=true;
+								DEBUG("Slot open.  Restarting server.\n");
+								if(startserver()==true)
+								{
+									WSAEventSelect(server,ServerEvent,FD_ACCEPT);
+									server_running=true;
+								}
+								else
+								{
+									DEBUG("Server failed to restart.\n");
+									stopserver();
+								}
 							}
-							else
-							{
-								DEBUG("Server failed to restart.\n");
-								stopserver();
+						}
+						else /* bytes > 0, we read data */
+						{
+							ClientData[i][curlen+bytes]='\0';
+							char *cur=ClientData[i];
+							for(;;) {
+								char *nl=strchr(cur,'\n');
+								if(nl==NULL) {
+									if(cur!=ClientData[i]) 
+										memmove(ClientData[i],cur,strlen(cur)+1);
+									break;
+								} else {
+									*nl='\0';
+									// ----------------------------
+									// Do something with the received line (cur)
+									DEBUG("Got string: %s\n",cur);
+									// ----------------------------
+									cur=nl+1;
+								}
 							}
+						
 						}
 
 						break;
