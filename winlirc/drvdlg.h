@@ -57,7 +57,7 @@ public:
 	bool DoInitializeDaemon();
 	bool InitializeDaemon();
 	void GoGreen();
-	void GoBlue();	//turns the tray icon blue to indicate a transmittion
+	void GoBlue();	//turns the tray icon blue to indicate a transmission
 	
 // Dialog Data
 	//{{AFX_DATA(Cdrvdlg)
