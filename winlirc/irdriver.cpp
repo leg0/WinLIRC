@@ -18,6 +18,7 @@
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
  * Modifications Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
+ * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
 #include "irdriver.h"
@@ -91,6 +92,11 @@ bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 	else
 		dcb.fDtrControl=DTR_CONTROL_DISABLE; // set the transmit LED to off initially.
 	dcb.fRtsControl=RTS_CONTROL_ENABLE;
+
+	dcb.BaudRate = cfg->speed;					
+	devicetype = cfg->devicetype;				
+	virtpulse = cfg->virtpulse;					
+
 	if(!SetCommState(hPort,&dcb))
 	{
 		CloseHandle(hPort);
@@ -206,8 +212,8 @@ void CIRDriver::ThreadProc(void)
 
 	for(;;)
 	{
-		/* We want to be notified of DCD changes */
-		if(SetCommMask(hPort, EV_RLSD)==0)
+		/* We want to be notified of DCD or RX changes */
+		if(SetCommMask(hPort, devicetype ? EV_RLSD : EV_RXCHAR)==0)	
 		{
 			DEBUG("SetCommMask returned zero, error=%d\n",GetLastError());
 		}
@@ -246,22 +252,24 @@ void CIRDriver::ThreadProc(void)
 			continue;
 		}
 
-		GetCommModemStatus(hPort,&status);
+		int dcd;
+		if (devicetype) {				
+			GetCommModemStatus(hPort,&status);
 
-		int dcd = (status & MS_RLSD_ON) ? 1 : 0;
+			dcd = (status & MS_RLSD_ON) ? 1 : 0;
 
-		if(dcd==prev)
-		{
-			/* Nothing changed?! */
-			/* Continue without changing time */
-			continue;
+			if(dcd==prev)
+			{
+				/* Nothing changed?! */
+				/* Continue without changing time */
+				continue;
+			}
+
+			prev=dcd;
 		}
 
-		prev=dcd;
-
 		int deltv=lr_time-lr_lasttime;
-		if(deltv>15)
-		{
+		if (devicetype && (deltv>15)) {		
 			/* More than 15 seconds passed */
 			deltv=0xFFFFFF;
 			if(!(dcd^sense))
@@ -270,16 +278,26 @@ void CIRDriver::ThreadProc(void)
 				sense=sense?0:1;
 				DEBUG("sense was wrong!\n");
 			}
-		}
-		else
+		} else
 			deltv=(int)(((hr_time-hr_lasttime)*1000000) / hr_freq);
 	
 		lr_lasttime=lr_time;
 		hr_lasttime=hr_time;
 		
-		int data = (dcd^sense) ? (deltv) : (deltv | 0x1000000);
-		if(SetData(data))
-			SetEvent(hDataReadyEvent);
+		int data;				
+		if (devicetype) {		
+			data = (dcd^sense) ? (deltv) : (deltv | 0x1000000);	
+
+			if(SetData(data))
+				SetEvent(hDataReadyEvent);
+		} else {
+			data = deltv;	
+
+			SetData(data-100);						
+			if(SetData(virtpulse | 0x1000000))		
+				SetEvent(hDataReadyEvent);			
+			PurgeComm(hPort,PURGE_RXCLEAR);			
+		}
 	}
 }
 

@@ -18,6 +18,7 @@
  *
  * Copyright (C) 1998 Pablo d'Angelo <pablo@ag-trek.allgaeu.org>
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
 #include "dumpcfg.h"
@@ -35,7 +36,7 @@ void fprint_comment(FILE *f,struct ir_remote *rem)
 	fprintf(f,
 		"#\n"
 		"# this config file was automatically generated\n"
-		"# using lirc-%s on %s"
+		"# using %s on %s"									
 		"#\n"
 		"# contributed by \n"
 		"#\n"

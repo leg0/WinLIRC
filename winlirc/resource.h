@@ -27,11 +27,16 @@
 #define IDC_ANALYZE                     1007
 #define IDC_IN                          1008
 #define IDC_RAW                         1008
+#define IDC_SPEED                       1011
 #define IDC_VERSION                     1012
 #define IDC_SENDCODE                    1013
 #define IDC_REMOTE_EDIT                 1014
 #define IDC_REPS_EDIT                   1015
 #define IDC_CHECK1                      1016
+#define IDC_CHECKTRAY                   1017
+#define IDC_RADIORX                     1018
+#define IDC_RADIODCD                    1019
+#define IDC_VIRTPULSE                   1021
 #define ID_APP_SHOW                     40002
 #define ID_TRAY_TWO                     40003
 #define ID_EXITLIRC                     40003
@@ -44,7 +49,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        110
 #define _APS_NEXT_COMMAND_VALUE         40007
-#define _APS_NEXT_CONTROL_VALUE         1018
+#define _APS_NEXT_CONTROL_VALUE         1022
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -18,6 +18,7 @@
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
  * Modifications Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
+ * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
 #ifndef IRDRIVER_H
@@ -34,6 +35,8 @@ class CIRDriver {
 
 private:	
 	int sense;
+	unsigned long devicetype;		
+	unsigned long virtpulse;		
 	OVERLAPPED ov;
 	HANDLE hPort;
 	unsigned long int cbuf[CBUF_LEN];

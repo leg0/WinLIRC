@@ -1,3 +1,8 @@
+new in version 0.6.3pre0
+--------------------
+RX device support
+No tray icon option
+
 new in version 0.6.2
 --------------------
 fixed bug where server expects the LIRC key to exist and fails to start.

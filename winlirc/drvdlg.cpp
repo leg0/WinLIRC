@@ -18,6 +18,7 @@
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
  * Modifications based on LIRC 0.6.x Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
+ * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
 #include "stdafx.h"
@@ -142,12 +143,12 @@ void Cdrvdlg::OnHideme()
 void Cdrvdlg::GoGreen()
 {
 	if(SetTimer(1,250,NULL))
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_RECV),"LIRC / Received Signal");
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_RECV),"WinLIRC / Received Signal");
 }
 void Cdrvdlg::GoBlue()
 {
 	if(SetTimer(1,250,NULL))
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_SEND),"LIRC / Sent Signal");
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_SEND),"WinLIRC / Sent Signal");
 }
 
 void Cdrvdlg::OnTimer(UINT nIDEvent) 
@@ -155,7 +156,7 @@ void Cdrvdlg::OnTimer(UINT nIDEvent)
 	if(nIDEvent==1)
 	{
 		KillTimer(1);
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"LIRC / Ready");
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
 	}
 	
 	CDialog::OnTimer(nIDEvent);
@@ -175,9 +176,9 @@ bool Cdrvdlg::DoInitializeDaemon()
 		if(!IsWindowVisible())
 			OnToggleWindow();
 
-		if(MessageBox(	"LIRC failed to initialize.\n"
+		if(MessageBox(	"WinLIRC failed to initialize.\n"
 						"Would you like to change the configuration\n"
-						"and try again?","LIRC Error",MB_OKCANCEL)==IDCANCEL)
+						"and try again?","WinLIRC Error",MB_OKCANCEL)==IDCANCEL)
 			return false;
 		
 		Cconfdlg dlg(this);
@@ -189,23 +190,27 @@ bool Cdrvdlg::InitializeDaemon()
 {
 	CWaitCursor foo;
 
-	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"LIRC / Initializing");
+//	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");	
 
 	if(config.ReadConfig(&driver)==false)
 	{
+		ti.notrayicon = config.notrayicon;
+		if (ti.notrayicon) ti.SetIcon((HICON)NULL,NULL);
 		DEBUG("ReadConfig failed\n");
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"LIRC / Initialization Error");
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
 		return false;
 	}
+	ti.notrayicon = config.notrayicon;
+	if (ti.notrayicon) ti.SetIcon((HICON)NULL,NULL);
 
 	if(driver.InitPort(&config)==false)
 	{
 		DEBUG("InitPort failed\n");
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"LIRC / Initialization Error");
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
 		return false;
 	}
 
-	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"LIRC / Ready");
+	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
 	return true;
 }
 
@@ -214,7 +219,7 @@ void Cdrvdlg::OnConfig()
 	AllowTrayNotification=false;
 	Cconfdlg dlg(this);
 	KillTimer(1);
-	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"LIRC / Disabled During Configuration");
+	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Disabled During Configuration");
 	driver.ResetPort();
 	dlg.DoModal();
 	if(DoInitializeDaemon()==false)

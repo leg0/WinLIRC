@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
 #if !defined(AFX_CONFDLG_H__768417C3_C8E5_11D2_8C7F_004005637418__INCLUDED_)
@@ -41,6 +42,7 @@ class Cconfdlg : public CDialog
 // Construction
 public:
 	Cconfdlg(Cdrvdlg *nparent, CWnd* pParent = NULL);
+	void WriteSettingsToParent();		
 
 	Cdrvdlg *parent;
 
@@ -50,6 +52,10 @@ public:
 	CString	m_port;
 	CString	m_filename;
 	BOOL	m_animax;
+	BOOL	m_notrayicon;
+	int		m_devicetype;
+	CString	m_speed;
+	int		m_virtpulse;
 	//}}AFX_DATA
 
 
@@ -71,6 +77,8 @@ protected:
 	afx_msg void OnLearn();
 	afx_msg void OnAnalyze();
 	afx_msg void OnRaw();
+	afx_msg void OnRadiorx();
+	afx_msg void OnRadiodcd();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
