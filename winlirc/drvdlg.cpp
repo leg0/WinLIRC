@@ -293,7 +293,7 @@ void Cdrvdlg::OnSendcode()
 }
 
 BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
-// handles a transmittion command recieved by another application
+// handles a transmission command recieved from another application
 // pCopyDataStruct->lpData should point to a string of the following format
 // remotename	ircodename	reps
 // where reps is an optional parameter indicating the number of times to repeat the code (default=0)
@@ -321,7 +321,7 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 
 		sender=global_remotes;
 		while (sender!=NULL && sender->next!=NULL && stricmp(remotename,sender->name)) sender=sender->next;
-		if (sender!=NULL && !stricmp(remotename,sender->name)  && !is_raw(sender))
+		if (sender!=NULL && !stricmp(remotename,sender->name))
 		{
 			codes=sender->codes;
 			while (codes->name!=NULL && stricmp(codename,codes->name)) codes++;
