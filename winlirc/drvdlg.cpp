@@ -28,6 +28,7 @@
 #include "confdlg.h"
 #include "remote.h"
 #include "globals.h"
+#include <pbt.h> // power management stuff ??
 
 /////////////////////////////////////////////////////////////////////////////
 // Cdrvdlg dialog
@@ -78,6 +79,7 @@ BEGIN_MESSAGE_MAP(Cdrvdlg, CDialog)
 	ON_CBN_DROPDOWN(IDC_IRCODE_EDIT, OnDropdownIrcodeEdit)
 	ON_MESSAGE(WM_TRAY, OnTrayNotification)
 	//}}AFX_MSG_MAP
+	ON_MESSAGE(WM_POWERBROADCAST, OnPowerBroadcast)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -110,6 +112,64 @@ int Cdrvdlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	return 0;	
 }
+
+afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
+	{
+	LRESULT retval=TRUE;
+	switch (wPowerEvent)
+		{
+			//can we suspend?
+			// bit 0 false => automated or emergency power down 
+		case PBT_APMQUERYSUSPEND:
+			{
+				//UI iff bit 0 is set
+			BOOL bUIEnabled=(lP & 0x00000001)!=0;
+			retval=TRUE;
+			break;
+			}
+	
+			//shutdown happening
+		case PBT_APMSUSPEND:
+			{
+			driver.ResetPort(); //if we RequestDeviceWakeup instead we could wake on irevents
+			retval=TRUE;		//if the RI pin was connected to the receiving device
+			break;
+			}
+
+			//wake up from a critical power shutdown
+		case PBT_APMRESUMECRITICAL:
+			//standard wake up evrnt; UI is on
+		case PBT_APMRESUMESUSPEND:
+			//New for Win98;NT5
+			//unattended wake up; no user interaction possible; screen
+			//is probably off.
+		case PBT_APMRESUMEAUTOMATIC:
+			ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+			if(driver.InitPort(&config)==false)
+			{
+				DEBUG("InitPort failed\n");
+				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+				retval=false;
+				break;
+			}
+
+			ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
+			retval=TRUE;
+			break;
+							
+			//system power source has changed, or 
+			//battery life has just got into the near-critical state
+		case PBT_APMPOWERSTATUSCHANGE:
+			retval=TRUE;
+			break;
+
+			//we don't know what happened
+		default:
+			retval=TRUE;
+			break;
+		}
+	return retval;
+	}
 
 LRESULT Cdrvdlg::OnTrayNotification(WPARAM uID, LPARAM lEvent)
 {
@@ -190,8 +250,6 @@ bool Cdrvdlg::InitializeDaemon()
 {
 	CWaitCursor foo;
 
-//	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");	
-
 	if(config.ReadConfig(&driver)==false)
 	{
 		ti.notrayicon = config.notrayicon;
@@ -202,7 +260,8 @@ bool Cdrvdlg::InitializeDaemon()
 	}
 	ti.notrayicon = config.notrayicon;
 	if (ti.notrayicon) ti.SetIcon((HICON)NULL,NULL);
-
+	
+	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
 	if(driver.InitPort(&config)==false)
 	{
 		DEBUG("InitPort failed\n");

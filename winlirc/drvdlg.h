@@ -96,6 +96,7 @@ protected:
 	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
 	afx_msg void OnDropdownIrcodeEdit();
 	//}}AFX_MSG
+	afx_msg LRESULT OnPowerBroadcast(WPARAM uPowerEvent, LPARAM lP);
 	void UpdateRemoteComboLists();
 	void UpdateIrCodeComboLists();
 	LRESULT OnTrayNotification(WPARAM uID, LPARAM lEvent);
