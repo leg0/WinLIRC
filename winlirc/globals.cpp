@@ -53,6 +53,7 @@ void winlirc_debug(char *format, ...)
 /* End of Debugging stuff */
 
 struct flaglist all_flags[] = {
+	{"RC5",			RC5},
 	{"SHIFT_ENC",   SHIFT_ENC},
 	{"SPACE_ENC",   SPACE_ENC},
 	{"REVERSE",     REVERSE},

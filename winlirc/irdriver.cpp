@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * Modifications Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
 #include "irdriver.h"
@@ -84,6 +85,7 @@ bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 		hPort=NULL;
 		return false;
 	}
+	dcb.fDtrControl=DTR_CONTROL_DISABLE; // set the transmit LED to off initially.
 	dcb.fRtsControl=RTS_CONTROL_ENABLE;
 	if(!SetCommState(hPort,&dcb))
 	{
@@ -151,6 +153,10 @@ bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 	return true;
 }
 
+HANDLE CIRDriver::GetCommPort()
+{
+	return(hPort);
+}
 void CIRDriver::ResetPort(void)
 {
 	DEBUG("Resetting port\n");

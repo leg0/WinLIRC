@@ -10,12 +10,14 @@
 #define IDI_LIRC_OK                     105
 #define IDD_CONFIG                      105
 #define IDI_LIRC_RECV                   106
+#define IDI_LIRC_SEND                   107
 #define IDD_LEARN                       108
 #define IDC_CONFIG                      1000
 #define IDC_PORT                        1002
 #define IDC_SENSE                       1003
 #define IDC_EDIT1                       1004
 #define IDC_FILE                        1004
+#define IDC_IRCODE_EDIT                 1004
 #define IDC_BUTTON1                     1005
 #define IDC_BROWSE                      1005
 #define IDC_ENTER                       1005
@@ -26,6 +28,9 @@
 #define IDC_IN                          1008
 #define IDC_RAW                         1008
 #define IDC_VERSION                     1012
+#define IDC_SENDCODE                    1013
+#define IDC_REMOTE_EDIT                 1014
+#define IDC_REPS_EDIT                   1015
 #define ID_APP_SHOW                     40002
 #define ID_TRAY_TWO                     40003
 #define ID_EXITLIRC                     40003
@@ -38,7 +43,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        110
 #define _APS_NEXT_COMMAND_VALUE         40007
-#define _APS_NEXT_CONTROL_VALUE         1013
+#define _APS_NEXT_CONTROL_VALUE         1016
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

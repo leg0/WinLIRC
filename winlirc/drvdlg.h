@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * Modifications Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
 #if !defined(AFX_DRVDLG_H__C20B80E0_C848_11D2_8C7F_004005637418__INCLUDED_)
@@ -56,11 +57,14 @@ public:
 	bool DoInitializeDaemon();
 	bool InitializeDaemon();
 	void GoGreen();
+	void GoBlue();	//turns the tray icon blue to indicate a transmittion
 	
 // Dialog Data
 	//{{AFX_DATA(Cdrvdlg)
 	enum { IDD = IDD_DIALOG };
-		// NOTE: the ClassWizard will add data members here
+	CString	m_ircode_edit;
+	CString	m_remote_edit;
+	UINT	m_reps_edit;
 	//}}AFX_DATA
 
 	CTrayIcon ti;
@@ -86,6 +90,8 @@ protected:
 	afx_msg void OnExitLirc();
 	afx_msg void OnTimer(UINT nIDEvent);
 	virtual BOOL OnInitDialog();
+	afx_msg void OnSendcode();
+	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
 	//}}AFX_MSG
 	LRESULT OnTrayNotification(WPARAM uID, LPARAM lEvent);
 	DECLARE_MESSAGE_MAP()

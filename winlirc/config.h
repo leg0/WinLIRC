@@ -42,6 +42,7 @@ char * s_strdup(char * string);
 ir_code s_strtocode(char *val);
 unsigned long  s_strtoul(char *val);
 int s_strtoi(char *val);
+unsigned int s_strtoui(char *val);
 
 int checkMode(int is_mode, int c_mode, char *error);
 int parseFlags(char *val,char *val2);

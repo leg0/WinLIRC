@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * Modifications Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
 #ifndef IRDRIVER_H
@@ -32,10 +33,9 @@ class CIRConfig;
 class CIRDriver {
 
 private:	
-	HANDLE hPort;
 	int sense;
 	OVERLAPPED ov;
-
+	HANDLE hPort;
 	unsigned long int cbuf[CBUF_LEN];
 	int cbuf_start, cbuf_end;
 
@@ -48,6 +48,7 @@ public:
 	bool GetData(unsigned long int *dest);
 	void ThreadProc(void);
 	void DaemonThreadProc(void);
+	HANDLE GetCommPort(void);	//returns the handle hPort
 
 	HANDLE hDataReadyEvent;
 	Cdrvdlg *drvdlg;

@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * Modifications based on LIRC 0.6.1 Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
 #ifndef GLOBALS_H
@@ -41,7 +42,7 @@ extern void winlirc_debug(char *format, ...);
 #define LINE_LEN 1024
 #define CBUF_LEN 1024
 #include "version.h"
-#define LIRC_VERSION "WinLIRC " WINLIRC_VERSION " (LIRC 0.5.4pre9)"
+#define LIRC_VERSION "WinLIRC " WINLIRC_VERSION " (LIRC 0.6.1pre2)"
 #define BUTTON 80
 #define MAX_SIGNALS 200
 #define AEPS 100
@@ -57,13 +58,17 @@ extern void winlirc_debug(char *format, ...);
 #define LISTENQ 4
 #define LONG_IR_CODE
 #define NR_FLAGS 7
-#define SHIFT_ENC		0x0001      /* IR data is shift encoded */
+#define RC5				0x0001      /* IR data follows RC5 protocol */
 #define SPACE_ENC		0x0002	    /* IR data is space encoded */
 #define REVERSE			0x0004
 #define NO_HEAD_REP		0x0008	    /* no header for key repeates */
 #define NO_FOOT_REP		0x0010	    /* no foot for key repeates */
 #define CONST_LENGTH    0x0020      /* signal length+gap is always constant */
 #define RAW_CODES       0x0040      /* for internal use only */
+#define REPEAT_HEADER   0x0080		/* header is also sent before repeat code */
+#define SHIFT_ENC		RC5			/* IR data is shift encoded (name obsolete) */
+
+#define LIRC_SERIAL_TRANSMITTER
 
 /* typedefs */
 #ifdef LONG_IR_CODE
@@ -140,7 +145,13 @@ struct ir_remote
 	int post_p, post_s;         /* signal between keycode and post_code */
 	unsigned long gap;          /* time between signals in usecs */
 	unsigned long repeat_gap;   /* time between two repeat codes if different from gap */
-	int repeat_bit;             /* 1..bits */
+	int toggle_bit;             /* 1..bits */
+	int min_repeat;             /* code is repeated at least x times; code sent once -> min_repeat=0 */
+	unsigned int freq;          /* modulation frequency */
+	unsigned int duty_cycle;    /* 0<duty cycle<=100 */
+
+	/* end of user editable values */
+
     int repeat_state;
 	struct ir_ncode *last_code;
 	int reps;

@@ -217,6 +217,10 @@ SOURCE=.\l_recv.ico
 # End Source File
 # Begin Source File
 
+SOURCE=.\l_send.ico
+# End Source File
+# Begin Source File
+
 SOURCE=.\lirc.ico
 # End Source File
 # Begin Source File
