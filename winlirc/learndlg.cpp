@@ -164,8 +164,7 @@ void Clearndlg::output(const char *s, bool replacelast)
 	{
 		/* start clearing out lines to avoid hitting the 64k limit */
 		/* (122 * 500 = 61000) */
-		int len=out->GetLine(0,t,250);
-		out->SetSel(0,len+2);
+                out->SetSel(0,out->LineIndex(100),TRUE);
 		out->ReplaceSel("");
 	}
 	out->SetSel(out->GetWindowTextLength(),out->GetWindowTextLength());
