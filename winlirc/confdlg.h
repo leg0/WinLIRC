@@ -49,6 +49,7 @@ public:
 	enum { IDD = IDD_CONFIG };
 	CString	m_port;
 	CString	m_filename;
+	BOOL	m_animax;
 	//}}AFX_DATA
 
 

@@ -85,7 +85,9 @@ bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 		hPort=NULL;
 		return false;
 	}
-	dcb.fDtrControl=DTR_CONTROL_DISABLE; // set the transmit LED to off initially.
+	if (cfg->animax) dcb.fDtrControl=DTR_CONTROL_ENABLE; //set DTR high, the animax receiver needs this for power
+	else
+		dcb.fDtrControl=DTR_CONTROL_DISABLE; // set the transmit LED to off initially.
 	dcb.fRtsControl=RTS_CONTROL_ENABLE;
 	if(!SetCommState(hPort,&dcb))
 	{

@@ -39,6 +39,7 @@ Cconfdlg::Cconfdlg(Cdrvdlg *nparent, CWnd* pParent /*=NULL*/)
 	//{{AFX_DATA_INIT(Cconfdlg)
 	m_port = _T("");
 	m_filename = _T("");
+	m_animax = FALSE;
 	//}}AFX_DATA_INIT
 	parent=nparent;
 }
@@ -52,6 +53,7 @@ void Cconfdlg::DoDataExchange(CDataExchange* pDX)
 	DDV_MaxChars(pDX, m_port, 64);
 	DDX_Text(pDX, IDC_FILE, m_filename);
 	DDV_MaxChars(pDX, m_filename, 250);
+	DDX_Check(pDX, IDC_CHECK1, m_animax);
 	//}}AFX_DATA_MAP
 }
 
@@ -83,6 +85,7 @@ void Cconfdlg::OnOK()
 	fclose(tmp);
 
 	parent->config.port=m_port;
+	parent->config.animax=m_animax;
 	parent->config.conf=m_filename;
 	int sense=((CComboBox *)GetDlgItem(IDC_SENSE))->GetCurSel();
 	if(sense>=1 && sense<=2) sense--;
@@ -110,7 +113,8 @@ BOOL Cconfdlg::OnInitDialog()
 	{
 		m_port=parent->config.port;
 	}
-
+	
+	m_animax=parent->config.animax;
 	m_filename=parent->config.conf;
 	UpdateData(false);
 
@@ -164,6 +168,7 @@ void Cconfdlg::OnLearn()
 	fclose(tmp);
 
 	parent->config.port=m_port;
+	parent->config.animax=m_animax;
 	parent->config.conf=m_filename;
 	int sense=((CComboBox *)GetDlgItem(IDC_SENSE))->GetCurSel();
 	if(sense>=1 && sense<=2) sense--;
@@ -248,6 +253,7 @@ void Cconfdlg::OnRaw()
 	fclose(tmp);
 
 	parent->config.port=m_port;
+	parent->config.animax=m_animax;
 	parent->config.conf=m_filename;
 	int sense=((CComboBox *)GetDlgItem(IDC_SENSE))->GetCurSel();
 	if(sense>=1 && sense<=2) sense--;

@@ -33,6 +33,7 @@ CIRConfig::CIRConfig()
 
 	sense=-1;
 	port="COM2";
+	animax=0;
 	global_remotes=NULL;
 }
 
@@ -70,6 +71,11 @@ bool CIRConfig::ReadConfig(CIRDriver *driver)
 	if(key.QueryValue(x,"sense")!=ERROR_SUCCESS)
 		return false;
 	sense=(x==2)?-1:x;
+
+	DWORD a;
+	if(key.QueryValue(a,"animax")!=ERROR_SUCCESS)
+		return false;
+	animax=a;
 
 	len=512;
 	if(key.QueryValue(s,"conf",&len)!=ERROR_SUCCESS)
@@ -129,6 +135,9 @@ bool CIRConfig::WriteConfig(void)
 		return false;
 
 	if(key.SetValue((sense==-1)?2:sense,"sense")!=ERROR_SUCCESS)
+		return false;
+
+	if(key.SetValue(animax,"animax")!=ERROR_SUCCESS)
 		return false;
 
 	if(key.SetValue(conf,"conf")!=ERROR_SUCCESS)
