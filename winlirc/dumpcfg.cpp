@@ -141,7 +141,11 @@ void fprint_remote_head(FILE *f, struct ir_remote *rem)
 		{
 			fprintf(f, "  repeat_gap   %lu\n",rem->repeat_gap);
 		}
-		fprintf(f, "  repeat_bit      %d\n\n",rem->repeat_bit);
+		if(rem->min_repeat>0)
+		{
+			fprintf(f, "  min_repeat      %d\n",rem->min_repeat);
+		}
+		fprintf(f, "  toggle_bit      %d\n\n",rem->toggle_bit);
 	}
 	else
 	{
@@ -153,6 +157,15 @@ void fprint_remote_head(FILE *f, struct ir_remote *rem)
 		fprintf(f, "  repeat %5d %5d\n",rem->prepeat, rem->srepeat);
 		fprintf(f, "  gap    %lu\n\n",rem->gap);
 	}
+	if(rem->freq!=0)
+	{
+		fprintf(f, "  frequency    %u\n",rem->freq);
+	}
+	if(rem->duty_cycle!=0)
+	{
+        fprintf(f, "  duty_cycle   %u\n",rem->duty_cycle);
+	}
+	fprintf(f,"\n");
 }
 
 void fprint_remote_foot(FILE *f, struct ir_remote *rem)

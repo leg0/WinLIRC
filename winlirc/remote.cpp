@@ -19,6 +19,7 @@
  * Copyright (C) 1996,97 Ralph Metzler (rjkm@thp.uni-koeln.de)
  * Copyright (C) 1998 Christoph Bartelmus (columbus@hit.handshake.de)
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * Modifications based on LIRC 0.6.1 Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
 #include <stdlib.h>
@@ -253,6 +254,45 @@ int write_send_buffer(int length,unsigned long *signals)
 		     send_buffer.wptr*sizeof(unsigned long)));
 #endif
 }
+*/
+void on(void)
+{
+    EscapeCommFunction(tPort,SETDTR);
+}
+  
+void off(void)
+{
+    EscapeCommFunction(tPort,CLRDTR);
+}
+
+int init_timer()
+{
+    if (!QueryPerformanceFrequency((LARGE_INTEGER*)&freq))
+    return (-1);  // error hardware doesn't support performance counter
+    QueryPerformanceCounter((LARGE_INTEGER*)&lasttime);
+    return(0);
+}
+
+void send_pulse (unsigned long usecs)
+{
+  __int64 end;
+  end= lasttime + usecs * freq / 1000000;
+  do
+  {
+    on();
+    uwait(pulse_width);
+    off();
+    uwait(space_width);
+  } while (lasttime < end);
+  return;
+}
+
+void send_space(unsigned long length)
+{
+	if(length==0) return;
+	off();
+	uwait(length);
+}
 
 inline void send_header(struct ir_remote *remote)
 {
@@ -324,13 +364,13 @@ inline void send_pre(struct ir_remote *remote)
 		ir_code pre;
 
 		pre=remote->pre_data;
-		if(remote->repeat_bit>0)
+		if(remote->toggle_bit>0)
 		{
-			if(remote->repeat_bit<=remote->pre_data_bits)
+			if(remote->toggle_bit<=remote->pre_data_bits)
 			{
 				set_bit(&pre,
 					remote->pre_data_bits
-					-remote->repeat_bit,
+					-remote->toggle_bit,
 					remote->repeat_state);
 			}
 		}
@@ -351,12 +391,12 @@ inline void send_post(struct ir_remote *remote)
 		ir_code post;
 
 		post=remote->post_data;
-		if(remote->repeat_bit>0)
+		if(remote->toggle_bit>0)
 		{
-			if(remote->repeat_bit>remote->pre_data_bits
+			if(remote->toggle_bit>remote->pre_data_bits
 			   +remote->bits
 			   &&
-			   remote->repeat_bit<=remote->pre_data_bits
+			   remote->toggle_bit<=remote->pre_data_bits
 			   +remote->bits
 			   +remote->post_data_bits)
 			{
@@ -364,7 +404,7 @@ inline void send_post(struct ir_remote *remote)
 					remote->pre_data_bits
 					+remote->bits
 					+remote->post_data_bits
-					-remote->repeat_bit,
+					-remote->toggle_bit,
 					remote->repeat_state);
 			}
 		}
@@ -388,24 +428,24 @@ inline void send_repeat(struct ir_remote *remote)
 
 inline void send_code(struct ir_remote *remote,ir_code code)
 {
-	if(remote->repeat_bit>0)
+	if(remote->toggle_bit>0)
 	{
-		if(remote->repeat_bit>remote->pre_data_bits
+		if(remote->toggle_bit>remote->pre_data_bits
 		   &&
-		   remote->repeat_bit<=remote->pre_data_bits
+		   remote->toggle_bit<=remote->pre_data_bits
 		   +remote->bits)
 		{
 			set_bit(&code,
 				remote->pre_data_bits
 				+remote->bits
-				-remote->repeat_bit,
+				-remote->toggle_bit,
 				remote->repeat_state);
 		}
-		else if(remote->repeat_bit>remote->pre_data_bits
+		else if(remote->toggle_bit>remote->pre_data_bits
 			+remote->bits
 			+remote->post_data_bits)
 		{
-			logprintf("bad repeat_bit\n");
+			//logprintf("bad toggle_bit\n");
 		}
 	}
 
@@ -420,6 +460,124 @@ inline void send_code(struct ir_remote *remote,ir_code code)
 		send_foot(remote);
 }
 
+int init_send(struct ir_remote *remote,struct ir_ncode *code)
+{
+	if(repeat_remote!=NULL && has_repeat(remote))
+	{
+		if(remote->flags&REPEAT_HEADER && has_header(remote))
+		{
+			send_header(remote);
+		}
+		send_repeat(remote);
+	}
+	else
+	{
+		if(!is_raw(remote))
+		{
+			send_code(remote,code->code);
+		}
+	}
+	if(is_const(remote))
+	{
+		remote->remaining_gap=remote->gap;
+	}
+	else
+	{
+		if(has_repeat_gap(remote) &&
+		   repeat_remote!=NULL &&
+		   has_repeat(remote))
+		{
+			remote->remaining_gap=remote->repeat_gap;
+		}
+		else
+		{
+			remote->remaining_gap=remote->gap;
+		}
+	}
+	return(1);
+}
+
+void SetTransmitPort(HANDLE hCom)  // sets the serial port to transmit on
+{
+	tPort=hCom;
+	return;
+}
+
+int uwait(unsigned long usecs)
+// waits for a specified number of microseconds then returns 0.  returns -1 if timing is not supported
+{
+    __int64 end;
+    end= lasttime + usecs * freq / 1000000;               // Convert microseconds to performance counter units per move.
+    do
+    {
+        QueryPerformanceCounter((LARGE_INTEGER*)&lasttime);
+    } while (lasttime < end);
+    lasttime=end;
+    return (0);
+}
+
+void send(unsigned long *raw, int cnt)   //transmits raw data 1st value must be a pulse (not tested)
+									 	 //pulse_width and space_width could be a problem (just uses last value set).
+{
+    if (cnt==0) return; //nothing to send  (can remove this line if the priority boosting is skipped)
+    DWORD mypriorityclass,mythreadpriority;
+	HANDLE myprocess,mythread;
+
+	myprocess=GetCurrentProcess();  //save these handles, because we'll need them several times
+	mythread=GetCurrentThread();
+	mythreadpriority=GetPriorityClass(myprocess);  //store priority settings
+    mypriorityclass=GetThreadPriority(mythread);
+    SetPriorityClass(myprocess,REALTIME_PRIORITY_CLASS);		//boost priority
+    SetThreadPriority(mythread,THREAD_PRIORITY_TIME_CRITICAL);
+
+    // off(); //This should already be off
+    for (int i=0;i<cnt;i++) {
+        if (i%2) send_space(raw[i]);
+        else send_pulse(raw[i]);
+    }
+    off();
+    SetPriorityClass(myprocess,mypriorityclass); //restore original priorities
+    SetThreadPriority(mythread,mythreadpriority);
+}
+
+void send (ir_ncode *data,struct ir_remote *rem, unsigned int reps)
+{
+    if (!rem) return;
+	DWORD mypriorityclass,mythreadpriority;
+	HANDLE myprocess,mythread;
+
+	myprocess=GetCurrentProcess();  //save these handles, because we'll need them several times
+	mythread=GetCurrentThread();
+	mythreadpriority=GetPriorityClass(myprocess);  //store priority settings
+    mypriorityclass=GetThreadPriority(mythread);
+	if (rem->freq==0) rem->freq=38000;				//default this should really be elsewhere
+	if (rem->duty_cycle==0) rem->duty_cycle=50;		//default this should really be elsewhere
+	pulse_width=(unsigned long) rem->duty_cycle*10000/rem->freq;
+	space_width=(unsigned long) 1000000L/rem->freq-pulse_width;
+    SetPriorityClass(myprocess,REALTIME_PRIORITY_CLASS);		//boost priority
+    SetThreadPriority(mythread,THREAD_PRIORITY_TIME_CRITICAL);
+
+    off(); //This should already be off
+	init_timer();
+	init_send(rem,data); 
+    send_space(rem->remaining_gap);
+	if (reps>0)
+	{
+		repeat_remote=rem;
+		repeat_code=data;
+		for (; reps > 0; --reps)
+		{
+			init_send(rem,data); 
+			send_space(rem->remaining_gap);  
+		}
+		repeat_remote=NULL;
+		repeat_code=NULL;
+	}
+    SetPriorityClass(myprocess,mypriorityclass); //restore original priorities
+    SetThreadPriority(mythread,mythreadpriority);
+}
+
+/*
 void send_command(struct ir_remote *remote,struct ir_ncode *code)
 {
 	struct timeval current;
@@ -1144,28 +1302,28 @@ int decode(struct ir_remote *remote)
 			    remote->gap)) 
 			return(0);
 
-		if(remote->repeat_bit>0)
+		if(remote->toggle_bit>0)
 		{
-			if(remote->repeat_bit<=remote->pre_data_bits)
+			if(remote->toggle_bit<=remote->pre_data_bits)
 			{
 				repeat_state=
 				pre&(1<<(remote->pre_data_bits
-					 -remote->repeat_bit)) ? 1:0;
+					 -remote->toggle_bit)) ? 1:0;
 				pre_mask=1<<(remote->pre_data_bits
-					     -remote->repeat_bit);
+					     -remote->toggle_bit);
 			}
-			else if(remote->repeat_bit<=remote->pre_data_bits
+			else if(remote->toggle_bit<=remote->pre_data_bits
 				+remote->bits)
 			{
 				repeat_state=
 				code&(1<<(remote->pre_data_bits
 					  +remote->bits
-					  -remote->repeat_bit)) ? 1:0;
+					  -remote->toggle_bit)) ? 1:0;
 				code_mask=1<<(remote->pre_data_bits
 					      +remote->bits
-					      -remote->repeat_bit);
+					      -remote->toggle_bit);
 			}
-			else if(remote->repeat_bit<=remote->pre_data_bits
+			else if(remote->toggle_bit<=remote->pre_data_bits
 				+remote->bits
 				+remote->post_data_bits)
 			{
@@ -1173,15 +1331,15 @@ int decode(struct ir_remote *remote)
 				post&(1<<(remote->pre_data_bits
 					  +remote->bits
 					  +remote->post_data_bits
-					  -remote->repeat_bit)) ? 1:0;
+					  -remote->toggle_bit)) ? 1:0;
 				post_mask=1<<(remote->pre_data_bits
 					      +remote->bits
 					      +remote->post_data_bits
-					      -remote->repeat_bit);
+					      -remote->toggle_bit);
 			}
 			else
 			{
-				;//logprintf("bad repeat_bit\n");
+				;//logprintf("bad toggle_bit\n");
 			}
 		}
 
@@ -1248,7 +1406,7 @@ int decode(struct ir_remote *remote)
 		{
 			last_remote=remote;
 			if(found==remote->last_code && !has_repeat(remote) && 
-			   (!(remote->repeat_bit>0) || 
+			   (!(remote->toggle_bit>0) || 
 				repeat_state==remote->repeat_state))
 			{
 				if(sync<=(int)(remote->remaining_gap*(100+remote->eps)/100)
@@ -1261,7 +1419,7 @@ int decode(struct ir_remote *remote)
 			{
 				remote->reps=0;
 				remote->last_code=found;
-				if(remote->repeat_bit>0)
+				if(remote->toggle_bit>0)
 				{
 					remote->repeat_state=repeat_state;
 				}

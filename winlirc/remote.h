@@ -19,6 +19,7 @@
  * Copyright (C) 1996,97 Ralph Metzler <rjkm@thp.uni-koeln.de>
  * Copyright (C) 1998 Christoph Bartelmus <columbus@hit.handshake.de>
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * Modifications based on LIRC 0.6.1 Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
 #ifndef _IR_REMOTE_H
@@ -33,8 +34,6 @@
 
 #define strcasecmp stricmp
 
-
-
 int gettimeofday(struct mytimeval *, void *);
 
 
@@ -42,6 +41,12 @@ static inline int is_shift(struct ir_remote *remote)
 {
 	if(remote && remote->flags&SHIFT_ENC) return(1);
 	else return(0);
+}
+
+static inline int is_rc5(struct ir_remote *remote)
+{
+        if(remote->flags&RC5) return(1);
+        else return(0);
 }
 
 static inline int is_raw(struct ir_remote *remote)
@@ -117,11 +122,27 @@ struct ir_ncode *get_ir_code(struct ir_remote *remote,char *name);
 inline unsigned long time_left(struct mytimeval *current,struct mytimeval *last,
 			       unsigned long gap);
 void send_command(struct ir_remote *remote,struct ir_ncode *code);
+void send_space(unsigned long length);
+void send_pulse(unsigned long length);
+void SetTransmitPort(HANDLE hCom);	//selects the serial port to transmit on
 void clear_rec_buffer(unsigned long data);
 int decode(struct ir_remote *remote);
 char *decode_command(unsigned long data);
 
 class Clearndlg;
 class CIRDriver;
+
+#ifdef LIRC_SERIAL_TRANSMITTER
+static unsigned long pulse_width = 13; /* pulse/space ratio of 50/50 */
+static unsigned long space_width = 13; /* 1000000/freq-pulse_width */
+static HANDLE tPort; //port to transmit on
+static __int64 freq;		//the frequency used by PerformanceCounter
+static __int64 lasttime;	//last time counter was queried
+#endif
+
+int uwait(unsigned long usecs);	//wait usecs since lasttime
+void send(unsigned long *raw, int cnt);	//transmit raw codes (untested)
+void send (ir_ncode *data,struct ir_remote *rem,unsigned int reps=0);  //transmit an ircode
+int init_timer();  //initializes QueryPerformanceCounter based timer
 
 #endif

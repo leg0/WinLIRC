@@ -17,6 +17,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
+ * Modifications based on LIRC 0.6.x Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
 #include "stdafx.h"
@@ -36,7 +37,9 @@ Cdrvdlg::Cdrvdlg(CWnd* pParent /*=NULL*/)
 	  ti(IDR_TRAYMENU)
 {
 	//{{AFX_DATA_INIT(Cdrvdlg)
-		// NOTE: the ClassWizard will add member initialization here
+	m_ircode_edit = _T("");
+	m_remote_edit = _T("");
+	m_reps_edit = 0;
 	//}}AFX_DATA_INIT
 
 	use_ir_hardware=true;
@@ -49,7 +52,12 @@ void Cdrvdlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(Cdrvdlg)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
+	DDX_Text(pDX, IDC_IRCODE_EDIT, m_ircode_edit);
+	DDV_MaxChars(pDX, m_ircode_edit, 64);
+	DDX_Text(pDX, IDC_REMOTE_EDIT, m_remote_edit);
+	DDV_MaxChars(pDX, m_remote_edit, 64);
+	DDX_Text(pDX, IDC_REPS_EDIT, m_reps_edit);
+	DDV_MinMaxUInt(pDX, m_reps_edit, 0, 600);
 	//}}AFX_DATA_MAP
 }
 
@@ -62,6 +70,8 @@ BEGIN_MESSAGE_MAP(Cdrvdlg, CDialog)
 	ON_BN_CLICKED(IDC_HIDEME, OnHideme)
 	ON_COMMAND(ID_EXITLIRC, OnExitLirc)
 	ON_WM_TIMER()
+	ON_BN_CLICKED(IDC_SENDCODE, OnSendcode)
+	ON_WM_COPYDATA()
 	ON_MESSAGE(WM_TRAY, OnTrayNotification)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -130,6 +140,11 @@ void Cdrvdlg::GoGreen()
 {
 	if(SetTimer(1,250,NULL))
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_RECV),"LIRC / Received Signal");
+}
+void Cdrvdlg::GoBlue()
+{
+	if(SetTimer(1,250,NULL))
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_SEND),"LIRC / Sent Signal");
 }
 
 void Cdrvdlg::OnTimer(UINT nIDEvent) 
@@ -213,8 +228,87 @@ void Cdrvdlg::OnExitLirc()
 BOOL Cdrvdlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
-	
+	m_ircode_edit="";
+	UpdateData(FALSE);
 	GetDlgItem(IDC_VERSION)->SetWindowText(WINLIRC_VERSION);
 	
 	return TRUE;
+}
+
+void Cdrvdlg::OnSendcode() 
+{
+	UpdateData(TRUE);
+	struct ir_ncode *codes;
+	struct ir_remote *sender;
+	
+	sender=global_remotes;
+	m_remote_edit.TrimRight();
+	m_ircode_edit.TrimRight();
+	m_remote_edit.TrimLeft();
+	m_ircode_edit.TrimLeft();
+	while (sender!=NULL && sender->next!=NULL && stricmp(m_remote_edit,sender->name)) sender=sender->next;	//look for remote
+	if (sender==NULL || stricmp(m_remote_edit,sender->name) )	MessageBox("No match found for remote!");
+	else if (is_raw(sender)) MessageBox("Raw remotes are not supported!");	//transmitting is not currently supported for raw remotes
+	else
+	{
+		codes=sender->codes;
+		while (codes->name!=NULL && stricmp(m_ircode_edit,codes->name)) codes++;
+		if (codes==NULL || codes->name==NULL) MessageBox("No match found for ircode!");	//look for ircode
+		else
+		{
+			SetTransmitPort(driver.GetCommPort());		//set the port for transmitting
+			if (m_reps_edit < sender->min_repeat)
+			{
+				m_reps_edit=sender->min_repeat;  //set minimum number of repeats
+				UpdateData(FALSE);					//update the display
+			}
+			send(codes,sender,m_reps_edit);				//transmit the ircode
+			GoBlue();
+		}
+	}
+}
+
+BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
+// handles a transmittion command recieved by another application
+// pCopyDataStruct->lpData should point to a string of the following format
+// remotename	ircodename	reps
+// where reps is an optional parameter indicating the number of times to repeat the code (default=0)
+{
+	
+	CString tosend = (LPCSTR) (pCopyDataStruct->lpData);
+	CString remotename,codename,times;
+	struct ir_ncode *codes;
+	struct ir_remote *sender;
+	int i,j;
+
+	i=tosend.FindOneOf(" \t");
+	if (i!=-1)
+	{
+		remotename=tosend.Left(i);
+		codename=tosend.Mid(i);
+		codename.TrimLeft();
+		j=codename.FindOneOf(" \t");
+		if (j>0)
+		{
+			times=codename.Mid(j);
+			codename=codename.Left(j);
+			j=atoi(times);
+		} else j=0;						//should replace with min reps when that's implemented
+
+		sender=global_remotes;
+		while (sender!=NULL && sender->next!=NULL && stricmp(remotename,sender->name)) sender=sender->next;
+		if (sender!=NULL && !stricmp(remotename,sender->name)  && !is_raw(sender))
+		{
+			codes=sender->codes;
+			while (codes->name!=NULL && stricmp(codename,codes->name)) codes++;
+			if (codes!=NULL && codes->name!=NULL)
+			{
+				SetTransmitPort(driver.GetCommPort());  //set the port to transmit on
+				if (j < sender->min_repeat) j=sender->min_repeat;  //set minimum number of repeats
+				send(codes,sender,j);					//transmit the code
+				GoBlue();								//turn icon blue to indicate a transmission
+			}
+		}
+	}
+	return CDialog::OnCopyData(pWnd, pCopyDataStruct);
 }

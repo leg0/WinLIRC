@@ -211,6 +211,26 @@ int s_strtoi(char *val)
 	return(n);
 }
 
+unsigned int s_strtoui(char *val)
+{
+        char *endptr;
+        unsigned long n;
+        unsigned int h;
+
+        errno=0;
+		n=strtoul(val,&endptr,0);
+        h=(unsigned int) n;
+		if((n==ULONG_MAX && errno==ERANGE)
+		   || strlen(endptr)!=0 || strlen(val)==0 || n!=((unsigned long) h))
+        {
+                DEBUG("error in configfile line %d:\n",line);
+                DEBUG("\"%s\": must be a valid (unsigned int) number\n",val);
+                parse_error=1;
+                return(0);
+        }
+        return(n);
+}
+
 int checkMode(int is_mode, int c_mode, char *error)
 {
 
@@ -378,13 +398,26 @@ void defineRemote(char * key, char * val, char *val2, struct ir_remote *rem)
 	else if (strcasecmp("gap",key)==0){
 		rem->gap=s_strtoul(val);
 	}
-
+	
 	else if (strcasecmp("repeat_gap",key)==0){
 		rem->repeat_gap=s_strtoul(val);
 	}
 
+	else if (strcasecmp("toggle_bit",key)==0){
+        rem->toggle_bit=s_strtoi(val);
+	}
+	/* obsolete name */
 	else if (strcasecmp("repeat_bit",key)==0){
-		rem->repeat_bit=s_strtoi(val);
+        rem->toggle_bit=s_strtoi(val);
+	}
+	else if (strcasecmp("min_repeat",key)==0){
+        rem->min_repeat=s_strtoi(val);
+	}
+	else if (strcasecmp("frequency",key)==0){
+        rem->freq=s_strtoui(val);
+	}
+	else if (strcasecmp("duty_cycle",key)==0){
+        rem->duty_cycle=s_strtoui(val);
 	}else{
 		if(val2){
 			DEBUG("error in configfile line %d:\n",line);

@@ -52,23 +52,30 @@ END
 // Dialog
 //
 
-IDD_DIALOG DIALOG DISCARDABLE  0, 0, 184, 82
+IDD_DIALOG DIALOG DISCARDABLE  0, 0, 189, 137
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
 CAPTION "WinLIRC"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "Hide Window",IDC_HIDEME,127,23,50,14
-    PUSHBUTTON      "Exit LIRC",IDCANCEL,127,39,50,14
-    PUSHBUTTON      "Reconfigure",IDC_CONFIG,127,7,50,14
+    DEFPUSHBUTTON   "&Hide Window",IDC_HIDEME,132,23,50,14
+    PUSHBUTTON      "E&xit LIRC",IDCANCEL,132,39,50,14
+    EDITTEXT        IDC_REMOTE_EDIT,40,65,89,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_IRCODE_EDIT,40,86,89,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_REPS_EDIT,163,63,19,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Send Code",IDC_SENDCODE,132,86,50,14
+    PUSHBUTTON      "&Reconfigure",IDC_CONFIG,132,7,50,14
     ICON            IDI_LIRC,IDC_STATIC,7,18,20,20,SS_SUNKEN
-    CONTROL         "by Jim Paris <jim@jtan.com>\nBased on LIRC 0.5.4pre9.",
-                    IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,33,24,
-                    90,16
+    CONTROL         "by Jim Paris <jim@jtan.com>\nBased on LIRC 0.5.4pre9.\n\tModified by\nScott Baily <baily@uiuc.edu>\nBased on LIRC 0.6.1.",
+                    IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,33,17,
+                    95,43
     LTEXT           "This program is distributed under the GNU Public\nLicense and comes with absolutely NO WARRANTY.",
-                    IDC_STATIC,8,58,170,17
-    GROUPBOX        "",IDC_STATIC,5,52,173,23
-    LTEXT           "WinLIRC version",IDC_STATIC,33,15,55,8
-    LTEXT           "(version)",IDC_VERSION,89,15,35,8
+                    IDC_STATIC,12,113,170,17
+    GROUPBOX        "",IDC_STATIC,9,107,173,23
+    LTEXT           "WinLIRC version",IDC_STATIC,35,7,55,8
+    LTEXT           "(version)",IDC_VERSION,91,7,35,8
+    LTEXT           "code",IDC_STATIC,19,89,17,8
+    LTEXT           "remote",IDC_STATIC,14,68,22,8
+    LTEXT           "repeats",IDC_STATIC,136,66,24,8
 END
 
 IDD_CONFIG DIALOG DISCARDABLE  0, 0, 179, 87
@@ -117,9 +124,9 @@ BEGIN
     IDD_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 177
+        RIGHTMARGIN, 182
         TOPMARGIN, 7
-        BOTTOMMARGIN, 75
+        BOTTOMMARGIN, 130
     END
 
     IDD_CONFIG, DIALOG
@@ -153,6 +160,7 @@ IDI_LIRC_INIT           ICON    DISCARDABLE     "l_init.ico"
 IDI_LIRC_ERROR          ICON    DISCARDABLE     "l_error.ico"
 IDI_LIRC_OK             ICON    DISCARDABLE     "l_ok.ico"
 IDI_LIRC_RECV           ICON    DISCARDABLE     "l_recv.ico"
+IDI_LIRC_SEND           ICON    DISCARDABLE     "l_send.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
