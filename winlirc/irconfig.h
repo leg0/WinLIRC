@@ -31,6 +31,7 @@ class CIRConfig {
 public:
 	CString port;
 	int sense;
+	BOOL animax;
 	CString conf;
 
 	CIRConfig();

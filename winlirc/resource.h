@@ -31,6 +31,7 @@
 #define IDC_SENDCODE                    1013
 #define IDC_REMOTE_EDIT                 1014
 #define IDC_REPS_EDIT                   1015
+#define IDC_CHECK1                      1016
 #define ID_APP_SHOW                     40002
 #define ID_TRAY_TWO                     40003
 #define ID_EXITLIRC                     40003
@@ -43,7 +44,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        110
 #define _APS_NEXT_COMMAND_VALUE         40007
-#define _APS_NEXT_CONTROL_VALUE         1016
+#define _APS_NEXT_CONTROL_VALUE         1017
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
