@@ -113,7 +113,7 @@ void fprint_remote_head(FILE *f, struct ir_remote *rem)
 		{
 			fprintf(f, "  pre_data_bits   %d\n",rem->pre_data_bits);
 #                       ifdef LONG_IR_CODE
-			fprintf(f, "  pre_data       0x%llX\n",rem->pre_data);
+			fprintf(f, "  pre_data       0x%I64X\n",rem->pre_data);
 #                       else
 			fprintf(f, "  pre_data       0x%lX\n",rem->pre_data);
 #                       endif
@@ -122,7 +122,7 @@ void fprint_remote_head(FILE *f, struct ir_remote *rem)
 		{
 			fprintf(f, "  post_data_bits  %d\n",rem->post_data_bits);
 #                       ifdef LONG_IR_CODE
-			fprintf(f, "  post_data      0x%llX\n",rem->post_data);
+			fprintf(f, "  post_data      0x%I64X\n",rem->post_data);
 #                       else
 			fprintf(f, "  post_data      0x%lX\n",rem->post_data);
 #                       endif
@@ -197,7 +197,7 @@ void fprint_remote_signal(FILE *f,struct ir_remote *rem, struct ir_ncode *codes)
 	if(!is_raw(rem))
 	{
 #               ifdef LONG_IR_CODE
-		fprintf(f, "          %-24s 0x%016llX\n",codes->name, codes->code);
+		fprintf(f, "          %-24s 0x%016I64X\n",codes->name, codes->code);
 #               else
 		fprintf(f, "          %-24s 0x%016lX\n",codes->name, codes->code);
 #               endif
@@ -250,4 +250,24 @@ void fprint_remote(FILE *f, struct ir_remote *rem)
 	fprint_remote_head(f,rem);
 	fprint_remote_signals(f,rem);
 	fprint_remote_foot(f,rem);
+}
+
+void fprint_copyright(FILE *fout)
+{
+	/* As this program is distributed under GPL you could just
+	   remove this copyright notice and the config files generated
+	   with the modified program would automatically be covered by
+	   the GPL. Although I am aware of this I will not prevent it.
+
+	   I hope that nobody will do so because the license I put on
+	   the config files is not really a restriction. Instead it
+	   emphasizes the spirit of the GPL to make things available
+	   to everybody. */
+
+	fprintf(fout,
+		"\n"
+		"# Copyright (C) 1999 Christoph Bartelmus\n"
+		"#\n"
+		"# You may only use this file if you make it available to others,\n"
+		"# i.e. if you send it to <lirc@bartelmus.de>\n");
 }
