@@ -19,7 +19,7 @@
  * Copyright (C) 1996,97 Ralph Metzler <rjkm@thp.uni-koeln.de>
  * Copyright (C) 1998 Christoph Bartelmus <columbus@hit.handshake.de>
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
- * Modifications based on LIRC 0.6.1 Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
+ * Copyright (C) 2002 Scott Baily <baily@uiuc.edu>
  */
 
 #ifndef _IR_REMOTE_H
@@ -134,9 +134,9 @@ struct ir_ncode *get_ir_code(struct ir_remote *remote,char *name);
 inline unsigned long time_left(struct mytimeval *current,struct mytimeval *last,
 			       unsigned long gap);
 void send_command(struct ir_remote *remote,struct ir_ncode *code);
-void send_space(unsigned long length);
-void send_pulse(unsigned long length);
-void SetTransmitPort(HANDLE hCom);	//selects the serial port to transmit on
+//void send_space(unsigned long length);
+//void send_pulse(unsigned long length);
+void SetTransmitPort(HANDLE hCom, unsigned type);	//selects the serial port to transmit on
 void clear_rec_buffer(unsigned long data);
 int decode(struct ir_remote *remote);
 char *decode_command(unsigned long data);
@@ -145,9 +145,17 @@ class Clearndlg;
 class CIRDriver;
 
 #ifdef LIRC_SERIAL_TRANSMITTER
+#define MAXPULSEBYTES 50
 static unsigned long pulse_width = 13; /* pulse/space ratio of 50/50 */
 static unsigned long space_width = 13; /* 1000000/freq-pulse_width */
+static int pulse_byte_length=78; //usecs per byte (tx soft carrier)
 static HANDLE tPort; //port to transmit on
+static void (*on) (void);  //pointer to on function for hard carrier transmitters
+static void (*off) (void); //pointer to off function for hard carrier transmitters
+static int (*send_pulse) (unsigned long); //pointer to send_pulse function
+static int (*send_space) (unsigned long); //pointer to send_space function
+static int pulsedata[MAXPULSEBYTES];
+static int transmittertype;
 static __int64 freq;		//the frequency used by PerformanceCounter
 static __int64 lasttime;	//last time counter was queried
 #endif

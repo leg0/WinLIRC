@@ -60,7 +60,7 @@ void Cdrvdlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_REMOTE_EDIT, m_remote_edit);
 	DDV_MaxChars(pDX, m_remote_edit, 64);
 	DDX_Text(pDX, IDC_REPS_EDIT, m_reps_edit);
-	DDV_MinMaxUInt(pDX, m_reps_edit, 0, 600);
+	DDV_MinMaxInt(pDX, m_reps_edit, 0, 600);
 	//}}AFX_DATA_MAP
 }
 
@@ -280,7 +280,6 @@ void Cdrvdlg::OnSendcode()
 		if (codes==NULL || codes->name==NULL) MessageBox("No match found for ircode!");	//look for ircode
 		else
 		{
-			SetTransmitPort(driver.GetCommPort());		//set the port for transmitting
 			if (m_reps_edit < sender->min_repeat)
 			{
 				m_reps_edit=sender->min_repeat;  //set minimum number of repeats
@@ -327,7 +326,6 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 			while (codes->name!=NULL && stricmp(codename,codes->name)) codes++;
 			if (codes!=NULL && codes->name!=NULL)
 			{
-				SetTransmitPort(driver.GetCommPort());  //set the port to transmit on
 				if (j < sender->min_repeat) j=sender->min_repeat;  //set minimum number of repeats
 				send(codes,sender,j);					//transmit the code
 				GoBlue();								//turn icon blue to indicate a transmission
