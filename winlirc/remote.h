@@ -37,15 +37,27 @@
 int gettimeofday(struct mytimeval *, void *);
 
 
-static inline int is_shift(struct ir_remote *remote)
+static inline int is_biphase(struct ir_remote *remote)
 {
-	if(remote && remote->flags&SHIFT_ENC) return(1);
+	if(remote && (remote->flags&RC5 || remote->flags&RC6)) return(1);
 	else return(0);
 }
 
 static inline int is_rc5(struct ir_remote *remote)
 {
-        if(remote->flags&RC5) return(1);
+        if(remote && remote->flags&RC5) return(1);
+        else return(0);
+}
+
+static inline int is_rc6(struct ir_remote *remote)
+{
+        if(remote && remote->flags&RC6) return(1);
+        else return(0);
+}
+
+static inline int is_rcmm(struct ir_remote *remote)
+{
+        if(remote && remote->flags&RCMM) return(1);
         else return(0);
 }
 
