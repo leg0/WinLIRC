@@ -66,12 +66,12 @@ BEGIN
     COMBOBOX        IDC_REPS_EDIT,194,63,30,112,CBS_DROPDOWN | WS_TABSTOP
     PUSHBUTTON      "&Send Code",IDC_SENDCODE,174,86,50,14
     PUSHBUTTON      "&Reconfigure",IDC_CONFIG,174,7,50,14
-    ICON            IDI_LIRC,IDC_STATIC,7,18,21,20,SS_SUNKEN
+    ICON            IDI_LIRC,IDC_STATIC,7,18,20,20,SS_SUNKEN
     CONTROL         "by Jim Paris <jim@jtan.com>,\nScott Baily <baily@users.sourceforge.net>,\nand Jörgen Birkler <jorgen@birkler.com>\nBased on LIRC 0.6.1.",
                     IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,33,17,
                     138,36
     LTEXT           "This program is distributed under the GNU Public\nLicense and comes with absolutely NO WARRANTY.",
-                    IDC_STATIC,7,111,217,17
+                    IDC_STATIC,30,111,173,17
     GROUPBOX        "",IDC_STATIC,7,105,217,23
     LTEXT           "WinLIRC version",IDC_STATIC,35,7,55,8
     LTEXT           "(version)",IDC_VERSION,91,7,35,8
