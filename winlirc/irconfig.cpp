@@ -54,7 +54,10 @@ bool CIRConfig::ReadConfig(CIRDriver *driver)
 
 	CRegKey key;
 
-	if(key.Open(HKEY_LOCAL_MACHINE,"Software\\LIRC")!=ERROR_SUCCESS)
+	/* First try HKCU, then HKLM */
+	if(key.Open(HKEY_CURRENT_USER,"Software\\LIRC")!=ERROR_SUCCESS)
+		if(key.Open(HKEY_LOCAL_MACHINE,"Software\\LIRC")
+		   !=ERROR_SUCCESS)
 		return false;
 
 	char s[512];
@@ -118,6 +121,8 @@ bool CIRConfig::WriteConfig(void)
 	CRegKey key;
 
 	if(key.Create(HKEY_LOCAL_MACHINE,"Software\\LIRC")!=ERROR_SUCCESS)
+		if(key.Create(HKEY_CURRENT_USER,"Software\\LIRC")
+		   !=ERROR_SUCCESS)
 		return false;
 
 	if(key.SetValue(port,"port")!=ERROR_SUCCESS)
