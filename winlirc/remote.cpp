@@ -476,6 +476,10 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code)
 		{
 			send_code(remote,code->code);
 		}
+		else
+		{
+			send(code->signals,code->length);
+		}
 	}
 	if(is_const(remote))
 	{
@@ -516,28 +520,13 @@ int uwait(unsigned long usecs)
     return (0);
 }
 
-void send(unsigned long *raw, int cnt)   //transmits raw data 1st value must be a pulse (not tested)
-									 	 //pulse_width and space_width could be a problem (just uses last value set).
+void send(unsigned long *raw, int cnt)   //transmits raw data 1st value must be a pulse								 
 {
-    if (cnt==0) return; //nothing to send  (can remove this line if the priority boosting is skipped)
-    DWORD mypriorityclass,mythreadpriority;
-	HANDLE myprocess,mythread;
-
-	myprocess=GetCurrentProcess();  //save these handles, because we'll need them several times
-	mythread=GetCurrentThread();
-	mythreadpriority=GetPriorityClass(myprocess);  //store priority settings
-    mypriorityclass=GetThreadPriority(mythread);
-    SetPriorityClass(myprocess,REALTIME_PRIORITY_CLASS);		//boost priority
-    SetThreadPriority(mythread,THREAD_PRIORITY_TIME_CRITICAL);
-
-    // off(); //This should already be off
     for (int i=0;i<cnt;i++) {
         if (i%2) send_space(raw[i]);
         else send_pulse(raw[i]);
     }
     off();
-    SetPriorityClass(myprocess,mypriorityclass); //restore original priorities
-    SetThreadPriority(mythread,mythreadpriority);
 }
 
 void send (ir_ncode *data,struct ir_remote *rem, unsigned int reps)

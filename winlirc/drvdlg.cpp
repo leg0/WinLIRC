@@ -248,7 +248,6 @@ void Cdrvdlg::OnSendcode()
 	m_ircode_edit.TrimLeft();
 	while (sender!=NULL && sender->next!=NULL && stricmp(m_remote_edit,sender->name)) sender=sender->next;	//look for remote
 	if (sender==NULL || stricmp(m_remote_edit,sender->name) )	MessageBox("No match found for remote!");
-	else if (is_raw(sender)) MessageBox("Raw remotes are not supported!");	//transmitting is not currently supported for raw remotes
 	else
 	{
 		codes=sender->codes;
