@@ -54,10 +54,9 @@ public:
 
 	struct ir_remote *remotes;
 	
-	int analyse(void);
 	int get_codes(void);
-	void get_pre_data(void);
-	void get_post_data(void);
+	void get_pre_data(void);  //now matches lirc 0.6.5
+	void get_post_data(void); //now matches lirc 0.6.5
 
 	bool GetGap(unsigned long &gap,
 				unsigned long &count,
@@ -120,6 +119,7 @@ public:
 
 // Implementation
 protected:
+	void EndDialog2( int nResult );
 
 	// Generated message map functions
 	//{{AFX_MSG(Clearndlg)
