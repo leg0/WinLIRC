@@ -542,6 +542,8 @@ inline void send_code(struct ir_remote *remote,ir_code code)
 
 int init_send(struct ir_remote *remote,struct ir_ncode *code)
 {
+	__int64 start;
+	start=lasttime;
 	if(is_rcmm(remote))
 	{
 #               ifdef __DEBUG
@@ -570,7 +572,7 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code)
 	}
 	if(is_const(remote))
 	{
-		remote->remaining_gap=remote->gap;
+		remote->remaining_gap=remote->gap - (lasttime - start) * 1000000 / freq;
 	}
 	else
 	{
