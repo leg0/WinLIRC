@@ -1,7 +1,14 @@
-new in version 0.6.3pre0
+new in version 0.6.3
 --------------------
 RX device support
 No tray icon option
+tx transmitter support
+hard carrier transmitter support
+RC-6 support
+RC-MM support (receive only)
+bugfixes:
+	detects RC-5 codes that start with 1
+	lets codes from raw remotes be sent from other applications
 
 new in version 0.6.2
 --------------------

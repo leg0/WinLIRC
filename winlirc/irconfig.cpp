@@ -35,6 +35,7 @@ CIRConfig::CIRConfig()
 	sense=-1;
 	port="COM2";
 	animax=0;
+	transmittertype=0;
 	speed = 115200;			
 	devicetype = 1;			
 	virtpulse = 300;		
@@ -81,6 +82,10 @@ bool CIRConfig::ReadConfig(CIRDriver *driver)
 		return false;
 	animax=a;
 
+	if(key.QueryValue(a,"transmittertype")!=ERROR_SUCCESS)
+		return false;
+	transmittertype=a;
+
 	len=512;
 	if(key.QueryValue(s,"conf",&len)!=ERROR_SUCCESS)
 		return false;
@@ -88,19 +93,19 @@ bool CIRConfig::ReadConfig(CIRDriver *driver)
 
 	if(key.QueryValue(a,"speed")!=ERROR_SUCCESS)		
 		return false;									
-	speed = a;											
+	speed = a;
 
 	if(key.QueryValue(a,"devicetype")!=ERROR_SUCCESS)	
 		return false;									
-	devicetype = a;										
+	devicetype = a;
 
 	if(key.QueryValue(a,"notrayicon")!=ERROR_SUCCESS)	
 		return false;									
-	notrayicon = a;										
+	notrayicon = a;
 
 	if(key.QueryValue(a,"virtpulse")!=ERROR_SUCCESS)	
 		return false;									
-	virtpulse = a;										
+	virtpulse = a;
 
 	FILE *tmp;
 	if(conf=="" || (tmp=fopen(conf,"r"))==NULL)
@@ -158,6 +163,9 @@ bool CIRConfig::WriteConfig(void)
 		return false;
 
 	if(key.SetValue(animax,"animax")!=ERROR_SUCCESS)
+		return false;
+
+	if(key.SetValue(transmittertype,"transmittertype")!=ERROR_SUCCESS)
 		return false;
 
 	if(key.SetValue(conf,"conf")!=ERROR_SUCCESS)

@@ -78,11 +78,11 @@ BEGIN
     LTEXT           "code",IDC_STATIC,19,102,17,8
     LTEXT           "remote",IDC_STATIC,14,81,22,8
     LTEXT           "repeats",IDC_STATIC,163,78,24,8
-    LTEXT           "Alexander Nesterovsky <nsky@users.sourceforge.net>\nBased on LIRC 0.6.1.",
+    LTEXT           "Alexander Nesterovsky <nsky@users.sourceforge.net>\nBased on LIRC 0.6.5.",
                     IDC_STATIC,33,56,184,17
 END
 
-IDD_CONFIG DIALOG DISCARDABLE  0, 0, 287, 101
+IDD_CONFIG DIALOG DISCARDABLE  0, 0, 287, 137
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "WinLIRC Configuration"
 FONT 8, "MS Sans Serif"
@@ -96,26 +96,33 @@ BEGIN
     RTEXT           "Sense",IDC_STATIC,3,35,22,12,SS_CENTERIMAGE
     COMBOBOX        IDC_SENSE,30,35,51,51,CBS_DROPDOWNLIST | WS_VSCROLL | 
                     WS_TABSTOP
-    GROUPBOX        "Device type",IDC_STATIC,85,5,135,25
+    GROUPBOX        "Receiver type",IDC_STATIC,85,5,135,25
     CONTROL         "RX device",IDC_RADIORX,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP | WS_TABSTOP,90,15,49,10
     CONTROL         "DCD device",IDC_RADIODCD,"Button",BS_AUTORADIOBUTTON | 
                     WS_TABSTOP,155,15,55,10
-    LTEXT           "Virtual pulse",IDC_STATIC,145,35,39,8
+    LTEXT           "Virtual pulse",IDC_STATIC,145,35,39,12,SS_CENTERIMAGE
     EDITTEXT        IDC_VIRTPULSE,190,35,30,12,ES_AUTOHSCROLL
     LTEXT           "Usually, speed should be 115200. Sometimes other values are better",
                     IDC_STATIC,5,50,222,10
-    CONTROL         "animax (enable DTR)",IDC_CHECK1,"Button",
+    CONTROL         "animax (enable DTR)",IDC_CHECKANIMAX,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,5,61,83,10
     CONTROL         "No tray icon. (Main window is available by starting program again)",
                     IDC_CHECKTRAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,72,
                     220,10
-    RTEXT           "Config",IDC_STATIC,0,86,24,12,SS_CENTERIMAGE
-    EDITTEXT        IDC_FILE,30,86,235,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "...",IDC_BROWSE,270,86,15,12
-    PUSHBUTTON      "Learn",IDC_LEARN,230,5,55,12
-    PUSHBUTTON      "Analyze",IDC_ANALYZE,230,20,55,12
-    PUSHBUTTON      "Raw Codes",IDC_RAW,230,35,55,12
+    GROUPBOX        "Transmitter settings",IDC_STATIC,49,85,171,24
+    CONTROL         "hardware carrier",IDC_CHECKHARDCARRIER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,54,96,67,10
+    CONTROL         "DTR",IDC_RADIODTR,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,136,96,31,10
+    CONTROL         "TX",IDC_RADIOTX,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,176,96,25,10
+    RTEXT           "Config",IDC_STATIC,0,115,24,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_FILE,30,115,207,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Browse...",IDC_BROWSE,242,115,43,12
+    PUSHBUTTON      "&Learn",IDC_LEARN,230,5,55,12
+    PUSHBUTTON      "&Analyze",IDC_ANALYZE,230,20,55,12
+    PUSHBUTTON      "&Raw Codes",IDC_RAW,230,35,55,12
     DEFPUSHBUTTON   "OK",IDOK,230,50,55,12
     PUSHBUTTON      "Cancel",IDCANCEL,230,65,55,12
 END
@@ -154,7 +161,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 280
         TOPMARGIN, 7
-        BOTTOMMARGIN, 94
+        BOTTOMMARGIN, 130
     END
 
     IDD_LEARN, DIALOG

@@ -71,6 +71,8 @@ extern void winlirc_debug(char *format, ...);
 #define SHIFT_ENC		RC5			/* IR data is shift encoded (name obsolete) */
 
 #define LIRC_SERIAL_TRANSMITTER
+#define HARDCARRIER		0x0001		/* the transmitter generates its own carrier modulation */
+#define TXTRANSMITTER	0x0002		/* the transmitter uses the TX pin */
 
 /* typedefs */
 #ifdef LONG_IR_CODE

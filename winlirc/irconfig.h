@@ -35,6 +35,7 @@ public:
 	BOOL animax;
 	CString conf;
 
+	unsigned transmittertype;
 	unsigned long speed;			
 	unsigned long devicetype;		
 	unsigned long notrayicon;		

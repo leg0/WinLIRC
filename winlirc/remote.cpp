@@ -19,7 +19,7 @@
  * Copyright (C) 1996,97 Ralph Metzler (rjkm@thp.uni-koeln.de)
  * Copyright (C) 1998 Christoph Bartelmus (columbus@hit.handshake.de)
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
- * Modifications based on LIRC 0.6.1 Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
+ * Copyright (C) 2002 Scott Baily <baily@uiuc.edu>
  */
 
 #include <stdlib.h>
@@ -255,15 +255,27 @@ int write_send_buffer(int length,unsigned long *signals)
 #endif
 }
 */
-void on(void)
+void on_dtr(void)
 {
     EscapeCommFunction(tPort,SETDTR);
 }
-  
-void off(void)
+
+void off_dtr(void)
 {
     EscapeCommFunction(tPort,CLRDTR);
 }
+
+void on_tx(void)
+{
+	SetCommBreak(tPort);
+}
+ 
+void off_tx_hard(void)
+{
+	ClearCommBreak(tPort);
+}
+
+void off_tx_soft(void){;};
 
 int init_timer()
 {
@@ -273,7 +285,7 @@ int init_timer()
     return(0);
 }
 
-void send_pulse (unsigned long usecs)
+int send_pulse_dtr_soft (unsigned long usecs)
 {
   __int64 end;
   end= lasttime + usecs * freq / 1000000;
@@ -284,14 +296,66 @@ void send_pulse (unsigned long usecs)
     off();
     uwait(space_width);
   } while (lasttime < end);
-  return;
+  return(1);
 }
 
-void send_space(unsigned long length)
+int send_space_hard_or_dtr(unsigned long length)
 {
-	if(length==0) return;
+	if(length==0) return(1);
 	off();
 	uwait(length);
+	return(1);
+}
+
+int send_pulse_hard (unsigned long length)
+{
+	if(length==0) return(1);
+	on();
+	uwait(length);
+	return(1);
+}
+
+int send_pulse_tx_soft (unsigned long usecs)
+{
+  lasttime+=usecs * freq / 1000000;
+   OVERLAPPED osWrite = {0};
+   DWORD dwWritten;
+   BOOL fRes;
+   DWORD dwToWrite=usecs/pulse_byte_length;  //need to set this appropriately.not just 104
+
+   // Create this writes OVERLAPPED structure hEvent.
+   osWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+   if (osWrite.hEvent == NULL)
+	   // Error creating overlapped event handle.
+      return FALSE;
+
+   // Issue write.
+   if (!WriteFile(tPort, pulsedata, dwToWrite, &dwWritten, &osWrite)) {
+      if (GetLastError() != ERROR_IO_PENDING) { 
+         // WriteFile failed, but it isn't delayed. Report error and abort.
+         fRes = FALSE;
+      }
+      else {
+         // Write is pending.
+         if (!GetOverlappedResult(tPort, &osWrite, &dwWritten, TRUE))
+            fRes = FALSE;
+         else
+            // Write operation completed successfully.
+            fRes = TRUE;
+      }
+   }
+   else
+      // WriteFile completed immediately.
+      fRes = TRUE;
+   CloseHandle(osWrite.hEvent);
+  return(fRes);
+}
+
+int send_space_tx_soft(unsigned long length)
+{
+	if(length==0) return(1);
+	uwait(length);
+	return(1);
 }
 
 inline void send_header(struct ir_remote *remote)
@@ -524,9 +588,36 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code)
 	return(1);
 }
 
-void SetTransmitPort(HANDLE hCom)  // sets the serial port to transmit on
+void SetTransmitPort(HANDLE hCom,unsigned type)  // sets the serial port to transmit on
 {
 	tPort=hCom;
+	switch (type)
+	{
+		case HARDCARRIER|TXTRANSMITTER:	//tx hard carrier
+			on=on_tx;
+			off=off_tx_hard;
+			send_pulse=send_pulse_hard;
+			send_space=send_space_hard_or_dtr;
+			break;
+		case HARDCARRIER:				//dtr hard carrier
+			on=on_dtr;
+			off=off_dtr;
+			send_pulse=send_pulse_hard;
+			send_space=send_space_hard_or_dtr;
+			break;
+		case TXTRANSMITTER:	//tx soft carrier
+			on=off_tx_soft;
+			off=off_tx_soft;
+			send_pulse=send_pulse_tx_soft;
+			send_space=send_space_tx_soft;
+			break;
+		default:						//dtr soft carrier
+			on=on_dtr;
+			off=off_dtr;
+			send_pulse=send_pulse_dtr_soft;
+			send_space=send_space_hard_or_dtr;
+	}
+	transmittertype=type;
 	return;
 }
 
@@ -552,6 +643,47 @@ void send(unsigned long *raw, int cnt)   //transmits raw data 1st value must be 
     off();
 }
 
+bool config_transmitter(struct ir_remote *rem) //configures the transmitter for the specified remote
+{
+	if (rem->freq==0) rem->freq=38000;				//default this should really be elsewhere
+	if (rem->duty_cycle==0) rem->duty_cycle=50;		//default this should really be elsewhere
+	pulse_width=(unsigned long) rem->duty_cycle*10000/rem->freq;
+	space_width=(unsigned long) 1000000L/rem->freq-pulse_width;
+		
+	if (transmittertype==TXTRANSMITTER) //tx software carrier
+	{
+		DCB dcb;
+		if(!GetCommState(tPort,&dcb))
+		{
+			CloseHandle(tPort);
+			tPort=NULL;
+			return false;
+		}
+		dcb.BaudRate=CBR_115200;
+		dcb.Parity=NOPARITY;
+		dcb.StopBits=ONESTOPBIT;
+		if (rem->freq<48000)
+		{
+			dcb.ByteSize=7;
+			pulse_byte_length=78; // (1+bytesize+parity+stopbits+)/Baudrate*1E6
+			if (rem->duty_cycle<50) for (int i=0;i<MAXPULSEBYTES;i++) pulsedata[i]=0x5b;
+			else for (int i=0;i<MAXPULSEBYTES;i++) pulsedata[i]=0x12;
+		} else {		
+			dcb.ByteSize=8;
+			pulse_byte_length=87; // (1+bytesize+parity+stopbits+)/Baudrate*1E6
+			for (int i=0;i<MAXPULSEBYTES;i++) pulsedata[i]=0x55;
+		}
+		if(!SetCommState(tPort,&dcb))
+		{
+			CloseHandle(tPort);
+			tPort=NULL;
+			DEBUG("SetCommState failed.\n");
+			return false;
+		}
+	}
+	return true;
+}
+
 void send (ir_ncode *data,struct ir_remote *rem, unsigned int reps)
 {
     if (!rem) return;
@@ -562,14 +694,10 @@ void send (ir_ncode *data,struct ir_remote *rem, unsigned int reps)
 	mythread=GetCurrentThread();
 	mythreadpriority=GetPriorityClass(myprocess);  //store priority settings
     mypriorityclass=GetThreadPriority(mythread);
-	if (rem->freq==0) rem->freq=38000;				//default this should really be elsewhere
-	if (rem->duty_cycle==0) rem->duty_cycle=50;		//default this should really be elsewhere
-	pulse_width=(unsigned long) rem->duty_cycle*10000/rem->freq;
-	space_width=(unsigned long) 1000000L/rem->freq-pulse_width;
+	config_transmitter(rem);
     SetPriorityClass(myprocess,REALTIME_PRIORITY_CLASS);		//boost priority
     SetThreadPriority(mythread,THREAD_PRIORITY_TIME_CRITICAL);
 
-    off(); //This should already be off
 	init_timer();
 	init_send(rem,data); 
     send_space(rem->remaining_gap);

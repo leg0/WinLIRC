@@ -104,6 +104,7 @@ bool CIRDriver::InitPort(CIRConfig *cfg, bool daemonize)
 		DEBUG("SetCommState failed.\n");
 		return false;
 	}
+	SetTransmitPort(hPort,cfg->transmittertype);
 
 	if(cfg->sense==-1)
 	{

@@ -66,7 +66,7 @@ public:
 	CComboBox	m_remote_DropDown;
 	CString	m_ircode_edit;
 	CString	m_remote_edit;
-	UINT	m_reps_edit;
+	int	m_reps_edit;
 	//}}AFX_DATA
 
 	CTrayIcon ti;
