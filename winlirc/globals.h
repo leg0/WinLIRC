@@ -57,7 +57,7 @@ extern void winlirc_debug(char *format, ...);
 #define IR_PORT 8765
 #define LISTENQ 4
 #define LONG_IR_CODE
-#define NR_FLAGS 7
+#define NR_FLAGS 10
 #define RC5				0x0001      /* IR data follows RC5 protocol */
 #define RC6				0x0002      /* IR data follows RC6 protocol */
 #define RCMM			0x0004      /* IR data follows RC-MM protocol */
@@ -69,10 +69,12 @@ extern void winlirc_debug(char *format, ...);
 #define RAW_CODES       0x0100      /* for internal use only */
 #define REPEAT_HEADER   0x0200		/* header is also sent before repeat code */
 #define SHIFT_ENC		RC5			/* IR data is shift encoded (name obsolete) */
+#define SPECIAL_TRANSMITTER 0x0400  /* the default transmitter type is overrridden by remote definition WINLIRC ONLY! */
 
 #define LIRC_SERIAL_TRANSMITTER
 #define HARDCARRIER		0x0001		/* the transmitter generates its own carrier modulation */
 #define TXTRANSMITTER	0x0002		/* the transmitter uses the TX pin */
+#define INVERTED		0x0004		/* the transmitter polarity is opposite */
 
 /* typedefs */
 #ifdef LONG_IR_CODE
@@ -155,6 +157,7 @@ struct ir_remote
 	int min_repeat;             /* code is repeated at least x times; code sent once -> min_repeat=0 */
 	unsigned int freq;          /* modulation frequency */
 	unsigned int duty_cycle;    /* 0<duty cycle<=100 */
+	unsigned transmitter;		/* specific transmitter type configured on per remote basis WINLIRC ONLY! */
 
 	/* end of user editable values */
 

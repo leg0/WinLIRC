@@ -321,7 +321,7 @@ int send_pulse_tx_soft (unsigned long usecs)
    OVERLAPPED osWrite = {0};
    DWORD dwWritten;
    BOOL fRes;
-   DWORD dwToWrite=usecs/pulse_byte_length;  //need to set this appropriately.not just 104
+   DWORD dwToWrite=usecs/pulse_byte_length;
 
    // Create this writes OVERLAPPED structure hEvent.
    osWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
@@ -591,7 +591,8 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code)
 void SetTransmitPort(HANDLE hCom,unsigned type)  // sets the serial port to transmit on
 {
 	tPort=hCom;
-	switch (type)
+	void (*tmp) (void);
+	switch (type%4)
 	{
 		case HARDCARRIER|TXTRANSMITTER:	//tx hard carrier
 			on=on_tx;
@@ -617,6 +618,12 @@ void SetTransmitPort(HANDLE hCom,unsigned type)  // sets the serial port to tran
 			send_pulse=send_pulse_dtr_soft;
 			send_space=send_space_hard_or_dtr;
 	}
+	if (type&INVERTED) {
+		tmp=on;
+		on=off;
+		off=tmp;
+	}
+	off();
 	transmittertype=type;
 	return;
 }
@@ -649,7 +656,7 @@ bool config_transmitter(struct ir_remote *rem) //configures the transmitter for 
 	if (rem->duty_cycle==0) rem->duty_cycle=50;		//default this should really be elsewhere
 	pulse_width=(unsigned long) rem->duty_cycle*10000/rem->freq;
 	space_width=(unsigned long) 1000000L/rem->freq-pulse_width;
-		
+	if (transmittertype!=rem->transmitter)	SetTransmitPort(tPort,rem->transmitter);
 	if (transmittertype==TXTRANSMITTER) //tx software carrier
 	{
 		DCB dcb;
@@ -1609,7 +1616,8 @@ int decode(struct ir_remote *remote) //this is a lot different than LIRC 0.6.5
 		}
 		else
 		{
-			if(!get_gap(remote,remote->gap))
+			if(!get_gap(remote,(has_repeat_gap(remote) ?
+								remote->repeat_gap:remote->gap)))
 				return(0);
 		}
 		if(remote->toggle_bit>0)
@@ -1737,22 +1745,12 @@ int decode(struct ir_remote *remote) //this is a lot different than LIRC 0.6.5
 			gettimeofday(&remote->last_send,NULL);
 			if(is_const(remote))
 			{
-				remote->remaining_gap=remote->gap
-				-rec_buffer.sum;
+				remote->remaining_gap=remote->gap>rec_buffer.sum ?
+					remote->gap-rec_buffer.sum:0;
 			}
 			else
 			{
-				if(has_repeat_gap(remote) && 
-				   repeat_remote!=NULL && 
-				   has_repeat(remote))
-				{
-					remote->remaining_gap=remote->repeat_gap;
-				}
-				else
-				{
 					remote->remaining_gap=remote->gap;
-				}
-
 			}
 			return(1);
 		}

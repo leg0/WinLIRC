@@ -418,6 +418,9 @@ void defineRemote(char * key, char * val, char *val2, struct ir_remote *rem)
 	}
 	else if (strcasecmp("duty_cycle",key)==0){
         rem->duty_cycle=s_strtoui(val);
+	/* WinLIRC ONLY! */
+	}else if (strcasecmp("transmitter",key)==0){
+        rem->transmitter=s_strtoui(val);
 	}else{
 		if(val2){
 			DEBUG("error in configfile line %d:\n",line);
@@ -510,6 +513,8 @@ struct ir_remote * read_config(FILE *f)
 							s_malloc(sizeof(struct ir_remote));;
 						rem=rem->next;
 					}
+				}else if(mode==ID_codes){
+					add_void_array(&codes_list, defineCode(key, val, &name_code));
 				}else{
 					DEBUG("error in configfile line %d:\n",line);
 					DEBUG("unknown section \"%s\"\n",val);
@@ -567,6 +572,8 @@ struct ir_remote * read_config(FILE *f)
 					{
 						DEBUG("WARNING: repeat_gap will be ignored if CONST_LENGTH flag is set\n");
 					}
+				}else if(mode==ID_codes){
+					add_void_array(&codes_list, defineCode(key, val, &name_code));
 				}else{
 					DEBUG("error in configfile line %d:\n",line);
 					DEBUG("unknown section \"%s\"\n",val);

@@ -40,6 +40,7 @@
 #define IDC_CHECKHARDCARRIER            1022
 #define IDC_RADIODTR                    1026
 #define IDC_RADIOTX                     1027
+#define IDC_INVERTED                    1028
 #define ID_APP_SHOW                     40002
 #define ID_TRAY_TWO                     40003
 #define ID_EXITLIRC                     40003
@@ -52,7 +53,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        110
 #define _APS_NEXT_COMMAND_VALUE         40007
-#define _APS_NEXT_CONTROL_VALUE         1028
+#define _APS_NEXT_CONTROL_VALUE         1029
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -145,7 +145,7 @@ class Clearndlg;
 class CIRDriver;
 
 #ifdef LIRC_SERIAL_TRANSMITTER
-#define MAXPULSEBYTES 50
+#define MAXPULSEBYTES 256
 static unsigned long pulse_width = 13; /* pulse/space ratio of 50/50 */
 static unsigned long space_width = 13; /* 1000000/freq-pulse_width */
 static int pulse_byte_length=78; //usecs per byte (tx soft carrier)
@@ -155,7 +155,7 @@ static void (*off) (void); //pointer to off function for hard carrier transmitte
 static int (*send_pulse) (unsigned long); //pointer to send_pulse function
 static int (*send_space) (unsigned long); //pointer to send_space function
 static int pulsedata[MAXPULSEBYTES];
-static int transmittertype;
+static unsigned transmittertype;
 static __int64 freq;		//the frequency used by PerformanceCounter
 static __int64 lasttime;	//last time counter was queried
 #endif

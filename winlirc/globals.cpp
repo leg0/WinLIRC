@@ -64,6 +64,7 @@ struct flaglist all_flags[] = {
 	{"CONST_LENGTH",CONST_LENGTH},
 	{"RAW_CODES",   RAW_CODES},
 	{"REPEAT_HEADER",   REPEAT_HEADER},
+	{"SPECIAL_TRANSMITTER",   SPECIAL_TRANSMITTER},
 	{NULL,0},
 };
 
