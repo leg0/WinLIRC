@@ -1,3 +1,44 @@
+new in version 0.6.4
+--------------------
+advanced power management support
+
+The TCP port for the server is now configurable via a registry key.
+ -use regedit to add a new DWORD value to software\LIRC
+   - name it "tcp_port"  set the value to whatever port you want.
+   - winlirc will use this new value the next time it is restarted.
+
+added an inverted option for the transmitters (not used for TX softcarrier)
+  -this swaps the definition of on and off states.
+  -this makes it possible to support pioneer SR control by wire
+   (and possibly sony S-Link)
+
+the number of pre and post data bits now break evenly into hexidecimal
+  (so the config files will be easier to read).
+
+buttons can now be named "begin" or "end"
+  (this will be allowed in future versions of lirc as well)
+
+config files support a "transmitter" field for the remote
+if the SPECIAL_TRANSMITTER flag is specified, then the transmitter type
+will override the default settings (but only for that remote).
+  -LIRC does not support these settings, and winlirc will not write this data to
+   the config files it creates
+  -this means you can have a different type of transmitter for each remote.
+  -to use add |SPECIAL_TRANSMITTER to the flags section then add the line
+    transmitter <type>
+    where <type> is the same value used in software\LIRC\transmittertype when
+    configured for the transmitter you want.
+    e.g., transmitter 0x05 uses INVERTED HARDWARE_CARRIER DTR
+
+bugfixes:
+        fixed all known crashing bugs in windows NT/2000/XP.
+        possible lockup when exiting raw codes mode is eliminated.
+        restored the yellow light on initialization.
+        closes some file handles that were previously left open.
+        the tx transmitter supports longer pulses
+        toggle_bits are now transmitted correctly
+	scrolling output windows now remove about 100 lines at a time when filling up
+
 new in version 0.6.3
 --------------------
 RX device support
