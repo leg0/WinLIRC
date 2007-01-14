@@ -40,6 +40,7 @@ unsigned int LearnThread(void *dlg) {((Clearndlg *)dlg)->LearnThreadProc();retur
 unsigned int AnalyzeThread(void *dlg) {((Clearndlg *)dlg)->AnalyzeThreadProc();return 0;}
 unsigned int RawThread(void *dlg) {((Clearndlg *)dlg)->RawThreadProc();return 0;}
 
+#define SRC_MODE_NAME "Special Repeat Code"
 
 /////////////////////////////////////////////////////////////////////////////
 // Clearndlg dialog
@@ -224,7 +225,8 @@ void Clearndlg::OnEnter()
 bool Clearndlg::GetGap(unsigned long &gap,
 					   unsigned long &count,
 					   unsigned long &repeat_gap,
-					   unsigned long *repeat)
+					   unsigned long *repeat,
+					   bool assume_repeat)
 {
 	unsigned long data, average, signalcount;
 	int mode;
@@ -267,7 +269,7 @@ bool Clearndlg::GetGap(unsigned long &gap,
 			if(signalcount<3) repeat[signalcount]=data&(PULSE_BIT-1);
 			else 
 			{
-				if(data < (gap - gap*remote.eps/100))
+				if(!assume_repeat && data < (gap - gap*remote.eps/100))
 				{
 					/* if value is less than current gap, 
 				    then it's probably not a repeat gap */
@@ -311,6 +313,7 @@ void Clearndlg::DoGetGap(void)
 	int i;
 	bool manualdata=false;
 	char s[1024];
+	bool assume_repeat=false; // true to assume remote sending repeat codes
 
 	
 	input("Gap and length?",s,1024,true);
@@ -332,11 +335,21 @@ void Clearndlg::DoGetGap(void)
 		return;
 	}
 
+	output("");
+	output("If you want to manually set " SRC_MODE_NAME " mode, enter \"Y\".");
+	output("Otherwise, hit ENTER to use autodetection.");
+
+	input(SRC_MODE_NAME "?", s, 1024, true);
+	assume_repeat = s[0] == 'Y' || s[0] == 'y';
+	/* some other flags may also be entered at this input line. */
+	/* If need so, just replace: 'Y'(yes) -> 'R'(repeat); s[0] -> strchr;*/
+	/* then add whatever you need. */
+
 	output("Press a button.");
 	bool match=false;
 	while(!match)
 	{
-		if(GetGap(gap,count,repeat_gap,repeat)==false)
+		if(GetGap(gap,count,repeat_gap,repeat,assume_repeat)==false)
 		{
 			DEBUG("GetGap failed\n");
 			output("Error reading signal; please try again.");
@@ -436,7 +449,7 @@ void Clearndlg::DoGetGap(void)
 	{
 		sprintf(s,"Please wait a second and press a button again (%d left)",10-j);
 		output(s);
-		if(GetGap(gap,count,repeat_gap,repeat)==false)
+		if(GetGap(gap,count,repeat_gap,repeat,assume_repeat)==false)
 		{
 			DEBUG("GetGap error\n");
 			output("Error reading signal; please try again.");
@@ -672,7 +685,8 @@ bool Clearndlg::GetButton(unsigned long *signals, bool repeating)
 			if(fault>(repeating?64:12)) 
 			{
 				DEBUG("failed to get consistent signal\n");
-				output("Stop.  Failed to get a consistent signal.  Please try again.");
+				output("Stop. Failed to get a consistent signal. "
+					" Please try again.");
 				return false;
 			}
 		}
@@ -698,7 +712,7 @@ void Clearndlg::DoGetButtons(void)
 	if(remote.prepeat==0)
 	{
 		DEBUG("this remote is a signal repeating remote\n");
-		output("This is a signal-repeating remote with no special repeat code.");
+		output("This seems to be a signal-repeating remote with no special repeat code.");
 		output("Holding down the button can quickly yield many copies of that "
 			   "button's code.");
 		output("Therefore, 64 samples of each button will be taken.");
@@ -742,6 +756,11 @@ void Clearndlg::DoGetButtons(void)
 		if(!res) 
 		{
 			DEBUG("GetButton failed\n");
+			if (remote.prepeat==0)
+			{
+				output ("( If the problem persists, you may try to start again");
+				output ("and manually set " SRC_MODE_NAME " mode. )");
+			}
 			continue;
 		}
 		output("");output("");

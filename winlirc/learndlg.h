@@ -61,7 +61,8 @@ public:
 	bool GetGap(unsigned long &gap,
 				unsigned long &count,
 				unsigned long &repeat_gap,
-				unsigned long *repeat);
+				unsigned long *repeat,
+				bool assume_repeat);
 	bool GetRawButton(unsigned long *signals, int &count, bool waitgap);
 	bool GetButton(unsigned long *signals, bool repeating);
 	void DoGetGap(void);
