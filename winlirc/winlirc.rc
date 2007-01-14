@@ -78,8 +78,8 @@ BEGIN
     LTEXT           "code",IDC_STATIC,19,102,17,8
     LTEXT           "remote",IDC_STATIC,14,81,22,8
     LTEXT           "repeats",IDC_STATIC,163,78,24,8
-    LTEXT           "Alexander Nesterovsky <nsky@users.sourceforge.net>\nBased on LIRC 0.6.5.",
-                    IDC_STATIC,33,56,184,17
+    LTEXT           "Alexander Nesterovsky <nsky@users.sourceforge.net> et al.\nBased on LIRC 0.6.5.",
+                    IDC_STATIC,33,56,204,17
 END
 
 IDD_CONFIG DIALOG DISCARDABLE  0, 0, 287, 137
