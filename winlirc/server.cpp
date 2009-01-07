@@ -383,7 +383,7 @@ void Cserver::ThreadProc(void)
 												{
 													COPYDATASTRUCT cpd;
 													cpd.dwData = 0;
-													cpd.cbData = strlen(&cur[j]);
+													cpd.cbData = strlen(&cur[j])+1;
 													cpd.lpData = (void*)&cur[j];
 													copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,NULL,(LPARAM)&cpd);
 												}
