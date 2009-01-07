@@ -88,7 +88,7 @@ void *s_malloc(size_t size)
 inline char *s_strdup(char * string)
 {
     char *ptr;
-    if(!(ptr=strdup(string))){
+    if(!(ptr=_strdup(string))){
         DEBUG("out of memory\n");
         parse_error=1;
         return(NULL);

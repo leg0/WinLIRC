@@ -275,7 +275,7 @@ void CIRDriver::ThreadProc(void)
 			prev=dcd;
 		}
 
-		int deltv=lr_time-lr_lasttime;
+		int deltv=(int)(lr_time-lr_lasttime);
 		if (devicetype && (deltv>15)) {		
 			/* More than 15 seconds passed */
 			deltv=0xFFFFFF;

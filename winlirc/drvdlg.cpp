@@ -309,7 +309,7 @@ static struct ir_remote * Remotes_GetRemote(struct ir_remote* remotes, const cha
 	ir_remote* iter = remotes;
 	while (iter != NULL)
 	{
-		if (stricmp(name,iter->name) == 0)
+		if (_stricmp(name,iter->name) == 0)
 		{
 			return iter;
 		}
@@ -336,7 +336,7 @@ void Cdrvdlg::OnSendcode()
 	else
 	{
 		codes=sender->codes;
-		while (codes->name!=NULL && stricmp(m_ircode_edit,codes->name)) codes++;
+		while (codes->name!=NULL && _stricmp(m_ircode_edit,codes->name)) codes++;
 		if (codes==NULL || codes->name==NULL) MessageBox("No match found for ircode!");	//look for ircode
 		else
 		{
@@ -351,7 +351,7 @@ void Cdrvdlg::OnSendcode()
 	}
 }
 
-LRESULT Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
+BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 // handles a transmission command recieved from another application
 // pCopyDataStruct->lpData should point to a string of the following format
 // remotename	ircodename	reps
@@ -363,7 +363,9 @@ LRESULT Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	struct ir_ncode *codes;
 	struct ir_remote *sender;
 	int i,j;
-	LRESULT success=0;
+	BOOL success;
+
+	success = FALSE;
 
 	i=tosend.FindOneOf(" \t");
 	if (i!=-1)
@@ -381,19 +383,19 @@ LRESULT Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 		codename.TrimRight();
 
 		sender=global_remotes;
-		while (sender!=NULL /*&& sender->next!=NULL*/ && stricmp(remotename,sender->name)) sender=sender->next;
+		while (sender!=NULL /*&& sender->next!=NULL*/ && _stricmp(remotename,sender->name)) sender=sender->next;
 		if (sender!=NULL /*&& !stricmp(remotename,sender->name)*/)
 		{
 			codes=sender->codes;
-			while (codes->name!=NULL && stricmp(codename,codes->name)) codes++;
+			while (codes->name!=NULL && _stricmp(codename,codes->name)) codes++;
 			if (codes!=NULL && codes->name!=NULL)
 			{
 				if (j < sender->min_repeat) j=sender->min_repeat;  //set minimum number of repeats
 				send(codes,sender,j);					//transmit the code
 				GoBlue();								//turn icon blue to indicate a transmission
-				success=1;
-			} else success=-2; //unknown code
-		} else success=-1; //unknown remote
+				success=TRUE;
+			} else success=FALSE; //unknown code
+		} else success=FALSE; //unknown remote
 	}
 	return(success);
 //	return CDialog::OnCopyData(pWnd, pCopyDataStruct);

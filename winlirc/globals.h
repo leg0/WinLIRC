@@ -85,8 +85,8 @@ typedef unsigned long ir_code;
 
 /* Structure definitions */
 struct mytimeval {
-	long tv_sec;
-	long tv_usec;
+	__int64 tv_sec;
+	__int64 tv_usec;
 };
 struct flaglist {
 	char *name;

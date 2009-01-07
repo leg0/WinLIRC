@@ -93,7 +93,7 @@ protected:
 	afx_msg void OnTimer(UINT nIDEvent);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSendcode();
-	afx_msg LRESULT OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
+	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
 	afx_msg void OnDropdownIrcodeEdit();
 	//}}AFX_MSG
 	afx_msg LRESULT OnPowerBroadcast(WPARAM uPowerEvent, LPARAM lP);

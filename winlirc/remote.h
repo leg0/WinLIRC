@@ -32,7 +32,7 @@
 #include <math.h>
 #include "irdriver.h"
 
-#define strcasecmp stricmp
+#define strcasecmp _stricmp
 
 int gettimeofday(struct mytimeval *, void *);
 
