@@ -67,43 +67,43 @@ bool CIRConfig::ReadConfig(CIRDriver *driver)
 		return false;
 
 	char s[512];
-	DWORD len=512;
-	if(key.QueryValue(s,"port",&len)!=ERROR_SUCCESS)
+	ULONG len=512;
+	if(key.QueryStringValue("port",s,&len)!=ERROR_SUCCESS)
 		return false;
 	port=s;
 
 	DWORD x;
-	if(key.QueryValue(x,"sense")!=ERROR_SUCCESS)
+	if(key.QueryDWORDValue("sense",x)!=ERROR_SUCCESS)
 		return false;
 	sense=(x==2)?-1:x;
 
 	DWORD a;
-	if(key.QueryValue(a,"animax")!=ERROR_SUCCESS)
+	if(key.QueryDWORDValue("animax",a)!=ERROR_SUCCESS)
 		return false;
 	animax=a;
 
-	if(key.QueryValue(a,"transmittertype")!=ERROR_SUCCESS)
+	if(key.QueryDWORDValue("transmittertype",a)!=ERROR_SUCCESS)
 		return false;
 	transmittertype=a;
 
 	len=512;
-	if(key.QueryValue(s,"conf",&len)!=ERROR_SUCCESS)
+	if(key.QueryStringValue("conf",s,&len)!=ERROR_SUCCESS)
 		return false;
 	conf=s;
 
-	if(key.QueryValue(a,"speed")!=ERROR_SUCCESS)		
+	if(key.QueryDWORDValue("speed",a)!=ERROR_SUCCESS)
 		return false;									
 	speed = a;
 
-	if(key.QueryValue(a,"devicetype")!=ERROR_SUCCESS)	
+	if(key.QueryDWORDValue("devicetype",a)!=ERROR_SUCCESS)
 		return false;									
 	devicetype = a;
 
-	if(key.QueryValue(a,"notrayicon")!=ERROR_SUCCESS)	
+	if(key.QueryDWORDValue("notrayicon",a)!=ERROR_SUCCESS)
 		return false;									
 	notrayicon = a;
 
-	if(key.QueryValue(a,"virtpulse")!=ERROR_SUCCESS)	
+	if(key.QueryDWORDValue("virtpulse",a)!=ERROR_SUCCESS)
 		return false;									
 	virtpulse = a;
 
@@ -156,31 +156,31 @@ bool CIRConfig::WriteConfig(void)
 		   !=ERROR_SUCCESS)
 		return false;
 
-	if(key.SetValue(port,"port")!=ERROR_SUCCESS)
+	if(key.SetStringValue("port",port)!=ERROR_SUCCESS)
 		return false;
 
-	if(key.SetValue((sense==-1)?2:sense,"sense")!=ERROR_SUCCESS)
+	if(key.SetDWORDValue("sense",(sense==-1)?2:sense)!=ERROR_SUCCESS)
 		return false;
 
-	if(key.SetValue(animax,"animax")!=ERROR_SUCCESS)
+	if(key.SetDWORDValue("animax",animax)!=ERROR_SUCCESS)
 		return false;
 
-	if(key.SetValue(transmittertype,"transmittertype")!=ERROR_SUCCESS)
+	if(key.SetDWORDValue("transmittertype",transmittertype)!=ERROR_SUCCESS)
 		return false;
 
-	if(key.SetValue(conf,"conf")!=ERROR_SUCCESS)
+	if(key.SetStringValue("conf",conf)!=ERROR_SUCCESS)
 		return false;
 
-    if(key.SetValue(speed,"speed")!=ERROR_SUCCESS)		
+    if(key.SetDWORDValue("speed",speed)!=ERROR_SUCCESS)		
 		return false;									
 
-    if(key.SetValue(devicetype,"devicetype")!=ERROR_SUCCESS)	
+    if(key.SetDWORDValue("devicetype",devicetype)!=ERROR_SUCCESS)	
 		return false;											
 
-    if(key.SetValue(notrayicon,"notrayicon")!=ERROR_SUCCESS)	
+    if(key.SetDWORDValue("notrayicon",notrayicon)!=ERROR_SUCCESS)	
 		return false;											
 
-    if(key.SetValue(virtpulse,"virtpulse")!=ERROR_SUCCESS)		
+    if(key.SetDWORDValue("virtpulse",virtpulse)!=ERROR_SUCCESS)		
 		return false;											
 
 	return true;

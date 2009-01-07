@@ -74,13 +74,13 @@ bool Cserver::init()
 
 	char s[512];
 	DWORD len=512;
-	if(!haveKey || key.QueryValue(s,"password",&len)!=ERROR_SUCCESS)
+	if(!haveKey || key.QueryStringValue("password",s,&len)!=ERROR_SUCCESS)
 		password.Empty();
 	else
 		password=s;
 	/* end password stuff */
 	DWORD x;
-	if(!haveKey || key.QueryValue(x,"tcp_port")!=ERROR_SUCCESS)
+	if(!haveKey || key.QueryDWORDValue("tcp_port",x)!=ERROR_SUCCESS)
 		tcp_port=IR_PORT;
 	else
 		tcp_port=x;
@@ -291,7 +291,7 @@ void Cserver::ThreadProc(void)
 										cur=nl+1;
 										break;
 									}
-									else if (stricmp(command,"VERSION")==0)
+									else if (_stricmp(command,"VERSION")==0)
 									{
 
 										if (strtok(NULL," \t\r")==NULL)
@@ -302,7 +302,7 @@ void Cserver::ThreadProc(void)
 										}
 										else copyDataResult=-100;
 									}
-									else if (stricmp(command,"LIST")==0)
+									else if (_stricmp(command,"LIST")==0)
 									{
 										remotename=strtok(NULL," \t\r");
 										struct ir_remote *all=global_remotes;
@@ -330,7 +330,7 @@ void Cserver::ThreadProc(void)
 										}
 										else
 										{
-											while (all!=NULL && stricmp(remotename,all->name)) all=all->next;
+											while (all!=NULL && _stricmp(remotename,all->name)) all=all->next;
 											if (all)
 											{
 												copyDataResult = true;
@@ -383,7 +383,7 @@ void Cserver::ThreadProc(void)
 												{
 													COPYDATASTRUCT cpd;
 													cpd.dwData = 0;
-													cpd.cbData = strlen(&cur[j])+1;
+													cpd.cbData = strlen(&cur[j]);
 													cpd.lpData = (void*)&cur[j];
 													copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,NULL,(LPARAM)&cpd);
 												}

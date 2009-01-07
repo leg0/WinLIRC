@@ -9,7 +9,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 	{
 		COPYDATASTRUCT cpd;
 		cpd.dwData = 0;
-		cpd.cbData = strlen(lpCmdLine)+1;
+		cpd.cbData = strlen(lpCmdLine);
 		cpd.lpData = (void*)lpCmdLine;
 		copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,(WPARAM)hInstance,(LPARAM)&cpd);
         // copyDataResult has value returned by other app

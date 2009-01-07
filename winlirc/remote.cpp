@@ -572,7 +572,7 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code)
 	}
 	if(is_const(remote))
 	{
-		remote->remaining_gap=remote->gap - (lasttime - start) * 1000000 / freq;
+		remote->remaining_gap = (ULONG)(remote->gap - (lasttime - start) * 1000000 / freq);
 	}
 	else
 	{
@@ -1627,19 +1627,19 @@ int decode(struct ir_remote *remote) //this is a lot different than LIRC 0.6.5
 			if(remote->toggle_bit<=remote->pre_data_bits)
 			{
 				repeat_state=
-				pre&(1<<(remote->pre_data_bits
+				pre&(1i64<<(remote->pre_data_bits
 					 -remote->toggle_bit)) ? 1:0;
-				pre_mask=1<<(remote->pre_data_bits
+				pre_mask=1i64<<(remote->pre_data_bits
 					     -remote->toggle_bit);
 			}
 			else if(remote->toggle_bit<=remote->pre_data_bits
 				+remote->bits)
 			{
 				repeat_state=
-				code&(1<<(remote->pre_data_bits
+				code&(1i64<<(remote->pre_data_bits
 					  +remote->bits
 					  -remote->toggle_bit)) ? 1:0;
-				code_mask=1<<(remote->pre_data_bits
+				code_mask=1i64<<(remote->pre_data_bits
 					      +remote->bits
 					      -remote->toggle_bit);
 			}
@@ -1648,18 +1648,18 @@ int decode(struct ir_remote *remote) //this is a lot different than LIRC 0.6.5
 				+remote->post_data_bits)
 			{
 				repeat_state=
-				post&(1<<(remote->pre_data_bits
+				post&(1i64<<(remote->pre_data_bits
 					  +remote->bits
 					  +remote->post_data_bits
 					  -remote->toggle_bit)) ? 1:0;
-				post_mask=1<<(remote->pre_data_bits
+				post_mask=1i64<<(remote->pre_data_bits
 					      +remote->bits
 					      +remote->post_data_bits
 					      -remote->toggle_bit);
 			}
 			else
 			{
-				;//logprintf("bad toggle_bit\n");
+				//logprintf("bad toggle_bit\n");
 			}
 		}
 
