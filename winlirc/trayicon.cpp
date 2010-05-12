@@ -28,11 +28,12 @@
 
 IMPLEMENT_DYNAMIC(CTrayIcon, CCmdTarget)
 
-CTrayIcon::CTrayIcon(unsigned int uID)
-{
+CTrayIcon::CTrayIcon(UINT uID) {
+
 	memset(&icondata,0,sizeof(icondata));
-	icondata.cbSize=sizeof(icondata);
-	icondata.uID=uID;
+	icondata.cbSize	= sizeof(icondata);
+	icondata.uID	= uID;
+
 	AfxLoadString(uID,icondata.szTip,sizeof(icondata.szTip));
 }
 
@@ -41,7 +42,7 @@ CTrayIcon::~CTrayIcon()
 	SetIcon(0);
 }
 
-void CTrayIcon::SetNotificationWnd(CWnd *notifywnd, unsigned int message)
+void CTrayIcon::SetNotificationWnd(CWnd *notifywnd, UINT message)
 {
 	if(notifywnd!=NULL && !::IsWindow(notifywnd->GetSafeHwnd()))
 	{
@@ -59,48 +60,65 @@ void CTrayIcon::SetNotificationWnd(CWnd *notifywnd, unsigned int message)
 	icondata.uCallbackMessage=message;
 }
 
-bool CTrayIcon::SetIcon(unsigned int uID)
-{ 
-	HICON icon=NULL;
-	if(uID)
-	{
+bool CTrayIcon::SetIcon(UINT uID) { 
+
+	//=========
+	HICON icon;
+	//=========
+
+	icon = NULL;
+
+	if(uID) {
+
 		AfxLoadString(uID,icondata.szTip,sizeof(icondata.szTip));
 		icon=AfxGetApp()->LoadIcon(uID);
 	}
+
 	return SetIcon(icon,NULL);
 }
 
-bool CTrayIcon::SetIcon(HICON icon, const char *tip) 
-{
-	unsigned int msg;
-	icondata.uFlags=0;
+bool CTrayIcon::SetIcon(HICON icon, const char *tip) {
 
-	if(icon)
-	{
-		if (notrayicon) return true;			
-		if(icondata.hIcon) msg=NIM_MODIFY;
-		else msg=NIM_ADD;
-		icondata.hIcon=icon;
-		icondata.uFlags|=NIF_ICON;
+	//==========
+	UINT	msg;
+	INT		ret;
+	//==========
+
+	icondata.uFlags = 0;
+
+	if(icon) {
+
+		if(icondata.hIcon)	msg=NIM_MODIFY;
+		else				msg=NIM_ADD;
+		
+		icondata.hIcon	=icon;
+		icondata.uFlags |=NIF_ICON;
 	}
-	else
-	{
-		if(icondata.hIcon==NULL)
+	else {
+
+		if(icondata.hIcon==NULL) {
 			return true;
+		}
+
 		msg=NIM_DELETE;
 	}
 
-	if(tip)
+	if(tip) {
 		strncpy(icondata.szTip,tip,sizeof(icondata.szTip));
-	if(*icondata.szTip)
+	}
+
+	if(*icondata.szTip) {
 		icondata.uFlags|=NIF_TIP;
+	}
 
-	if(icondata.uCallbackMessage && icondata.hWnd)
+	if(icondata.uCallbackMessage && icondata.hWnd) {
 		icondata.uFlags|=NIF_MESSAGE;
+	}
 
-	int ret=Shell_NotifyIcon(msg,&icondata);
-	if(msg==NIM_DELETE || !ret)
-		icondata.hIcon=NULL;
+	ret = Shell_NotifyIcon(msg,&icondata);
+
+	if(msg==NIM_DELETE || !ret)	icondata.hIcon=NULL;
+
 	return (ret==TRUE);
 }
 
@@ -140,4 +158,9 @@ bool CTrayIcon::SetStandardIcon(const char *iconname, const char *tip)
 bool CTrayIcon::SetIcon(const char *resname, const char *tip)
 {
 	return SetIcon(resname?AfxGetApp()->LoadIcon(resname):NULL,tip);
+}
+
+void CTrayIcon::DisableTrayIcon() {
+
+	SetIcon((HICON)NULL,NULL);
 }

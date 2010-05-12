@@ -19,12 +19,13 @@
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
  */
 
+#include "stdafx.h"
 #include "globals.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "afxmt.h"
-#include "stdafx.h"
 #include <stdarg.h>
+#include "irconfig.h"
 
 /* Debugging stuff */
 bool debug=false;
@@ -52,51 +53,21 @@ void winlirc_debug(char *format, ...)
 
 /* End of Debugging stuff */
 
-struct flaglist all_flags[] = {
-	{"RC5",			RC5},
-	{"RC6",             RC6},
-	{"RCMM",            RCMM},
-	{"SHIFT_ENC",   SHIFT_ENC}, /* obsolete */
-	{"SPACE_ENC",   SPACE_ENC},
-	{"REVERSE",     REVERSE},
-	{"NO_HEAD_REP", NO_HEAD_REP},
-	{"NO_FOOT_REP", NO_FOOT_REP},
-	{"CONST_LENGTH",CONST_LENGTH},
-	{"RAW_CODES",   RAW_CODES},
-	{"REPEAT_HEADER",   REPEAT_HEADER},
-	{"SPECIAL_TRANSMITTER",   SPECIAL_TRANSMITTER},
-	{NULL,0},
-};
-
 struct ir_remote remote;
 struct ir_ncode code;
-struct sbuf send_buffer;
-struct rbuf rec_buffer;
 struct ir_remote *global_remotes=NULL;
-struct ir_remote *last_include_remote=NULL;
-struct ir_remote *include_remotes[]={NULL};
-struct ir_remote *last_remote=NULL;
-struct ir_remote *repeat_remote=NULL;
-struct ir_ncode *repeat_code=NULL;
-struct ir_remote *free_remotes=NULL;
-struct ir_remote *decoding=NULL;
 class CIRDriver *ir_driver=NULL;
 class Clearndlg *learn_dialog=NULL;
-bool use_ir_hardware=true;
 int line;
 int parse_error=0;
 int lirc;
 
-CWinThread *IRThreadHandle=NULL;
-CWinThread *DaemonThreadHandle=NULL;
-CWinThread *LearnThreadHandle=NULL;
 CWinThread *ServerThreadHandle=NULL;
-CEvent IRThreadEvent;
-CEvent DaemonThreadEvent;
-CEvent LearnThreadEvent;
 CEvent ServerThreadEvent;
 
 CCriticalSection CS_global_remotes;
+
+CIRConfig config;
 
 void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 {
@@ -111,9 +82,32 @@ void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 		}
 		if(result==STILL_ACTIVE)
 		{
+			//printf("still active\n");
 			ThreadEvent->SetEvent();
-			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,250/*INFINITE*/)) break; //maybe we just need to give it some time to quit
+			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,250)) break; //maybe we just need to give it some time to quit
 			ThreadEvent->ResetEvent();
+			*ThreadHandle=NULL;
+		}
+	}
+}
+
+void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent)
+{
+	while(*ThreadHandle!=NULL)
+	{
+		DWORD result=0;
+		if(GetExitCodeThread((*ThreadHandle)->m_hThread,&result)==0) 
+		{
+			DEBUG("GetExitCodeThread failed, error=%d\n",GetLastError());
+			DEBUG("(the thread may have already been terminated)\n");
+			return;
+		}
+		if(result==STILL_ACTIVE)
+		{
+			//printf("still active\n");
+			SetEvent(ThreadEvent);
+			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,250)) break; //maybe we just need to give it some time to quit
+			ResetEvent(ThreadEvent);
 			*ThreadHandle=NULL;
 		}
 	}

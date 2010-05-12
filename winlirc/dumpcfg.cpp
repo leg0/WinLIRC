@@ -21,6 +21,7 @@
  * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
+#include "stdafx.h"
 #include "dumpcfg.h"
 #include "config.h"
 #include "remote.h"

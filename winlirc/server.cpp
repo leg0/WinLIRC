@@ -19,6 +19,7 @@
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
  */
 
+#include "stdafx.h"
 #include "server.h"
 
 unsigned int ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
@@ -383,7 +384,7 @@ void Cserver::ThreadProc(void)
 												{
 													COPYDATASTRUCT cpd;
 													cpd.dwData = 0;
-													cpd.cbData = strlen(&cur[j])+1;
+													cpd.cbData = strlen(&cur[j]);
 													cpd.lpData = (void*)&cur[j];
 													copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,NULL,(LPARAM)&cpd);
 												}

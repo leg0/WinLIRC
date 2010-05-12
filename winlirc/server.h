@@ -51,6 +51,8 @@ private:
 	SOCKET clients[MAX_CLIENTS];
 	CString password; //password for transmission
 	int tcp_port; //tcp port for server
+
+	#define LINE_LEN 1024
 };
 
 #endif

@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="winlirc"
 	ProjectGUID="{3535C206-0C84-43CD-ADFC-2BB6DB60E380}"
+	RootNamespace="winlirc"
 	Keyword="MFCProj"
 	TargetFrameworkVersion="0"
 	>
@@ -116,7 +117,7 @@
 			IntermediateDirectory=".\Release"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="1"
 			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
 			>
@@ -147,7 +148,7 @@
 				InlineFunctionExpansion="2"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				PrecompiledHeaderFile=".\Release/winlirc.pch"
 				AssemblerListingLocation=".\Release/"
@@ -213,26 +214,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="confdlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="config.cpp"
 				>
 				<FileConfiguration
@@ -273,26 +254,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="dumpcfg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="globals.cpp"
 				>
 				<FileConfiguration
@@ -313,84 +274,20 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="irconfig.cpp"
+				RelativePath=".\guicon.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="irdriver.cpp"
+				RelativePath=".\InputPlugin.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="learndlg.cpp"
+				RelativePath=".\irconfig.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="remote.cpp"
+				RelativePath=".\irdriver.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="server.cpp"
@@ -458,10 +355,6 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="confdlg.h"
-				>
-			</File>
-			<File
 				RelativePath="config.h"
 				>
 			</File>
@@ -470,11 +363,15 @@
 				>
 			</File>
 			<File
-				RelativePath="dumpcfg.h"
+				RelativePath="globals.h"
 				>
 			</File>
 			<File
-				RelativePath="globals.h"
+				RelativePath=".\guicon.h"
+				>
+			</File>
+			<File
+				RelativePath=".\InputPlugin.h"
 				>
 			</File>
 			<File
@@ -486,15 +383,19 @@
 				>
 			</File>
 			<File
-				RelativePath="learndlg.h"
+				RelativePath=".\remote.h"
 				>
 			</File>
 			<File
-				RelativePath="remote.h"
+				RelativePath=".\resource.h"
 				>
 			</File>
 			<File
 				RelativePath="server.h"
+				>
+			</File>
+			<File
+				RelativePath=".\stdafx.h"
 				>
 			</File>
 			<File
@@ -561,5 +462,9 @@
 		</Filter>
 	</Files>
 	<Globals>
+		<Global
+			Name="RESOURCE_FILE"
+			Value="winlirc.rc"
+		/>
 	</Globals>
 </VisualStudioProject>

@@ -25,29 +25,25 @@
 #include "winlirc.h"
 #include "drvdlg.h"
 #include "resource.h"
-#include "confdlg.h"
 #include "remote.h"
 #include "globals.h"
 #include <pbt.h> // power management stuff ??
 #include "server.h" //so we can send SIGHUP
+#include "InputPlugin.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // Cdrvdlg dialog
 
 
-Cdrvdlg::Cdrvdlg(CWnd* pParent /*=NULL*/)
+Cdrvdlg::Cdrvdlg(CWnd* pParent)
 	: CDialog(Cdrvdlg::IDD, pParent),
 	  ti(IDR_TRAYMENU)
 {
 	//{{AFX_DATA_INIT(Cdrvdlg)
-	m_ircode_edit = _T("");
-	m_remote_edit = _T("");
-	m_reps_edit = 0;
+	m_ircode_edit	= _T("");
+	m_remote_edit	= _T("");
+	m_reps_edit		= 0;
 	//}}AFX_DATA_INIT
-
-	use_ir_hardware=true;
-	::ir_driver=&driver;
-	driver.drvdlg=this;
 }
 
 
@@ -132,9 +128,9 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 			//shutdown happening
 		case PBT_APMSUSPEND:
 			{
-			driver.ResetPort(); //if we RequestDeviceWakeup instead we could wake on irevents
-			retval=TRUE;		//if the RI pin was connected to the receiving device
-			break;
+				driver.deinit(); //if we RequestDeviceWakeup instead we could wake on irevents
+				retval=TRUE;		//if the RI pin was connected to the receiving device
+				break;
 			}
 
 			//wake up from a critical power shutdown
@@ -146,7 +142,8 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 			//is probably off.
 		case PBT_APMRESUMEAUTOMATIC:
 			ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
-			if(driver.InitPort(&config)==false)
+			
+			if(driver.init()==false)
 			{
 				DEBUG("InitPort failed\n");
 				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
@@ -212,10 +209,9 @@ void Cdrvdlg::GoBlue()
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_SEND),"WinLIRC / Sent Signal");
 }
 
-void Cdrvdlg::OnTimer(UINT nIDEvent) 
-{
-	if(nIDEvent==1)
-	{
+void Cdrvdlg::OnTimer(UINT nIDEvent) {
+
+	if(nIDEvent==1) {
 		KillTimer(1);
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
 	}
@@ -233,6 +229,9 @@ bool Cdrvdlg::DoInitializeDaemon()
 			AllowTrayNotification=true;
 			return true;
 		}
+		else {
+			//printf("failed here :(\n");
+		}
 		
 		if(!IsWindowVisible())
 			OnToggleWindow();
@@ -242,33 +241,42 @@ bool Cdrvdlg::DoInitializeDaemon()
 						"and try again?","WinLIRC Error",MB_OKCANCEL)==IDCANCEL)
 			return false;
 		
-		Cconfdlg dlg(this);
-		dlg.DoModal();
+		InputPlugin inputPlugin(this);
+		inputPlugin.DoModal();
 	}
 }
 
-bool Cdrvdlg::InitializeDaemon()
-{
-	CWaitCursor foo;
+bool Cdrvdlg::InitializeDaemon() {
 
-	if(config.ReadConfig(&driver)==false)
+	//==============
+	CString		tmp;
+	CWaitCursor foo;
+	//==============
+
+	if(config.readConfig()==false)
 	{
-		ti.notrayicon = config.notrayicon;
-		if (ti.notrayicon) ti.SetIcon((HICON)NULL,NULL);
+		//ti.notrayicon = config.notrayicon;
+		//if (ti.notrayicon) ti.SetIcon((HICON)NULL,NULL);
 		DEBUG("ReadConfig failed\n");
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
 		return false;
 	}
-	ti.notrayicon = config.notrayicon;
-	if (ti.notrayicon) ti.SetIcon((HICON)NULL,NULL);
-	
-	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
-	if(driver.InitPort(&config)==false)
-	{
-		DEBUG("InitPort failed\n");
+
+	tmp = _T(".\\plugins\\");
+	tmp = tmp + config.plugin;
+
+	if(driver.loadPlugin(tmp)==false) {
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
 		return false;
 	}
+
+	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+
+	if(driver.init()==false) {
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+		return false;
+	}
+	
 	((Cwinlirc *)AfxGetApp())->server->send("BEGIN\nSIGHUP\nEND\n");
 	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
 	return true;
@@ -276,14 +284,19 @@ bool Cdrvdlg::InitializeDaemon()
 
 void Cdrvdlg::OnConfig() 
 {
+	InputPlugin inputPlugin(this);
+	
+	inputPlugin.DoModal();
+
 	AllowTrayNotification=false;
-	Cconfdlg dlg(this);
+	//Cconfdlg dlg(this);
 	KillTimer(1);
 	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Disabled During Configuration");
-	driver.ResetPort();
-	dlg.DoModal();
+	driver.deinit();
+	//dlg.DoModal();
 	if(DoInitializeDaemon()==false)
 		OnCancel();
+
 	UpdateRemoteComboLists();
 }
 
@@ -342,11 +355,20 @@ void Cdrvdlg::OnSendcode()
 		{
 			if (m_reps_edit < sender->min_repeat)
 			{
-				m_reps_edit=sender->min_repeat;  //set minimum number of repeats
+				m_reps_edit=sender->min_repeat;		//set minimum number of repeats
 				UpdateData(FALSE);					//update the display
 			}
-			send(codes,sender,m_reps_edit);				//transmit the ircode
-			GoBlue();
+
+			//
+			//transmit the ircode
+			//
+
+			if(driver.sendIR(sender,codes,m_reps_edit)) {
+				GoBlue();
+			}
+			else {
+				MessageBox(_T("Send failed/not supported."));
+			}
 		}
 	}
 }
@@ -391,8 +413,10 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 			if (codes!=NULL && codes->name!=NULL)
 			{
 				if (j < sender->min_repeat) j=sender->min_repeat;  //set minimum number of repeats
-				send(codes,sender,j);					//transmit the code
-				GoBlue();								//turn icon blue to indicate a transmission
+				
+				if(driver.sendIR(sender,codes,j)) {			//transmit the code
+					GoBlue();								//turn icon blue to indicate a transmission
+				}
 				success=TRUE;
 			} else success=FALSE; //unknown code
 		} else success=FALSE; //unknown remote
