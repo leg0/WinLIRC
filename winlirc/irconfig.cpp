@@ -20,26 +20,23 @@
  * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
+#include "stdafx.h"
 #include "irconfig.h"
 #include "irdriver.h"
-#include "stdafx.h"
 #include <atlbase.h>
 #include "config.h"
 #include "remote.h"
 #include "globals.h"
+#include "config.h"
 
-CIRConfig::CIRConfig()
-{
+CIRConfig::CIRConfig() {
+
 	CSingleLock lock(&CS_global_remotes,TRUE);
-
-	sense=-1;
-	port="COM2";
-	animax=0;
-	transmittertype=0;
-	speed = 115200;			
-	devicetype = 1;			
-	virtpulse = 300;		
+	
 	global_remotes=NULL;
+
+	readINIFile();
+
 }
 
 CIRConfig::~CIRConfig()
@@ -48,74 +45,29 @@ CIRConfig::~CIRConfig()
 		
 	CSingleLock lock(&CS_global_remotes,TRUE);
 
-	if(global_remotes!=NULL)
+	if(global_remotes!=NULL) {
 		free_config(global_remotes);
+	}
 	
 	DEBUG("~CIRConfig done\n");
 }
 
-bool CIRConfig::ReadConfig(CIRDriver *driver)
-{
+bool CIRConfig::readConfig() {
+
+	//========================================
 	CSingleLock lock(&CS_global_remotes,TRUE);
+	FILE *file;
+	//========================================
 
-	CRegKey key;
-
-	/* First try HKCU, then HKLM */
-	if(key.Open(HKEY_CURRENT_USER,"Software\\LIRC")!=ERROR_SUCCESS)
-		if(key.Open(HKEY_LOCAL_MACHINE,"Software\\LIRC")
-		   !=ERROR_SUCCESS)
+	if(remoteConfig=="" || (file=fopen(remoteConfig,"r"))==NULL)	
 		return false;
 
-	char s[512];
-	ULONG len=512;
-	if(key.QueryStringValue("port",s,&len)!=ERROR_SUCCESS)
-		return false;
-	port=s;
-
-	DWORD x;
-	if(key.QueryDWORDValue("sense",x)!=ERROR_SUCCESS)
-		return false;
-	sense=(x==2)?-1:x;
-
-	DWORD a;
-	if(key.QueryDWORDValue("animax",a)!=ERROR_SUCCESS)
-		return false;
-	animax=a;
-
-	if(key.QueryDWORDValue("transmittertype",a)!=ERROR_SUCCESS)
-		return false;
-	transmittertype=a;
-
-	len=512;
-	if(key.QueryStringValue("conf",s,&len)!=ERROR_SUCCESS)
-		return false;
-	conf=s;
-
-	if(key.QueryDWORDValue("speed",a)!=ERROR_SUCCESS)
-		return false;									
-	speed = a;
-
-	if(key.QueryDWORDValue("devicetype",a)!=ERROR_SUCCESS)
-		return false;									
-	devicetype = a;
-
-	if(key.QueryDWORDValue("notrayicon",a)!=ERROR_SUCCESS)
-		return false;									
-	notrayicon = a;
-
-	if(key.QueryDWORDValue("virtpulse",a)!=ERROR_SUCCESS)
-		return false;									
-	virtpulse = a;
-
-	FILE *tmp;
-	if(conf=="" || (tmp=fopen(conf,"r"))==NULL)
-		return false;
-		
 	if(global_remotes!=NULL)
 		free_config(global_remotes);
+	
+	global_remotes = read_config(file,remoteConfig);
 
-	global_remotes=read_config(tmp);
-	fclose(tmp);
+	fclose(file);
 
 	if(global_remotes==(struct ir_remote *)-1)
 	{
@@ -147,41 +99,49 @@ bool CIRConfig::ReadConfig(CIRDriver *driver)
 	return true;
 }
 
-bool CIRConfig::WriteConfig(void)
-{
-	CRegKey key;
+bool CIRConfig::writeConfig() {
 
-	if(key.Create(HKEY_LOCAL_MACHINE,"Software\\LIRC")!=ERROR_SUCCESS)
-		if(key.Create(HKEY_CURRENT_USER,"Software\\LIRC")
-		   !=ERROR_SUCCESS)
-		return false;
+	//=====================
+	TCHAR	path[MAX_PATH];
+	CString tempPath;
+	TCHAR	repeats[4];
+	//=====================
 
-	if(key.SetStringValue("port",port)!=ERROR_SUCCESS)
-		return false;
+	GetCurrentDirectory(MAX_PATH,path);
 
-	if(key.SetDWORDValue("sense",(sense==-1)?2:sense)!=ERROR_SUCCESS)
-		return false;
+	tempPath += path;
+	tempPath += _T("\\plugins\\WinLIRC.ini");
 
-	if(key.SetDWORDValue("animax",animax)!=ERROR_SUCCESS)
-		return false;
+	WritePrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),remoteConfig,tempPath);
+	WritePrivateProfileString(_T("WinLIRC"),_T("Plugin"),plugin,tempPath);
 
-	if(key.SetDWORDValue("transmittertype",transmittertype)!=ERROR_SUCCESS)
-		return false;
+	_sntprintf(repeats,_countof(repeats),_T("%i"),disableRepeats);
+	WritePrivateProfileString(_T("WinLIRC"),_T("DisableKeyRepeats"),repeats,tempPath);
 
-	if(key.SetStringValue("conf",conf)!=ERROR_SUCCESS)
-		return false;
+	return true;
+}
 
-    if(key.SetDWORDValue("speed",speed)!=ERROR_SUCCESS)		
-		return false;									
+bool CIRConfig::readINIFile() {
 
-    if(key.SetDWORDValue("devicetype",devicetype)!=ERROR_SUCCESS)	
-		return false;											
+	//=================================
+	TCHAR	path[MAX_PATH];
+	CString tempPath;
+	TCHAR   remoteConfigName[MAX_PATH];
+	TCHAR	pluginName[MAX_PATH];
+	//=================================
 
-    if(key.SetDWORDValue("notrayicon",notrayicon)!=ERROR_SUCCESS)	
-		return false;											
+	GetCurrentDirectory(MAX_PATH,path);
 
-    if(key.SetDWORDValue("virtpulse",virtpulse)!=ERROR_SUCCESS)		
-		return false;											
+	tempPath += path;
+	tempPath += _T("\\plugins\\WinLIRC.ini");
 
+	GetPrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),NULL,remoteConfigName,_countof(remoteConfigName),tempPath);
+	GetPrivateProfileString(_T("WinLIRC"),_T("Plugin"),NULL,pluginName,_countof(pluginName),tempPath);
+
+	disableRepeats = GetPrivateProfileInt(_T("WinLIRC"),_T("DisableKeyRepeats"),FALSE,tempPath);
+
+	remoteConfig = remoteConfigName;
+	plugin = pluginName;
+	
 	return true;
 }

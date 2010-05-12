@@ -30,22 +30,21 @@
 
 class CIRConfig {
 public:
-	CString port;
-	int sense;
-	BOOL animax;
-	CString conf;
-
-	unsigned transmittertype;
-	unsigned long speed;			
-	unsigned long devicetype;		
-	unsigned long notrayicon;		
-	unsigned long virtpulse;		
 
 	CIRConfig();
 	~CIRConfig();
 
-	bool ReadConfig(CIRDriver *driver);
-	bool WriteConfig(void);
+	bool readConfig	();
+	bool writeConfig();
+
+	//=====================
+	CString remoteConfig;
+	CString plugin;
+	BOOL	disableRepeats;
+	//=====================
+
+private:
+	bool readINIFile();
 };
 
 #endif

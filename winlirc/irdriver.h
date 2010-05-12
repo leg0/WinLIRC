@@ -28,38 +28,45 @@
 
 #include "stdafx.h"
 #include "winlirc.h"
-#include "Trayicon.h"
 
-class CIRConfig;
+
 class CIRDriver {
-
-private:	
-	int sense;
-	unsigned long devicetype;		
-	unsigned long virtpulse;		
-	OVERLAPPED ov;
-	HANDLE hPort;
-	unsigned long int cbuf[CBUF_LEN];
-	int cbuf_start, cbuf_end;
 
 public:
 	CIRDriver();
-	~CIRDriver();
+   ~CIRDriver();
 
-	bool InitPort(CIRConfig *cfg, bool daemonize=true);
-	void ResetPort(void);
-	bool GetData(unsigned long int *dest);
-	void ThreadProc(void);
-	void DaemonThreadProc(void);
-	HANDLE GetCommPort(void);	//returns the handle hPort
+	BOOL	loadPlugin	(CString plugin);
+	void	unloadPlugin();
+	BOOL	init		();
+	void	deinit		();
+	int		sendIR		(struct ir_remote *remote,struct ir_ncode *code, int repeats);
+	int		decodeIR	(struct ir_remote *remote, char *out);
 
-	HANDLE hDataReadyEvent;
-	Cdrvdlg *drvdlg;
-
-	unsigned long readdata(unsigned long maxusec, HANDLE ThreadEvent);
+	void	DaemonThreadProc();
 
 private:
-	bool SetData(unsigned long int src);
+
+	typedef int	 (*InitFunction)			(HANDLE);
+	typedef void (*DeinitFunction)			(void);
+	typedef int  (*HasGuiFunction)			(void);
+	typedef void (*LoadSetupGuiFunction)	(void);
+	typedef int	 (*SendFunction)			(struct ir_remote *remote,struct ir_ncode *code, int repeats);
+	typedef int  (*DecodeFunction)			(struct ir_remote *remote, char *out);
+
+	InitFunction			initFunction;
+	DeinitFunction			deinitFunction;
+	HasGuiFunction			hasGuiFunction;
+	LoadSetupGuiFunction	loadSetupGuiFunction;
+	SendFunction			sendFunction;
+	DecodeFunction			decodeFunction;
+
+	//==============================
+	CString		loadedPlugin;
+	HMODULE		dllFile;
+	HANDLE		daemonThreadEvent;
+	CWinThread	*daemonThreadHandle;
+	//==============================
 };
 
 #endif

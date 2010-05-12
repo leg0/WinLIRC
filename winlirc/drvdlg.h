@@ -48,10 +48,6 @@ class Cdrvdlg : public CDialog
 public:
 	Cdrvdlg(CWnd* pParent = NULL);   // standard constructor
 	
-	// Pointer to the class that listens on the serial port
-	CIRDriver driver;
-	CIRConfig config;
-
 	bool initialized;
 	bool AllowTrayNotification;
 	bool DoInitializeDaemon();
@@ -70,6 +66,7 @@ public:
 	//}}AFX_DATA
 
 	CTrayIcon ti;
+	CIRDriver driver;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

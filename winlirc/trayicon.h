@@ -30,19 +30,19 @@ protected:
 	NOTIFYICONDATA icondata;
 
 public:
-	CTrayIcon(unsigned int uID);
-	~CTrayIcon();
+	CTrayIcon(UINT uID);
+   ~CTrayIcon();
 
-	unsigned long notrayicon;
-
-	void SetNotificationWnd(CWnd *notifywnd, unsigned int message);
-
-	bool SetIcon(unsigned int uID);
-	bool SetIcon(HICON hicon, const char *tip);
-	bool SetIcon(const char *resname, const char *tip);
-	bool SetStandardIcon(const char *iconname, const char *tip);
+	bool SetIcon			(UINT uID);
+	bool SetIcon			(HICON hicon, const char *tip);
+	bool SetIcon			(const char *resname, const char *tip);
+	bool SetStandardIcon	(const char *iconname, const char *tip);
+	void SetNotificationWnd	(CWnd *notifywnd, UINT message);
+	void DisableTrayIcon	();
 
 	virtual LRESULT OnTrayNotification(WPARAM id, LPARAM event);
+
+private:
 };
 
 #endif
