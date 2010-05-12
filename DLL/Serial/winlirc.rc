@@ -1,0 +1,172 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SERIALDIALOG DIALOGEX 0, 0, 234, 125
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "WinLIRC Configuration"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    RTEXT           "Port",IDC_STATIC,10,5,14,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_PORT,30,5,51,100,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Speed",IDC_STATIC,3,20,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_SPEED,30,20,51,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Sense",IDC_STATIC,3,35,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_SENSE,30,35,51,70,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Receiver type",IDC_STATIC,85,5,137,25
+    CONTROL         "RX device",IDC_RADIORX,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,90,15,49,10
+    CONTROL         "DCD device",IDC_RADIODCD,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,155,15,55,10
+    LTEXT           "Virtual pulse",IDC_STATIC,145,35,39,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_VIRTPULSE,190,35,32,12,ES_AUTOHSCROLL
+    LTEXT           "Usually, speed should be 115200. Sometimes other values are better",IDC_STATIC,5,50,222,10
+    CONTROL         "animax (enable DTR)",IDC_CHECKANIMAX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,61,83,10
+    GROUPBOX        "Transmitter settings",IDC_STATIC,25,72,197,24
+    CONTROL         "hardware carrier",IDC_CHECKHARDCARRIER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,85,82,67,10
+    CONTROL         "DTR",IDC_RADIODTR,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,155,82,31,10
+    CONTROL         "TX",IDC_RADIOTX,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,189,82,25,10
+    DEFPUSHBUTTON   "OK",IDOK,57,104,55,12
+    PUSHBUTTON      "Cancel",IDCANCEL,121,104,55,12
+    CONTROL         "Inverted",IDC_INVERTED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,37,82,42,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_SERIALDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 227
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 118
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_SERIALDIALOG DLGINIT
+BEGIN
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x314d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x324d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x334d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x344d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x354d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x364d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x374d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x384d, "\000" 
+    IDC_SPEED, 0x403, 5, 0
+0x3231, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 5, 0
+0x3432, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 5, 0
+0x3834, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 5, 0
+0x3639, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 6, 0
+0x3431, 0x3034, 0x0030, 
+    IDC_SPEED, 0x403, 6, 0
+0x3931, 0x3032, 0x0030, 
+    IDC_SPEED, 0x403, 6, 0
+0x3833, 0x3034, 0x0030, 
+    IDC_SPEED, 0x403, 6, 0
+0x3635, 0x3030, 0x0030, 
+    IDC_SPEED, 0x403, 6, 0
+0x3735, 0x3036, 0x0030, 
+    IDC_SPEED, 0x403, 7, 0
+0x3131, 0x3235, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 7, 0
+0x3231, 0x3038, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 7, 0
+0x3532, 0x3036, 0x3030, "\000" 
+    IDC_SENSE, 0x403, 11, 0
+0x7541, 0x6f74, 0x6564, 0x6574, 0x7463, "\000" 
+    IDC_SENSE, 0x403, 8, 0
+0x2030, 0x4c28, 0x776f, 0x0029, 
+    IDC_SENSE, 0x403, 9, 0
+0x2031, 0x4828, 0x6769, 0x2968, "\000" 
+    0
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
