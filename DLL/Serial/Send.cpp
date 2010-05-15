@@ -15,8 +15,6 @@ unsigned transmittertype;
 
 int sendBufferSum = 0;
 
-struct ir_remote *repeat_remote = NULL;
-
 #define MAXPULSEBYTES 256
 int pulsedata[MAXPULSEBYTES];
 
@@ -79,7 +77,7 @@ int uwait(unsigned long usecs)
 int send_pulse_dtr_soft (unsigned long usecs)
 {
 	sendBufferSum += usecs;
-	printf("Pulse %i\n",usecs);
+	//printf("Pulse %i\n",usecs);
 	__int64 end;
 	end= lasttime + usecs * freq / 1000000;
 	do
@@ -95,7 +93,7 @@ int send_pulse_dtr_soft (unsigned long usecs)
 int send_space_hard_or_dtr(unsigned long length)
 {
 	sendBufferSum += length;
-	printf("Space %i\n",length);
+	//printf("Space %i\n",length);
 	if(length==0) return(1);
 	off();
 	uwait(length);
@@ -492,8 +490,6 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 	sendBufferSum = 0;
 
 	remote->repeat_countdown = max(remote->min_repeat,repeats);
-
-	printf("repeat countdown value %i\n",remote->repeat_countdown);
 	
  init_send_loop:
 	if(repeat && has_repeat(remote))
@@ -536,13 +532,10 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 		}
 	}
 
-	printf("has repeat gap %i repeat %i\n",has_repeat_gap(remote),has_repeat(remote));
-
 	if(has_repeat_gap(remote) && repeat && has_repeat(remote))
 	{
 		remote->min_remaining_gap=remote->repeat_gap;
 		remote->max_remaining_gap=remote->repeat_gap;
-		printf("has repeat gap\n");
 	}
 	else if(is_const(remote))
 	{
@@ -564,11 +557,8 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 		remote->max_remaining_gap=max_gap(remote);
 	}
 
-	printf("min_remaining_gap %i\n",remote->min_remaining_gap);
-
 	if(remote->repeat_countdown>0)
 	{
-		printf("repeating !!\n");
 
 		remote->repeat_countdown--;
 

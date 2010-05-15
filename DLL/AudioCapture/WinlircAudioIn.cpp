@@ -391,19 +391,15 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 SI_API void loadSetupGui() {
 
-	//====================
-	HWND		hDialog;
-	MSG			msg;
-    INT			status;
-	RECT		rect;
-	//====================
+	//==============
+	HWND	hDialog;
+	MSG		msg;
+    INT		status;
+	//==============
 
 	guiSettings = new Settings();
 
 	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),NULL,dialogProc);
-
-	GetWindowRect(hDialog,&rect);
-	MoveWindow(hDialog,200,200,rect.right,rect.bottom,FALSE);
 
     while ((status = GetMessage (& msg, 0, 0, 0)) != 0) {
 
