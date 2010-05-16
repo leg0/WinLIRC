@@ -94,11 +94,13 @@ BOOL CGen_irApp::InitInstance()
 void CGen_irApp::HandleButton(const char *name, unsigned int repeat)
 {
 	int max;
+	int i;
+
 	if((max=buttons.GetSize()) != actions.GetSize())
 		return;
 
 	// find the button
-	for(int i=0;i<max;i++)
+	for(i=0;i<max;i++)
 		if(stricmp(buttons[i],name)==0)
 			break;
 
