@@ -47,6 +47,7 @@ CIRConfig::~CIRConfig()
 
 	if(global_remotes!=NULL) {
 		free_config(global_remotes);
+		global_remotes = NULL;
 	}
 	
 	DEBUG("~CIRConfig done\n");
@@ -62,8 +63,10 @@ bool CIRConfig::readConfig() {
 	if(remoteConfig=="" || (file=fopen(remoteConfig,"r"))==NULL)	
 		return false;
 
-	if(global_remotes!=NULL)
+	if(global_remotes!=NULL) {
 		free_config(global_remotes);
+		global_remotes = NULL;
+	}
 	
 	global_remotes = read_config(file,remoteConfig);
 
@@ -85,6 +88,7 @@ bool CIRConfig::readConfig() {
 		{
 			DEBUG("read_config returned remote with null codes\n");
 			free_config(global_remotes);
+			global_remotes = NULL;
 
 			return false;
 		}
