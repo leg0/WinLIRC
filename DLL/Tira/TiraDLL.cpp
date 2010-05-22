@@ -26,21 +26,21 @@ bool TiraDLL::loadDLL() {
 
 	dllHandle = LoadLibraryA( ".\\plugins\\tira2.dll" );
 
+	if(!dllHandle) return false;
+
 	p_tira_init				= (t_tira_init)					GetProcAddress(dllHandle,"tira_init");
 	p_tira_cleanup			= (t_tira_cleanup)				GetProcAddress(dllHandle,"tira_cleanup");
-	p_tira_set_handler		= (t_tira_set_handler)			GetProcAddress(dllHandle,"tira_set_handler");;
-	p_tira_start			= (t_tira_start)				GetProcAddress(dllHandle,"tira_start");;
-	p_tira_stop				= (t_tira_stop)					GetProcAddress(dllHandle,"tira_stop");;
-	p_tira_start_capture	= (t_tira_start_capture)		GetProcAddress(dllHandle,"tira_start_capture");;
-	p_tira_cancel_capture	= (t_tira_cancel_capture)		GetProcAddress(dllHandle,"tira_cancel_capture");;
-	p_tira_get_captured_data= (t_tira_get_captured_data)	GetProcAddress(dllHandle,"tira_get_captured_data");;
-	p_tira_transmit			= (t_tira_transmit)				GetProcAddress(dllHandle,"tira_transmit");;
-	p_tira_delete			= (t_tira_delete)				GetProcAddress(dllHandle,"tira_delete");;
-	p_tira_set_dword		= (t_tira_set_dword)			GetProcAddress(dllHandle,"tira_set_dword");;
-	p_tira_get_version		= (t_tira_get_version)			GetProcAddress(dllHandle,"tira_get_version");;
-	p_tira_access_feature	= (t_tira_access_feature)		GetProcAddress(dllHandle,"tira_access_feature");;
-
-	if(!dllHandle) return false;
+	p_tira_set_handler		= (t_tira_set_handler)			GetProcAddress(dllHandle,"tira_set_handler");
+	p_tira_start			= (t_tira_start)				GetProcAddress(dllHandle,"tira_start");
+	p_tira_stop				= (t_tira_stop)					GetProcAddress(dllHandle,"tira_stop");
+	p_tira_start_capture	= (t_tira_start_capture)		GetProcAddress(dllHandle,"tira_start_capture");
+	p_tira_cancel_capture	= (t_tira_cancel_capture)		GetProcAddress(dllHandle,"tira_cancel_capture");
+	p_tira_get_captured_data= (t_tira_get_captured_data)	GetProcAddress(dllHandle,"tira_get_captured_data");
+	p_tira_transmit			= (t_tira_transmit)				GetProcAddress(dllHandle,"tira_transmit");
+	p_tira_delete			= (t_tira_delete)				GetProcAddress(dllHandle,"tira_delete");
+	p_tira_set_dword		= (t_tira_set_dword)			GetProcAddress(dllHandle,"tira_set_dword");
+	p_tira_get_version		= (t_tira_get_version)			GetProcAddress(dllHandle,"tira_get_version");
+	p_tira_access_feature	= (t_tira_access_feature)		GetProcAddress(dllHandle,"tira_access_feature");
 
 	return true;
 }

@@ -66,6 +66,8 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 			const char* version = NULL;
 			//=========================
 
+			tiraDLL.tira_init();
+
 			version		= tiraDLL.tira_get_version(0);
 			dialogItem	= GetDlgItem(hwnd,IDC_DLLVERSION);//->SetWindowTextA(version);
 
