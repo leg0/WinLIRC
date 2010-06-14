@@ -29,34 +29,14 @@ Settings::Settings() {
 	loadSettings();
 }
 
-void Settings::setAudioDeviceName(TCHAR *name) {
+void Settings::setDeviceNumber(int deviceNumber) {
 
-	_tcscpy_s(deviceName,32,name);
+	devNumber = deviceNumber;
 }
 
-void Settings::getAudioDeviceName(TCHAR *out) {
+int Settings::getDeviceNumber() {
 
-	_tcscpy_s(out,32,deviceName);
-}
-
-void Settings::setAudioFormat(int format) {
-
-	audioFormat = format;
-}
-
-int Settings::getAudioFormat() {
-	
-	return audioFormat;
-}
-
-void Settings::setChannel(bool left) {
-
-	leftChannel = left;
-}
-
-bool Settings::getChannel() {
-	
-	return leftChannel;
+	return devNumber;
 }
 
 void Settings::saveSettings() {
@@ -82,14 +62,9 @@ void Settings::saveSettings() {
 	else {
 		fclose(file);
 	}
-
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"), deviceName, currentDirectory);
-
-	_sntprintf(temp, _countof(temp), _T("%i"), audioFormat);
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("AudioFormat"),	temp, currentDirectory);
 	
-	_sntprintf(temp, _countof(temp), _T("%i"), leftChannel);
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("LeftChannel"),	temp, currentDirectory);
+	_sntprintf(temp, _countof(temp), _T("%i"), devNumber);
+	WritePrivateProfileString(_T("IguanaPlugin"),_T("DeviceNumber"),temp, currentDirectory);
 }
 
 void Settings::loadSettings() {
@@ -102,8 +77,6 @@ void Settings::loadSettings() {
 
 	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
 
-	GetPrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"),NULL,deviceName,32,currentDirectory);
+	devNumber = GetPrivateProfileInt(_T("IguanaPlugin"),_T("DeviceNumber"),0,currentDirectory);
 
-	audioFormat	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("AudioFormat"),1,currentDirectory);
-	leftChannel	= (GetPrivateProfileInt(_T("AudioInputPlugin"),_T("LeftChannel"),1,currentDirectory)!=0);	//to shut the compiler up
 }

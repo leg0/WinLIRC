@@ -28,7 +28,7 @@ void Settings::saveSettings() {
 	//===============================
 
 	GetCurrentDirectory(MAX_PATH,currentDirectory);
-	_tcscat(currentDirectory, _T("\\plugins\\WinLIRC.ini"));
+	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
 
 	//
 	// if our ini files doesn't exist try and create it
@@ -55,7 +55,7 @@ void Settings::loadSettings() {
 
 	GetCurrentDirectory(MAX_PATH,currentDirectory);
 
-	_tcscat(currentDirectory, _T("\\plugins\\WinLIRC.ini"));
+	_tcscat(currentDirectory, _T("plugins\\WinLIRC.ini"));
 
 	comPort	= GetPrivateProfileInt(_T("TiraPlugin"),_T("ComPort"),0,currentDirectory);
 

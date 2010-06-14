@@ -19,18 +19,27 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef AUDIOFORMATS_H
-#define AUDIOFORMATS_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
-#include <Windows.h>
-#include <tchar.h>
+class Settings 
+{
 
-namespace AudioFormats {
+public:
+	Settings();
 
-	bool	formatSupported	(int format);
-	void	getFormatString	(int format, TCHAR *outString, int noBuffElements);
-	void	getFormatDetails(int format, BOOL *outStereo, int *outFrequency);
-	int		getAudioIndex	(TCHAR *audioDeviceName);
-}
+	int		getDeviceNumber	();
+	void	setDeviceNumber	(int deviceNumber);
+
+	void	saveSettings	();			// to ini file
+	void	loadSettings	();
+
+private:
+
+	//==========
+	int devNumber;
+	//==========
+};
 
 #endif
+

@@ -19,18 +19,15 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef AUDIOFORMATS_H
-#define AUDIOFORMATS_H
+#ifndef DECODE_H
+#define DECODE_H
 
-#include <Windows.h>
-#include <tchar.h>
+void init_rec_buffer(void);
+bool decodeCommand(struct ir_remote *remotes, char *out);
 
-namespace AudioFormats {
-
-	bool	formatSupported	(int format);
-	void	getFormatString	(int format, TCHAR *outString, int noBuffElements);
-	void	getFormatDetails(int format, BOOL *outStereo, int *outFrequency);
-	int		getAudioIndex	(TCHAR *audioDeviceName);
-}
+int receive_decode(struct ir_remote *remote,
+		   ir_code *prep,ir_code *codep,ir_code *postp,
+		   int *repeat_flagp,
+		   lirc_t *min_remaining_gapp, lirc_t *max_remaining_gapp);
 
 #endif

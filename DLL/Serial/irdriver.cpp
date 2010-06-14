@@ -28,7 +28,10 @@
 #include "LIRCDefines.h"
 #include "Send.h"
 	
-unsigned int IRThread(void *drv) {((CIRDriver *)drv)->ThreadProc();return 0;}
+unsigned int IRThread(void *drv) {
+	((CIRDriver *)drv)->ThreadProc();
+	return 0;
+}
 
 CIRDriver::CIRDriver()
 {

@@ -19,18 +19,33 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef AUDIOFORMATS_H
-#define AUDIOFORMATS_H
+#ifndef IGUANA_H
+#define IGUANA_H
 
-#include <Windows.h>
-#include <tchar.h>
+//
+// TIRA API
+//
+#define IG_API __declspec(dllexport)
 
-namespace AudioFormats {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-	bool	formatSupported	(int format);
-	void	getFormatString	(int format, TCHAR *outString, int noBuffElements);
-	void	getFormatDetails(int format, BOOL *outStereo, int *outFrequency);
-	int		getAudioIndex	(TCHAR *audioDeviceName);
+IG_API int	init		(HANDLE exitEvent);
+IG_API void	deinit		();
+IG_API int	hasGui		();
+IG_API void	loadSetupGui();
+IG_API int	sendIR		(struct ir_remote *remotes, struct ir_ncode *code, int repeats);
+IG_API int	decodeIR	(struct ir_remote *remotes, char *out);
+
+//
+// This function will be for the IR-record port, well that's the plan anyway
+// It's not needed by the main app
+//
+IG_API struct hardware* getHardware();
+
+#ifdef __cplusplus
 }
+#endif
 
 #endif
