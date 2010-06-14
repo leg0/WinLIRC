@@ -19,37 +19,58 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#include "Globals.h"
+#include "hardware.h"
+#include "Decode.h"
 
-#include <tchar.h>
+struct hardware hw;
 
-class Settings 
-{
+lirc_t readData(lirc_t timeout) {
 
-public:
-	Settings();
+	//==========
+	lirc_t data;
+	//==========
 
-	void	setAudioDeviceName(TCHAR *name);
-	void	getAudioDeviceName(TCHAR *out);
+	data = 0;
 
-	void	setAudioFormat(int format);
-	int		getAudioFormat();
+	if(!receiveData) return 0;
 
-	void	setChannel(bool left);
-	bool	getChannel();			//left is true
+	receiveData->waitTillDataIsReady(timeout);
 
-	void	saveSettings();			// to ini file
-	void	loadSettings();
+	receiveData->getData(&data);
 
-private:
+	return data;
+}
 
-	//========================
-	TCHAR	deviceName[32];			// 32 is max length
-	int		audioFormat;
-	bool	leftChannel;			// if mono ignore
-	//========================
-};
+void wait_for_data(lirc_t timeout) {
 
-#endif
+	if(!receiveData) return;
 
+	receiveData->waitTillDataIsReady(timeout);
+}
+
+int data_ready() {
+
+	if(!receiveData) return 0;
+
+	if(receiveData->dataReady()) return 1;
+
+	return 0;
+}
+
+void initHardwareStruct() {
+
+	hw.decode_func	= &receive_decode;
+	hw.readdata		= &readData;
+	hw.wait_for_data= &wait_for_data;
+	hw.data_ready	= &data_ready;
+
+	hw.features		= LIRC_CAN_REC_MODE2;
+	hw.send_mode	= 0;
+	hw.rec_mode		= LIRC_MODE_MODE2;
+	hw.code_length	= 0;
+	hw.resolution	= 0;
+
+	strcpy(hw.device,"hw");
+	strcpy(hw.name,"iguanaIR");
+}

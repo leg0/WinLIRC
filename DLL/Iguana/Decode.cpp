@@ -25,6 +25,7 @@
 #include "LIRCDefines.h"
 #include <limits.h>
 #include "Globals.h"
+#include "hardware.h"
 
 struct rbuf rec_buffer;
 
@@ -33,17 +34,6 @@ struct ir_remote *last_remote	= NULL;
 struct ir_remote *repeat_remot	= NULL;
 struct ir_ncode *repeat_code;
 
-int gettimeofday(struct mytimeval *a, void *)
-/* only accurate to milliseconds, instead of microseconds */
-{
-	struct _timeb tstruct;
-	_ftime(&tstruct);
-	
-	a->tv_sec=tstruct.time;
-	a->tv_usec=tstruct.millitm*1000;
-
-	return 1;
-}
 
 inline lirc_t lirc_t_max(lirc_t a,lirc_t b)
 {
@@ -74,11 +64,11 @@ lirc_t get_next_rec_buffer(lirc_t maxusec)
 	{
 		if(rec_buffer.wptr<RBUF_SIZE)
 		{
-			UINT data;
+			lirc_t data;
 			
-			waitTillDataIsReady(2*maxusec<100000 ? 100000:2*maxusec);
+			receiveData->waitTillDataIsReady(2*maxusec<100000 ? 100000:2*maxusec);
 		
-			if(!analyseAudio->getData(&data))
+			if(!receiveData->getData(&data))
 			{
 				//LOGPRINTF(3,"timeout: %u", maxusec);
 				return 0;
@@ -119,7 +109,7 @@ int clear_rec_buffer(void)
 {
 	int move;
 
-	if(analyseAudio->rec_mode==LIRC_MODE_LIRCCODE)
+	if(hw.rec_mode==LIRC_MODE_LIRCCODE)
 	{
 		//
 		// commented out cause we dont need this code anyway ..
@@ -145,7 +135,7 @@ int clear_rec_buffer(void)
 		}
 		*/
 	}
-	else if(analyseAudio->rec_mode==LIRC_MODE_CODE)
+	else if(hw.rec_mode==LIRC_MODE_CODE)
 	{
 		/*
 		unsigned char c;
@@ -172,9 +162,9 @@ int clear_rec_buffer(void)
 		else
 		{
 			rec_buffer.wptr=0;
-			//data=hw.readdata(0);
-			waitTillDataIsReady(0);
-			analyseAudio->getData(&data);
+			data=hw.readdata(0);
+			//waitTillDataIsReady(0);
+			//analyseAudio->getData(&data);
 			
 			//LOGPRINTF(3,"c%lu",(unsigned long) data&(PULSE_MASK));
 			
@@ -1099,9 +1089,9 @@ int receive_decode(struct ir_remote *remote,
 	code=pre=post=0;
 	header=0;
 
-	if(analyseAudio->rec_mode==LIRC_MODE_MODE2 ||
-	   analyseAudio->rec_mode==LIRC_MODE_PULSE ||
-	   analyseAudio->rec_mode==LIRC_MODE_RAW)
+	if(hw.rec_mode==LIRC_MODE_MODE2 ||
+	   hw.rec_mode==LIRC_MODE_PULSE ||
+	   hw.rec_mode==LIRC_MODE_RAW)
 	{
 		rewind_rec_buffer();
 		rec_buffer.is_biphase=is_biphase(remote) ? 1:0;
@@ -1183,8 +1173,8 @@ int receive_decode(struct ir_remote *remote,
 		struct ir_ncode *codes,*found;
 		int i;
 
-		if(analyseAudio->rec_mode==LIRC_MODE_CODE ||
-		   analyseAudio->rec_mode==LIRC_MODE_LIRCCODE)
+		if(hw.rec_mode==LIRC_MODE_CODE ||
+		   hw.rec_mode==LIRC_MODE_LIRCCODE)
 			return(0);
 
 		codes=remote->codes;
@@ -1225,8 +1215,8 @@ int receive_decode(struct ir_remote *remote,
 	}
 	else
 	{
-		if(analyseAudio->rec_mode==LIRC_MODE_CODE ||
-		   analyseAudio->rec_mode==LIRC_MODE_LIRCCODE)
+		if(hw.rec_mode==LIRC_MODE_CODE ||
+		   hw.rec_mode==LIRC_MODE_LIRCCODE)
 		{
  			lirc_t sum;
 			ir_code decoded = rec_buffer.decoded;
@@ -1236,11 +1226,11 @@ int receive_decode(struct ir_remote *remote,
 #                       else
 			LOGPRINTF(1,"decoded: %lx", decoded);
 #                       endif
-			if((analyseAudio->rec_mode==LIRC_MODE_CODE &&
-			    analyseAudio->code_length<bit_count(remote))
+			if((hw.rec_mode==LIRC_MODE_CODE &&
+			    hw.code_length<bit_count(remote))
 			   ||
-			   (analyseAudio->rec_mode==LIRC_MODE_LIRCCODE && 
-			    analyseAudio->code_length!=bit_count(remote)))
+			   (hw.rec_mode==LIRC_MODE_LIRCCODE && 
+			    hw.code_length!=bit_count(remote)))
 			{
 				return(0);
 			}
@@ -1358,8 +1348,8 @@ int receive_decode(struct ir_remote *remote,
 		*repeat_flagp=1;
 	else
 		*repeat_flagp=0;
-	if(analyseAudio->rec_mode==LIRC_MODE_CODE ||
-	   analyseAudio->rec_mode==LIRC_MODE_LIRCCODE)
+	if(hw.rec_mode==LIRC_MODE_CODE ||
+	   hw.rec_mode==LIRC_MODE_LIRCCODE)
 	{
 		/* Most TV cards don't pass each signal to the
                    driver. This heuristic should fix repeat in such

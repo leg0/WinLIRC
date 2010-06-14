@@ -19,18 +19,19 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef AUDIOFORMATS_H
-#define AUDIOFORMATS_H
+#ifndef GLOBALS_H
+#define GLOBALS_H
 
 #include <Windows.h>
-#include <tchar.h>
+#include "Settings.h"
+#include "ReceiveData.h"
 
-namespace AudioFormats {
+extern Settings settings;
+extern ReceiveData *receiveData;
 
-	bool	formatSupported	(int format);
-	void	getFormatString	(int format, TCHAR *outString, int noBuffElements);
-	void	getFormatDetails(int format, BOOL *outStereo, int *outFrequency);
-	int		getAudioIndex	(TCHAR *audioDeviceName);
-}
+extern HANDLE threadExitEvent;
+extern HANDLE dataReadyEvent;
+
+int gettimeofday(struct mytimeval *a, void *);
 
 #endif

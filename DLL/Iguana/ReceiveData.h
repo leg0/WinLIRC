@@ -19,18 +19,38 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef AUDIOFORMATS_H
-#define AUDIOFORMATS_H
+#ifndef RECEIVEDATA_H
+#define RECEIVEDATA_H
 
-#include <Windows.h>
-#include <tchar.h>
+#include "LIRCDefines.h"
+#include "iguanaIR.h"
 
-namespace AudioFormats {
+class ReceiveData
+{
+public:
+	ReceiveData();
 
-	bool	formatSupported	(int format);
-	void	getFormatString	(int format, TCHAR *outString, int noBuffElements);
-	void	getFormatDetails(int format, BOOL *outStereo, int *outFrequency);
-	int		getAudioIndex	(TCHAR *audioDeviceName);
-}
+	bool init();
+	void deinit();
+
+	bool getData(lirc_t *out);
+	bool dataReady();
+	void waitTillDataIsReady(int maxUSecs);
+	
+	void threadProc();
+
+private:
+
+	void setData(lirc_t data);
+	void killThread();
+	void receiveLoop();
+
+	lirc_t		dataBuffer[256];
+	UCHAR		bufferStart;
+	UCHAR		bufferEnd;
+	int			recvDone;
+	PIPE_PTR	connection;
+	HANDLE		threadHandle;
+};
 
 #endif

@@ -19,18 +19,27 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef AUDIOFORMATS_H
-#define AUDIOFORMATS_H
-
 #include <Windows.h>
-#include <tchar.h>
+#include "Globals.h"
+#include <stdio.h>
+#include "LircDefines.h"
+#include <sys/timeb.h>
 
-namespace AudioFormats {
+Settings settings;
 
-	bool	formatSupported	(int format);
-	void	getFormatString	(int format, TCHAR *outString, int noBuffElements);
-	void	getFormatDetails(int format, BOOL *outStereo, int *outFrequency);
-	int		getAudioIndex	(TCHAR *audioDeviceName);
+HANDLE	threadExitEvent	= NULL;
+HANDLE	dataReadyEvent	= NULL;
+
+ReceiveData *receiveData = NULL;
+
+int gettimeofday(struct mytimeval *a, void *)
+/* only accurate to milliseconds, instead of microseconds */
+{
+	struct _timeb tstruct;
+	_ftime(&tstruct);
+	
+	a->tv_sec=tstruct.time;
+	a->tv_usec=tstruct.millitm*1000;
+
+	return 1;
 }
-
-#endif

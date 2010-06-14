@@ -1,40 +1,60 @@
+/* 
+ * This file is part of the WinLIRC package, which was derived from
+ * LIRC (Linux Infrared Remote Control) 0.8.6.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * Copyright (C) 2010 Ian Curtis
+ */
+
 #include <Windows.h>
-#include "Tira.h"
-#include "TiraDLL.h"
+#include "Iguana.h"
 #include "resource.h"
 #include "Settings.h"
 #include "Globals.h"
 #include "Decode.h"
 #include "LIRCDefines.h"
+#include "iguanaIR.h"
+#include <stdio.h>
+#include "ReceiveData.h"
+#include "hardware.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-//===================
-TiraDLL		tiraDLL;
-Settings	settings;
-//===================
+IG_API int init(HANDLE exitEvent) {
 
-TI_API int init(HANDLE exitEvent) {
+	init_rec_buffer();
+	initHardwareStruct();
 
-	if(tiraDLL.tira_init()!=TIRA_TRUE) return 0;
+	receiveData = new ReceiveData();
+
+	if(!receiveData->init()) return 0;
 
 	threadExitEvent = exitEvent;
 	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
 
-	InitializeCriticalSection(&criticalSection);
-
-	gettimeofday(&end,NULL); // initialise to something meaninful
-
-	tiraDLL.tira_start(settings.getComPort());
-	tiraDLL.tira_set_handler(tiraCallbackFunction);
-
 	return 1;
 }
 
-TI_API void deinit() {
+IG_API void deinit() {
 
-	tiraDLL.tira_stop();
-	tiraDLL.tira_cleanup();
+	if(receiveData) {
+		receiveData->deinit();
+		delete receiveData;
+		receiveData = NULL;
+	}
 
 	if(dataReadyEvent) {
 		CloseHandle(dataReadyEvent);
@@ -43,11 +63,9 @@ TI_API void deinit() {
 
 	threadExitEvent = NULL;
 
-	DeleteCriticalSection(&criticalSection);
-
 }
 
-TI_API int hasGui() {
+IG_API int hasGui() {
 
 	return TRUE;
 }
@@ -61,26 +79,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 		case WM_INITDIALOG: {
 
-			//=========================
-			HWND dialogItem;
-			const char* version = NULL;
-			//=========================
-
-			tiraDLL.tira_init();
-
-			version		= tiraDLL.tira_get_version(0);
-			dialogItem	= GetDlgItem(hwnd,IDC_DLLVERSION);
-
-			if(dialogItem)	SetWindowTextA(dialogItem,version);
-			else			SetWindowTextA(dialogItem,"Information missing");
-
-			version		= tiraDLL.tira_get_version(1);
-			dialogItem	= GetDlgItem(hwnd,IDC_FIRMWAREVERSION);
-
-			if(dialogItem)	SetWindowTextA(dialogItem,version);
-			else			SetWindowTextA(dialogItem,"Information missing");
-
-			SetDlgItemInt(hwnd,IDC_EDIT1,settings.getComPort()+1,FALSE);
+			SetDlgItemInt(hwnd,IDC_EDIT1,settings.getDeviceNumber(),FALSE);
 
 			ShowWindow(hwnd, SW_SHOW);
 
@@ -99,11 +98,10 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 					//=======
 
 					temp = GetDlgItemInt(hwnd,IDC_EDIT1,NULL,FALSE);
-					temp = temp - 1;
 
 					if(temp<0) temp = 0;
 
-					settings.setComPort(temp);
+					settings.setDeviceNumber(temp);
 					settings.saveSettings();
 
 					DestroyWindow (hwnd);
@@ -135,7 +133,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 }
 
-TI_API void	loadSetupGui() {
+IG_API void	loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -158,7 +156,7 @@ TI_API void	loadSetupGui() {
 
 }
 
-TI_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
+IG_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
 
 	//
 	// return false - since we don't support this function yet .. Tira should be able to send though
@@ -167,13 +165,11 @@ TI_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 	return 0;
 }
 
-TI_API int decodeIR(struct ir_remote *remotes, char *out) {
+IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 
-	last = end;
-
-	gettimeofday		(&start,NULL);
-	waitTillDataIsReady	(0);
-	gettimeofday		(&end,NULL);
+	if(receiveData) {
+		receiveData->waitTillDataIsReady(0);
+	}
 
 	if(decodeCommand(remotes,out)) {
 		return 1;
@@ -182,8 +178,9 @@ TI_API int decodeIR(struct ir_remote *remotes, char *out) {
 	return 0;
 }
 
-TI_API struct hardware* getHardware() {
+IG_API struct hardware* getHardware() {
 
-	return 0;
+	initHardwareStruct();
+	return &hw;
 
 }
