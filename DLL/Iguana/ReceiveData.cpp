@@ -235,6 +235,8 @@ void ReceiveData::receiveLoop() {
 					}
 
 					if(y) SetEvent(dataReadyEvent);
+
+					free(code);
 				}
 
 				iguanaFreePacket(response);
