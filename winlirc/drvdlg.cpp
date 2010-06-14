@@ -255,7 +255,7 @@ bool Cdrvdlg::InitializeDaemon() {
 
 	config.readConfig(); // read config, some plugins might not need one
 
-	tmp = _T(".\\plugins\\");
+	tmp = _T(".\\");
 	tmp = tmp + config.plugin;
 
 	if(driver.loadPlugin(tmp)==false) {

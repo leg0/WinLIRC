@@ -39,6 +39,10 @@ BOOL Cwinlirc::InitInstance() {
 	dlg		= NULL;
 	server	= NULL;
 
+	SetCurrentDirectory(_T(".\\plugins\\"));
+
+	config.readINIFile();
+
 	dlg		= new Cdrvdlg();
 	server	= new Cserver();
 
