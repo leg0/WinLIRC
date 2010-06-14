@@ -34,9 +34,6 @@ CIRConfig::CIRConfig() {
 	CSingleLock lock(&CS_global_remotes,TRUE);
 	
 	global_remotes=NULL;
-
-	readINIFile();
-
 }
 
 CIRConfig::~CIRConfig()
@@ -114,7 +111,7 @@ bool CIRConfig::writeConfig() {
 	GetCurrentDirectory(MAX_PATH,path);
 
 	tempPath += path;
-	tempPath += _T("\\plugins\\WinLIRC.ini");
+	tempPath += _T("\\WinLIRC.ini");
 
 	WritePrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),remoteConfig,tempPath);
 	WritePrivateProfileString(_T("WinLIRC"),_T("Plugin"),plugin,tempPath);
@@ -137,7 +134,7 @@ bool CIRConfig::readINIFile() {
 	GetCurrentDirectory(MAX_PATH,path);
 
 	tempPath += path;
-	tempPath += _T("\\plugins\\WinLIRC.ini");
+	tempPath += _T("\\WinLIRC.ini");
 
 	GetPrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),NULL,remoteConfigName,_countof(remoteConfigName),tempPath);
 	GetPrivateProfileString(_T("WinLIRC"),_T("Plugin"),NULL,pluginName,_countof(pluginName),tempPath);

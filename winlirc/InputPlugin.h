@@ -20,8 +20,8 @@ private:
 	void loadDll		(CString file);
 	void unloadDll		();
 
-	typedef int  (*HasGuiFunction)			(void);
-	typedef void (*LoadSetupGuiFunction)	(void);
+	typedef int  (*HasGuiFunction)			();
+	typedef void (*LoadSetupGuiFunction)	();
 
 	HasGuiFunction			hasGuiFunction;
 	LoadSetupGuiFunction	loadSetupGuiFunction;

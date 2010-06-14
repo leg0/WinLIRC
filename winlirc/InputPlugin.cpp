@@ -37,7 +37,7 @@ void InputPlugin::listDllFiles() {
 	int			matchIndex;
 	//==========================
 
-	searchFile	= _T(".\\plugins\\*.dll");
+	searchFile	= _T(".\\*.dll");
 	found		= cFileFind.FindFile(searchFile);
 	foundMatch	= FALSE;
 	i			= 0;
@@ -54,21 +54,24 @@ void InputPlugin::listDllFiles() {
 
 		found = cFileFind.FindNextFile();
 
-		cboxInputPlugin.AddString(cFileFind.GetFileName());
+		if(checkDllFile(cFileFind.GetFilePath())) {
+
+			cboxInputPlugin.AddString(cFileFind.GetFileName());
 		
-		if(cFileFind.GetFileName() == config.plugin) {
-			cboxInputPlugin.SetCurSel(i);
-			foundMatch = TRUE;
-			matchIndex = i;
+			if(cFileFind.GetFileName() == config.plugin) {
+				cboxInputPlugin.SetCurSel(i);
+				foundMatch = TRUE;
+				matchIndex = i;
+			}
+			
+			i++;
 		}
-		
-		i++;
 	}
 
 	cboxInputPlugin.SetCurSel(matchIndex);
 	cboxInputPlugin.GetLBText(matchIndex,temp);
 
-	temp = _T(".\\plugins\\") + temp;
+	temp = _T(".\\") + temp;
 
 	loadDll(temp);
 
@@ -91,12 +94,12 @@ bool InputPlugin::checkDllFile(CString file) {
 
 	if(!tmp) return false;
 
-	if(!GetProcAddress(tmp,_T("init")))			return false;
-	if(!GetProcAddress(tmp,_T("deinit")))		return false;
-	if(!GetProcAddress(tmp,_T("hasGui")))		return false;
-	if(!GetProcAddress(tmp,_T("loadSetupGui"))) return false;
-	if(!GetProcAddress(tmp,_T("sendIR")))		return false;
-	if(!GetProcAddress(tmp,_T("decodeIR")))		return false;
+	if(!GetProcAddress(tmp,_T("init")))			{ FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,_T("deinit")))		{ FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,_T("hasGui")))		{ FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,_T("loadSetupGui"))) { FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,_T("sendIR")))		{ FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,_T("decodeIR")))		{ FreeLibrary(tmp); return false; }
 
 	FreeLibrary(tmp);
 
@@ -155,18 +158,19 @@ void InputPlugin::OnCbnSelchangeCombo1() {
 	CString file;
 	//======================
 
+	unloadDll();
+
 	cursorSelection = cboxInputPlugin.GetCurSel();
 
 	cboxInputPlugin.GetLBText(cboxInputPlugin.GetCurSel(),file);
 
-	file = _T(".\\plugins\\") + file;
+	file = _T(".\\") + file;
 
 	bool tmp = checkDllFile(file);
 
 	//printf("%i worked \n",tmp);
 	if(!tmp) MessageBox(_T("Invalid dll file"),_T("Error"),0);
 
-	unloadDll();
 	loadDll(file);
 
 	if(hasGuiFunction) {

@@ -36,6 +36,7 @@ public:
 
 	bool readConfig	();
 	bool writeConfig();
+	bool readINIFile();
 
 	//=====================
 	CString remoteConfig;
@@ -44,7 +45,7 @@ public:
 	//=====================
 
 private:
-	bool readINIFile();
+	
 };
 
 #endif
