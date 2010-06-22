@@ -66,9 +66,9 @@ lirc_t get_next_rec_buffer(lirc_t maxusec)
 		{
 			lirc_t data;
 			
-			receiveData->waitTillDataIsReady(2*maxusec<100000 ? 100000:2*maxusec);
+			sendReceiveData->waitTillDataIsReady(2*maxusec<100000 ? 100000:2*maxusec);
 		
-			if(!receiveData->getData(&data))
+			if(!sendReceiveData->getData(&data))
 			{
 				//LOGPRINTF(3,"timeout: %u", maxusec);
 				return 0;

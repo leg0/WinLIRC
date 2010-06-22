@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="iguanaIR.lib"
+				AdditionalDependencies="iguanaIR.lib wsock32.lib"
 				OutputFile="$(OutDir)\IguanaPlugin.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -134,7 +134,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="iguanaIR.lib"
+				AdditionalDependencies="iguanaIR.lib wsock32.lib"
 				OutputFile="$(OutDir)\IguanaPlugin.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -191,7 +191,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReceiveData.cpp"
+				RelativePath=".\Send.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SendReceiveData.cpp"
 				>
 			</File>
 			<File
@@ -229,11 +233,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReceiveData.h"
+				RelativePath=".\resource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\resource.h"
+				RelativePath=".\Send.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SendReceiveData.h"
 				>
 			</File>
 			<File

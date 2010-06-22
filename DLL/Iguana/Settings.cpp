@@ -39,6 +39,19 @@ int Settings::getDeviceNumber() {
 	return devNumber;
 }
 
+void Settings::setTransmitterChannels(int channels) {
+
+	if(channels<0)	channels = 0;
+	if(channels>15) channels = 15;
+	
+	transmitterChannels = channels;
+}
+
+int Settings::getTransmitterChannels() {
+
+	return transmitterChannels;
+}
+
 void Settings::saveSettings() {
 
 	//===============================
@@ -65,6 +78,9 @@ void Settings::saveSettings() {
 	
 	_sntprintf(temp, _countof(temp), _T("%i"), devNumber);
 	WritePrivateProfileString(_T("IguanaPlugin"),_T("DeviceNumber"),temp, currentDirectory);
+
+	_sntprintf(temp, _countof(temp), _T("%i"), transmitterChannels);
+	WritePrivateProfileString(_T("IguanaPlugin"),_T("TransmitterChannels"),temp, currentDirectory);
 }
 
 void Settings::loadSettings() {
@@ -78,5 +94,6 @@ void Settings::loadSettings() {
 	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
 
 	devNumber = GetPrivateProfileInt(_T("IguanaPlugin"),_T("DeviceNumber"),0,currentDirectory);
+	transmitterChannels = GetPrivateProfileInt(_T("IguanaPlugin"),_T("TransmitterChannels"),0,currentDirectory);
 
 }

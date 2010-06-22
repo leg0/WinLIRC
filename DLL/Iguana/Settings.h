@@ -31,14 +31,18 @@ public:
 	int		getDeviceNumber	();
 	void	setDeviceNumber	(int deviceNumber);
 
+	int		getTransmitterChannels();
+	void	setTransmitterChannels(int channels);
+
 	void	saveSettings	();			// to ini file
 	void	loadSettings	();
 
 private:
 
-	//==========
+	//======================
 	int devNumber;
-	//==========
+	int transmitterChannels;
+	//======================
 };
 
 #endif
