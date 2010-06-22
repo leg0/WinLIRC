@@ -24,10 +24,10 @@
 
 #include <Windows.h>
 #include "Settings.h"
-#include "ReceiveData.h"
+#include "SendReceiveData.h"
 
 extern Settings settings;
-extern ReceiveData *receiveData;
+extern SendReceiveData *sendReceiveData;
 
 extern HANDLE threadExitEvent;
 extern HANDLE dataReadyEvent;

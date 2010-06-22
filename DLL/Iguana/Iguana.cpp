@@ -28,19 +28,22 @@
 #include "LIRCDefines.h"
 #include "iguanaIR.h"
 #include <stdio.h>
-#include "ReceiveData.h"
+#include "SendReceiveData.h"
 #include "hardware.h"
+#include "Send.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 IG_API int init(HANDLE exitEvent) {
 
 	init_rec_buffer();
+	init_send_buffer();
 	initHardwareStruct();
 
-	receiveData = new ReceiveData();
+	sendReceiveData = new SendReceiveData();
 
-	if(!receiveData->init()) return 0;
+	if(!sendReceiveData->init()) return 0;
+	if(!sendReceiveData->setTransmitters(settings.getTransmitterChannels())) return 0;
 
 	threadExitEvent = exitEvent;
 	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
@@ -50,10 +53,10 @@ IG_API int init(HANDLE exitEvent) {
 
 IG_API void deinit() {
 
-	if(receiveData) {
-		receiveData->deinit();
-		delete receiveData;
-		receiveData = NULL;
+	if(sendReceiveData) {
+		sendReceiveData->deinit();
+		delete sendReceiveData;
+		sendReceiveData = NULL;
 	}
 
 	if(dataReadyEvent) {
@@ -78,6 +81,17 @@ BOOL CALLBACK dialogProc (HWND hwnd,
     switch (message) {
 
 		case WM_INITDIALOG: {
+			
+			//===============
+			int transmitters;
+			//===============
+
+			transmitters = settings.getTransmitterChannels();
+
+			if(transmitters&IGUANA_TRANSMITTER1) SendDlgItemMessage(hwnd,IDC_CHECK1,BM_SETCHECK,BST_CHECKED,0);
+			if(transmitters&IGUANA_TRANSMITTER2) SendDlgItemMessage(hwnd,IDC_CHECK2,BM_SETCHECK,BST_CHECKED,0);
+			if(transmitters&IGUANA_TRANSMITTER3) SendDlgItemMessage(hwnd,IDC_CHECK3,BM_SETCHECK,BST_CHECKED,0);
+			if(transmitters&IGUANA_TRANSMITTER4) SendDlgItemMessage(hwnd,IDC_CHECK4,BM_SETCHECK,BST_CHECKED,0);
 
 			SetDlgItemInt(hwnd,IDC_EDIT1,settings.getDeviceNumber(),FALSE);
 
@@ -86,22 +100,32 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 			return TRUE;
 		}
 
-
 		case WM_COMMAND: {
 
 			switch(LOWORD(wParam)) {
 
 				case IDOK: {
 
-					//=======
+					//===============
 					int temp;
-					//=======
+					int transmitters;
+					//===============
+
+					transmitters = 0;
 
 					temp = GetDlgItemInt(hwnd,IDC_EDIT1,NULL,FALSE);
 
 					if(temp<0) temp = 0;
 
 					settings.setDeviceNumber(temp);
+					
+					if(SendDlgItemMessage(hwnd,IDC_CHECK1,BM_GETSTATE,0,0)==BST_CHECKED) transmitters |= IGUANA_TRANSMITTER1;
+					if(SendDlgItemMessage(hwnd,IDC_CHECK2,BM_GETSTATE,0,0)==BST_CHECKED) transmitters |= IGUANA_TRANSMITTER2;
+					if(SendDlgItemMessage(hwnd,IDC_CHECK3,BM_GETSTATE,0,0)==BST_CHECKED) transmitters |= IGUANA_TRANSMITTER3;
+					if(SendDlgItemMessage(hwnd,IDC_CHECK4,BM_GETSTATE,0,0)==BST_CHECKED) transmitters |= IGUANA_TRANSMITTER4;
+
+					settings.setTransmitterChannels(transmitters);
+
 					settings.saveSettings();
 
 					DestroyWindow (hwnd);
@@ -156,19 +180,19 @@ IG_API void	loadSetupGui() {
 
 }
 
-IG_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
+IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
-	//
-	// return false - since we don't support this function yet .. Tira should be able to send though
-	//
+	if(sendReceiveData) {
+		return sendReceiveData->send(remote,code,repeats);
+	}
 
 	return 0;
 }
 
 IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 
-	if(receiveData) {
-		receiveData->waitTillDataIsReady(0);
+	if(sendReceiveData) {
+		sendReceiveData->waitTillDataIsReady(0);
 	}
 
 	if(decodeCommand(remotes,out)) {
