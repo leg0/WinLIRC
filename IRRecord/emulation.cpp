@@ -174,12 +174,19 @@ void rewind_rec_buffer(void)
 	rec_buffer.sum=0;
 }
 
-int clear_rec_buffer(void)
-{
-	int move;
+int clear_rec_buffer(void) {
+	
+	if(hw.rec_mode==LIRC_MODE_LIRCCODE || hw.rec_mode==LIRC_MODE_CODE) {
 
-	{
-		lirc_t data;
+		rec_buffer.decoded = hw.get_ir_code();
+	}
+
+	else  {
+
+		//===========
+		lirc_t	data;
+		int		move;
+		//===========
 		
 		move=rec_buffer.wptr-rec_buffer.rptr;
 		if(move>0 && rec_buffer.rptr>0)

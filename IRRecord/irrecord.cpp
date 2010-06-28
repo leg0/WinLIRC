@@ -197,11 +197,6 @@ void logperror(int prio,const char *s)
 	}
 }
 
-void dosigterm(int sig)
-{
-	raise(SIGTERM);
-}
-
 int main(int argc,char **argv)
 {
 	char *filename = 0;
@@ -266,6 +261,8 @@ int main(int argc,char **argv)
 		exit(0);
 	}
 
+	SetCurrentDirectory(_T(".\\plugins\\"));
+
 	//
 	// simple command line processing, could throw errors, who knows
 	//
@@ -311,7 +308,7 @@ int main(int argc,char **argv)
 				temp = irDriver.getHardware();
 
 				if(!temp) {
-					printf("Driver doesn't export hardware function\n");
+					printf("The driver doesn't export the required functions.\n");
 					exit(0);
 				}
 
@@ -448,7 +445,7 @@ int main(int argc,char **argv)
 			" (lircd running ? --> close it, "
 			"check permissions)\n",progname);
 		fclose(fout);
-		unlink(filename);
+		_unlink(filename);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -458,7 +455,7 @@ int main(int argc,char **argv)
 	{
 		fprintf(stderr,"%s: no config file necessary\n",progname);
 		fclose(fout);
-		unlink(filename);
+		_unlink(filename);
 		irDriver.deinit();
 		exit(EXIT_SUCCESS);
 	}
@@ -468,7 +465,7 @@ int main(int argc,char **argv)
 	{
 		fprintf(stderr,"%s: mode not supported\n",progname);
 		fclose(fout);
-		unlink(filename);
+		_unlink(filename);
 		irDriver.deinit();
 		exit(EXIT_FAILURE);
 	}
@@ -525,7 +522,7 @@ int main(int argc,char **argv)
 				fprintf(stderr,"%s: gap not found,"
 					" can't continue\n",progname);
 				fclose(fout);
-				unlink(filename);
+				_unlink(filename);
 				irDriver.deinit();
 				exit(EXIT_FAILURE);
 			}
@@ -557,7 +554,7 @@ int main(int argc,char **argv)
 			fprintf(stderr,"%s: gap not found,"
 				" can't continue\n",progname);
 			fclose(fout);
-			unlink(filename);
+			_unlink(filename);
 			irDriver.deinit();
 			exit(EXIT_FAILURE);
 		}
@@ -575,7 +572,7 @@ int main(int argc,char **argv)
 		{
 			printf("But I know for sure that RC6 has a toggle bit!\n");
 			fclose(fout);
-			unlink(filename);
+			_unlink(filename);
 			irDriver.deinit();
 			exit(EXIT_FAILURE);
 		}
@@ -864,25 +861,16 @@ int main(int argc,char **argv)
 
 void flushhw(void)
 {
-	size_t size=1;
-	char buffer[sizeof(ir_code)];
-
 	switch(hw.rec_mode)
 	{
-	case LIRC_MODE_MODE2:
-		while(availabledata()) hw.readdata(0);
-		return;
-	case LIRC_MODE_CODE:
-		size=sizeof(unsigned char);
-		break;
-	case LIRC_MODE_LIRCCODE:
-		size=hw.code_length/CHAR_BIT;
-		if(hw.code_length%CHAR_BIT) size++;
-		break;
+		case LIRC_MODE_MODE2:
+			while(availabledata()) hw.readdata(0);
+			break;
+		case LIRC_MODE_CODE:
+		case LIRC_MODE_LIRCCODE:
+			hw.get_ir_code();
+			break;
 	}
-	//while(read(hw.fd,buffer,size)==size);
-	//check this in the future for other devices
-	//FIXME
 }
 
 int resethw(void)
