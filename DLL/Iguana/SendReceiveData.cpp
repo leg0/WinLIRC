@@ -72,8 +72,6 @@ bool SendReceiveData::init() {
 
 void SendReceiveData::deinit() {
 
-	recvDone = 1;
-
 	killThread();
 
 	if(connection!=INVALID_PIPE) {
@@ -94,6 +92,8 @@ void SendReceiveData::threadProc() {
 }
 
 void SendReceiveData::killThread() {
+
+	recvDone = 1;
 
 	while(threadHandle!=NULL) {
 

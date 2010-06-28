@@ -17,7 +17,7 @@ int WINAPI tiraCallbackFunction(const char * eventstring) {
 
 	EnterCriticalSection(&criticalSection);
 
-	sscanf(eventstring,"%x",&irCode);
+	sscanf(eventstring,"I64x",&irCode);
 
 	LeaveCriticalSection(&criticalSection);
 
