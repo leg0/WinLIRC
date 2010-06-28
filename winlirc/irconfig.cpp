@@ -119,6 +119,9 @@ bool CIRConfig::writeConfig() {
 	_sntprintf(repeats,_countof(repeats),_T("%i"),disableRepeats);
 	WritePrivateProfileString(_T("WinLIRC"),_T("DisableKeyRepeats"),repeats,tempPath);
 
+	_sntprintf(repeats,_countof(repeats),_T("%i"),disableFirstKeyRepeats);
+	WritePrivateProfileString(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),repeats,tempPath);
+
 	return true;
 }
 
@@ -139,7 +142,8 @@ bool CIRConfig::readINIFile() {
 	GetPrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),NULL,remoteConfigName,_countof(remoteConfigName),tempPath);
 	GetPrivateProfileString(_T("WinLIRC"),_T("Plugin"),NULL,pluginName,_countof(pluginName),tempPath);
 
-	disableRepeats = GetPrivateProfileInt(_T("WinLIRC"),_T("DisableKeyRepeats"),FALSE,tempPath);
+	disableRepeats			= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableKeyRepeats"),FALSE,tempPath);
+	disableFirstKeyRepeats	= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),FALSE,tempPath);
 
 	remoteConfig = remoteConfigName;
 	plugin = pluginName;

@@ -177,10 +177,12 @@ void CIRDriver::DaemonThreadProc(void) {
 
 		if(decodeFunction(global_remotes,message)) {
 
-			//==============
+			//======================
 			UINT64	keyCode;
-			UINT	repeat;
-			//==============
+			INT		repeat;
+			CHAR	command[128];
+			CHAR	remoteName[128];
+			//======================
 
 			if(config.disableRepeats) {
 
@@ -189,10 +191,24 @@ void CIRDriver::DaemonThreadProc(void) {
 					if(repeat) continue;
 				}
 			}
+			else if(config.disableFirstKeyRepeats>0) {
+				
+				if(sscanf(message,"%I64x %x %s %s",&keyCode,&repeat,command,remoteName)==4) {
+				
+					if(repeat) {
+
+						if(repeat<=config.disableFirstKeyRepeats) continue;
+						else {
+							sprintf(message,"%016llx %02x %s %s\n",keyCode,repeat-config.disableFirstKeyRepeats,command,remoteName);
+						}
+					}
+				}
+			}
+
+			printf("message %s\n",message);
 
 			app->dlg->GoGreen();
 			app->server->send(message);
-			//printf("Found message %s\n",message);
 		}
 
 	}
