@@ -54,6 +54,7 @@ void initHardwareStruct() {
 	hw.readdata		= &readData;
 	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;
+	hw.get_ir_code	= NULL;
 
 	hw.features		= LIRC_CAN_REC_MODE2;
 	hw.send_mode	= 0;
@@ -62,5 +63,5 @@ void initHardwareStruct() {
 	hw.resolution	= 0;
 
 	strcpy(hw.device,"hw");
-	strcpy(hw.name,"audio");
+	strcpy(hw.name,"SerialDevice");
 }

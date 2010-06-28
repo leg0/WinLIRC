@@ -53,6 +53,7 @@ struct hardware
 	lirc_t	(*readdata)		(lirc_t timeout);
 	void	(*wait_for_data)(lirc_t timeout);
 	int		(*data_ready)	(void);
+	ir_code (*get_ir_code)	(void);
 };
 
 extern struct hardware hw;
