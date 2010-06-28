@@ -38,11 +38,12 @@ public:
 	bool writeConfig();
 	bool readINIFile();
 
-	//=====================
+	//=============================
 	CString remoteConfig;
 	CString plugin;
 	BOOL	disableRepeats;
-	//=====================
+	INT		disableFirstKeyRepeats;
+	//=============================
 
 private:
 	

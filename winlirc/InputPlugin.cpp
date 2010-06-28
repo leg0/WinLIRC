@@ -137,6 +137,8 @@ void InputPlugin::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BUTTON1, setupButton);
 	DDX_Control(pDX, IDC_EDIT1, configPath);
 	DDX_Control(pDX, IDC_CHECK1, disableKeyRepeats);
+	DDX_Control(pDX, IDC_EDIT3, disableFirstRepeats);
+	DDX_Control(pDX, IDC_DISABLE_FIRST_REPEATS, disableFirstRepeatsLabel);
 }
 
 BEGIN_MESSAGE_MAP(InputPlugin, CDialog)
@@ -146,6 +148,7 @@ BEGIN_MESSAGE_MAP(InputPlugin, CDialog)
 	ON_BN_CLICKED(IDCANCEL, &InputPlugin::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_BUTTON1, &InputPlugin::OnBnClickedButton1)
 //	ON_WM_CREATE()
+ON_BN_CLICKED(IDC_CHECK1, &InputPlugin::OnBnClickedCheck1)
 END_MESSAGE_MAP()
 
 
@@ -187,10 +190,34 @@ void InputPlugin::OnBnClickedOk() {
 
 	//=================
 	CString confPath;
+	CString fKeyReps;
 	INT		checkState;
 	//=================
 
 	configPath.GetWindowText(confPath);
+
+	//
+	// some basic error checking
+	//
+
+	if(confPath!="") {
+
+		//========
+		FILE *tmp;
+		//========
+
+		tmp = fopen(confPath,"r");
+
+		if(tmp==NULL) {
+			MessageBox(	"The configuration filename is invalid.\n"
+				"Please try again.","Configuration Error");
+			return;
+		}
+		else {
+			fclose(tmp);
+		}
+	}
+
 	config.remoteConfig = confPath;
 
 	cboxInputPlugin.GetWindowText(config.plugin);
@@ -202,6 +229,15 @@ void InputPlugin::OnBnClickedOk() {
 	}
 	else {
 		config.disableRepeats = FALSE;
+	}
+
+	disableFirstRepeats.GetWindowText(fKeyReps);
+
+	if(fKeyReps!="") {
+		config.disableFirstKeyRepeats = _tstoi(fKeyReps);
+	}
+	else {
+		config.disableFirstKeyRepeats = 0;
 	}
 
 	config.writeConfig();
@@ -237,16 +273,45 @@ void InputPlugin::OnBnClickedButton1()
 
 BOOL InputPlugin::OnInitDialog() {
 
+	//===========
+	CString temp;
+	//===========
+
 	CDialog::OnInitDialog();
 
 	listDllFiles();
 
 	configPath.SetWindowText(config.remoteConfig);
 
+	temp.Format("%i",config.disableFirstKeyRepeats);
+
+	disableFirstRepeats.SetWindowText(temp);
+
 	if(config.disableRepeats) {
 		disableKeyRepeats.SetCheck(BST_CHECKED);
+		disableFirstRepeats.EnableWindow(FALSE);
+		disableFirstRepeatsLabel.EnableWindow(FALSE);
 	}
    
 	return TRUE;
+
+}
+
+void InputPlugin::OnBnClickedCheck1() {
+
+	//=============
+	INT	checkState;
+	//=============
+
+	checkState = disableKeyRepeats.GetCheck();
+
+	if(checkState==BST_CHECKED) {
+		disableFirstRepeats.EnableWindow(FALSE);
+		disableFirstRepeatsLabel.EnableWindow(FALSE);
+	}
+	else {
+		disableFirstRepeats.EnableWindow(TRUE);
+		disableFirstRepeatsLabel.EnableWindow(TRUE);
+	}
 
 }

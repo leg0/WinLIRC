@@ -40,8 +40,12 @@ public:
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnBnClickedButton1();
 private:
-	CComboBox cboxInputPlugin;
-	CButton setupButton;
-	CEdit configPath;
-	CButton disableKeyRepeats;
+	CComboBox	cboxInputPlugin;
+	CButton		setupButton;
+	CEdit		configPath;
+	CButton		disableKeyRepeats;
+	CEdit		disableFirstRepeats;
+	CStatic		disableFirstRepeatsLabel;
+public:
+	afx_msg void OnBnClickedCheck1();
 };

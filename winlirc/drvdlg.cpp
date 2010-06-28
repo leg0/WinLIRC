@@ -253,8 +253,16 @@ bool Cdrvdlg::InitializeDaemon() {
 	CWaitCursor foo;
 	//==============
 
-	config.readConfig(); // read config, some plugins might not need one
+	if(config.remoteConfig!="") {
 
+		if(!config.readConfig()) {
+
+			MessageBox(	"Error loading config file.","Configuration Error");
+			ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+			return false;
+		}
+	}
+	
 	tmp = _T(".\\");
 	tmp = tmp + config.plugin;
 
