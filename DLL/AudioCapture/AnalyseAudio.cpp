@@ -89,10 +89,6 @@ void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 			UINT x;
 			//=====
 
-			//
-			// pulse and space seem swapped over? weird .. maybe i misunderstood something
-			//
-
 			if(currentSample > (128 + 16)) {
 
 				if(!pulse) {
@@ -111,7 +107,7 @@ void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 
 				if(pulse) {
 					//
-					//changing from pulse to space so add this
+					//changing from pulse to space so add this pulse finished so add
 					//
 					x = (int)((sampleCount) * multiplyConstant);
 					sampleCount = 0;
