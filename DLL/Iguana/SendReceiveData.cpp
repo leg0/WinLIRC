@@ -95,7 +95,7 @@ void SendReceiveData::killThread() {
 
 	recvDone = 1;
 
-	while(threadHandle!=NULL) {
+	if(threadHandle!=NULL) {
 
 		//===========
 		DWORD result;
@@ -105,14 +105,14 @@ void SendReceiveData::killThread() {
 
 		if(GetExitCodeThread(threadHandle,&result)==0) 
 		{
+			threadHandle = NULL;
 			return;
 		}
 
 		if(result==STILL_ACTIVE)
 		{
-			if(WAIT_TIMEOUT==WaitForSingleObject(threadHandle,INFINITE)) break;
-
-			threadHandle=NULL;
+			WaitForSingleObject(threadHandle,INFINITE);
+			threadHandle = NULL;
 		}
 	}
 }
