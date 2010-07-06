@@ -133,6 +133,8 @@ bool StreamzapAPI::dataReady() {
 
 void StreamzapAPI::decode(BYTE data, int numberOfBytes) {
 
+	printf("data %i %i\n",data,numberOfBytes);
+
 	if(numberOfBytes!=0) {
 
 		//================
@@ -248,7 +250,11 @@ int StreamzapAPI::decodeCommand(char *out) {
 		case 0x18421:	strcpy_s(buttonName,_countof(buttonName),"YELLOW");	break;
 		case 0x8421:	strcpy_s(buttonName,_countof(buttonName),"BLUE");	break;
 
-		default: return 0;
+		default: {
+			value = 0;
+			numberOfBits = 0;
+			return 0;
+		}
 	}
 
 	_snprintf_s(out,PACKET_SIZE+1,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),repeatCount,buttonName,"Streamzap");
