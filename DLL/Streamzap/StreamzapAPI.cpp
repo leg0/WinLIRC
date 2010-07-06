@@ -133,8 +133,6 @@ bool StreamzapAPI::dataReady() {
 
 void StreamzapAPI::decode(BYTE data, int numberOfBytes) {
 
-	printf("data %i %i\n",data,numberOfBytes);
-
 	if(numberOfBytes!=0) {
 
 		//================
