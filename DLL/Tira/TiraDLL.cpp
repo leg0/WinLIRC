@@ -24,7 +24,7 @@ TiraDLL::~TiraDLL() {
 
 bool TiraDLL::loadDLL() {
 
-	dllHandle = LoadLibraryA( ".\\plugins\\tira2.dll" );
+	dllHandle = LoadLibraryA( "tira2.dll" );
 
 	if(!dllHandle) return false;
 

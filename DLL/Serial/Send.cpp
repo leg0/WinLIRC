@@ -578,12 +578,11 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 		remote->max_remaining_gap=max_gap(remote);
 	}
 
+	send_space(remote->min_remaining_gap);
+
 	if(remote->repeat_countdown>0)
 	{
-
 		remote->repeat_countdown--;
-
-		send_space(remote->min_remaining_gap);
 
 		sendBufferSum = 0;
 		
@@ -616,7 +615,7 @@ void send (ir_ncode *data,struct ir_remote *rem, int repeats)
     SetThreadPriority	(mythread,THREAD_PRIORITY_TIME_CRITICAL);
 
 	init_timer			();
-	init_send			(rem, data, repeats); 
+	init_send			(rem, data, repeats);
 
     SetPriorityClass	(myprocess,mypriorityclass); //restore original priorities
     SetThreadPriority	(mythread,mythreadpriority);
