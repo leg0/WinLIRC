@@ -85,9 +85,9 @@ void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 
 		else {
 
-			//=====
-			UINT x;
-			//=====
+			//=======
+			lirc_t x;
+			//=======
 
 			if(currentSample > (128 + 16)) {
 
@@ -95,11 +95,13 @@ void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 					//
 					//changing from space to pulse so add this
 					//
-					x = (int)((sampleCount) * multiplyConstant);
+					x = (lirc_t)((sampleCount) * multiplyConstant);
 					sampleCount = 0;
 
+					if(x>PULSE_MASK) x = PULSE_MASK;	//clamp the value otherwise we will get false PULSES if we overflow
+
 					setData(x);
-					SetEvent(dataReadyEvent);	//signal data is ready for other thread
+					SetEvent(dataReadyEvent);			//signal data is ready for other thread
 				}
 				pulse = true;
 			}
@@ -109,11 +111,13 @@ void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 					//
 					//changing from pulse to space so add this pulse finished so add
 					//
-					x = (int)((sampleCount) * multiplyConstant);
+					x = (lirc_t)((sampleCount) * multiplyConstant);
 					sampleCount = 0;
+
+					if(x>PULSE_MASK) x = PULSE_MASK;	//clamp the value otherwise we will get false PULSES if we overflow
 					
 					setData(x|PULSE_BIT);
-					SetEvent(dataReadyEvent);	//signal data is ready for other thread
+					SetEvent(dataReadyEvent);			//signal data is ready for other thread
 				}
 				pulse = false;
 			}
