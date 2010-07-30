@@ -23,6 +23,7 @@
 #include "SendReceiveData.h"
 #include "Globals.h"
 #include <stdio.h>
+#include <tchar.h>
 
 DWORD WINAPI IRToy(void *recieveClass) {
 
@@ -34,16 +35,47 @@ SendReceiveData::SendReceiveData() {
 
 	bufferStart		= 0;
 	bufferEnd		= 0;
-	recvDone		= 0;
 	threadHandle	= NULL;
+	exitEvent		= NULL;
+	overlappedEvent	= NULL;
 
+	memset(&overlapped,0,sizeof(OVERLAPPED));
 }
 
 bool SendReceiveData::init() {
 
-	threadHandle = CreateThread(NULL,0,IRToy,(void *)this,0,NULL);
+	//===================
+	TCHAR comPortName[8];
+	char tempBuffer[32];
+	//===================
 
-	recvDone = 0;
+	_sntprintf(comPortName,_countof(comPortName),_T("COM%i"),settings.getComPort());
+
+	if(CSerial::CheckPort(comPortName)!=CSerial::EPortAvailable) return false;
+
+	//printf("INIT\n");
+
+	//
+	//open serial port
+	//
+	if(serial.Open(comPortName,0,0,true)!=ERROR_SUCCESS) return false;;
+	if(serial.Setup(CSerial::EBaud115200,CSerial::EData8,CSerial::EParNone,CSerial::EStop1)!=ERROR_SUCCESS) return false;
+	if(serial.SetupHandshaking(CSerial::EHandshakeOff)!=ERROR_SUCCESS) return false;	//change this to none?
+	if(serial.SetupReadTimeouts(CSerial::EReadTimeoutNonblocking)!=ERROR_SUCCESS) return false;
+	if(serial.Write("\0")!=ERROR_SUCCESS) return false;
+	Sleep(100);
+	if(serial.Write("s")!=ERROR_SUCCESS) return false;
+	Sleep(100);
+	serial.Read(tempBuffer,sizeof(tempBuffer));
+	Sleep(100);
+	if(serial.SetupHandshaking(CSerial::EHandshakeHardware)!=ERROR_SUCCESS) return false;
+
+	serial.SetMask(CSerial::EEventRecv);
+	
+	exitEvent			= CreateEvent(NULL,FALSE,FALSE,NULL);
+	overlappedEvent		= CreateEvent(NULL,FALSE,FALSE,NULL);
+	overlapped.hEvent	= overlappedEvent;
+	threadHandle		= CreateThread(NULL,0,IRToy,(void *)this,0,NULL);
 
 	if(threadHandle) {
 		return true;
@@ -56,7 +88,16 @@ void SendReceiveData::deinit() {
 
 	killThread();
 
-	//clean up other stuff
+	if(exitEvent) {
+		CloseHandle(exitEvent);
+		exitEvent = NULL;
+	}
+
+	if(overlappedEvent) {
+		CloseHandle(overlappedEvent);
+		overlappedEvent = NULL;
+	}
+
 }
 
 
@@ -67,7 +108,11 @@ void SendReceiveData::threadProc() {
 
 void SendReceiveData::killThread() {
 
-	recvDone = 1;
+	//
+	// need to kill thread here
+	//
+
+	SetEvent(exitEvent);
 
 	if(threadHandle!=NULL) {
 
@@ -142,22 +187,120 @@ bool SendReceiveData::getData(lirc_t *out) {
 
 void SendReceiveData::receiveLoop() {
 
-	while(! recvDone)
+	//=================
+	HANDLE	wait[2];
+	DWORD	result;
+	bool	highByte;
+	bool	pulse;
+	lirc_t	value;
+	bool	firstSpace;
+	//=================
+
+	wait[0] = overlappedEvent;
+	wait[1] = exitEvent;
+
+	highByte	= true;
+	pulse		= true;
+	value		= 0;
+	firstSpace	= false;
+
+	//printf("entering receive loop !!!!!!!!!\n");
+
+	while(1)
 	{
-		//
-		//check for data here
-		//
+		//=====================
+		CSerial::EEvent eEvent;
+		//=====================
 
-		//
-		//if we have data call setData(dataValue|PULSE_BIT)
-		//
+		serial.WaitEvent(&overlapped);
 
-		//
-		//signal other thread data is ready with SetEvent(dataReadyEvent);
-		//
+		result = WaitForMultipleObjects(sizeof(wait)/sizeof(*wait),wait,FALSE,INFINITE);
 
-		Sleep(100);
+		if(result==WAIT_OBJECT_0) {
+
+			//==================
+			DWORD	dwBytesRead;
+			char	buffer[256];
+			//==================
+
+			eEvent = serial.GetEventType();
+
+			if (!(eEvent & CSerial::EEventRecv)) { printf("wrong event\n"); continue; }
+
+			while(1) {
+
+				if(serial.Read(buffer,sizeof(buffer),&dwBytesRead)!=ERROR_SUCCESS) {
+					break;					// read error
+				}
+
+				if(dwBytesRead<=0) break;	//finished reading
+
+				for(DWORD i=0; i<dwBytesRead;i++) {
+				
+					if(highByte) {
+						value = (buffer[i] & 0xFF) << 8;
+						highByte = false;
+					}
+					else {
+
+						//==========
+						bool resync;
+						//==========
+
+						resync		= false;
+						value		= value + (buffer[i] & 0xFF);
+						highByte	= true;			//next byte is 'high
+
+						if(value==0xFFFF) resync = true;
+
+						value = (int)((float)value * 21.3333f);
+
+						if(pulse) {
+							value |= PULSE_BIT;
+							pulse = false;
+						}
+						else {
+							pulse = true;	//next value will be a pulse;
+						}
+
+						//
+						// bit of a hack, we need a space first to start decoding
+						// have to add it here due to threading issues i was getting
+						// I tried adding it earlier and because of thread order, was
+						// causing the first decode to fail
+						//
+						if(!firstSpace) {
+							setData(PULSE_MASK);
+							firstSpace = true;
+						}
+
+						setData(value);
+
+						if(resync) {
+							highByte = true;
+							pulse = true;
+						}
+						else {
+							SetEvent(dataReadyEvent);
+						}
+						
+						value = 0;	//reset value
+					}
+				}
+			}
+
+		}
+		else if(result==WAIT_OBJECT_0+1) {
+			break;	//exit thread
+		}
+		else {
+			break;	//unknown error/event
+		}
 	}
+
+	//printf("thread exited\n");
+
+	serial.Close();
 }
 
 //======================================================================================
@@ -165,6 +308,10 @@ void SendReceiveData::receiveLoop() {
 //======================================================================================
 
 int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
+
+	//
+	// not supported for now, if we do support this we'll need to halt receiving
+	//
 
 	return 0;
 }
