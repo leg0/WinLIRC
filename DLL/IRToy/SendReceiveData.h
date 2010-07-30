@@ -23,6 +23,7 @@
 #define RECEIVEDATA_H
 
 #include "LIRCDefines.h"
+#include "Serial.h"
 
 
 class SendReceiveData
@@ -49,8 +50,11 @@ private:
 	lirc_t		dataBuffer[256];
 	UCHAR		bufferStart;
 	UCHAR		bufferEnd;
-	int			recvDone;
 	HANDLE		threadHandle;
+	CSerial		serial;
+	HANDLE		exitEvent;
+	HANDLE		overlappedEvent;
+	OVERLAPPED	overlapped;
 	//==========================
 };
 

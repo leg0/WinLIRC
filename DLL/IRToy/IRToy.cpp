@@ -38,6 +38,8 @@ IG_API int init(HANDLE exitEvent) {
 
 	sendReceiveData = new SendReceiveData();
 
+	if(!sendReceiveData->init()) return 0;
+
 	threadExitEvent = exitEvent;
 	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
 
@@ -81,7 +83,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 			for(int i=1; i<10; i++) {
 
-				_stprintf(temp,_T("%i"),i);
+				_sntprintf(temp,_countof(temp),_T("%i"),i);
 				SendDlgItemMessage(hwnd,IDC_COMBO1,CB_ADDSTRING,0,(LPARAM)temp);
 			}
 
@@ -167,7 +169,6 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 			return 1;
 		}
 	}
-	
 
 	return 0;
 }
