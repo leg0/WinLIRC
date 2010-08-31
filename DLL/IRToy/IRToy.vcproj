@@ -43,7 +43,7 @@
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Send.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SendReceiveData.cpp"
 				>
 			</File>
@@ -220,6 +224,10 @@
 			</File>
 			<File
 				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Send.h"
 				>
 			</File>
 			<File
