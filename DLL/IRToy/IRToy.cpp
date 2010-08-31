@@ -78,10 +78,10 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 		case WM_INITDIALOG: {
 
 			//============
-			TCHAR temp[2];
+			TCHAR temp[3];
 			//============
 
-			for(int i=1; i<10; i++) {
+			for(int i=1; i<=20; i++) {
 
 				_sntprintf(temp,_countof(temp),_T("%i"),i);
 				SendDlgItemMessage(hwnd,IDC_COMBO1,CB_ADDSTRING,0,(LPARAM)temp);
@@ -156,6 +156,10 @@ IG_API void	loadSetupGui() {
 }
 
 IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+
+	if(sendReceiveData) {
+		return sendReceiveData->send(remote,code,repeats);
+	}
 
 	return 0;
 }
