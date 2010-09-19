@@ -139,6 +139,7 @@ void InputPlugin::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK1, disableKeyRepeats);
 	DDX_Control(pDX, IDC_EDIT3, disableFirstRepeats);
 	DDX_Control(pDX, IDC_DISABLE_FIRST_REPEATS, disableFirstRepeatsLabel);
+	DDX_Control(pDX, IDC_CHECK2, allowLocalConnectionsOnly);
 }
 
 BEGIN_MESSAGE_MAP(InputPlugin, CDialog)
@@ -191,7 +192,6 @@ void InputPlugin::OnBnClickedOk() {
 	//=================
 	CString confPath;
 	CString fKeyReps;
-	INT		checkState;
 	//=================
 
 	configPath.GetWindowText(confPath);
@@ -222,9 +222,7 @@ void InputPlugin::OnBnClickedOk() {
 
 	cboxInputPlugin.GetWindowText(config.plugin);
 
-	checkState = disableKeyRepeats.GetCheck();
-
-	if(checkState==BST_CHECKED) {
+	if(disableKeyRepeats.GetCheck()==BST_CHECKED) {
 		config.disableRepeats = TRUE;
 	}
 	else {
@@ -238,6 +236,13 @@ void InputPlugin::OnBnClickedOk() {
 	}
 	else {
 		config.disableFirstKeyRepeats = 0;
+	}
+
+	if(allowLocalConnectionsOnly.GetCheck()==BST_CHECKED) {
+		config.localConnectionsOnly = TRUE;
+	}
+	else {
+		config.localConnectionsOnly = FALSE;
 	}
 
 	config.writeConfig();
@@ -291,6 +296,10 @@ BOOL InputPlugin::OnInitDialog() {
 		disableKeyRepeats.SetCheck(BST_CHECKED);
 		disableFirstRepeats.EnableWindow(FALSE);
 		disableFirstRepeatsLabel.EnableWindow(FALSE);
+	}
+
+	if(config.localConnectionsOnly) {
+		allowLocalConnectionsOnly.SetCheck(BST_CHECKED);
 	}
    
 	return TRUE;

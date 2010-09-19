@@ -103,22 +103,33 @@ bool Cserver::init()
 
 bool Cserver::startserver(void)
 {
+	//===========================
+	struct sockaddr_in serv_addr;
+	//===========================
+
 	/* make the server socket */
+
 	if(server!=NULL && server!=INVALID_SOCKET)
 		closesocket(server);
 
-	server=socket(AF_INET,SOCK_STREAM,0);
+	server = socket(AF_INET,SOCK_STREAM,0);
+
 	if(server==INVALID_SOCKET)
 	{ 
 		DEBUG("socket failed, WSAGetLastError=%d\n",WSAGetLastError());
 		return false;
 	}
 
-	struct sockaddr_in serv_addr;
 	memset(&serv_addr,0,sizeof(struct sockaddr_in));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(tcp_port);
+
+	serv_addr.sin_family		= AF_INET;
+	serv_addr.sin_addr.s_addr	= htonl(INADDR_ANY);
+	serv_addr.sin_port			= htons(tcp_port);
+
+	if(config.localConnectionsOnly) {
+		serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	}
+
 	if(bind(server,(struct sockaddr *)&serv_addr,sizeof(serv_addr))==SOCKET_ERROR)
 		{ DEBUG("bind failed\n"); return false; }
 

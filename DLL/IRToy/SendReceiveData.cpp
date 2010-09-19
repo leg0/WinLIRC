@@ -119,7 +119,9 @@ void SendReceiveData::killThread() {
 	// need to kill thread here
 	//
 
-	SetEvent(exitEvent);
+	if(exitEvent) {
+		SetEvent(exitEvent);
+	}
 
 	if(threadHandle!=NULL) {
 

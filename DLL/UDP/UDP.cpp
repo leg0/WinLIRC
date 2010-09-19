@@ -49,15 +49,15 @@ IG_API int init(HANDLE exitEvent) {
 
 IG_API void deinit() {
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
-
 	if(server) {
 		server->deinit();
 		delete server;
 		server = NULL;
+	}
+
+	if(dataReadyEvent) {
+		CloseHandle(dataReadyEvent);
+		dataReadyEvent = NULL;
 	}
 
 	threadExitEvent = NULL;

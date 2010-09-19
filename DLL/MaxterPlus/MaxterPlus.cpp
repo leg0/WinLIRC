@@ -23,26 +23,21 @@
 #include "LIRCDefines.h"
 #include <stdio.h>
 #include "Globals.h"
-#include "hardware.h"
-#include "Decode.h"
-#include "IRMan.h"
-#include "resource.h"
+#include "MaxterPlus.h"
 #include <tchar.h>
+#include "resource.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 IG_API int init(HANDLE exitEvent) {
 
-	initHardwareStruct();
 
 	sendReceiveData = new SendReceiveData();
 
 	if(!sendReceiveData->init()) return 0;
 
-	InitializeCriticalSection(&criticalSection);
-
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
 
 	return 1;
 }
@@ -60,9 +55,8 @@ IG_API void deinit() {
 		dataReadyEvent = NULL;
 	}
 
-	DeleteCriticalSection(&criticalSection);
-
 	threadExitEvent = NULL;
+
 }
 
 IG_API int hasGui() {
@@ -79,17 +73,17 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 		case WM_INITDIALOG: {
 
-			//============
-			TCHAR temp[2];
-			//============
+			//=================
+			int buttonSettings;
+			//=================
 
-			for(int i=1; i<10; i++) {
+			buttonSettings = settings.getSettings();
 
-				_sntprintf(temp,_countof(temp),_T("%i"),i);
-				SendDlgItemMessage(hwnd,IDC_COMBO1,CB_ADDSTRING,0,(LPARAM)temp);
-			}
-
-			SendDlgItemMessage(hwnd,IDC_COMBO1,CB_SETCURSEL,settings.getComPort()-1,0);
+			if(!(buttonSettings&0x02)) { SendDlgItemMessage(hwnd,IDC_CHECK1,BM_SETCHECK,BST_CHECKED,0); }
+			if(!(buttonSettings&0x04)) { SendDlgItemMessage(hwnd,IDC_CHECK2,BM_SETCHECK,BST_CHECKED,0); }
+			if(!(buttonSettings&0x08)) { SendDlgItemMessage(hwnd,IDC_CHECK3,BM_SETCHECK,BST_CHECKED,0); }
+			if(!(buttonSettings&0x10)) { SendDlgItemMessage(hwnd,IDC_CHECK4,BM_SETCHECK,BST_CHECKED,0); }
+			if(!(buttonSettings&0x20)) { SendDlgItemMessage(hwnd,IDC_CHECK5,BM_SETCHECK,BST_CHECKED,0); }
 
 			ShowWindow(hwnd, SW_SHOW);
 
@@ -102,7 +96,19 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 				case IDOK: {
 
-					settings.setComPort(SendDlgItemMessage(hwnd,IDC_COMBO1,CB_GETCURSEL,0,0)+1);
+					//=================
+					int buttonSettings;
+					//=================
+
+					buttonSettings = 0;
+
+					if(SendDlgItemMessage(hwnd,IDC_CHECK1,BM_GETSTATE,0,0)==BST_UNCHECKED) { buttonSettings = buttonSettings|0x02; }
+					if(SendDlgItemMessage(hwnd,IDC_CHECK2,BM_GETSTATE,0,0)==BST_UNCHECKED) { buttonSettings = buttonSettings|0x04; }
+					if(SendDlgItemMessage(hwnd,IDC_CHECK3,BM_GETSTATE,0,0)==BST_UNCHECKED) { buttonSettings = buttonSettings|0x08; }
+					if(SendDlgItemMessage(hwnd,IDC_CHECK4,BM_GETSTATE,0,0)==BST_UNCHECKED) { buttonSettings = buttonSettings|0x10; }
+					if(SendDlgItemMessage(hwnd,IDC_CHECK5,BM_GETSTATE,0,0)==BST_UNCHECKED) { buttonSettings = buttonSettings|0x20; }
+
+					settings.setSettings(buttonSettings);
 					settings.saveSettings();
 
 					DestroyWindow (hwnd);
@@ -154,7 +160,6 @@ IG_API void	loadSetupGui() {
             DispatchMessage ( & msg );
         }
     }
-
 }
 
 IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
@@ -165,18 +170,11 @@ IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(sendReceiveData) {
+
 		sendReceiveData->waitTillDataIsReady(0);
-		
-		if(decodeCommand(remotes,out)) {
-			return 1;
-		}
+
+		return sendReceiveData->decodeCommand(out);
 	}
 
 	return 0;
-}
-
-IG_API struct hardware* getHardware() {
-
-	initHardwareStruct();
-	return &hw;
 }

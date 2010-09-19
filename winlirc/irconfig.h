@@ -43,6 +43,7 @@ public:
 	CString plugin;
 	BOOL	disableRepeats;
 	INT		disableFirstKeyRepeats;
+	BOOL	localConnectionsOnly;
 	//=============================
 
 private:

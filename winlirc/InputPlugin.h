@@ -46,6 +46,7 @@ private:
 	CButton		disableKeyRepeats;
 	CEdit		disableFirstRepeats;
 	CStatic		disableFirstRepeatsLabel;
+	CButton		allowLocalConnectionsOnly;
 public:
 	afx_msg void OnBnClickedCheck1();
 };

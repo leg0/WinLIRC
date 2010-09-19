@@ -45,15 +45,15 @@ IG_API int init(HANDLE exitEvent) {
 
 IG_API void deinit() {
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
-
 	if(streamzapAPI) {
 		streamzapAPI->deinit();
 		delete streamzapAPI;
 		streamzapAPI = NULL;
+	}
+
+	if(dataReadyEvent) {
+		CloseHandle(dataReadyEvent);
+		dataReadyEvent = NULL;
 	}
 
 	threadExitEvent = NULL;

@@ -26,15 +26,15 @@ TE_API int init(HANDLE exitEvent) {
 
 TE_API void deinit() {
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
-
 	if(receive) {
 		receive->deinit();
 		delete receive;
 		receive = NULL;
+	}
+
+	if(dataReadyEvent) {
+		CloseHandle(dataReadyEvent);
+		dataReadyEvent = NULL;
 	}
 
 	threadExitEvent = NULL;

@@ -232,9 +232,6 @@ extern struct ir_ncode code;
 extern struct ir_remote *global_remotes;
 extern class CIRDriver *ir_driver;
 extern class Clearndlg *learn_dialog;
-extern int line;
-extern int parse_error;
-extern int lirc;
 
 
 /* Change this stuff */

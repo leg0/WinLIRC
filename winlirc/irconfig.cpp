@@ -105,7 +105,7 @@ bool CIRConfig::writeConfig() {
 	//=====================
 	TCHAR	path[MAX_PATH];
 	CString tempPath;
-	TCHAR	repeats[4];
+	TCHAR	tempIni[4];
 	//=====================
 
 	GetCurrentDirectory(MAX_PATH,path);
@@ -116,11 +116,14 @@ bool CIRConfig::writeConfig() {
 	WritePrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),remoteConfig,tempPath);
 	WritePrivateProfileString(_T("WinLIRC"),_T("Plugin"),plugin,tempPath);
 
-	_sntprintf(repeats,_countof(repeats),_T("%i"),disableRepeats);
-	WritePrivateProfileString(_T("WinLIRC"),_T("DisableKeyRepeats"),repeats,tempPath);
+	_sntprintf(tempIni,_countof(tempIni),_T("%i"),disableRepeats);
+	WritePrivateProfileString(_T("WinLIRC"),_T("DisableKeyRepeats"),tempIni,tempPath);
 
-	_sntprintf(repeats,_countof(repeats),_T("%i"),disableFirstKeyRepeats);
-	WritePrivateProfileString(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),repeats,tempPath);
+	_sntprintf(tempIni,_countof(tempIni),_T("%i"),disableFirstKeyRepeats);
+	WritePrivateProfileString(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),tempIni,tempPath);
+
+	_sntprintf(tempIni,_countof(tempIni),_T("%i"),localConnectionsOnly);
+	WritePrivateProfileString(_T("WinLIRC"),_T("LocalConnectionsOnly"),tempIni,tempPath);
 
 	return true;
 }
@@ -144,6 +147,7 @@ bool CIRConfig::readINIFile() {
 
 	disableRepeats			= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableKeyRepeats"),FALSE,tempPath);
 	disableFirstKeyRepeats	= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),FALSE,tempPath);
+	localConnectionsOnly	= GetPrivateProfileInt(_T("WinLIRC"),_T("LocalConnectionsOnly"),TRUE,tempPath);
 
 	remoteConfig = remoteConfigName;
 	plugin = pluginName;

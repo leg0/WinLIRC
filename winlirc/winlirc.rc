@@ -65,7 +65,7 @@ BEGIN
     PUSHBUTTON      "&Send Code",IDC_SENDCODE,174,99,50,14
     PUSHBUTTON      "&Reconfigure",IDC_CONFIG,174,6,50,14
     ICON            IDI_LIRC,IDC_STATIC,7,6,20,20
-    CONTROL         "by Jim Paris <jim@jtan.com>,\nScott Baily <baily@users.sourceforge.net>,\nJörgen Birkler <jorgen@birkler.com>,",IDC_STATIC,
+    CONTROL         "by Jim Paris <jim@jtan.com>,\nScott Baily <baily@users.sourceforge.net>,\nIan Curtis <i.curtis@gmail.com>,",IDC_STATIC,
                     "Static",SS_LEFTNOWORDWRAP | WS_GROUP,33,31,138,26
     LTEXT           "This program is distributed under the GNU Public\nLicense and comes with absolutely NO WARRANTY.",IDC_STATIC,30,124,173,17
     GROUPBOX        "",IDC_STATIC,7,118,217,23
@@ -74,7 +74,7 @@ BEGIN
     LTEXT           "code",IDC_STATIC,19,102,17,8
     LTEXT           "remote",IDC_STATIC,14,81,22,8
     LTEXT           "repeats",IDC_STATIC,163,78,24,8
-    LTEXT           "Alexander Nesterovsky <nsky@users.sourceforge.net>\nBased on LIRC 0.8.6.",IDC_STATIC,33,56,184,17
+    LTEXT           "Based on LIRC 0.8.7.",IDC_STATIC,33,56,184,10
 END
 
 IDD_LEARN DIALOG  0, 0, 286, 150
@@ -193,9 +193,9 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
 // Dialog
 //
 
-IDD_DIALOG1 DIALOGEX 0, 0, 184, 175
+IDD_DIALOG1 DIALOGEX 0, 0, 184, 214
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Plugin Setup"
+CAPTION "Setup"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     COMBOBOX        IDC_COMBO1,67,18,95,108,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
@@ -204,14 +204,17 @@ BEGIN
     PUSHBUTTON      "Browse",IDC_BUTTON2,145,78,30,12
     CONTROL         "Disable Key Repeats",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,108,8,9
     EDITTEXT        IDC_EDIT3,138,126,15,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    DEFPUSHBUTTON   "OK",IDOK,39,154,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,93,154,50,14
+    DEFPUSHBUTTON   "OK",IDOK,40,192,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,94,192,50,14
     LTEXT           "Input Plugin",IDC_STATIC,19,18,42,15
     GROUPBOX        "",IDC_STATIC,7,6,170,60
     LTEXT           "Config",IDC_STATIC,7,78,24,12
     LTEXT           "Disable all repeats",IDC_STATIC,30,108,60,11
     LTEXT           "Disable repeats",IDC_DISABLE_FIRST_REPEATS,30,126,72,8
     GROUPBOX        "Repeats",IDC_STATIC,7,96,170,51
+    GROUPBOX        "Server Options",IDC_STATIC,7,156,170,30
+    CONTROL         "",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,144,168,12,12
+    LTEXT           "Allow local connections only",IDC_STATIC,30,168,96,12
 END
 
 
@@ -228,7 +231,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 177
         TOPMARGIN, 7
-        BOTTOMMARGIN, 168
+        BOTTOMMARGIN, 207
     END
 END
 #endif    // APSTUDIO_INVOKED

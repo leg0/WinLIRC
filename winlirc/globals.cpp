@@ -58,9 +58,6 @@ struct ir_ncode code;
 struct ir_remote *global_remotes=NULL;
 class CIRDriver *ir_driver=NULL;
 class Clearndlg *learn_dialog=NULL;
-int line;
-int parse_error=0;
-int lirc;
 
 CWinThread *ServerThreadHandle=NULL;
 CEvent ServerThreadEvent;
