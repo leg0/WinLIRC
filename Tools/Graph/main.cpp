@@ -86,7 +86,7 @@ void createWindow(HINSTANCE hInstance, int nCmdShow) {
 
 	RegisterClassEx(&wcex);
 
-	mainWindowHandle = CreateWindowEx(0,_T("OpenglGraph"),_T("irGraph"),WS_OVERLAPPEDWINDOW,CW_USEDEFAULT,CW_USEDEFAULT,800,200,NULL,NULL,hInstance,NULL);
+	mainWindowHandle = CreateWindowEx(0,_T("OpenglGraph"),_T("IRGraph"),WS_OVERLAPPEDWINDOW,CW_USEDEFAULT,CW_USEDEFAULT,800,200,NULL,NULL,hInstance,NULL);
 
 	ShowWindow(mainWindowHandle, nCmdShow);
 	UpdateWindow(mainWindowHandle);

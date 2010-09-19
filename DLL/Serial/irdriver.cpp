@@ -36,12 +36,13 @@ unsigned int IRThread(void *drv) {
 CIRDriver::CIRDriver()
 {
 	hPort			= NULL;
-	ov.hEvent		= NULL;
 	IRThreadHandle	= NULL;
 	hDataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
 	
 	bufferStart		= 0;
 	bufferEnd		= 0;
+
+	memset(&ov,0,sizeof(OVERLAPPED));
 }
 
 CIRDriver::~CIRDriver()

@@ -64,9 +64,11 @@ bool SendReceiveData::init() {
 	if(serial.Setup(CSerial::EBaud9600,CSerial::EData8,CSerial::EParNone,CSerial::EStop1)!=ERROR_SUCCESS) return false;
 	if(serial.SetupHandshaking(CSerial::EHandshakeOff)!=ERROR_SUCCESS) return false;	//change this to none?
 	if(serial.SetupReadTimeouts(CSerial::EReadTimeoutNonblocking)!=ERROR_SUCCESS) return false;
-	if(serial.Write("I")!=ERROR_SUCCESS) return false;
+	tempBuffer[0] = 'I';
+	if(serial.Write(tempBuffer,1)!=ERROR_SUCCESS) return false;
 	Sleep(500);
-	if(serial.Write("R")!=ERROR_SUCCESS) return false;
+	tempBuffer[0] = 'R';
+	if(serial.Write(tempBuffer,1)!=ERROR_SUCCESS) return false;
 	Sleep(500);
 	serial.Read(tempBuffer,sizeof(tempBuffer));
 

@@ -152,10 +152,16 @@ void StreamzapAPI::decode(BYTE data, int numberOfBytes) {
 				temp		= (lirc_t)(((time.QuadPart - lastTime.QuadPart)*1000000) / frequency.QuadPart);
 				lastTime	= time;
 
+				temp += 100000;
+				if(temp>PULSE_MASK) temp = PULSE_MASK;
+
 				setData(temp);	// add this space maybe it'll help
+				//printf("space time %i\n",temp);
 			}
 
 			setData(((data*256)+128)|pulse);
+
+			
 
 			if(pulse)	pulse = 0;
 			else		pulse = PULSE_BIT;
@@ -164,6 +170,8 @@ void StreamzapAPI::decode(BYTE data, int numberOfBytes) {
 
 			pulse		= PULSE_BIT;
 			newSignal	= TRUE;
+
+			//printf("last signal received \n");
 
 			QueryPerformanceCounter(&lastTime);
 

@@ -58,6 +58,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="irdata.lib"
+				OutputFile="$(OutDir)\$(ProjectName)Alternate.dll"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"

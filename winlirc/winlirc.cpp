@@ -115,7 +115,7 @@ BOOL Cwinlirc::InitInstance() {
 
 	if(!dlg->Create(IDD_DIALOG,NULL)) {
 
-		MessageBox(NULL,"Could not create dialog boxes.\n","WinLIRC",MB_OK|MB_ICONERROR);
+		MessageBox(NULL,"Program exiting.","WinLIRC",MB_OK|MB_ICONERROR);
 
 		delete dlg;
 		delete server; 
@@ -126,7 +126,7 @@ BOOL Cwinlirc::InitInstance() {
 		return FALSE;
 	}
 
-	dlg->ShowWindow(SW_HIDE);
+	dlg->ShowWindow(SW_HIDE);	
 	dlg->UpdateWindow();
 	m_pMainWnd=dlg;
 	
