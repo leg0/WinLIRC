@@ -80,12 +80,14 @@ void Server::deinit() {
 		SetEvent(exitThread);
 
 		if(GetExitCodeThread(threadHandle,&result)==0)  {
+			CloseHandle(threadHandle);
 			threadHandle = NULL;
 			return;
 		}
 
 		if(result==STILL_ACTIVE) {
 			WaitForSingleObject(threadHandle,INFINITE);
+			CloseHandle(threadHandle);
 			threadHandle = NULL;
 		}
 	}

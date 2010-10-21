@@ -417,8 +417,9 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 				
 				if(driver.sendIR(sender,codes,j)) {			//transmit the code
 					GoBlue();								//turn icon blue to indicate a transmission
+					success=TRUE;
 				}
-				success=TRUE;
+				
 			} else success=FALSE; //unknown code
 		} else success=FALSE; //unknown remote
 	}

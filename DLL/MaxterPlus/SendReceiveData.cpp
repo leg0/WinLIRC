@@ -184,6 +184,7 @@ void SendReceiveData::killThread() {
 
 		if(GetExitCodeThread(threadHandle,&result)==0) 
 		{
+			CloseHandle(threadHandle);
 			threadHandle = NULL;
 			return;
 		}
@@ -191,6 +192,7 @@ void SendReceiveData::killThread() {
 		if(result==STILL_ACTIVE)
 		{
 			WaitForSingleObject(threadHandle,INFINITE);
+			CloseHandle(threadHandle);
 			threadHandle = NULL;
 		}
 	}
