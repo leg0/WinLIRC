@@ -133,6 +133,7 @@ void SendReceiveData::killThread() {
 
 		if(GetExitCodeThread(threadHandle,&result)==0) 
 		{
+			CloseHandle(threadHandle);
 			threadHandle = NULL;
 			return;
 		}
@@ -140,6 +141,7 @@ void SendReceiveData::killThread() {
 		if(result==STILL_ACTIVE)
 		{
 			WaitForSingleObject(threadHandle,INFINITE);
+			CloseHandle(threadHandle);
 			threadHandle = NULL;
 		}
 	}
@@ -390,6 +392,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		serial.Write(temp,1);	// set transmit mode
 
 		for(int i=0; i<length; i++) {
+
 			irToySignals[i] = (USHORT)((signals[i] & PULSE_MASK) / 21.33);
 
 			//

@@ -298,6 +298,7 @@ void Cserver::ThreadProc(void)
 									char *buttonname=NULL;
 									char *repeats=NULL;
 									if (toparse) command=strtok(toparse," \t\r");
+
 									if (!command) //ignore lines with only whitespace
 									{
 										cur=nl+1;
@@ -369,14 +370,14 @@ void Cserver::ThreadProc(void)
 										}
 									}
 
-									else if (!password.IsEmpty() && !password.CompareNoCase(command)) //only accept commands if a password is set and matches
+									else if ((!password.IsEmpty() && !password.CompareNoCase(command)) || (_stricmp(command,"SEND_ONCE")==0)) //only accept commands if a password is set and matches
 									{
 										CString incoming = (LPCSTR) (cur);
 										int j=incoming.FindOneOf(" \t")+1;
 										remotename=strtok(NULL," \t\r");
 										if (remotename==NULL)
 										{
-											response = new char[14];
+											response = new char[23];
 											if (response) sprintf(response,"DATA\n1\nremote missing\n");
 										}
 										else 
@@ -384,19 +385,26 @@ void Cserver::ThreadProc(void)
 											buttonname=strtok(NULL," \t\r");
 											if (buttonname==NULL)
 											{
-												response = new char[12];
+												response = new char[21];
 												if (response) sprintf(response,"DATA\n1\ncode missing\n");
 											}
 											else
 											{
+												//====================
+												Cwinlirc	*app;
+												HWND		pOtherWnd;
+												//====================
 
-												HWND pOtherWnd = FindWindow(NULL, "WinLirc");
+												app			= (Cwinlirc *)AfxGetApp();
+												pOtherWnd	= app->dlg->m_hWnd;
+				
 												if (pOtherWnd)
 												{
 													COPYDATASTRUCT cpd;
 													cpd.dwData = 0;
-													cpd.cbData = strlen(&cur[j]);
+													cpd.cbData = strlen(&cur[j])+1;	// +1 for string terminator !!!
 													cpd.lpData = (void*)&cur[j];
+
 													copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,NULL,(LPARAM)&cpd);
 												}
 											}
@@ -419,11 +427,11 @@ void Cserver::ThreadProc(void)
 									}
 									else if (copyDataResult==-100)
 									{
-											response = new char[15];
-											if (response) sprintf(response,"DATA\n1\nbad send packet\n");
+										response = new char[24];
+										if (response) sprintf(response,"DATA\n1\nbad send packet\n");
 									}
 									reply(cur,i,copyDataResult==1,response);
-									if (response) delete(response);
+									if (response) delete [] response;
 									cur=nl+1;
 								}
 							}
