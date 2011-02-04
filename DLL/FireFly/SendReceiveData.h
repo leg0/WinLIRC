@@ -57,6 +57,7 @@ private:
 	void	createWindow();
 	void	destroyWindow();
 	BOOL	registerRawDevice();
+	void	toUpperCase(char *string);
 
 	HANDLE	threadHandle;
 	HANDLE	exitEvent;

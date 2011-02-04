@@ -55,6 +55,5 @@ public:
 	afx_msg void OnBnClickedRadiorx();
 	afx_msg void OnBnClickedRadiodcd();
 	afx_msg void OnBnClickedOk();
-	int test;
 	DECLARE_MESSAGE_MAP()
 };

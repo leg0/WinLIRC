@@ -30,7 +30,6 @@ IMPLEMENT_DYNAMIC(SerialDialog, CDialog)
 
 SerialDialog::SerialDialog(CWnd* pParent /*=NULL*/)
 	: CDialog(SerialDialog::IDD, pParent)
-	, test(0)
 {
 	animax			= FALSE;
 	deviceType		= -1;

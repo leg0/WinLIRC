@@ -97,7 +97,9 @@ BOOL SendReceiveData::init() {
 
 				createWindow();
 
-				return registerRawDevice();
+				if(registerRawDevice()) {
+					return TRUE;
+				}
 			}
 		}
 	}
@@ -154,7 +156,6 @@ void SendReceiveData::threadProc() {
 
 		if(result==(WAIT_OBJECT_0+1))
 		{
-			//printf("leaving thread \n");
 			break;
 		}
 	}
@@ -332,20 +333,17 @@ LRESULT CALLBACK WndProc(	HWND	hWnd,			// Handle For This Window
 
 			rawInput = (RAWINPUT*)data;
 
-			//printf("%i %i\n",rawInput->header.hDevice,sendRec->rawInputDevice);
 
 			//
 			// do we have a handle to the right device
 			//
 			if(rawInput->header.hDevice==sendRec->rawInputDevice) {
 
-				//printf("key %i %i\n",rawInput->data.keyboard.Flags,rawInput->data.keyboard.VKey);
 
 				if(!(rawInput->data.keyboard.Flags & RI_KEY_BREAK)) {
 
 					if(sendRec->irLastCode == (UCHAR)rawInput->data.keyboard.VKey + 100) {
 						sendRec->repeats++;
-						//printf("repeat %i\n",sendRec->repeats);
 					}
 					else {
 						sendRec->repeats=0;
@@ -427,7 +425,9 @@ BOOL SendReceiveData::registerRawDevice() {
 
 	result = GetRawInputDeviceList(deviceList,&numberOfDevices,sizeof(RAWINPUTDEVICELIST));
 
-	if(result<=0) return false;	//no devices or error
+	if(result<=0) {
+		return false;	//no devices or error
+	}
 
 	for(UINT i=0; i<numberOfDevices; i++) {
 
@@ -449,7 +449,7 @@ BOOL SendReceiveData::registerRawDevice() {
 
 		GetRawInputDeviceInfo(deviceList[i].hDevice,RIDI_DEVICENAME,deviceName,&size);
 
-		//printf("%s\n",deviceName);
+		toUpperCase(deviceName);
 
 		if(deviceList[i].dwType==RIM_TYPEKEYBOARD && strstr(deviceName,"VID_1233&PID_E007")) {
 
@@ -488,6 +488,14 @@ BOOL SendReceiveData::registerRawDevice() {
 
 		return RegisterRawInputDevices(&rawInputDevice,1,sizeof(RAWINPUTDEVICE));
 
+	}
+}
+
+void SendReceiveData::toUpperCase(char *string) {
+
+	while(*string) { 
+		*string = toupper(*string); 
+		string++; 
 	}
 }
 
