@@ -85,7 +85,7 @@ void Opengl::pushValue(int value) {
 	if(!(value&0x01000000)) {
 		if(value>10000) {
 			endValue = 0;		//found gap so data will start now
-			printf("GAP VALUE %i\n",value);
+			//printf("GAP VALUE %i\n",value);
 			return;				//don't add the gap !
 		}
 	}
