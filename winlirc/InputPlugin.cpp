@@ -140,6 +140,7 @@ void InputPlugin::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_EDIT3, disableFirstRepeats);
 	DDX_Control(pDX, IDC_DISABLE_FIRST_REPEATS, disableFirstRepeatsLabel);
 	DDX_Control(pDX, IDC_CHECK2, allowLocalConnectionsOnly);
+	DDX_Control(pDX, IDC_CHECK3, disableSystemTrayIcon);
 }
 
 BEGIN_MESSAGE_MAP(InputPlugin, CDialog)
@@ -245,7 +246,14 @@ void InputPlugin::OnBnClickedOk() {
 		config.localConnectionsOnly = FALSE;
 	}
 
-	config.writeConfig();
+	if(disableSystemTrayIcon.GetCheck()==BST_CHECKED) {
+		config.showTrayIcon = FALSE;
+	}
+	else {
+		config.showTrayIcon = TRUE;
+	}
+
+	config.writeINIFile();
 
 	OnOK();
 }
@@ -300,6 +308,10 @@ BOOL InputPlugin::OnInitDialog() {
 
 	if(config.localConnectionsOnly) {
 		allowLocalConnectionsOnly.SetCheck(BST_CHECKED);
+	}
+
+	if(!config.showTrayIcon) {
+		disableSystemTrayIcon.SetCheck(BST_CHECKED);
 	}
    
 	return TRUE;

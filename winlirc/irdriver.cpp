@@ -42,7 +42,7 @@ CIRDriver::CIRDriver()
 	dllFile					= NULL;
 
 	daemonThreadHandle		= NULL;
-	daemonThreadEvent		= CreateEvent(NULL,FALSE,FALSE,NULL);
+	daemonThreadEvent		= CreateEvent(NULL,TRUE,FALSE,NULL);
 }
 
 CIRDriver::~CIRDriver()
@@ -127,6 +127,9 @@ BOOL CIRDriver::init() {
 				return TRUE;
 			}
 		}
+		else {
+			deinit();
+		}
 	}
 
 	return FALSE;
@@ -134,11 +137,11 @@ BOOL CIRDriver::init() {
 
 void CIRDriver::deinit() {
 
+	KillThread2(&daemonThreadHandle,daemonThreadEvent);
+
 	if(deinitFunction) {
 		deinitFunction();
 	}
-
-	KillThread2(&daemonThreadHandle,daemonThreadEvent);
 }
 
 int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeats) {

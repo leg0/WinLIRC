@@ -53,11 +53,7 @@ void winlirc_debug(char *format, ...)
 
 /* End of Debugging stuff */
 
-struct ir_remote remote;
-struct ir_ncode code;
 struct ir_remote *global_remotes=NULL;
-class CIRDriver *ir_driver=NULL;
-class Clearndlg *learn_dialog=NULL;
 
 CWinThread *ServerThreadHandle=NULL;
 CEvent ServerThreadEvent;
@@ -103,7 +99,7 @@ void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent)
 		{
 			//printf("still active\n");
 			SetEvent(ThreadEvent);
-			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,250)) break; //maybe we just need to give it some time to quit
+			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,2000)) break; //maybe we just need to give it some time to quit
 			ResetEvent(ThreadEvent);
 			*ThreadHandle=NULL;
 		}

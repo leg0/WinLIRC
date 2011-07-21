@@ -33,13 +33,16 @@ protected:
 	virtual BOOL OnInitDialog();
 
 	DECLARE_MESSAGE_MAP()
-public:
+
+private:
+
 	afx_msg void OnCbnSelchangeCombo1();
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnBnClickedButton1();
-private:
+	afx_msg void OnBnClickedCheck1();
+
 	CComboBox	cboxInputPlugin;
 	CButton		setupButton;
 	CEdit		configPath;
@@ -47,6 +50,5 @@ private:
 	CEdit		disableFirstRepeats;
 	CStatic		disableFirstRepeatsLabel;
 	CButton		allowLocalConnectionsOnly;
-public:
-	afx_msg void OnBnClickedCheck1();
+	CButton		disableSystemTrayIcon;	
 };

@@ -43,6 +43,18 @@ BOOL Cwinlirc::InitInstance() {
 
 	config.readINIFile();
 
+	//
+	// command line stuff
+	//
+
+	if(_tcsstr(m_lpCmdLine,_T("/e")) || _tcsstr(m_lpCmdLine,_T("/E"))) {
+		config.exitOnError = TRUE;
+	}
+
+	if(_tcsstr(m_lpCmdLine,_T("/t")) || _tcsstr(m_lpCmdLine,_T("/T"))) {
+		config.showTrayIcon = FALSE;
+	}
+
 	dlg		= new Cdrvdlg();
 	server	= new Cserver();
 

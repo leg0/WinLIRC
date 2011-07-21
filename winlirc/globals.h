@@ -39,15 +39,11 @@ extern void winlirc_debug(char *format, ...);
 /* End of Debugging stuff */
 
 /* Constants */
-#define CBUF_LEN 1024
 #include "version.h"
-#define BUTTON 80
-#define MAX_SIGNALS 200
 #define WBUF_SIZE (256)
 #define RBUF_SIZE (256)
 #define PACKET_SIZE (256)
 #define PULSE_BIT 0x1000000
-#define REC_SYNC 8
 #define WM_TRAY (WM_USER+34)
 #define MAX_CLIENTS 8
 #define IR_PORT 8765
@@ -227,11 +223,7 @@ struct ir_remote
 
 
 /* externs */
-extern struct ir_remote remote;
-extern struct ir_ncode code;
 extern struct ir_remote *global_remotes;
-extern class CIRDriver *ir_driver;
-extern class Clearndlg *learn_dialog;
 
 
 /* Change this stuff */
