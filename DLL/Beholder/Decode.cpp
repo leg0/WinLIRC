@@ -1,30 +1,36 @@
-#include <Windows.h>
-#include "TiraDLL.h"
-#include "LIRCDefines.h"
+/* 
+ * This file is part of the WinLIRC package, which was derived from
+ * LIRC (Linux Infrared Remote Control) 0.8.6.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published
+ * by the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *
+ * Copyright (C) 2010 Ian Curtis
+ */
+
 #include <stdio.h>
+#include <sys/timeb.h>
+#include <string.h>
+#include "LIRCDefines.h"
+#include <limits.h>
 #include "Globals.h"
+#include "hardware.h"
 
-#define CODE_LENGTH 64
-
-//=============
-ir_code irCode;
-//=============
+#define CODE_LENGTH 32
 
 struct ir_remote *decoding		= NULL;
 struct ir_remote *last_remote	= NULL;
-
-int WINAPI tiraCallbackFunction(const char * eventstring) {
-
-	EnterCriticalSection(&criticalSection);
-
-	sscanf(eventstring,"%I64x",&irCode);
-
-	LeaveCriticalSection(&criticalSection);
-
-	SetEvent(dataReadyEvent);
-
-	return TIRA_TRUE;
-}
 
 int map_code(struct ir_remote *remote,
 	     ir_code *prep,ir_code *codep,ir_code *postp,
@@ -113,7 +119,7 @@ void map_gap(struct ir_remote *remote,
 	}	
 }
 
-int tira_decode (struct ir_remote *remote, ir_code *prep, ir_code *codep,
+int beholder_decode (struct ir_remote *remote, ir_code *prep, ir_code *codep,
 		 ir_code *postp, int *repeat_flagp,
 		 lirc_t *min_remaining_gapp,
 		 lirc_t *max_remaining_gapp)
@@ -126,7 +132,7 @@ int tira_decode (struct ir_remote *remote, ir_code *prep, ir_code *codep,
 
 	EnterCriticalSection(&criticalSection);
 
-	success = map_code(remote, prep, codep, postp,0, 0, CODE_LENGTH, irCode, 0, 0);
+	success = map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
 
 	LeaveCriticalSection(&criticalSection);
 
@@ -436,7 +442,7 @@ bool decodeCommand(struct ir_remote *remotes, char *out)
 	while(remote)
 	{
 		
-		if(tira_decode(remote,&pre,&code,&post,&repeat_flag,
+		if(beholder_decode(remote,&pre,&code,&post,&repeat_flag,
 				  &min_remaining_gap, &max_remaining_gap) &&
 		   (ncode=get_code(remote,pre,code,post,&toggle_bit_mask_state)))
 		{
@@ -451,6 +457,8 @@ bool decodeCommand(struct ir_remote *remotes, char *out)
 			   ncode->current!=NULL)
 			{
 				decoding=NULL;
+				ResetEvent(dataReadyEvent);
+
 				return(NULL);
 			}
 
@@ -473,10 +481,12 @@ bool decodeCommand(struct ir_remote *remotes, char *out)
 			decoding=NULL;
 			if(len>=PACKET_SIZE+1)
 			{
+				ResetEvent(dataReadyEvent);
 				return false;
 			}
 			else
 			{
+				ResetEvent(dataReadyEvent);
 				return true;
 			}
 		}
@@ -490,5 +500,10 @@ bool decodeCommand(struct ir_remote *remotes, char *out)
 	decoding=NULL;
 	last_remote=NULL;
 
+	ResetEvent(dataReadyEvent);
+
 	return false;
 }
+
+
+

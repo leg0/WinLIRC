@@ -113,7 +113,7 @@ void RecordAudio::openAudioDevice(int deviceID, int frequency, int numberOfChann
 
 	//printf("open result %i\n",result);
 
-	analyseAudio = new AnalyseAudio(frequency,waveFormat.nChannels,leftChannel);
+	analyseAudio = new AnalyseAudio(frequency,waveFormat.nChannels,leftChannel,settings->getInverted(),settings->getNoiseValue());
 }
 
 void RecordAudio::closeAudioDevice() {

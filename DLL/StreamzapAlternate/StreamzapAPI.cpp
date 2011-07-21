@@ -117,9 +117,10 @@ void StreamzapAPI::killThread() {
 		if(result==STILL_ACTIVE)
 		{
 			WaitForSingleObject(threadHandle,INFINITE);
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
 		}
+
+		CloseHandle(threadHandle);
+		threadHandle = NULL;
 	}
 }
 

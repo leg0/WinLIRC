@@ -59,9 +59,9 @@ bool SendReceiveData::init() {
 		return false;
 	}
 
-	threadHandle = CreateThread(NULL,0,IGThread,(void *)this,0,NULL);
-
 	recvDone = 0;
+
+	threadHandle = CreateThread(NULL,0,IGThread,(void *)this,0,NULL);
 
 	if(threadHandle) {
 		return true;
@@ -113,9 +113,10 @@ void SendReceiveData::killThread() {
 		if(result==STILL_ACTIVE)
 		{
 			WaitForSingleObject(threadHandle,INFINITE);
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
 		}
+
+		CloseHandle(threadHandle);
+		threadHandle = NULL;
 	}
 }
 

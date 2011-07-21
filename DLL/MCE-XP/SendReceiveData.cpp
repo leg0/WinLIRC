@@ -67,8 +67,6 @@ bool SendReceiveData::init() {
 		return false;
 	}
 
-	exitEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
-
 	return true;
 }
 
@@ -101,7 +99,7 @@ void SendReceiveData::threadProc() {
 	memset(&overlappedRead,0,sizeof(OVERLAPPED));
 
 	overlappedRead.hEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
-	exitEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+	exitEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
 
 	events[0] = overlappedRead.hEvent;
 	events[1] = exitEvent;
@@ -190,9 +188,10 @@ void SendReceiveData::killThread() {
 		if(result==STILL_ACTIVE)
 		{
 			WaitForSingleObject(threadHandle,INFINITE);
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
 		}
+
+		CloseHandle(threadHandle);
+		threadHandle = NULL;
 	}
 }
 

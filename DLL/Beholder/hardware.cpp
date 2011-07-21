@@ -25,21 +25,18 @@
 
 struct hardware hw;
 
-lirc_t readData(lirc_t timeout) {
+ir_code get_ir_code() {
 
-	//==========
-	lirc_t data;
-	//==========
+	//==================
+	ir_code currentCode;
+	//==================
 
-	data = 0;
+	EnterCriticalSection(&criticalSection);
+	currentCode = irCode;
+	ResetEvent(dataReadyEvent);
+	LeaveCriticalSection(&criticalSection);
 
-	if(!sendReceiveData) return 0;
-
-	sendReceiveData->waitTillDataIsReady(timeout);
-
-	sendReceiveData->getData(&data);
-
-	return data;
+	return currentCode;
 }
 
 void wait_for_data(lirc_t timeout) {
@@ -53,25 +50,23 @@ int data_ready() {
 
 	if(!sendReceiveData) return 0;
 
-	if(sendReceiveData->dataReady()) return 1;
-
-	return 0;
+	return sendReceiveData->dataReady();
 }
 
 void initHardwareStruct() {
 
-	hw.decode_func	= &receive_decode;
-	hw.readdata		= &readData;
+	hw.decode_func	= &beholder_decode;
+	hw.readdata		= NULL;
 	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;
-	hw.get_ir_code	= NULL;
+	hw.get_ir_code	= &get_ir_code;
 
-	hw.features		= LIRC_CAN_REC_MODE2;
+	hw.features		= LIRC_CAN_REC_LIRCCODE;
 	hw.send_mode	= 0;
-	hw.rec_mode		= LIRC_MODE_MODE2;
-	hw.code_length	= 0;
+	hw.rec_mode		= LIRC_MODE_LIRCCODE;
+	hw.code_length	= 32;
 	hw.resolution	= 0;
 
 	strcpy(hw.device,"hw");
-	strcpy(hw.name,"MCE");
+	strcpy(hw.name,"Beholder");
 }

@@ -5,10 +5,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MCE", "MCEVista.vcproj", "{
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		64bit Release|Win32 = 64bit Release|Win32
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{39B99323-7031-4FA1-AE2A-29D8155DC966}.64bit Release|Win32.ActiveCfg = 64bit Release|Win32
+		{39B99323-7031-4FA1-AE2A-29D8155DC966}.64bit Release|Win32.Build.0 = 64bit Release|Win32
 		{39B99323-7031-4FA1-AE2A-29D8155DC966}.Debug|Win32.ActiveCfg = Debug|Win32
 		{39B99323-7031-4FA1-AE2A-29D8155DC966}.Debug|Win32.Build.0 = Debug|Win32
 		{39B99323-7031-4FA1-AE2A-29D8155DC966}.Release|Win32.ActiveCfg = Release|Win32

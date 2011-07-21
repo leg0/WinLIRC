@@ -19,44 +19,29 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef ANALYSEAUDIO_H
-#define ANALYSEAUDIO_H
-
 #include <Windows.h>
+#include "Globals.h"
+#include "LircDefines.h"
 
-//
-// only accept 8bit mono/stere audio for now. Sampling frequency can change
-//
+HANDLE threadExitEvent = NULL;
+HANDLE dataReadyEvent  = NULL;
 
-class AnalyseAudio {
+SendReceiveData *sendReceiveData = NULL;
 
-public:
-	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, bool invertedSignal, int noiseValue);
+CRITICAL_SECTION criticalSection;
 
-	void decodeData(UCHAR *data, int bytesRecorded);
-	bool getData(UINT *out);
-	bool dataReady();
+struct mytimeval start,end,last;
 
-private:
+ir_code irCode = 0;
 
-	void setData(UINT data);
+int gettimeofday(struct mytimeval *a, void *)
+/* only accurate to milliseconds, instead of microseconds */
+{
+	struct _timeb tstruct;
+	_ftime(&tstruct);
+	
+	a->tv_sec=tstruct.time;
+	a->tv_usec=tstruct.millitm*1000;
 
-	void dataTest();
-
-	//=======================
-	double	multiplyConstant; 
-	double	sampleCount;
-	DWORD	maxCount;
-	DWORD	numberOfChans;
-	bool	leftChannel;
-	bool	pulse;
-	int		noiseValue;
-	bool	inverted;
-	//=======================
-	UINT	dataBuffer[256];
-	UCHAR	bufferStart;
-	UCHAR	bufferEnd;
-	//=======================
-};
-
-#endif
+	return 1;
+}

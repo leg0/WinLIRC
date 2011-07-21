@@ -16,47 +16,39 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * Copyright (C) 2010 Ian Curtis
+ * Copyright (C) 2011 Artem Golubev
  */
 
-#ifndef ANALYSEAUDIO_H
-#define ANALYSEAUDIO_H
+#ifndef RECEIVEDATA_H
+#define RECEIVEDATA_H
 
-#include <Windows.h>
+#include <windows.h>
+#include <tchar.h>
+#include <cstdio>
 
-//
-// only accept 8bit mono/stere audio for now. Sampling frequency can change
-//
+#include "LIRCDefines.h"
 
-class AnalyseAudio {
+#include "BeholdRC.h"
 
+class SendReceiveData
+{
 public:
-	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, bool invertedSignal, int noiseValue);
+	SendReceiveData();
+   ~SendReceiveData();
 
-	void decodeData(UCHAR *data, int bytesRecorded);
-	bool getData(UINT *out);
-	bool dataReady();
+	BOOL   init();
+	void   deinit();
+
+	int		dataReady();
+	void	waitTillDataIsReady( int maxUSecs );
+	void	threadProc();
 
 private:
+	void	killThread();
+	void	getCode(); // @TODO
 
-	void setData(UINT data);
-
-	void dataTest();
-
-	//=======================
-	double	multiplyConstant; 
-	double	sampleCount;
-	DWORD	maxCount;
-	DWORD	numberOfChans;
-	bool	leftChannel;
-	bool	pulse;
-	int		noiseValue;
-	bool	inverted;
-	//=======================
-	UINT	dataBuffer[256];
-	UCHAR	bufferStart;
-	UCHAR	bufferEnd;
-	//=======================
+	HANDLE	threadHandle;
+	HANDLE	exitEvent;
 };
 
 #endif

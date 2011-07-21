@@ -35,14 +35,14 @@ IG_API int init(HANDLE exitEvent) {
 
 	initHardwareStruct();
 
-	sendReceiveData = new SendReceiveData();
-
-	if(!sendReceiveData->init()) return 0;
-
 	InitializeCriticalSection(&criticalSection);
 
 	threadExitEvent = exitEvent;
 	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+
+	sendReceiveData = new SendReceiveData();
+
+	if(!sendReceiveData->init()) return 0;
 
 	return 1;
 }

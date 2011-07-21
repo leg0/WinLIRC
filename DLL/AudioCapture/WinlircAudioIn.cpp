@@ -30,6 +30,8 @@
 #include <atlstr.h>
 #include "Decode.h"
 #include "hardware.h"
+#include "StringFunctions.h"
+#include <Commctrl.h>
 
 //For the GUI
 //==============================
@@ -51,9 +53,10 @@ SI_API int init(HANDLE exitEvent) {
 
 	settings		= new Settings();
 	recordAudio		= new RecordAudio();
-	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
 	threadExitEvent	= exitEvent;
 
+	initHardwareStruct();
 	init_rec_buffer();
 
 	settings->loadSettings();
@@ -67,6 +70,7 @@ SI_API int init(HANDLE exitEvent) {
 	deviceID = AudioFormats::getAudioIndex(deviceName);
 
 	if(deviceID==-1) {
+		//printf("device id -1 failed to match :(\n");
 		return 0;
 	}
 	else {
@@ -121,24 +125,15 @@ void addAudioDeviceList(HWND hwnd, int item) {
 
 	for(UINT i=0; i<numberOfDevices; i++) {
 
-		//==================
-		CString tempString;
-		LPCTSTR tempString2;
-		//==================
-
 		waveInGetDevCaps(i,&caps,sizeof(caps));
+		removeTrailingWhiteSpace(caps.szPname);
 
-		tempString = caps.szPname;
-		tempString.TrimRight();
+		SendDlgItemMessage(hwnd,item,CB_ADDSTRING,0,(LPARAM)caps.szPname);
 
-		tempString2 = tempString;
+		//_tprintf(_T("caps %s z\n"),caps.szPname);
+		//_tprintf(_T("audio device %s z\n"),audioDeviceName);
 
-		SendDlgItemMessage(hwnd,item,CB_ADDSTRING,0,(LPARAM)tempString2);
-
-		//_tprintf(_T("%s z\n"),caps.szPname);
-		//_tprintf(_T("%s z\n"),audioDeviceName);
-
-		if(! _tcscmp(tempString2,audioDeviceName)) {
+		if(! _tcscmp(caps.szPname,audioDeviceName)) {
 			foundDevice		= TRUE;
 			foundIndex		= i;
 		}
@@ -151,6 +146,7 @@ void addAudioDeviceList(HWND hwnd, int item) {
 
 		SendDlgItemMessage(hwnd,item,CB_SETCURSEL,0,0);	//select first item
 		waveInGetDevCaps(0,&caps,sizeof(caps));
+		removeTrailingWhiteSpace(caps.szPname);
 		guiSettings->setAudioDeviceName(caps.szPname);
 	}
 
@@ -238,7 +234,6 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 	//printf("message %i\n",message);
 
-
     switch (message) {
 
 		case WM_INITDIALOG: {
@@ -293,17 +288,60 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 				guiSettings->setChannel(true);
 			}
 
+			//
+			// invert audio settings
+			//
+			if(guiSettings->getInverted()) {
+				SendDlgItemMessage(hwnd,IDC_CHECK1,BM_SETCHECK,BST_CHECKED,0);
+			}
+
+			//
+			// slider control
+			//
+			SendDlgItemMessage(hwnd,IDC_SLIDER1,TBM_SETRANGEMIN,FALSE,0);
+			SendDlgItemMessage(hwnd,IDC_SLIDER1,TBM_SETRANGEMAX,FALSE,127);
+			SendDlgItemMessage(hwnd,IDC_SLIDER1,TBM_SETPOS,TRUE,guiSettings->getNoiseValue());
+
+			//
+			// edit box - slider value
+			//
+			TCHAR editText[4];
+
+			_stprintf_s(editText,_countof(editText),_T("%i"),guiSettings->getNoiseValue());
+			SetWindowText(GetDlgItem(hwnd,IDC_EDIT1),editText);
+
 			ShowWindow(hwnd, SW_SHOW);
 
 			return TRUE;
 		}
 
+		case WM_HSCROLL: {
+
+			if(lParam==(LPARAM)GetDlgItem(hwnd,IDC_SLIDER1)) {
+
+				//================
+				TCHAR editText[4];
+				//================
+
+				guiSettings->setNoiseValue(SendDlgItemMessage(hwnd,IDC_SLIDER1,TBM_GETPOS,0,0));
+				_stprintf_s(editText,_countof(editText),_T("%i"),guiSettings->getNoiseValue());
+				SetWindowText(GetDlgItem(hwnd,IDC_EDIT1),editText);
+			}
+		}
 
 		case WM_COMMAND: {
 
 			switch(LOWORD(wParam)) {
 
 				case IDOK: {
+
+					if(SendDlgItemMessage(hwnd,IDC_CHECK1,BM_GETSTATE,0,0)==BST_CHECKED) {
+						guiSettings->setInverted(true);
+					}
+					else {
+						guiSettings->setInverted(false);
+					}
+
 					guiSettings->saveSettings();
 					DestroyWindow (hwnd);
 					return TRUE;

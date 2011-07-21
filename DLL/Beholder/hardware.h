@@ -19,44 +19,45 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef ANALYSEAUDIO_H
-#define ANALYSEAUDIO_H
+#ifndef HARDWARE_H
+#define HARDWARE_H
 
+#include "LIRCDefines.h"
 #include <Windows.h>
 
+void initHardwareStruct();
+
 //
-// only accept 8bit mono/stere audio for now. Sampling frequency can change
+// this hardware struct differs somewhat from the LIRC project
+// but the functions we need for IR record should be there
+// the rest are exported normally from the DLL
 //
 
-class AnalyseAudio {
+struct hardware
+{
+	char device[128];
+	char name[128];
 
-public:
-	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, bool invertedSignal, int noiseValue);
+	unsigned long features;
+	unsigned long send_mode;
+	unsigned long rec_mode;
+	unsigned long code_length;
+	unsigned int resolution;
 
-	void decodeData(UCHAR *data, int bytesRecorded);
-	bool getData(UINT *out);
-	bool dataReady();
+	int (*decode_func)(struct ir_remote *remote,
+		ir_code *prep,ir_code *codep,ir_code *postp,
+		int *repeat_flag,
+		lirc_t *min_remaining_gapp,
+		lirc_t *max_remaining_gapp);
 
-private:
-
-	void setData(UINT data);
-
-	void dataTest();
-
-	//=======================
-	double	multiplyConstant; 
-	double	sampleCount;
-	DWORD	maxCount;
-	DWORD	numberOfChans;
-	bool	leftChannel;
-	bool	pulse;
-	int		noiseValue;
-	bool	inverted;
-	//=======================
-	UINT	dataBuffer[256];
-	UCHAR	bufferStart;
-	UCHAR	bufferEnd;
-	//=======================
+	lirc_t	(*readdata)		(lirc_t timeout);
+	void	(*wait_for_data)(lirc_t timeout);
+	int		(*data_ready)	(void);
+	ir_code (*get_ir_code)	(void);
 };
 
+extern struct hardware hw;
+
 #endif
+
+

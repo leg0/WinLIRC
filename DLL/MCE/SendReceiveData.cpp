@@ -61,18 +61,18 @@ bool SendReceiveData::init() {
 
 	getAvailableBlasters();
 
-	if(!startReceive(receivePort,30)) {
+	if(!startReceive((int)receivePort,30)) {
 		//printf("start receive fail\n");
 		return false;
 	}
+
+	exitEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
 
 	threadHandle = CreateThread(NULL,0,MCEthread,(void *)this,0,NULL);
 
 	if(!threadHandle) {
 		return false;
 	}
-
-	exitEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
 
 	return true;
 }
@@ -162,9 +162,10 @@ void SendReceiveData::killThread() {
 		if(result==STILL_ACTIVE)
 		{
 			WaitForSingleObject(threadHandle,INFINITE);
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
 		}
+
+		CloseHandle(threadHandle);
+		threadHandle = NULL;
 	}
 }
 
@@ -301,8 +302,8 @@ bool SendReceiveData::getCapabilities() {
 
     transmitMask	= params.TransmitPorts;
     receiverMask	= params.LearningMask;
-    receivePort		= FirstLowBit(receiverMask);
-    learnPort		= FirstHighBit(receiverMask);
+    receivePort		= FirstLowBit((int)receiverMask);
+    learnPort		= FirstHighBit((int)receiverMask);
 
 	//printf("transmitMask %i\n",transmitMask);
 	//printf("receiverMask %i\n",receiverMask);
@@ -532,24 +533,24 @@ BOOL SendReceiveData::transmit(int *data, size_t dataLen, int transmitMask, int 
     TransmitParams	params = {transmitMask,period,0,0};
 	UCHAR			*formattedData;
 	TransmitChunk	*transmitChunk;
-	int				*offsettedData;
+	INT_TYPE		*offsettedData;
 	//==================
 
-	formattedData = new UCHAR[sizeof(TransmitChunk) + (sizeof(int) * dataLen) + 8];
+	formattedData = new UCHAR[sizeof(TransmitChunk) + (sizeof(INT_TYPE) * dataLen) + 8];
 
 	transmitChunk = (TransmitChunk*)formattedData;
 
-	transmitChunk->byteCount			= dataLen * sizeof(int);
+	transmitChunk->byteCount			= dataLen * sizeof(INT_TYPE);
 	transmitChunk->offsetToNextChunk	= 0;
 	transmitChunk->repeatCount			= 1;	//1 ?
 
-	offsettedData = (int*)(formattedData + sizeof(TransmitChunk));
+	offsettedData = (INT_TYPE*)(formattedData + sizeof(TransmitChunk));
 
 	for(UINT i=0; i<dataLen; i++) {
 		offsettedData[i] = data[i];
 	}
 
-    if (!DeviceIo(IoCtrl_Transmit, &params, sizeof(TransmitParams), formattedData, sizeof(TransmitChunk) + (sizeof(int) * dataLen) + 8, bytesReturned, 5000 )) {
+    if (!DeviceIo(IoCtrl_Transmit, &params, sizeof(TransmitParams), formattedData, sizeof(TransmitChunk) + (sizeof(INT_TYPE) * dataLen) + 8, bytesReturned, 5000 )) {
 		delete [] formattedData;
 		return false;
     }
@@ -560,22 +561,22 @@ BOOL SendReceiveData::transmit(int *data, size_t dataLen, int transmitMask, int 
 
 int SendReceiveData::calcBlasterPort() {
 
-	//===========
+	//================
 	int tempPort;
-	//===========
+	//================
 
 	tempPort = settings.getTransmitterChannels();
 
 	switch(tempPort) {
 
 		case MCE_BLASTER_BOTH:
-			tempPort = transmitMask;
+			tempPort = (int)transmitMask;
 			break;
 		case MCE_BLASTER_1:
-			tempPort = GetHighBit(availableBlasters, transmitMask);
+			tempPort = GetHighBit((int)availableBlasters, (int)transmitMask);
 			break;
 		case MCE_BLASTER_2:
-			tempPort = GetHighBit(availableBlasters, transmitMask-1);
+			tempPort = GetHighBit((int)availableBlasters, (int)transmitMask-1);
 			break;
 		default:
 			return 0;

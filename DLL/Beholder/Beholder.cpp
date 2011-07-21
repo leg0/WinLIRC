@@ -16,71 +16,72 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * Copyright (C) 2010 Ian Curtis
+ * Copyright (C) 2011 Artem Golubev
  */
 
-#include <winsock2.h>
-#include <Windows.h>
-#include "LIRCDefines.h"
-#include <stdio.h>
+#include "Beholder.h"
 #include "Globals.h"
+#include <Windows.h>
 #include "hardware.h"
-#include "Decode.h"
-#include "UDP.h"
+#include "decode.h"
 
-IG_API int init(HANDLE exitEvent) {
-
-	//===========
-	BOOL success;
-	//===========
-
-	init_rec_buffer();
+IG_API int init( HANDLE exitEvent )
+{
 	initHardwareStruct();
 
+	InitializeCriticalSection(&criticalSection);
+
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent( NULL, TRUE, FALSE, NULL );
 
-	server = new Server();
-	success = server->init();
+	sendReceiveData = new SendReceiveData();
 
-	return success;
+	if( !sendReceiveData->init() ) {
+      return 0;
+	}
+
+	return 1;
 }
 
-IG_API void deinit() {
-
-	if(server) {
-		server->deinit();
-		delete server;
-		server = NULL;
+IG_API void deinit()
+{
+	if(sendReceiveData) {
+		sendReceiveData->deinit();
+		delete sendReceiveData;
+		sendReceiveData = NULL;
 	}
 
 	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
+		CloseHandle( dataReadyEvent );
 		dataReadyEvent = NULL;
 	}
+
+	DeleteCriticalSection(&criticalSection);
 
 	threadExitEvent = NULL;
 }
 
-IG_API int hasGui() {
-
+IG_API int hasGui()
+{
 	return FALSE;
 }
 
-IG_API void	loadSetupGui() {
-
+IG_API void	loadSetupGui()
+{
+   // @TODO
 }
 
-IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
-
+IG_API int sendIR( struct ir_remote *remote, struct ir_ncode *code, int repeats )
+{
 	return 0;
 }
 
-IG_API int decodeIR(struct ir_remote *remotes, char *out) {
+IG_API int decodeIR( struct ir_remote *remotes, char *out )
+{
+	if(sendReceiveData) {
 
-	if(server) {
-		server->waitTillDataIsReady(0);
-		
+		sendReceiveData->waitTillDataIsReady( 0 );
+	   	
 		if(decodeCommand(remotes,out)) {
 			return 1;
 		}

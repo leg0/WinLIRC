@@ -209,6 +209,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\StringFunctions.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\WinlircAudioIn.cpp"
 				>
 			</File>
@@ -256,6 +260,10 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StringFunctions.h"
 				>
 			</File>
 			<File

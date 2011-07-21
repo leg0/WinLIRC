@@ -17,11 +17,10 @@ TE_API int init(HANDLE exitEvent) {
 	initHardwareStruct();
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
 
 	receive = new Receive();
 	return receive->init(settings.getDeviceNumber(),settings.getBusyLED(),settings.getPowerLED());
-
 }
 
 TE_API void deinit() {

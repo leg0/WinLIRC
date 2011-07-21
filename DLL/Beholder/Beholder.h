@@ -16,47 +16,40 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
- * Copyright (C) 2010 Ian Curtis
+ * Copyright (C) 2011 Artem Golubev
  */
 
-#ifndef ANALYSEAUDIO_H
-#define ANALYSEAUDIO_H
+#ifndef BEHOLDRC_H
+#define BEHOLDRC_H
 
-#include <Windows.h>
+#include <windows.h>
+#include <tchar.h>
+
+#include "resource.h"
+
+#include "LIRCDefines.h"
+#include "Globals.h"
 
 //
-// only accept 8bit mono/stere audio for now. Sampling frequency can change
+// Beholder API
 //
+#define IG_API __declspec(dllexport)
 
-class AnalyseAudio {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-public:
-	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, bool invertedSignal, int noiseValue);
+IG_API int	init( HANDLE exitEvent );
+IG_API void	deinit();
+IG_API int	hasGui();
+IG_API void	loadSetupGui();
+IG_API int	sendIR( struct ir_remote *remote, struct ir_ncode *code, int repeats );
+IG_API int	decodeIR( struct ir_remote *remotes, char *out );
 
-	void decodeData(UCHAR *data, int bytesRecorded);
-	bool getData(UINT *out);
-	bool dataReady();
+IG_API struct hardware* getHardware();	// for irrecord
 
-private:
-
-	void setData(UINT data);
-
-	void dataTest();
-
-	//=======================
-	double	multiplyConstant; 
-	double	sampleCount;
-	DWORD	maxCount;
-	DWORD	numberOfChans;
-	bool	leftChannel;
-	bool	pulse;
-	int		noiseValue;
-	bool	inverted;
-	//=======================
-	UINT	dataBuffer[256];
-	UCHAR	bufferStart;
-	UCHAR	bufferEnd;
-	//=======================
-};
+#ifdef __cplusplus
+}
+#endif
 
 #endif
