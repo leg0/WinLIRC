@@ -40,13 +40,13 @@ IG_API int init(HANDLE exitEvent) {
 	init_send_buffer();
 	initHardwareStruct();
 
+	threadExitEvent = exitEvent;
+	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+
 	sendReceiveData = new SendReceiveData();
 
 	if(!sendReceiveData->init()) return 0;
 	if(!sendReceiveData->setTransmitters(settings.getTransmitterChannels())) return 0;
-
-	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
 
 	return 1;
 }

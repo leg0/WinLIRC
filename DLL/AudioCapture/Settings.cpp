@@ -59,6 +59,26 @@ bool Settings::getChannel() {
 	return leftChannel;
 }
 
+bool Settings::getInverted() {
+
+	return inverted;
+}
+
+void Settings::setInverted(bool i) {
+
+	inverted = i;
+}
+
+int Settings::getNoiseValue() {
+
+	return noiseValue;
+}
+
+void Settings::setNoiseValue(int n) {
+
+	noiseValue = n;
+}
+
 void Settings::saveSettings() {
 
 	//===============================
@@ -90,6 +110,12 @@ void Settings::saveSettings() {
 	
 	_sntprintf(temp, _countof(temp), _T("%i"), leftChannel);
 	WritePrivateProfileString(_T("AudioInputPlugin"),_T("LeftChannel"),	temp, currentDirectory);
+
+	_sntprintf(temp, _countof(temp), _T("%i"), inverted);
+	WritePrivateProfileString(_T("AudioInputPlugin"),_T("Inverted"),	temp, currentDirectory);
+
+	_sntprintf(temp, _countof(temp), _T("%i"), noiseValue);
+	WritePrivateProfileString(_T("AudioInputPlugin"),_T("NoiseValue"),	temp, currentDirectory);
 }
 
 void Settings::loadSettings() {
@@ -106,4 +132,6 @@ void Settings::loadSettings() {
 
 	audioFormat	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("AudioFormat"),1,currentDirectory);
 	leftChannel	= (GetPrivateProfileInt(_T("AudioInputPlugin"),_T("LeftChannel"),1,currentDirectory)!=0);	//to shut the compiler up
+	inverted = (GetPrivateProfileInt(_T("AudioInputPlugin"),_T("Inverted"),0,currentDirectory)!=0);	//to shut the compiler up
+	noiseValue = GetPrivateProfileInt(_T("AudioInputPlugin"),_T("NoiseValue"),16,currentDirectory);	//to shut the compiler up
 }

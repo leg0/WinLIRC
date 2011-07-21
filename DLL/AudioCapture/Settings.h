@@ -39,6 +39,12 @@ public:
 	void	setChannel(bool left);
 	bool	getChannel();			//left is true
 
+	bool	getInverted();
+	void	setInverted(bool i);
+
+	int 	getNoiseValue();
+	void	setNoiseValue(int n);
+
 	void	saveSettings();			// to ini file
 	void	loadSettings();
 
@@ -48,6 +54,8 @@ private:
 	TCHAR	deviceName[32];			// 32 is max length
 	int		audioFormat;
 	bool	leftChannel;			// if mono ignore
+	bool	inverted;
+	int		noiseValue;
 	//========================
 };
 

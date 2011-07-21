@@ -73,5 +73,5 @@ void initHardwareStruct() {
 	hw.resolution	= 0;
 
 	strcpy(hw.device,"hw");
-	strcpy(hw.name,"iguanaIR");
+	strcpy(hw.name,"MCE");
 }

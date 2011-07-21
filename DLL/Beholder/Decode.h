@@ -19,44 +19,15 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef ANALYSEAUDIO_H
-#define ANALYSEAUDIO_H
+#ifndef DECODE_H
+#define DECODE_H
 
-#include <Windows.h>
+void init_rec_buffer(void);
+bool decodeCommand(struct ir_remote *remotes, char *out);
 
-//
-// only accept 8bit mono/stere audio for now. Sampling frequency can change
-//
-
-class AnalyseAudio {
-
-public:
-	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, bool invertedSignal, int noiseValue);
-
-	void decodeData(UCHAR *data, int bytesRecorded);
-	bool getData(UINT *out);
-	bool dataReady();
-
-private:
-
-	void setData(UINT data);
-
-	void dataTest();
-
-	//=======================
-	double	multiplyConstant; 
-	double	sampleCount;
-	DWORD	maxCount;
-	DWORD	numberOfChans;
-	bool	leftChannel;
-	bool	pulse;
-	int		noiseValue;
-	bool	inverted;
-	//=======================
-	UINT	dataBuffer[256];
-	UCHAR	bufferStart;
-	UCHAR	bufferEnd;
-	//=======================
-};
+int beholder_decode(struct ir_remote *remote,
+		   ir_code *prep,ir_code *codep,ir_code *postp,
+		   int *repeat_flagp,
+		   lirc_t *min_remaining_gapp, lirc_t *max_remaining_gapp);
 
 #endif

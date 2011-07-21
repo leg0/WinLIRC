@@ -65,11 +65,11 @@ private:
 	HANDLE			exitEvent;
 	IrDeviceList	irDeviceList;
 	HANDLE			deviceHandle;
-	INT				receiverMask;
-	INT				learnPort;
-	INT				receivePort;
-	INT				transmitMask;
-	INT				availableBlasters;
+	INT_TYPE		receiverMask;
+	INT_TYPE		learnPort;
+	INT_TYPE		receivePort;
+	INT_TYPE		transmitMask;
+	INT_TYPE		availableBlasters;
 
 	LARGE_INTEGER	time;
 	LARGE_INTEGER	lastTime;

@@ -69,13 +69,6 @@ void waitTillDataIsReady(int maxUSecs) {
 		if(res==(WAIT_OBJECT_0+1)) {
 			ExitThread(0);
 		}
-
-
-		//
-		// waited for data it must have arrived so function will now return !
-		//
-
-		return;
 	}
 
 }

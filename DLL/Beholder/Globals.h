@@ -19,44 +19,24 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef ANALYSEAUDIO_H
-#define ANALYSEAUDIO_H
+#ifndef GLOBALS_H
+#define GLOBALS_H
 
-#include <Windows.h>
+#include <windows.h>
+#include "SendReceiveData.h"
+#include <sys/timeb.h>
 
-//
-// only accept 8bit mono/stere audio for now. Sampling frequency can change
-//
+extern HANDLE threadExitEvent;
+extern HANDLE dataReadyEvent;
 
-class AnalyseAudio {
+extern SendReceiveData *sendReceiveData;
 
-public:
-	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, bool invertedSignal, int noiseValue);
+extern CRITICAL_SECTION criticalSection;
 
-	void decodeData(UCHAR *data, int bytesRecorded);
-	bool getData(UINT *out);
-	bool dataReady();
+extern struct mytimeval start,end,last;
 
-private:
+extern ir_code irCode;
 
-	void setData(UINT data);
-
-	void dataTest();
-
-	//=======================
-	double	multiplyConstant; 
-	double	sampleCount;
-	DWORD	maxCount;
-	DWORD	numberOfChans;
-	bool	leftChannel;
-	bool	pulse;
-	int		noiseValue;
-	bool	inverted;
-	//=======================
-	UINT	dataBuffer[256];
-	UCHAR	bufferStart;
-	UCHAR	bufferEnd;
-	//=======================
-};
+int gettimeofday(struct mytimeval *a, void *);
 
 #endif

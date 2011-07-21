@@ -29,14 +29,16 @@
 // A simple algorithm for decoding audio
 //
 
-AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel) {
+AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, bool invertedSignal, int noiseValue) {
 
 	multiplyConstant	= 1000000 / (double)frequency;
 	maxCount			= (~0) / (DWORD)multiplyConstant;
 	sampleCount			= 0;
 
-	numberOfChans		= numberOfChannels ;
+	numberOfChans		= numberOfChannels;
+	inverted			= invertedSignal;
 	this->leftChannel	= leftChannel;
+	this->noiseValue	= noiseValue;
 
 	//
 	//basic error checking
@@ -50,18 +52,6 @@ AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel
 	dataTest();
 
 	pulse = false;
-
-	//
-	// Required LIRC data
-	//
-	strcpy(device,"hw");
-	strcpy(name,"audio");
-	fd			= -1;
-	features	= LIRC_MODE_MODE2;
-	send_mode	= 0;
-	rec_mode	= LIRC_MODE_MODE2;
-	code_length	= 0;
-	resolution	= 0;
 }
 
 void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
@@ -72,6 +62,12 @@ void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 
 	for(int i=0; i<bytesRecorded; i+=numberOfChans) {
 
+		//=================
+		bool changeToPulse;
+		//=================
+
+		changeToPulse = false;
+
 		if(numberOfChans>1 && !leftChannel) {
 			currentSample = data[i+1];
 		}
@@ -80,48 +76,48 @@ void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 		}
 
 		if(sampleCount > maxCount) {
-			sampleCount = 0;
+			sampleCount = 0;			// every so often we will reset
+			pulse = false;
 		}
 
+		if(inverted) {
+			if(currentSample < (128 - noiseValue)) changeToPulse = true;
+		}
+		else {
+			if(currentSample > (128 + noiseValue)) changeToPulse = true;
+		}
+
+		if(changeToPulse) {
+
+			if(!pulse) {
+				//
+				//changing from space to pulse so add this
+				//
+				lirc_t x = (lirc_t)((sampleCount) * multiplyConstant);
+				sampleCount = 0;
+
+				if(x>PULSE_MASK) x = PULSE_MASK;	//clamp the value otherwise we will get false PULSES if we overflow
+
+				setData(x);
+				SetEvent(dataReadyEvent);			//signal data is ready for other thread
+			}
+			pulse = true;
+		}
 		else {
 
-			//=======
-			lirc_t x;
-			//=======
+			if(pulse) {
+				//
+				//changing from pulse to space so add this pulse finished so add
+				//
+				lirc_t x = (lirc_t)((sampleCount) * multiplyConstant);
+				sampleCount = 0;
 
-			if(currentSample > (128 + 16)) {
-
-				if(!pulse) {
-					//
-					//changing from space to pulse so add this
-					//
-					x = (lirc_t)((sampleCount) * multiplyConstant);
-					sampleCount = 0;
-
-					if(x>PULSE_MASK) x = PULSE_MASK;	//clamp the value otherwise we will get false PULSES if we overflow
-
-					setData(x);
-					SetEvent(dataReadyEvent);			//signal data is ready for other thread
-				}
-				pulse = true;
+				if(x>PULSE_MASK) x = PULSE_MASK;	//clamp the value otherwise we will get false PULSES if we overflow
+				
+				setData(x|PULSE_BIT);
+				SetEvent(dataReadyEvent);			//signal data is ready for other thread
 			}
-			else {
-
-				if(pulse) {
-					//
-					//changing from pulse to space so add this pulse finished so add
-					//
-					x = (lirc_t)((sampleCount) * multiplyConstant);
-					sampleCount = 0;
-
-					if(x>PULSE_MASK) x = PULSE_MASK;	//clamp the value otherwise we will get false PULSES if we overflow
-					
-					setData(x|PULSE_BIT);
-					SetEvent(dataReadyEvent);			//signal data is ready for other thread
-				}
-				pulse = false;
-			}
-
+			pulse = false;
 		}
 
 		sampleCount++;

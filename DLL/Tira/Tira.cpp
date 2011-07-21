@@ -6,6 +6,7 @@
 #include "Globals.h"
 #include "Decode.h"
 #include "LIRCDefines.h"
+#include <stdio.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -19,7 +20,7 @@ TI_API int init(HANDLE exitEvent) {
 	if(tiraDLL.tira_init()!=TIRA_TRUE) return 0;
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
 
 	InitializeCriticalSection(&criticalSection);
 

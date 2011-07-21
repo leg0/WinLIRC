@@ -37,7 +37,7 @@ CIRDriver::CIRDriver()
 {
 	hPort			= NULL;
 	IRThreadHandle	= NULL;
-	hDataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
+	hDataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
 	
 	bufferStart		= 0;
 	bufferEnd		= 0;

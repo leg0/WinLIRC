@@ -48,6 +48,7 @@ bool SendReceiveData::init() {
 	//===================
 
 	irCode = 0;
+	gettimeofday(&end,NULL);	// initialise
 
 	_sntprintf(comPortName,_countof(comPortName),_T("COM%i"),settings.getComPort());
 
@@ -138,9 +139,10 @@ void SendReceiveData::killThread() {
 		if(result==STILL_ACTIVE)
 		{
 			WaitForSingleObject(threadHandle,INFINITE);
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
 		}
+
+		CloseHandle(threadHandle);
+		threadHandle = NULL;
 	}
 }
 
@@ -178,7 +180,9 @@ int SendReceiveData::dataReady() {
 
 	result = WaitForSingleObject(dataReadyEvent,0);
 
-	if(result==WAIT_OBJECT_0) return 1;
+	if(result==WAIT_OBJECT_0) {
+		return 1;
+	}
 	
 	return 0;
 }

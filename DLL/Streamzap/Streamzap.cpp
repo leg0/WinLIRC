@@ -27,20 +27,12 @@
 
 IG_API int init(HANDLE exitEvent) {
 
-	//===========
-	BOOL success;
-	//===========
+	threadExitEvent = exitEvent;
+	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
 
 	streamzapAPI = new StreamzapAPI();
 
-	success = streamzapAPI->init();
-
-	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
-
-	if(success) return 1;
-
-	return 0;
+	return streamzapAPI->init();
 }
 
 IG_API void deinit() {

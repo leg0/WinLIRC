@@ -141,9 +141,10 @@ void SendReceiveData::killThread() {
 		if(result==STILL_ACTIVE)
 		{
 			WaitForSingleObject(threadHandle,INFINITE);
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
 		}
+
+		CloseHandle(threadHandle);
+		threadHandle = NULL;
 	}
 }
 
@@ -180,14 +181,18 @@ void SendReceiveData::setData(lirc_t data) {
 
 bool SendReceiveData::dataReady() {
 
-	if(bufferStart==bufferEnd) return false;
-	
+	if(bufferStart==bufferEnd) {
+		return false;
+	}
+
 	return true;
 }
 
 bool SendReceiveData::getData(lirc_t *out) {
 
-	if(!dataReady()) return false;
+	if(!dataReady()) {
+		return false;
+	}
 
 	*out = dataBuffer[bufferStart];
 
@@ -250,7 +255,7 @@ void SendReceiveData::receiveLoop() {
 					break;					// read error
 				}
 
-				if(dwBytesRead<=0) break;	//finished reading
+				if(dwBytesRead==0) break;
 
 				for(DWORD i=0; i<dwBytesRead;i++) {
 				
@@ -260,15 +265,15 @@ void SendReceiveData::receiveLoop() {
 					}
 					else {
 
-						//==========
-						bool resync;
-						//==========
-
-						resync		= false;
 						value		= value + (buffer[i] & 0xFF);
 						highByte	= true;			//next byte is 'high
 
-						if(value==0xFFFF) resync = true;
+						if(value==0xFFFF) {			//resync
+							highByte	= true;
+							pulse		= true;
+							firstSpace	= false;
+							break;
+						}
 
 						value = (int)((float)value * 21.3333f);
 
@@ -277,14 +282,13 @@ void SendReceiveData::receiveLoop() {
 							pulse = false;
 						}
 						else {
-							pulse = true;	//next value will be a pulse;
+							pulse = true;			//next value will be a pulse;
 						}
 
 						//
-						// bit of a hack, we need a space first to start decoding
-						// have to add it here due to threading issues i was getting
-						// I tried adding it earlier and because of thread order, was
-						// causing the first decode to fail
+						// bit of a hack
+						// add space after a time-out value has been received
+						// we append it to the next pulse to prevent problems
 						//
 						if(!firstSpace) {
 							setData(PULSE_MASK);
@@ -292,16 +296,7 @@ void SendReceiveData::receiveLoop() {
 						}
 
 						setData(value);
-
-						if(resync) {
-							highByte = true;
-							pulse = true;
-						}
-						else {
-							SetEvent(dataReadyEvent);
-						}
-						
-						value = 0;	//reset value
+						SetEvent(dataReadyEvent);
 					}
 				}
 			}

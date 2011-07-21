@@ -7,59 +7,65 @@
 #define MCE_BLASTER_2		2
 #define MCE_BLASTER_BOTH	3
 
+#ifdef VERSION_64_BIT
+typedef __int64 INT_TYPE;
+#else
+typedef int INT_TYPE;
+#endif
+
 typedef struct {
     /// Last packet in block?
-    int DataEnd;
+    INT_TYPE DataEnd;
     /// Number of bytes in block.
-    int ByteCount;
+    INT_TYPE ByteCount;
     /// Carrier frequency of IR received.
-    int CarrierFrequency;
+    INT_TYPE CarrierFrequency;
 } ReceiveParams, *ReceiveParamsPtr;
 
 typedef struct {
     /// Device protocol version.
-    int ProtocolVersion;
+    INT_TYPE ProtocolVersion;
     /// Number of transmit ports ? 0-32.
-    int TransmitPorts;
+    INT_TYPE TransmitPorts;
     /// Number of receive ports ? 0-32. For beanbag, this is two (one for learning, one for normal receiving).
-    int ReceivePorts;
+    INT_TYPE ReceivePorts;
     /// Bitmask identifying which receivers are learning receivers ? low bit is the first receiver, second-low bit is the second receiver, etc ...
-    int LearningMask;
+    INT_TYPE LearningMask;
     /// Device flags.
-    int DetailsFlags;
+    INT_TYPE DetailsFlags;
 } MCEDeviceCapabilities, *MCEDeviceCapabilitiesPtr;
 
 typedef struct 
 {
   /// Bitmask containing ports to transmit on.
-  int TransmitPortMask;
+  INT_TYPE TransmitPortMask;
   /// Carrier period.
-  int CarrierPeriod;
+  INT_TYPE CarrierPeriod;
   /// Transmit Flags.
-  int Flags;
+  INT_TYPE Flags;
   /// Pulse Size.  If Pulse Mode Flag set.
-  int PulseSize;
+  INT_TYPE PulseSize;
 } TransmitParams;
 
 typedef struct 
 {
   /// Blaster bit-mask.
-  int Blasters;
+  INT_TYPE Blasters;
 } AvailableBlasters;
 
 
 typedef struct {
     /// Index of the receiver to use.
-    int Receiver;
+    INT_TYPE Receiver;
     /// Receive timeout, in milliseconds.
-    int Timeout;
+    INT_TYPE Timeout;
 } StartReceiveParams, *StartReceiveParamsPtr;
 
 typedef struct {
 
-	int offsetToNextChunk;
-	int repeatCount;
-	int byteCount;
+	INT_TYPE offsetToNextChunk;
+	INT_TYPE repeatCount;
+	INT_TYPE byteCount;
 
 } TransmitChunk;
 

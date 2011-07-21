@@ -29,13 +29,12 @@
 
 IG_API int init(HANDLE exitEvent) {
 
+	threadExitEvent = exitEvent;
+	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
 
 	sendReceiveData = new SendReceiveData();
 
 	if(!sendReceiveData->init()) return 0;
-
-	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
 
 	return 1;
 }
