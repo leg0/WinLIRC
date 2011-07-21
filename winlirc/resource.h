@@ -31,6 +31,8 @@
 #define IDC_EDIT3                       1034
 #define IDC_DISABLE_FIRST_REPEATS       1035
 #define IDC_CHECK2                      1036
+#define IDC_CHECK3                      1037
+#define IDC_CHECK4                      1038
 #define ID_APP_SHOW                     40002
 #define ID_TRAY_TWO                     40003
 #define ID_EXITLIRC                     40003
@@ -43,7 +45,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40007
-#define _APS_NEXT_CONTROL_VALUE         1037
+#define _APS_NEXT_CONTROL_VALUE         1039
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -34,6 +34,7 @@ CIRConfig::CIRConfig() {
 	CSingleLock lock(&CS_global_remotes,TRUE);
 	
 	global_remotes=NULL;
+	exitOnError = FALSE;
 }
 
 CIRConfig::~CIRConfig()
@@ -100,7 +101,7 @@ bool CIRConfig::readConfig() {
 	return true;
 }
 
-bool CIRConfig::writeConfig() {
+bool CIRConfig::writeINIFile() {
 
 	//=====================
 	TCHAR	path[MAX_PATH];
@@ -125,6 +126,9 @@ bool CIRConfig::writeConfig() {
 	_sntprintf(tempIni,_countof(tempIni),_T("%i"),localConnectionsOnly);
 	WritePrivateProfileString(_T("WinLIRC"),_T("LocalConnectionsOnly"),tempIni,tempPath);
 
+	_sntprintf(tempIni,_countof(tempIni),_T("%i"),showTrayIcon);
+	WritePrivateProfileString(_T("WinLIRC"),_T("ShowTrayIcon"),tempIni,tempPath);
+
 	return true;
 }
 
@@ -148,9 +152,10 @@ bool CIRConfig::readINIFile() {
 	disableRepeats			= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableKeyRepeats"),FALSE,tempPath);
 	disableFirstKeyRepeats	= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),FALSE,tempPath);
 	localConnectionsOnly	= GetPrivateProfileInt(_T("WinLIRC"),_T("LocalConnectionsOnly"),TRUE,tempPath);
+	showTrayIcon			= GetPrivateProfileInt(_T("WinLIRC"),_T("ShowTrayIcon"),TRUE,tempPath);
 
-	remoteConfig = remoteConfigName;
-	plugin = pluginName;
+	remoteConfig			= remoteConfigName;
+	plugin					= pluginName;
 	
 	return true;
 }

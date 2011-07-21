@@ -141,17 +141,17 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 			//unattended wake up; no user interaction possible; screen
 			//is probably off.
 		case PBT_APMRESUMEAUTOMATIC:
-			ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+			if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
 			
 			if(driver.init()==false)
 			{
 				DEBUG("InitPort failed\n");
-				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+				if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
 				retval=false;
 				break;
 			}
 
-			ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
+			if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
 			retval=TRUE;
 			break;
 							
@@ -200,13 +200,24 @@ void Cdrvdlg::OnHideme()
 
 void Cdrvdlg::GoGreen()
 {
-	if(SetTimer(1,250,NULL))
+
+	if(!config.showTrayIcon) {
+		return;
+	}
+
+	if(SetTimer(1,250,NULL)) {
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_RECV),"WinLIRC / Received Signal");
+	}
 }
 void Cdrvdlg::GoBlue()
 {
-	if(SetTimer(1,250,NULL))
+	if(!config.showTrayIcon) {
+		return;
+	}
+
+	if(SetTimer(1,250,NULL)) {
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_SEND),"WinLIRC / Sent Signal");
+	}
 }
 
 void Cdrvdlg::OnTimer(UINT nIDEvent) {
@@ -231,6 +242,11 @@ bool Cdrvdlg::DoInitializeDaemon()
 		}
 		else {
 			//printf("failed here :(\n");
+		}
+
+		if(config.exitOnError) {
+			ti.DisableTrayIcon();
+			exit(0);
 		}
 		
 		if(!IsWindowVisible())
@@ -257,44 +273,45 @@ bool Cdrvdlg::InitializeDaemon() {
 
 		if(!config.readConfig()) {
 
-			MessageBox(	"Error loading config file.","Configuration Error");
-			ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+			if(!config.exitOnError) MessageBox(	"Error loading config file.","Configuration Error");
+			if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
 			return false;
 		}
+	}
+
+	if(!config.showTrayIcon) {
+		ti.DisableTrayIcon();
 	}
 	
 	tmp = _T(".\\");
 	tmp = tmp + config.plugin;
 
 	if(driver.loadPlugin(tmp)==false) {
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
 		return false;
 	}
 
-	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
 
 	if(driver.init()==false) {
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
 		return false;
 	}
 	
 	((Cwinlirc *)AfxGetApp())->server->send("BEGIN\nSIGHUP\nEND\n");
-	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
+	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
 	return true;
 }
 
 void Cdrvdlg::OnConfig() 
 {
 	InputPlugin inputPlugin(this);
-	
 	inputPlugin.DoModal();
 
 	AllowTrayNotification=false;
-	//Cconfdlg dlg(this);
 	KillTimer(1);
-	ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Disabled During Configuration");
+	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Disabled During Configuration");
 	driver.deinit();
-	//dlg.DoModal();
 	if(DoInitializeDaemon()==false)
 		OnCancel();
 

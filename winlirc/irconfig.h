@@ -35,7 +35,7 @@ public:
 	~CIRConfig();
 
 	bool readConfig	();
-	bool writeConfig();
+	bool writeINIFile();
 	bool readINIFile();
 
 	//=============================
@@ -44,6 +44,8 @@ public:
 	BOOL	disableRepeats;
 	INT		disableFirstKeyRepeats;
 	BOOL	localConnectionsOnly;
+	BOOL	showTrayIcon;
+	BOOL	exitOnError;
 	//=============================
 
 private:
