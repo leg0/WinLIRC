@@ -31,10 +31,10 @@ Settings::Settings() {
 }
 
 void Settings::setTransmitterChannels(int channels) {
-
-	if(channels<0)	channels = 0;
-	if(channels>7)	channels = 7;
 	
+	if(channels<0)	channels = 0;
+	if(channels>32)	channels = 32;	//32 is max theoretically supported
+
 	transmitterChannels = channels;
 }
 
