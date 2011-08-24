@@ -17,7 +17,6 @@ public:
 
 protected:
 	void MceIrOpenUsbDevice(LPGUID  pGuid );
-	void MceIrOpenOneDevice(HDEVINFO HardwareDeviceInfo, PSP_DEVICE_INTERFACE_DATA DeviceInterfaceData);
 
 	StringList m_List;
 };

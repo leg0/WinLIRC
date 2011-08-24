@@ -26,9 +26,9 @@ typedef struct {
     /// Device protocol version.
     INT_TYPE ProtocolVersion;
     /// Number of transmit ports ? 0-32.
-    INT_TYPE TransmitPorts;
+    INT_TYPE NumTransmitPorts;
     /// Number of receive ports ? 0-32. For beanbag, this is two (one for learning, one for normal receiving).
-    INT_TYPE ReceivePorts;
+    INT_TYPE NumReceivePorts;
     /// Bitmask identifying which receivers are learning receivers ? low bit is the first receiver, second-low bit is the second receiver, etc ...
     INT_TYPE LearningMask;
     /// Device flags.
@@ -111,9 +111,15 @@ static int GetHighBit(int mask, int bitCount)
 	{
 		int bitMask = 1 << i;
 
-		if ((mask & bitMask) != 0)
-			if (++count == bitCount)
+		if ((mask & bitMask)) {
+
+			if((count+1) == bitCount) {
 				return bitMask;
+			}
+			else {
+				count++;
+			}
+		}		
 	}
 
 	return 0;

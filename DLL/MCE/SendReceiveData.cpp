@@ -45,6 +45,7 @@ bool SendReceiveData::init() {
 
 	if(irDeviceList.get().empty()) return false;	//no hardware
 
+
 	deviceHandle = CreateFile(irDeviceList.get().begin()->c_str(), GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
 
 	if(deviceHandle==INVALID_HANDLE_VALUE) {
@@ -52,17 +53,10 @@ bool SendReceiveData::init() {
 		return false;
 	}
 
-	//resetHardware();
+	resetHardware();
 
 	if(!getCapabilities()) {
 		//printf("getCapabilities fail\n");
-		return false;
-	}
-
-	getAvailableBlasters();
-
-	if(!startReceive((int)receivePort,30)) {
-		//printf("start receive fail\n");
 		return false;
 	}
 
@@ -80,7 +74,6 @@ bool SendReceiveData::init() {
 void SendReceiveData::deinit() {
 
 	killThread();
-	stopReceive();
 	
 	if(exitEvent) {
 		CloseHandle(exitEvent);
@@ -103,6 +96,11 @@ void SendReceiveData::threadProc() {
 	ReceiveParams	*receiveParams;
 	INT				receiveParamsSize;
 	//================================
+
+	if(!startReceive((int)receivePort,30)) {
+		//printf("start receive fail\n");
+		return;
+	}
 
 	receiveParamsSize = sizeof(ReceiveParams) + (MCE_DEVICE_BUFFER_SIZE*4) + 8;
 	receiveParams = (ReceiveParams *)calloc(1, receiveParamsSize);
@@ -134,6 +132,8 @@ void SendReceiveData::threadProc() {
 	}
 
 	free(receiveParams);
+
+	stopReceive();
 
 	//printf("exited thread\n");
 }
@@ -186,18 +186,13 @@ void SendReceiveData::waitTillDataIsReady(int maxUSecs) {
 			res=WaitForMultipleObjects(evt,events,FALSE,INFINITE);
 		if(res==(WAIT_OBJECT_0+1))
 		{
-			//DEBUG("Unknown thread terminating (readdata)\n");
 			ExitThread(0);
-			return;
 		}
 	}
 
 }
 
 void SendReceiveData::setData(lirc_t data) {
-
-	//if(data&PULSE_BIT) printf("PULSE %i\n",data&PULSE_MASK);
-	//else printf("SPACE %i\n",data&PULSE_MASK);
 
 	dataBuffer[bufferEnd] = data;
 	bufferEnd++;
@@ -287,12 +282,11 @@ bool SendReceiveData::DeviceIo( DWORD IoCtlCode, void * inBuffer, DWORD inBuffer
 
 bool SendReceiveData::getCapabilities() {
 
-	//====================================
-	DWORD					bytesReturned;
-    MCEDeviceCapabilities	params;
-	//====================================
+	//==================
+	DWORD bytesReturned;
+	//==================
 
-	if (!DeviceIo(IoCtrl_GetDetails, NULL, 0, &params, sizeof(MCEDeviceCapabilities), bytesReturned, 5000)) {
+	if (!DeviceIo(IoCtrl_GetDetails, NULL, 0, &mceDeviceCapabilities, sizeof(MCEDeviceCapabilities), bytesReturned, 5000)) {
 		return false;
     }
 	
@@ -300,15 +294,15 @@ bool SendReceiveData::getCapabilities() {
         return false;
     }
 
-    transmitMask	= params.TransmitPorts;
-    receiverMask	= params.LearningMask;
-    receivePort		= FirstLowBit((int)receiverMask);
-    learnPort		= FirstHighBit((int)receiverMask);
+    receivePort	= FirstLowBit((int)mceDeviceCapabilities.LearningMask);
 
-	//printf("transmitMask %i\n",transmitMask);
-	//printf("receiverMask %i\n",receiverMask);
-	//printf("receivePort %i\n",receivePort);
-	//printf("learnPort %i\n",learnPort);
+	//printf("ProtocolVersion %i\n",mceDeviceCapabilities.ProtocolVersion);
+	//printf("NumTransmitPorts %i\n",mceDeviceCapabilities.NumTransmitPorts);
+	//printf("NumReceivePorts %i\n",mceDeviceCapabilities.NumReceivePorts);
+	//printf("LearningMask %i\n",mceDeviceCapabilities.LearningMask);
+	//printf("DetailsFlags %i\n",mceDeviceCapabilities.DetailsFlags);
+
+	//printf("receive port %i\n",receivePort);
 
 	return true;
 }
@@ -392,12 +386,9 @@ void SendReceiveData::sendToDecoder(lirc_t *pData, int len) {
 		lastTime		= time;
 
 		//
-		// 30,000 is time taken for USB or something, just a wild assumption it works here
-		// Time out value is 30,000, but the end value (terminator) is always 100,000
-		// So we add 70,000 to fix this
-		// A hack to get the right time difference between signals, it seems to work :)
+		// Time out value is 30,000
 		//
-		timeDifference = timeDifference - totalTime+70000-30000;
+		timeDifference = timeDifference - totalTime + 30000;
 
 		//
 		// sanity checking
@@ -436,16 +427,14 @@ bool SendReceiveData::getAvailableBlasters() {
 
 	//===================
 	DWORD bytesReturned;
-	AvailableBlasters ab;
 	//===================
 
-	if ( ! DeviceIo(IoCtrl_GetBlasters, NULL, 0, &ab, sizeof(AvailableBlasters),bytesReturned, 5000) ) {
+	if ( ! DeviceIo(IoCtrl_GetBlasters, NULL, 0, &availableBlasters, sizeof(AvailableBlasters),bytesReturned, 5000) ) {
+		availableBlasters.Blasters = 0;
 		return false;
 	}
 
-	//printf("available blasters %i %i\n",ab.Blasters,bytesReturned);
-
-	availableBlasters = ab.Blasters;
+	//printf("available blasters %i %i\n",availableBlasters.Blasters,bytesReturned);
 
 	return true;     
 }
@@ -507,8 +496,6 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			//printf("mceData[%i] %i\n",i,mceData[i]);
 		}
 
-		calcBlasterPort();
-
 		success = transmit(mceData,length,blasterPort,1000000/carrierFrequency);
 
 		//printf("transmit success %i\n",success);
@@ -533,24 +520,24 @@ BOOL SendReceiveData::transmit(int *data, size_t dataLen, int transmitMask, int 
     TransmitParams	params = {transmitMask,period,0,0};
 	UCHAR			*formattedData;
 	TransmitChunk	*transmitChunk;
-	INT_TYPE		*offsettedData;
+	INT				*offsettedData;
 	//==================
 
-	formattedData = new UCHAR[sizeof(TransmitChunk) + (sizeof(INT_TYPE) * dataLen) + 8];
+	formattedData = new UCHAR[sizeof(TransmitChunk) + (sizeof(INT) * dataLen) + 8];
 
 	transmitChunk = (TransmitChunk*)formattedData;
 
-	transmitChunk->byteCount			= dataLen * sizeof(INT_TYPE);
+	transmitChunk->byteCount			= dataLen * sizeof(INT);
 	transmitChunk->offsetToNextChunk	= 0;
 	transmitChunk->repeatCount			= 1;	//1 ?
 
-	offsettedData = (INT_TYPE*)(formattedData + sizeof(TransmitChunk));
+	offsettedData = (INT*)(formattedData + sizeof(TransmitChunk));
 
 	for(UINT i=0; i<dataLen; i++) {
 		offsettedData[i] = data[i];
 	}
 
-    if (!DeviceIo(IoCtrl_Transmit, &params, sizeof(TransmitParams), formattedData, sizeof(TransmitChunk) + (sizeof(INT_TYPE) * dataLen) + 8, bytesReturned, 5000 )) {
+    if (!DeviceIo(IoCtrl_Transmit, &params, sizeof(TransmitParams), formattedData, sizeof(TransmitChunk) + (sizeof(INT) * dataLen) + 8, bytesReturned, 5000 )) {
 		delete [] formattedData;
 		return false;
     }
@@ -560,29 +547,31 @@ BOOL SendReceiveData::transmit(int *data, size_t dataLen, int transmitMask, int 
 }
 
 int SendReceiveData::calcBlasterPort() {
-
+	
 	//================
 	int tempPort;
 	//================
+
+	getAvailableBlasters();
 
 	tempPort = settings.getTransmitterChannels();
 
 	switch(tempPort) {
 
-		case MCE_BLASTER_BOTH:
-			tempPort = (int)transmitMask;
-			break;
-		case MCE_BLASTER_1:
-			tempPort = GetHighBit((int)availableBlasters, (int)transmitMask);
-			break;
-		case MCE_BLASTER_2:
-			tempPort = GetHighBit((int)availableBlasters, (int)transmitMask-1);
-			break;
+	case MCE_BLASTER_BOTH:
+		tempPort = (int)availableBlasters.Blasters;
+		break;
+	case MCE_BLASTER_1:
+		tempPort = GetHighBit((int)availableBlasters.Blasters,(int)mceDeviceCapabilities.NumTransmitPorts-1);
+		break;
+	case MCE_BLASTER_2:
+		tempPort = GetHighBit((int)availableBlasters.Blasters,(int)mceDeviceCapabilities.NumTransmitPorts);
+	break;
 		default:
-			return 0;
+		return 0;
 	}
 
-	//printf("transmit port number %i %i\n",tempPort,transmitMask);
+	//printf("transmit port number %i\n",tempPort);
 
 	return tempPort;
 }

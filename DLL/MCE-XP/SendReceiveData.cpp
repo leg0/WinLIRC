@@ -93,6 +93,7 @@ void SendReceiveData::threadProc() {
 	HANDLE		events[2];
 	DWORD		result;
 	UCHAR		buffer[256];
+	DWORD		overflowCount;
 	DWORD		bytesRead;
 	//========================
 
@@ -104,9 +105,13 @@ void SendReceiveData::threadProc() {
 	events[0] = overlappedRead.hEvent;
 	events[1] = exitEvent;
 
+	overflowCount = 0;
+
 	while(true) {
 
-		ReadFile(deviceHandle, buffer, sizeof(buffer), &bytesRead, &overlappedRead);
+overflowExit:
+
+		ReadFile(deviceHandle, buffer+overflowCount, sizeof(buffer)-overflowCount, &bytesRead, &overlappedRead);
 
 		result = WaitForMultipleObjects(2,events,FALSE,INFINITE);
 
@@ -118,11 +123,9 @@ void SendReceiveData::threadProc() {
 
 			GetOverlappedResult(deviceHandle, &overlappedRead, &bytesRead, FALSE);
 
-			//printf("bytesRead %i\n",bytesRead);
-
 			bufferPointer = buffer;
 
-			while(bufferPointer < bufferPointer+bytesRead) {
+			while(bufferPointer < buffer+bytesRead+overflowCount) {
 
 				if(*bufferPointer >= 0x81 && *bufferPointer <= 0x9E) {
 
@@ -132,31 +135,32 @@ void SendReceiveData::threadProc() {
 
 					length = *bufferPointer & 0x7F;
 
+					if( length+1 > ((bytesRead + overflowCount) - (bufferPointer - buffer)) ) {
+						overflowCount = (bytesRead + overflowCount) - (bufferPointer - buffer);
+						memmove(buffer,bufferPointer,overflowCount);
+						goto overflowExit;	//not read enough bytes to decode so wait for some more :p
+					}
+
 					decodeRaw(bufferPointer);
 
 					bufferPointer += length + 1;
-
-					break;
 				}
 				else if (*bufferPointer == 0x9F) {
 
 					bufferPointer += 8;
 					space += 100000;	//fake a space value, sigh :p
 				}
-
+				else {
+					//skip unrecognised bytes
+					bufferPointer += 1;
+				}
 			}
 
-			//printf("\n");
-
-
-			SetEvent(dataReadyEvent);
+			overflowCount = 0;
 		}
 
-		//if(result==(WAIT_OBJECT_0+1))
-		else 
-		{
+		else {
 			CancelIo(deviceHandle);
-			//printf("leaving thread \n");
 			break;
 		}
 	}

@@ -19,11 +19,11 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef IGUANA_H
-#define IGUANA_H
+#ifndef MCE_H
+#define MCE_H
 
 //
-// TIRA API
+// MCE API
 //
 #define IG_API __declspec(dllexport)
 
