@@ -38,6 +38,7 @@ CIRDriver::CIRDriver()
 	loadSetupGuiFunction	= NULL;
 	sendFunction			= NULL;
 	decodeFunction			= NULL;
+	setTransmittersFunction	= NULL;
 
 	dllFile					= NULL;
 
@@ -73,12 +74,13 @@ BOOL CIRDriver::loadPlugin(CString plugin) {
 
 	if(!dllFile) return FALSE;
 
-	initFunction			= (InitFunction)		GetProcAddress(dllFile,"init");
-	deinitFunction			= (DeinitFunction)		GetProcAddress(dllFile,"deinit");
-	hasGuiFunction			= (HasGuiFunction)		GetProcAddress(dllFile,"hasGui");
-	loadSetupGuiFunction	= (LoadSetupGuiFunction)GetProcAddress(dllFile,"loadSetupGui");
-	sendFunction			= (SendFunction)		GetProcAddress(dllFile,"sendIR");
-	decodeFunction			= (DecodeFunction)		GetProcAddress(dllFile,"decodeIR");
+	initFunction			= (InitFunction)			GetProcAddress(dllFile,"init");
+	deinitFunction			= (DeinitFunction)			GetProcAddress(dllFile,"deinit");
+	hasGuiFunction			= (HasGuiFunction)			GetProcAddress(dllFile,"hasGui");
+	loadSetupGuiFunction	= (LoadSetupGuiFunction)	GetProcAddress(dllFile,"loadSetupGui");
+	sendFunction			= (SendFunction)			GetProcAddress(dllFile,"sendIR");
+	decodeFunction			= (DecodeFunction)			GetProcAddress(dllFile,"decodeIR");
+	setTransmittersFunction	= (SetTransmittersFunction)	GetProcAddress(dllFile,"setTransmitters");
 
 	if(initFunction && deinitFunction && hasGuiFunction && loadSetupGuiFunction && sendFunction && decodeFunction) {
 		return TRUE;
@@ -100,6 +102,7 @@ void CIRDriver::unloadPlugin() {
 	loadSetupGuiFunction	= NULL;
 	sendFunction			= NULL;
 	decodeFunction			= NULL;
+	setTransmittersFunction	= NULL;
 
 	if(dllFile) {
 		FreeLibrary(dllFile);
@@ -157,6 +160,15 @@ int	CIRDriver::decodeIR(struct ir_remote *remote, char *out) {
 
 	if(decodeFunction) {
 		return decodeFunction(remote,out);
+	}
+
+	return 0;
+}
+
+int	CIRDriver::setTransmitters(unsigned int transmitterMask) {
+
+	if(setTransmittersFunction) {
+		return setTransmittersFunction(transmitterMask);
 	}
 
 	return 0;

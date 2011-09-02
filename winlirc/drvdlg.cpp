@@ -351,11 +351,14 @@ static struct ir_remote * Remotes_GetRemote(struct ir_remote* remotes, const cha
 
 void Cdrvdlg::OnSendcode() 
 {
+	EnableWindow(FALSE);
 	UpdateData(TRUE);
+
 	struct ir_ncode *codes;
 	struct ir_remote *sender;
 	
 	sender=global_remotes;
+
 	m_remote_edit.TrimRight();
 	m_ircode_edit.TrimRight();
 	m_remote_edit.TrimLeft();
@@ -389,6 +392,8 @@ void Cdrvdlg::OnSendcode()
 			}
 		}
 	}
+
+	EnableWindow(TRUE);
 }
 
 BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
