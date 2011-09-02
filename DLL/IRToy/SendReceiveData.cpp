@@ -68,12 +68,29 @@ bool SendReceiveData::init() {
 		tempBuffer[i] = '\0';
 	}
 	if(serial.Write(tempBuffer,5)!=ERROR_SUCCESS) return false;
-	Sleep(100);
+	Sleep(50);
 
+	//
+	// sample mode
+	//
 	tempBuffer[0] = 's';
 	if(serial.Write(tempBuffer,1)!=ERROR_SUCCESS) return false;
 	Sleep(100);
 	serial.Read(tempBuffer,sizeof(tempBuffer));
+
+	//
+	// transmit hand shake
+	//
+	tempBuffer[0] = 0x26;
+	if(serial.Write(tempBuffer,1)!=ERROR_SUCCESS) return false;
+	Sleep(20);
+
+	//
+	// Notify on complete 
+	//
+	tempBuffer[0] = 0x25;
+	if(serial.Write(tempBuffer,1)!=ERROR_SUCCESS) return false;
+	Sleep(20);
 
 	if(serial.SetupHandshaking(CSerial::EHandshakeHardware)!=ERROR_SUCCESS) return false;
 
@@ -344,7 +361,10 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		lirc_t	*signals;
 		USHORT	*irToySignals;
 		UCHAR	temp[3];
+		BOOL	success;
 		//====================
+
+		success = FALSE;
 
 		//
 		// stop recieving thread - don't necessarily need this
@@ -352,6 +372,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		killThread();
 
 		serial.SetMask(CSerial::EEventNone);
+		serial.SetupReadTimeouts(CSerial::EReadTimeoutBlocking);
 
 		if(remote->freq) {
 
@@ -400,17 +421,74 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 
 		irToySignals[length-1] = 0xFFFF;	//terminate sending !
 
-		serial.Write(irToySignals,(length)*2);
+		//
+		// split data up into packets for IR Toy, so as to not cause an overflow
+		//
+
+		{
+			//=====================
+			UCHAR	packetLength;
+			DWORD	bytesRead;
+			USHORT	*irToySignalsP;
+			//=====================
+
+			irToySignalsP = irToySignals;
+
+			for(int i=0; i<length; ) {
+
+				serial.Read(&packetLength,1,&bytesRead);
+
+				if(length-i<packetLength/2) {
+					packetLength = (length-i)*2;	// in bytes
+				}
+
+				serial.Write(irToySignalsP,packetLength);
+				irToySignalsP += packetLength/2;
+				i += packetLength/2;
+			}
+
+			serial.Read(&packetLength,1,&bytesRead);
+		}
+
+		//
+		// get notify on transmit complete
+		//
+
+		{
+			//=====================
+			UCHAR transmitComplete;
+			DWORD bytesRead;
+			//=====================
+
+			serial.Read(&transmitComplete,1,&bytesRead);
+
+			if(bytesRead) {
+
+				if(transmitComplete=='C') {
+					success = TRUE;
+				}
+				else if(transmitComplete=='F') {
+					success = FALSE;
+				}
+				else {
+					success = FALSE;
+				}
+			}
+		}
+
 		free(irToySignals);
 
-		Sleep(50);
+		//
+		// restore non blocking mode
+		//
+		serial.SetupReadTimeouts(CSerial::EReadTimeoutNonblocking);
 
 		//
 		// Start receiving again
 		//
 		threadHandle = CreateThread(NULL,0,IRToy,(void *)this,0,NULL);
 
-		return 1;
+		return success;
 	}
 
 

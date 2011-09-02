@@ -39,6 +39,7 @@ public:
 	void	waitTillDataIsReady(int maxUSecs);
 	void	threadProc();
 	int		send(struct ir_remote *remote, struct ir_ncode *code, int repeats);
+	void	setTransmitters(unsigned int channelMask);
 	
 private:
 
@@ -66,6 +67,7 @@ private:
 	IrDeviceList	irDeviceList;
 	HANDLE			deviceHandle;
 	INT_TYPE		receivePort;
+	UINT			transmitChannelMask;
 
 	LARGE_INTEGER	time;
 	LARGE_INTEGER	lastTime;

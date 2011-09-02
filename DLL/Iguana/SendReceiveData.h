@@ -38,12 +38,13 @@ public:
 	bool	init();
 	void	deinit();
 
-	bool	getData(lirc_t *out);
-	bool	dataReady();
-	void	waitTillDataIsReady(int maxUSecs);
-	void	threadProc();
-	bool	setTransmitters(UCHAR channels);
-	int		send(struct ir_remote *remote, struct ir_ncode *code, int repeats);
+	
+	bool	dataReady			();
+	void	waitTillDataIsReady	(int maxUSecs);
+	void	threadProc			();
+	bool	setTransmitters		(DWORD channels);
+	int		send				(struct ir_remote *remote, struct ir_ncode *code, int repeats);
+	bool	getData				(lirc_t *out);
 	
 private:
 

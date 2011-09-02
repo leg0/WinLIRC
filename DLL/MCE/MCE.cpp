@@ -46,6 +46,8 @@ IG_API int init(HANDLE exitEvent) {
 
 	if(!sendReceiveData->init()) return 0;
 
+	sendReceiveData->setTransmitters(settings.getTransmitterChannels());
+
 	return 1;
 }
 
@@ -82,7 +84,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 			//===================
 			BOOL	hidEnabled;
-			INT		transmitters;
+			UINT	transmitters;
 			//===================
 
 			ShowWindow(hwnd, SW_SHOW);
@@ -206,6 +208,16 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(decodeCommand(remotes,out)) {
 		return 1;
+	}
+
+	return 0;
+}
+
+IG_API int setTransmitters(unsigned int transmitterMask) {
+
+	if(sendReceiveData) {
+		sendReceiveData->setTransmitters(transmitterMask);
+		return 1; //assume success
 	}
 
 	return 0;
