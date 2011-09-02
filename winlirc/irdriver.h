@@ -36,12 +36,13 @@ public:
 	CIRDriver();
    ~CIRDriver();
 
-	BOOL	loadPlugin	(CString plugin);
-	void	unloadPlugin();
-	BOOL	init		();
-	void	deinit		();
-	int		sendIR		(struct ir_remote *remote,struct ir_ncode *code, int repeats);
-	int		decodeIR	(struct ir_remote *remote, char *out);
+	BOOL	loadPlugin		(CString plugin);
+	void	unloadPlugin	();
+	BOOL	init			();
+	void	deinit			();
+	int		sendIR			(struct ir_remote *remote,struct ir_ncode *code, int repeats);
+	int		decodeIR		(struct ir_remote *remote, char *out);
+	int		setTransmitters	(unsigned int transmitterMask);
 
 	void	DaemonThreadProc();
 
@@ -53,6 +54,7 @@ private:
 	typedef void (*LoadSetupGuiFunction)	(void);
 	typedef int	 (*SendFunction)			(struct ir_remote *remote,struct ir_ncode *code, int repeats);
 	typedef int  (*DecodeFunction)			(struct ir_remote *remote, char *out);
+	typedef int  (*SetTransmittersFunction)	(unsigned int transmitterMask);
 
 	InitFunction			initFunction;
 	DeinitFunction			deinitFunction;
@@ -60,6 +62,7 @@ private:
 	LoadSetupGuiFunction	loadSetupGuiFunction;
 	SendFunction			sendFunction;
 	DecodeFunction			decodeFunction;
+	SetTransmittersFunction setTransmittersFunction;
 
 	//==============================
 	CString		loadedPlugin;

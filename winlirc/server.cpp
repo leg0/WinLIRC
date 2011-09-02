@@ -370,6 +370,58 @@ void Cserver::ThreadProc(void)
 										}
 									}
 
+									else if (_stricmp(command,"SET_TRANSMITTERS")==0) {
+	
+										//======================
+										char *transmitterNumber;
+										DWORD transmitterMask;
+										int transNumber;
+										BOOL success;
+										//======================
+
+										transmitterNumber = NULL;
+										transmitterMask = 0;
+										success = TRUE;
+
+										while(transmitterNumber = strtok(NULL," \t\r")) {
+
+											transNumber = atoi(transmitterNumber);
+
+											if(transNumber==0) continue;
+
+											if(transNumber>32) {
+												success		= FALSE;
+												response	= new char[64];
+												sprintf(response,"DATA\n1\nCannot support more than 32 transmitters.\n");
+												break;
+											}
+
+											transmitterMask |= 1 << (transNumber-1);
+										}
+
+										if(success) {
+
+											//============
+											Cwinlirc *app;
+											//============
+
+											app = (Cwinlirc *)AfxGetApp();
+
+											success = app->dlg->driver.setTransmitters(transmitterMask);
+
+											if(success) {
+												copyDataResult = true;
+											}
+											else {
+												response = new char[64];
+												sprintf(response,"DATA\n1\nSetTransmitters failed/not supported.\n");
+											}
+										}
+
+										//printf("transmitter mask %i\n",transmitterMask);
+
+									}
+
 									else if ((!password.IsEmpty() && !password.CompareNoCase(command)) || (_stricmp(command,"SEND_ONCE")==0)) //only accept commands if a password is set and matches
 									{
 										CString incoming = (LPCSTR) (cur);
