@@ -33,8 +33,8 @@ DWORD WINAPI MCEthread(void *recieveClass) {
 
 SendReceiveData::SendReceiveData() {
 
-	deviceHandle	= NULL;
-	exitEvent		= NULL;
+	deviceHandle		= NULL;
+	exitEvent			= NULL;
 
 	QueryPerformanceFrequency(&frequency);
 }
@@ -45,13 +45,14 @@ bool SendReceiveData::init() {
 
 	if(irDeviceList.get().empty()) return false;	//no hardware
 
-
 	deviceHandle = CreateFile(irDeviceList.get().begin()->c_str(), GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
 
 	if(deviceHandle==INVALID_HANDLE_VALUE) {
 		//printf("invalid device handle\n");
 		return false;
 	}
+
+	transmitChannelMask = MCE_BLASTER_BOTH;
 
 	resetHardware();
 
@@ -554,7 +555,7 @@ int SendReceiveData::calcBlasterPort() {
 
 	getAvailableBlasters();
 
-	tempPort = settings.getTransmitterChannels();
+	tempPort = transmitChannelMask;
 
 	switch(tempPort) {
 
@@ -574,4 +575,9 @@ int SendReceiveData::calcBlasterPort() {
 	//printf("transmit port number %i\n",tempPort);
 
 	return tempPort;
+}
+
+void SendReceiveData::setTransmitters(unsigned int channelMask) {
+
+	transmitChannelMask = channelMask;
 }

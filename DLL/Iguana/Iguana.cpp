@@ -202,6 +202,15 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 	return 0;
 }
 
+IG_API int setTransmitters(unsigned int transmitterMask) {
+
+	if(sendReceiveData) {
+		return sendReceiveData->setTransmitters(transmitterMask);
+	}
+
+	return 0;
+}
+
 IG_API struct hardware* getHardware() {
 
 	initHardwareStruct();
