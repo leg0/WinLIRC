@@ -119,7 +119,7 @@ void map_gap(struct ir_remote *remote,
 	}	
 }
 
-int beholder_decode (struct ir_remote *remote, ir_code *prep, ir_code *codep,
+int tevii_decode (struct ir_remote *remote, ir_code *prep, ir_code *codep,
 		 ir_code *postp, int *repeat_flagp,
 		 lirc_t *min_remaining_gapp,
 		 lirc_t *max_remaining_gapp)
@@ -130,11 +130,7 @@ int beholder_decode (struct ir_remote *remote, ir_code *prep, ir_code *codep,
 
 	success = 0;
 
-	EnterCriticalSection(&criticalSection);
-
 	success = map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
-
-	LeaveCriticalSection(&criticalSection);
 
 	if(!success) return 0;
 
@@ -430,7 +426,7 @@ bool decodeCommand(struct ir_remote *remotes, char *out)
 	while(remote)
 	{
 		
-		if(beholder_decode(remote,&pre,&code,&post,&repeat_flag,
+		if(tevii_decode(remote,&pre,&code,&post,&repeat_flag,
 				  &min_remaining_gap, &max_remaining_gap) &&
 		   (ncode=get_code(remote,pre,code,post,&toggle_bit_mask_state)))
 		{
