@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="Technotrend-BDA"
 	ProjectGUID="{CD6F42A5-70E1-41B9-AF99-ED38E0E74E53}"
 	RootNamespace="Technotrend-BDA"
@@ -254,7 +254,7 @@
 			Name="Documentation"
 			>
 			<File
-				RelativePath=".\Readme.txt"
+				RelativePath=".\Technotrend-BDA-readme.txt"
 				>
 			</File>
 		</Filter>

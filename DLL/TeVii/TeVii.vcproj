@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="TeVii-BDA"
 	ProjectGUID="{8FF00A35-42BE-4783-AFC1-053BAE47BC8E}"
 	RootNamespace="TeVii-BDA"
@@ -254,7 +254,7 @@
 			Name="Documentation"
 			>
 			<File
-				RelativePath=".\Readme.txt"
+				RelativePath=".\TeVii-BDA-readme.txt"
 				>
 			</File>
 		</Filter>
