@@ -250,6 +250,14 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Documentation"
+			>
+			<File
+				RelativePath=".\Readme.txt"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
