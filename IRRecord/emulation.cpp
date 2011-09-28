@@ -1580,19 +1580,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 			codes++;
 		}
 	}
-#       ifdef DYNCODES
-	if(!found_code)
-	{
-		if(remote->dyncodes[remote->dyncode].code!=code)
-		{
-			remote->dyncode++;
-			remote->dyncode%=2;
-		}
-		remote->dyncodes[remote->dyncode].code=code;
-		found=&(remote->dyncodes[remote->dyncode]);
-		found_code=1;
-	}
-#       endif
+
 	if(found_code && found!=NULL && has_toggle_mask(remote))
 	{
 		if(!(remote->toggle_mask_state%2))

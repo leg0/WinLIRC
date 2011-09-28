@@ -305,13 +305,15 @@ bool Cdrvdlg::InitializeDaemon() {
 
 void Cdrvdlg::OnConfig() 
 {
+	driver.deinit();
+
 	InputPlugin inputPlugin(this);
 	inputPlugin.DoModal();
 
 	AllowTrayNotification=false;
 	KillTimer(1);
 	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Disabled During Configuration");
-	driver.deinit();
+
 	if(DoInitializeDaemon()==false)
 		OnCancel();
 

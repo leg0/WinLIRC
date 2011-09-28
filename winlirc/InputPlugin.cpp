@@ -149,8 +149,8 @@ BEGIN_MESSAGE_MAP(InputPlugin, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON2, &InputPlugin::OnBnClickedButton2)
 	ON_BN_CLICKED(IDCANCEL, &InputPlugin::OnBnClickedCancel)
 	ON_BN_CLICKED(IDC_BUTTON1, &InputPlugin::OnBnClickedButton1)
-//	ON_WM_CREATE()
-ON_BN_CLICKED(IDC_CHECK1, &InputPlugin::OnBnClickedCheck1)
+	ON_BN_CLICKED(IDC_CHECK1, &InputPlugin::OnBnClickedCheck1)
+	ON_BN_CLICKED(IDC_BUTTON3, &InputPlugin::OnBnClickedButton3)
 END_MESSAGE_MAP()
 
 
@@ -333,6 +333,54 @@ void InputPlugin::OnBnClickedCheck1() {
 	else {
 		disableFirstRepeats.EnableWindow(TRUE);
 		disableFirstRepeatsLabel.EnableWindow(TRUE);
+	}
+
+}
+
+void InputPlugin::OnBnClickedButton3() {
+	
+	//==============================
+	CString				confPath;
+	CString				pluginName;
+	CString				commandLine;
+	STARTUPINFO			si;
+	PROCESS_INFORMATION pi;
+	BOOL				processCreated;
+	//==============================
+
+	configPath.GetWindowText(confPath);
+
+	if(confPath==_T("")) {
+		configPath.SetWindowText(_T("..\\config.cf"));
+		configPath.GetWindowText(confPath);
+	}
+
+	cboxInputPlugin.GetWindowText(pluginName);
+
+	if(pluginName==_T("")) {
+		MessageBox(_T("No valid plugins selected."));
+		return;
+	}
+
+	ZeroMemory( &si, sizeof(si) );
+	si.cb = sizeof(si);
+	ZeroMemory( &pi, sizeof(pi) );
+
+	commandLine = _T("..\\IRRecord -d ") + pluginName + _T(" \"") + confPath + _T("\"");
+
+	processCreated = CreateProcess( NULL,	// No module name (use command line)
+		commandLine.GetBuffer(0),			// Command line
+		NULL,								// Process handle not inheritable
+		NULL,								// Thread handle not inheritable
+		FALSE,								// Set handle inheritance to FALSE
+		0,									// No creation flags
+		NULL,								// Use parent's environment block
+		NULL,								// Use parent's starting directory 
+		&si,								// Pointer to STARTUPINFO structure
+		&pi );								// Pointer to PROCESS_INFORMATION structure
+
+	if(!processCreated) {
+		MessageBox(_T("IRRecord.exe missing"));
 	}
 
 }
