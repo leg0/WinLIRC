@@ -18,6 +18,7 @@
 #define IDC_BUTTON1                     1005
 #define IDC_ENTER                       1005
 #define IDC_HIDEME                      1005
+#define IDC_BUTTON3                     1006
 #define IDC_OUT                         1007
 #define IDC_IN                          1008
 #define IDC_VERSION                     1012
@@ -32,7 +33,6 @@
 #define IDC_DISABLE_FIRST_REPEATS       1035
 #define IDC_CHECK2                      1036
 #define IDC_CHECK3                      1037
-#define IDC_CHECK4                      1038
 #define ID_APP_SHOW                     40002
 #define ID_TRAY_TWO                     40003
 #define ID_EXITLIRC                     40003

@@ -42,6 +42,7 @@ private:
 	afx_msg void OnBnClickedCancel();
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedCheck1();
+	afx_msg void OnBnClickedButton3();
 
 	CComboBox	cboxInputPlugin;
 	CButton		setupButton;

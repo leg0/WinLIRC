@@ -33,7 +33,7 @@
 #define LONG_IR_CODE
 #define PACKET_SIZE		(256)
 #define RBUF_SIZE		(256)
-#define WBUF_SIZE		(256)
+#define WBUF_SIZE		(2048)
 #define REC_SYNC		8
 
 #define IR_PROTOCOL_MASK 0x07ff
