@@ -400,14 +400,14 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			}
 		}
 
-		length		= send_buffer.wptr;
+		length		= send_buffer.wptr+1;
 		signals		= send_buffer.data;
 		temp[0]		= 0x03;	// transmit mode
-		irToySignals= (USHORT*)malloc(sizeof(USHORT) * (length));
+		irToySignals= (USHORT*)malloc(sizeof(USHORT) * (length)); // add 1 for 0xFFFF terminator
 		
 		serial.Write(temp,1);	// set transmit mode
 
-		for(int i=0; i<length; i++) {
+		for(int i=0; i<length-1; i++) {
 
 			irToySignals[i] = (USHORT)((signals[i] & PULSE_MASK) / 21.33);
 
@@ -417,6 +417,13 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			temp[0]			= ((irToySignals[i]>>8) & 0x00FF);
 			irToySignals[i]	= (irToySignals[i]<<8) & 0xFF00;
 			irToySignals[i] = irToySignals[i] + temp[0];
+		}
+
+		//
+		// if we end in a space remove it
+		//
+		if(length%2==1) {
+			length--;
 		}
 
 		irToySignals[length-1] = 0xFFFF;	//terminate sending !

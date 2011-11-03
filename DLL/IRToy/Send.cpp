@@ -460,8 +460,6 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 		remote->max_remaining_gap=max_gap(remote);
 	}
 
-	send_space(remote->min_remaining_gap);
-
 	flush_send_buffer();
 
 	if(remote->repeat_countdown>0)
