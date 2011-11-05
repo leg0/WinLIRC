@@ -32,7 +32,6 @@
 #include "winlirc.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-EXTERN_C int setCommandIRTransmitters(unsigned int transmitterMask);
 
 IG_API int init(HANDLE exitEvent) {
 
