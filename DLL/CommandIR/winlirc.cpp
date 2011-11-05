@@ -1,43 +1,107 @@
+#include <Windows.h>
 #include "winlirc.h"
 
-#include "CommandIRUtils\libcmdir.h"
+extern "C" {
+	#include "CommandIRUtils\libcmdir.h"
+}
 
-unsigned char standalone = 1;
+#include "SendReceiveData.h"
+
 unsigned int currentTransmitterMask = 0x0f;
 int tcpRxListenersCount = 0;
+int doneReceiving = 0;
+HANDLE threadHandle = NULL;
 
-extern struct commandir_tx_order * ordered_commandir_devices;
-extern unsigned char pipeOnly;
-extern unsigned char displayOnly;
-extern struct commandir_device * first_commandir_device;
+//
+// ugly ugly ugly the header should export these ..
+//
+extern "C" {
+	unsigned char standalone = 1;
+	extern struct commandir_tx_order * ordered_commandir_devices;
+	extern unsigned char pipeOnly;
+	extern unsigned char displayOnly;
+	extern struct commandir_device * first_commandir_device;
+	void check_commandir_add_remove();	// < -- should be declared in utils header file ...
+}
 
-/*
-int * c_dataBuffer;
-unsigned char * c_bufferEnd;
-unsigned char * c_bufferStart;
-*/
+DWORD WINAPI receiveLoop(void *x) {
 
-lirc_t		dataBuffer[256];
-UCHAR		bufferStart;
-UCHAR		bufferEnd;
-
-
-void lirc_pipe_write( int * data );
+	while(!doneReceiving) {
+		if(check_commandir_rec()) {
+			continue;
+		}
+		else {
+			Sleep(10);
+		}
+	}
+  
+	return 0;
+}
 
 void setup_libcmdir_winlirc()
 {
-	standalone = 0;
-	displayOnly = 0;
-	pipeOnly = 1;
+	standalone	= 0;
+	displayOnly	= 0;
+	pipeOnly	= 1;
 }
 
-void initForWinLIRC()
+int init_commandir()
 {
-	setup_libcmdir_winlirc();
 
-	hardware_check_changes();
-	detect_tx_per_commandir();
+	bufferStart		= 0;
+	bufferEnd		= 0;
+	doneReceiving	= 0;
+
+	//
+	// setup functions
+	//
+	setup_libcmdir_winlirc			();
+	hardware_check_changes			();
+	detect_tx_per_commandir			();
 	hardware_setorder_by_pdata_order();
+	check_commandir_add_remove		();
+
+	threadHandle = CreateThread( NULL, 0, receiveLoop, NULL, 0, NULL );
+
+	//
+	// need to return zero for initialisation failure
+	//
+	return 1;
+}
+
+void deinit_commandir() {
+
+	doneReceiving = 1;
+
+	if( threadHandle != NULL ) {
+
+		//===============
+		DWORD result = 0;
+		//===============
+
+		if( GetExitCodeThread( threadHandle, &result ) == 0 ) {
+			CloseHandle( threadHandle );
+			threadHandle = NULL;
+			return;
+		}
+
+		if( result==STILL_ACTIVE ) {
+			WaitForSingleObject( threadHandle, INFINITE );
+		}
+
+		CloseHandle( threadHandle );
+		threadHandle = NULL;
+	}
+}
+
+extern "C" {	// deep sigh :p
+	void lirc_pipe_write( int * data )
+	{
+		// hw seems to be returning zeros at the end of the signal - we dont want those :p
+		if(*data) {
+			setData(*data);
+		}
+	}
 }
 
 
@@ -159,12 +223,6 @@ struct sendir * convert_lircbuffer_to_sendir(unsigned char *buffer, int bytes, u
 	return return_sendir;
 }
 
-void lirc_pipe_write( int * data )
-{
-	dataBuffer[bufferEnd] = *data;
-	bufferEnd++;
-}
-
 
 //	send to SendReceiveData::setData as LIRC format timeout data
 
@@ -238,9 +296,9 @@ void add_to_tx_pipeline(unsigned char *buffer, int bytes, unsigned int frequency
 	// Deliver this signal to any CommandIRs with next_tx_mask set
 	struct commandir_device *pcd;
 
-	new_tx_signal = malloc(sizeof(struct tx_signal));
+	new_tx_signal = (struct tx_signal *) malloc(sizeof(struct tx_signal));
 
-	new_tx_signal->raw_signal = malloc(bytes);
+	new_tx_signal->raw_signal = (char *)malloc(bytes);
 	new_tx_signal->raw_signal_len = bytes;
 	new_tx_signal->raw_signal_frequency = frequency;
 	new_tx_signal->next = NULL;
@@ -277,13 +335,13 @@ void add_to_tx_pipeline(unsigned char *buffer, int bytes, unsigned int frequency
 		if (pcd->num_next_enabled_emitters) {
 			// Make a local copy
 			struct tx_signal *copy_new_signal;
-			copy_new_signal = malloc(sizeof(struct tx_signal));
+			copy_new_signal = (struct tx_signal *) malloc(sizeof(struct tx_signal));
 			memcpy(copy_new_signal, new_tx_signal, sizeof(struct tx_signal));
 
-			copy_new_signal->raw_signal = malloc(bytes);
+			copy_new_signal->raw_signal = (char *)malloc(bytes);
 			memcpy(copy_new_signal->raw_signal, new_tx_signal->raw_signal, bytes);
 
-			copy_new_signal->bitmask_emitters_list = malloc(pcd->num_transmitters * sizeof(int));
+			copy_new_signal->bitmask_emitters_list = (int *) malloc(pcd->num_transmitters * sizeof(int));
 
 			memcpy(copy_new_signal->bitmask_emitters_list, pcd->next_enabled_emitters_list,
 			       sizeof(int) * pcd->num_next_enabled_emitters);
