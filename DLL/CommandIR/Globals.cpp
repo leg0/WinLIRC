@@ -30,8 +30,6 @@ Settings settings;
 HANDLE	threadExitEvent	= NULL;
 HANDLE	dataReadyEvent	= NULL;
 
-SendReceiveData *sendReceiveData = NULL;
-
 int gettimeofday(struct mytimeval *a, void *)
 /* only accurate to milliseconds, instead of microseconds */
 {

@@ -29,33 +29,32 @@
 #include "SendReceiveData.h"
 #include "hardware.h"
 #include "Send.h"
+#include "winlirc.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 EXTERN_C int setCommandIRTransmitters(unsigned int transmitterMask);
 
 IG_API int init(HANDLE exitEvent) {
 
-	init_rec_buffer();
-	init_send_buffer();
-	initHardwareStruct();
+	//==========
+	int success;
+	//==========
 
-	sendReceiveData = new SendReceiveData();
-
-	if(!sendReceiveData->init()) return 0;
+	init_rec_buffer		();
+	init_send_buffer	();
+	initHardwareStruct	();
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
 
-	return 1;
+	success = init_commandir();
+
+	return success;
 }
 
 IG_API void deinit() {
 
-	if(sendReceiveData) {
-		sendReceiveData->deinit();
-		delete sendReceiveData;
-		sendReceiveData = NULL;
-	}
+	deinit_commandir();
 
 	if(dataReadyEvent) {
 		CloseHandle(dataReadyEvent);
@@ -63,7 +62,6 @@ IG_API void deinit() {
 	}
 
 	threadExitEvent = NULL;
-
 }
 
 IG_API int hasGui() {
@@ -77,19 +75,13 @@ IG_API void	loadSetupGui() {
 
 IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
-	if(sendReceiveData) {
-		return sendReceiveData->send(remote,code,repeats);
-	}
-
-	return 0;
+	return send(remote,code,repeats);
 }
 
 IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 
-	if(sendReceiveData) {
-		sendReceiveData->waitTillDataIsReady(0);
-	}
-
+	waitTillDataIsReady(0);
+	
 	if(decodeCommand(remotes,out)) {
 		return 1;
 	}
@@ -99,15 +91,9 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 IG_API int setTransmitters(unsigned int transmitterMask) {
 
-	//
-	// transmitters received here !
-	// return 1 for transmitter mask success 0 for fail
-	// each bit reprisents a transmitter
-	// so the binary value 0000001 = transmitter 1
-	// value 00000011 = transmitters 1 & 2
-	//
-	setCommandIRTransmitters(transmitterMask);
-	return 0;
+	currentTransmitterMask = transmitterMask;
+
+	return 1;	// assume success ... for now :p
 }
 
 IG_API struct hardware* getHardware() {

@@ -460,7 +460,9 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 		remote->max_remaining_gap=max_gap(remote);
 	}
 
-	send_space(remote->min_remaining_gap);	// Returning this
+	//send_space(remote->min_remaining_gap);	// Returning this
+	// add the above line will stop raw sends from working ..
+	// if you need an extra zero at the end add it some other way :p
 
 	flush_send_buffer();
 

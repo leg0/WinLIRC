@@ -625,14 +625,14 @@ int hardware_scan()
 int get_frequency_from_hex(char * freqArg)
 {
   int freqArgDecimal;
-  float freq;
+  int freq;
   
   freqArgDecimal = convert_quad(freqArg, 4);
   if(freqArgDecimal == 0) {
     printf("Invalid frequency\n");
     return 0;
   }
-	freq = (float)1000000/((float)freqArgDecimal*0.241246);
+	freq = (int)((float)1000000/((float)freqArgDecimal*0.241246f));
 	if(freq < 25000) {
 		printf("Invalid frequency specified in hex code - %5.1fkHz < 25.0kHz minimum\n", freq/1000);
 		return 0;
@@ -677,8 +677,8 @@ struct sendir * tx_char_2_struct(char * buf)
   
   
 //  freq = (float)1000000/((float)freqArgDecimal*0.241246);
-	freq = get_frequency_from_hex(freqArg);
-  ptx->pulse_width = 48000000/freq;
+	freq = (float)get_frequency_from_hex(freqArg);
+  ptx->pulse_width = (unsigned short)(48000000/freq);
   ptx->pwm_offset = ptx->pulse_width / 2;
   
 //  tx_count = sizeof(struct commandir_3_tx_signal);
@@ -686,9 +686,9 @@ struct sendir * tx_char_2_struct(char * buf)
   retSend.byteCount = sizeof(struct commandir_3_tx_signal);
   
   if(send_filename)
-    printf("Transmitting '%s' at%5.1fkHz\n", send_filename, freq/1000.0);
+    printf("Transmitting '%s' at%5.1fkHz\n", send_filename, freq/1000.0f);
   else
-    printf("Transmitting command line args at%5.1fkHz\n", freq/1000.0);
+    printf("Transmitting command line args at%5.1fkHz\n", freq/1000.0f);
   
   while(*importArg != 0)
   {
@@ -1057,7 +1057,7 @@ void displayAndPipeSignal(unsigned char * hexString, int len, int gap)
 
   freqArg = &hexString[5];
 //  freq = (float)1000000/((float)convert_quad(freqArg, 4)*0.241246);
-  freq = (1000000/0.241246)  / (convert_quad(freqArg, 4));
+  freq = (1000000/0.241246f)  / (convert_quad(freqArg, 4));
   
 #ifndef WIN
   if(pipeOnly == 1 && pipePtr > 0) {
@@ -1117,7 +1117,7 @@ void dump_signal(int gap)
   }
 
   freq = 1000000/(currentPCA_Frequency/48);
-  fileFreq = (1000000/ (freq * 0.241246) );
+  fileFreq = (int)((1000000/ (freq * 0.241246f)));
 
   // makeHexString creates internalPipeBuffer
   snum = makeHexString(fileFreq, currentPCA_Frequency, gap);
@@ -1305,8 +1305,7 @@ int commandir3_convert_RX(unsigned char *rxBuffer,
 					a_usb_rx_pulse = (struct usb_rx_pulse3 *)
 						&incomingBuffer[incomingBuffer_Read];
 
-					buffer_write =  a_usb_rx_pulse->t0_count * 
-						(1000000/ (1/( ((float)(currentPCA_Frequency))/48000000) ) ) ;
+					buffer_write =  (int)(a_usb_rx_pulse->t0_count * (1000000/ (1/( ((float)(currentPCA_Frequency))/48000000) ) )) ;
 					buffer_write |= PULSE_BIT; 
 #ifdef WIN32
 					lirc_pipe_write(&buffer_write); 

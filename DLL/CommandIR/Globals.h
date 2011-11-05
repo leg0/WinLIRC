@@ -27,7 +27,6 @@
 #include "SendReceiveData.h"
 
 extern Settings settings;
-extern SendReceiveData *sendReceiveData;
 
 extern HANDLE threadExitEvent;
 extern HANDLE dataReadyEvent;

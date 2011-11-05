@@ -24,29 +24,22 @@
 
 #include "LIRCDefines.h"
 
-class SendReceiveData
-{
-public:
-	SendReceiveData();
+//
+// variables
+//
 
-	bool	init();
-	void	deinit();
+extern int				dataBuffer[256];
+extern unsigned char	bufferStart;
+extern unsigned char	bufferEnd;
 
-	bool	getData				(lirc_t *out);
-	bool	dataReady			();
-	void	waitTillDataIsReady	(int maxUSecs);
-	int		send				(struct ir_remote *remote, struct ir_ncode *code, int repeats);
-	void	receiveLoop			();
-	
-private:
+//
+// methods
+//
 
-	void	setData				(lirc_t data);
-	void	killThread			();
-
-	//==========================
-	int			recvDone;
-	HANDLE		threadHandle;
-	//==========================
-};
+void waitTillDataIsReady	(int maxUSecs);
+void setData				(lirc_t data);
+bool dataReady				();
+bool getData				(lirc_t *out);
+int  send					(ir_remote *remote, ir_ncode *code, int repeats);
 
 #endif
