@@ -38,27 +38,20 @@ lirc_t readData(lirc_t timeout) {
 
 	data = 0;
 
-	if(!sendReceiveData) return 0;
-
-	sendReceiveData->waitTillDataIsReady(timeout);
-
-	sendReceiveData->getData(&data);
+	waitTillDataIsReady(timeout);
+	getData(&data);
 
 	return data;
 }
 
 void wait_for_data(lirc_t timeout) {
 
-	if(!sendReceiveData) return;
-
-	sendReceiveData->waitTillDataIsReady(timeout);
+	waitTillDataIsReady(timeout);
 }
 
 int data_ready() {
 
-	if(!sendReceiveData) return 0;
-
-	if(sendReceiveData->dataReady()) return 1;
+	if(dataReady()) return 1;
 
 	return 0;
 }

@@ -203,6 +203,10 @@
 				RelativePath=".\Settings.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\winlirc.cpp"
+				>
+			</File>
 			<Filter
 				Name="CmdIRUtils061"
 				>
@@ -216,10 +220,6 @@
 				</File>
 				<File
 					RelativePath=".\CommandIRUtils\libcmdir.h"
-					>
-				</File>
-				<File
-					RelativePath=".\winlirc.c"
 					>
 				</File>
 			</Filter>
@@ -259,6 +259,10 @@
 			</File>
 			<File
 				RelativePath=".\Settings.h"
+				>
+			</File>
+			<File
+				RelativePath=".\winlirc.h"
 				>
 			</File>
 		</Filter>

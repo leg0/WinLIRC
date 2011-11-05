@@ -25,72 +25,61 @@
 #include "Globals.h"
 #include <stdio.h>
 #include "Send.h"
-#include "usb.h"
-
-#include "guicon.h"
-
 #include "winlirc.h"
 
-extern "C" {
-	extern int check_commandir_rec(void);
-	extern void send_lirc_buffer(unsigned char *buffer, int bytes, unsigned int frequency);
-	extern void initForWinLIRC();
-	extern void check_commandir_add_remove();
-	extern lirc_t		dataBuffer[256];
-	extern UCHAR		bufferStart;
-	extern UCHAR		bufferEnd;
-}
+lirc_t			dataBuffer[256];
+unsigned char	bufferStart;
+unsigned char	bufferEnd;
 
-#include "CommandIR.h"
-extern IG_API int setTransmitters(unsigned int transmitterMask);
+void waitTillDataIsReady(int maxUSecs) {
 
+	//================
+	HANDLE	events[2];
+	int		evt;
+	//================
 
-SendReceiveData::SendReceiveData() {
+	events[0] = dataReadyEvent;
+	events[1] = threadExitEvent;
 
-	bufferStart		= 0;
-	bufferEnd		= 0;
-}
+	if( threadExitEvent==NULL ) {
+		evt = 1;
+	}
+	else {
+      evt = 2;
+	}
 
-bool SendReceiveData::init() {
+	if(!dataReady()) {
 
-	//
-	// init your device here
-	//
+		//======
+		int res;
+		//======
+		ResetEvent(dataReadyEvent);
 
-	initForWinLIRC();
-
-	return true;
-}
-
-void SendReceiveData::deinit() {
-
-
-}
-
-/* Rewritten to avoid 2nd thread and signals */
-void SendReceiveData::waitTillDataIsReady(int maxUSecs) {
-	int rxed = 0;
-	
-	/* We want to return sometimes so we can still send? */
-	while( bufferStart==bufferEnd ) {
-		rxed = check_commandir_rec();
-		if(rxed > 0) {
-			break;	// force abreak
-		} else {
-			Sleep(maxUSecs > 50000 ? maxUSecs / 1000 : 50);
-			check_commandir_add_remove();
+		if( maxUSecs ) {
+			res = WaitForMultipleObjects( evt, events, FALSE, ( maxUSecs*10 + 500 ) / 1000 );
 		}
+		else {
+			res = WaitForMultipleObjects( evt, events, FALSE, INFINITE );
+		}
+
+		if( res == (WAIT_OBJECT_0+1) ) {
+			ExitThread( 0 );
+			return;
+		}
+
 	}
 }
 
-/* We're not using this */
-void SendReceiveData::setData(lirc_t data) {
+void setData(lirc_t data) {
 
+	//printf("data %i\n",data);
 	dataBuffer[bufferEnd] = data;
 	bufferEnd++;
+
+	SetEvent( dataReadyEvent );	// tell thread data is ready :p
 }
 
-bool SendReceiveData::dataReady() {
+bool dataReady() {
 
 	if(bufferStart==bufferEnd) {
 		return false;
@@ -98,7 +87,7 @@ bool SendReceiveData::dataReady() {
 	return true;
 }
 
-bool SendReceiveData::getData(lirc_t *out) {
+bool getData(lirc_t *out) {
 
 	if(!dataReady()) return false;
 
@@ -115,12 +104,14 @@ bool SendReceiveData::getData(lirc_t *out) {
 // sending stuff below
 //======================================================================================
 
-int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
+
+int send(ir_remote *remote, ir_ncode *code, int repeats) {
+
 	int frequency = 38000;
-	static int testTransmitters = 1;
 	
-	if(remote->freq)
+	if(remote->freq) {
 		frequency = remote->freq;
+	}
 
 	if (init_send(remote, code,repeats))
 	{
@@ -141,19 +132,14 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			return 0;
 		}
 
-		// How are emitters set?
-		// with this new function i added :p
-//		setTransmitters(5);
-		setTransmitters(testTransmitters);
-		printf("Sending %d signals at %dhz with transmitters at %2X\n", length, frequency, testTransmitters);
+		printf("Sending %d signals at %dhz with transmitters at %2X\n", length, frequency, currentTransmitterMask);
 
-		testTransmitters++;
-		if(testTransmitters > 0xff)
-				testTransmitters = 1;
 		send_lirc_buffer((unsigned char*)signals, length * sizeof(lirc_t), frequency);	// send_lirc_buffer wants BYTES in buffer.
-		return length;
+
+		return 1; // assume success :p
 	}
 
 	return 0;	// for not implimented
 }
+
 
