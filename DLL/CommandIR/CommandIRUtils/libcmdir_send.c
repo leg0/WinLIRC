@@ -52,6 +52,12 @@ int execute_commandir_send_arg(int argc, char *argv[])
   char * tx_char = NULL, * ptx_char;
   struct commandir_device * pcd = NULL;
   struct sendir * tx;
+
+  /* Set any defaults */
+  set_all_bitmask(0xff); // Default to All
+  
+  
+  /* Process Command Line Args */
   
   for(x=1; x<argc; x++)
   {
@@ -93,8 +99,7 @@ int execute_commandir_send_arg(int argc, char *argv[])
           set_all_bitmask(0); // clear bitmask
           emitter_num = atoi(&argv[x][2]);
           if(emitter_num < 1 | emitter_num > 2048)
-            invalid_command_line_parameter_exit("Invalid emitter number\n");
-            
+            invalid_command_line_parameter_exit("Invalid emitter number");
           set_long_tx_bit( emitter_num );
           break;
 /*          tx_bitmask = atoi(&argv[x][2]); 
@@ -104,7 +109,7 @@ int execute_commandir_send_arg(int argc, char *argv[])
           // hex tx_bitmask
           // Input Validation
           if(tx_bitmask) {
-            invalid_command_line_parameter_exit("Cannot specify both -e and -b!\n");
+            invalid_command_line_parameter_exit("Cannot specify both -e and -b!");
             return -1;
           }
           
@@ -138,7 +143,7 @@ int execute_commandir_send_arg(int argc, char *argv[])
           
           if(argc == y) {
             printf("argc: %d, y: %d\n", argc, y);
-          	invalid_command_line_parameter_exit("Specify a Pronto format IR code with -r to use (see commandir_send help).\n");
+          	invalid_command_line_parameter_exit("Specify a Pronto format IR code with -r to use (see commandir_send help).");
           	return -1;
           }
           
@@ -167,7 +172,7 @@ int execute_commandir_send_arg(int argc, char *argv[])
           			} else {
           				// Also, the gap-in-code case:
           				if(argc - x - 4 - 1 != convert_quad(argv[y], strlen(argv[y])) + 1) {	
-			        			invalid_command_line_parameter_exit("Error: Number of raw codes does not match the header specified number\n");
+			        			invalid_command_line_parameter_exit("Error: Number of raw codes does not match the header specified number"); // \n added
 			        			return -1;
 	          			}	
           			}
@@ -216,6 +221,9 @@ int execute_commandir_send_arg(int argc, char *argv[])
           } else {  // else regular old LIRC combination mode
             transmit_tx_char(tx_char);
           }
+          sprintf(errorBuffer, "Successful transmit\n\0");
+          send_error(SEND_OK);
+          
           // Only pause if we have another signal to transmit:
           if(x < argc - 1)
 #ifdef WIN
@@ -233,6 +241,8 @@ int execute_commandir_send_arg(int argc, char *argv[])
     } else {  // else regular old LIRC combination mode
 //      printf("Classic transmit mode: %s\n", tx_char);
       transmit_tx_char(tx_char);
+      sprintf(errorBuffer, "Successful transmit\n\0");
+      send_error(SEND_OK);
     }
     free(tx_char);
   }

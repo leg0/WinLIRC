@@ -25,12 +25,13 @@
 #include "LIRCDefines.h"
 
 //
-// variables
+// extern variables
 //
 
 extern int				dataBuffer[256];
 extern unsigned char	bufferStart;
 extern unsigned char	bufferEnd;
+extern unsigned int		currentTransmitterMask;
 
 //
 // methods
@@ -41,5 +42,7 @@ void setData				(lirc_t data);
 bool dataReady				();
 bool getData				(lirc_t *out);
 int  send					(ir_remote *remote, ir_ncode *code, int repeats);
+void send_lirc_buffer		(unsigned char *buffer, int bytes, unsigned int frequency);
+
 
 #endif

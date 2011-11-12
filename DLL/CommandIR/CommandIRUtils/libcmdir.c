@@ -21,26 +21,24 @@ void lirc_pipe_write( int * data );
 #include "libtcp.h"
 #include "libpipes.h"
 
+#include "commandir_tests.h"
+
 extern int tcpRxListenersCount; // libtcp
 extern unsigned char standalone;  // All CLI-facing programas
 
 unsigned char internalPipeBuffer[4096];
 
-int makeHexString(
-  int fileFreq, 
-  int currentPCA_Frequency,
-  int gapMicroseconds);
-  
+
 usb_dev_handle *cmdir_udev[127];
 // int cmdir_num_emitters[127];	// Outdated; this is part of the pcd now
-int numCommandIRs = 0;
 
-char incoming_packet[1024];
-char * rec_filename = NULL;
-char * send_filename = NULL;
-char determining_gap = 0;
+int		numCommandIRs = 0;
+char	incoming_packet[1024];
+char	*rec_filename = NULL;
+char	*send_filename = NULL;
+char	determining_gap = 0;
+char	outgoingBuffer[4096];
 unsigned int tx_bitmask = 0;
-char outgoingBuffer[4096];
 
 struct commandir_device * rx_device = NULL; // Not using this, but for later compat.
 
@@ -64,9 +62,13 @@ int pipePtr = 0;
 struct commandir_tx_order * ordered_commandir_devices = NULL;
 
 /* New in v0.3 */
-struct commandir_device * first_commandir_device;
+struct commandir_device * first_commandir_device = NULL;
 
+int makeHexString(int fileFreq, int currentPCA_Frequency, int gapMicroseconds);
 void timingEvent(unsigned char switchByte, unsigned int buffer_write);
+
+unsigned char	standalone = 1;
+int				tcpRxListenersCount;
 
 extern int tcpTimingListenersCount;
 
@@ -91,7 +93,7 @@ int kbhit (void)
 #endif
 
 
-void transmit_tx_char(char * tx_char)
+void transmit_tx_char(unsigned char * tx_char)
 {
   struct sendir * tx;
   tx = tx_char_2_struct(tx_char);
@@ -136,6 +138,17 @@ void set_long_tx_bit(int bitnum)
   long_tx_bitmask[a] |= 0x1 << b;
 }
 
+void set_transmitters_int(unsigned int t_enable)
+{
+	int x, mask = 0x01;
+	set_all_bitmask(0);		// Clear
+	for(x=0;x<sizeof(t_enable) * 8; x++)
+	{
+		if(t_enable & mask)
+			set_long_tx_bit(x + 1);
+		mask = mask << 1;
+	}
+}
 
 void convert_set_long(char * a, int len)
 {
@@ -249,7 +262,7 @@ usb_dev_handle * hardware_scan_for(int busNum, int devId) {
 }
 
 
-void * newTxOrder(char * name) 
+void * newTxOrder(unsigned char * name) 
 {
   struct commandir_tx_order * ptx;
   
@@ -260,7 +273,7 @@ void * newTxOrder(char * name)
 }
 
 
-void reserveCommandIR_By_Name(char * name) 
+void reserveCommandIR_By_Name(unsigned char * name) 
 {
   struct commandir_tx_order * ptx;
   // Create a linked-list of names that sets the TX order.  Didn't LIRC have something like this?
@@ -295,7 +308,7 @@ void connectReservedCommandIRs()
     for(ptx = ordered_commandir_devices; ptx->next != NULL; ptx = ptx->next)
     {
       if(ptx->the_commandir_device != NULL) continue;   // The name has been already assigned
-      if(strncmp(ptx->reservedName, ((struct persistent_data_03 *)pcd->pdata)->name, strlen(ptx->reservedName)) == 0)
+      if(strncmp((char *)ptx->reservedName, (char *)((struct persistent_data_03 *)pcd->pdata)->name, strlen((char *)ptx->reservedName)) == 0)
       {
         ptx->the_commandir_device = pcd;
         validName = 1;
@@ -357,6 +370,7 @@ int hardware_check_changes()
             if(pcd->busnum == searchBus && pcd->devnum == searchDev) {
               foundIt = 1;
               pcd->stillFound = 1;
+			  pcd->flag_disconnect = 0;
               //	printf("stillFound %d:%d\n", searchBus, searchDev);
               break;
             }
@@ -379,8 +393,11 @@ int hardware_check_changes()
           }
         } else {
           first_commandir_device = addCommandIR(dev,bus);
-          newlyDetected++;
-          first_commandir_device->stillFound = 1;  // stillFound anything new of course
+		  if(first_commandir_device)	// May not have been claimable
+		  {
+            newlyDetected++;
+			first_commandir_device->stillFound = 1;  // stillFound anything new of course
+		  }
           // printf("new commandir is first detected\n");
         }
       }
@@ -622,17 +639,17 @@ int hardware_scan()
 	return numCommandIRs;
 }
 
-int get_frequency_from_hex(char * freqArg)
+int get_frequency_from_hex(unsigned char * freqArg)
 {
   int freqArgDecimal;
-  int freq;
+  float freq;
   
   freqArgDecimal = convert_quad(freqArg, 4);
   if(freqArgDecimal == 0) {
     printf("Invalid frequency\n");
     return 0;
   }
-	freq = (int)((float)1000000/((float)freqArgDecimal*0.241246f));
+	freq = (float)1000000/((float)freqArgDecimal*(float)0.241246);
 	if(freq < 25000) {
 		printf("Invalid frequency specified in hex code - %5.1fkHz < 25.0kHz minimum\n", freq/1000);
 		return 0;
@@ -641,10 +658,10 @@ int get_frequency_from_hex(char * freqArg)
 		printf("Invalid frequency specified in hex code - %5.1fkHz > 68.0kHz maximum\n", freq/1000);
 		return 0;
 	}
-	return freq;
+	return (int)freq;
 }
 
-struct sendir * tx_char_2_struct(char * buf)
+struct sendir * tx_char_2_struct(unsigned char * buf)
 {
   struct commandir_3_tx_signal * ptx;
   static struct sendir retSend;
@@ -655,7 +672,7 @@ struct sendir * tx_char_2_struct(char * buf)
   unsigned int n;
   int outgoingLen;
   
-  outgoingLen = ((strlen(buf) / 5) - 4) * 2 + sizeof(struct commandir_3_tx_signal);
+  outgoingLen = ((strlen((char *)buf) / 5) - 4) * 2 + sizeof(struct commandir_3_tx_signal);
   
 /*  printf("The leng(buf)=%d, so the estimated USB is: %d\n", 
     strlen(buf), 
@@ -667,7 +684,7 @@ struct sendir * tx_char_2_struct(char * buf)
   freqArg = &buf[5];
   importArg = &buf[20];
   
-  pWrite = &retSend.buffer[ sizeof(struct commandir_3_tx_signal) ];
+  pWrite = (unsigned char *)&retSend.buffer[ sizeof(struct commandir_3_tx_signal) ];
   ptx = (struct commandir_3_tx_signal *)retSend.buffer;
   ptx->tx_bit_mask1 = tx_bitmask ;
   ptx->tx_bit_mask2 = tx_bitmask >> 16;
@@ -677,7 +694,7 @@ struct sendir * tx_char_2_struct(char * buf)
   
   
 //  freq = (float)1000000/((float)freqArgDecimal*0.241246);
-	freq = (float)get_frequency_from_hex(freqArg);
+  freq = (float)get_frequency_from_hex(freqArg);
   ptx->pulse_width = (unsigned short)(48000000/freq);
   ptx->pwm_offset = ptx->pulse_width / 2;
   
@@ -686,9 +703,9 @@ struct sendir * tx_char_2_struct(char * buf)
   retSend.byteCount = sizeof(struct commandir_3_tx_signal);
   
   if(send_filename)
-    printf("Transmitting '%s' at%5.1fkHz\n", send_filename, freq/1000.0f);
+    printf("Transmitting '%s' at%5.1fkHz\n", send_filename, freq/1000.0);
   else
-    printf("Transmitting command line args at%5.1fkHz\n", freq/1000.0f);
+    printf("Transmitting command line args at%5.1fkHz\n", freq/1000.0);
   
   while(*importArg != 0)
   {
@@ -832,34 +849,33 @@ void commandir_send_specific(struct sendir * tx, struct commandir_device * pcd)
 void commandir_sendir(struct sendir * tx)
 {
   // Convert the overall bitmask. 
-  int bitmask, first_bit = 1;
+  unsigned int bitmask;
+  int first_bit = 1;
   struct commandir_3_tx_signal * ptx;
-	struct commandir_device * pcd;
-	struct commandir_tx_order * pcd_ordered;
+  struct commandir_device * pcd;
+  struct commandir_tx_order * pcd_ordered;
 	
-	for(pcd_ordered = ordered_commandir_devices; 
+  for(pcd_ordered = ordered_commandir_devices; 
 		pcd_ordered != NULL; 
 		pcd_ordered = pcd_ordered->next)
-//  for(pcd = first_commandir_device; pcd != NULL; pcd = pcd->next_commandir_device)
-//  for(x=0; x<numCommandIRs; x++)
   {
-//    bitmask = get_bitmask(first_bit, cmdir_num_emitters[x]);
-//    first_bit+=cmdir_num_emitters[x];
-
-		pcd = pcd_ordered->the_commandir_device; 	// shortcut
-		printf("commandir_sendir: device %p, num_transmitters %d.\n", 
-			pcd,
-			pcd->num_transmitters);
-			
+	pcd = pcd_ordered->the_commandir_device; 	// shortcut	
     bitmask = get_bitmask(first_bit, pcd->num_transmitters);
+	/* printf("commandir_sendir: device %p, num_transmitters %d, bitmask %d.\n", 
+		pcd,
+		pcd->num_transmitters, 
+		bitmask); */
     first_bit+=pcd->num_transmitters;
-//    printf("Using  bitmask %02X for CommandIR %p\n", bitmask, pcd);
+    // printf("Using  bitmask %02X for CommandIR %p\n", bitmask, pcd);
     if(bitmask == 0) continue;  // nothing for this CommandIR to transmit
+
+	/* Replacing the bitmask in place */
     ptx = (struct commandir_3_tx_signal * )tx->buffer;
-    ptx->tx_bit_mask1 = bitmask ;
-    ptx->tx_bit_mask2 = bitmask >> 16;
+    ptx->tx_bit_mask1 = (bitmask & 0x00ff);
+    ptx->tx_bit_mask2 = (bitmask >> 16);
     commandir_send(tx->buffer, tx->byteCount, pcd);	// this has to be by pcd, not number!
   }
+  // Return a message to say the command was a success
 }
 
 
@@ -910,7 +926,11 @@ int commandir_timings(usb_dev_handle * udev)
   
   // If we're a network server, we DO NOT LOOP HERE
   
+#ifdef WIN32
+  while(!_kbhit())
+#else
   while(!kbhit())
+#endif
   {
     read_retval = usb_bulk_read(
       udev,
@@ -964,7 +984,11 @@ int commandir_rec(usb_dev_handle * udev)
   ftime(&last_tp);
   sim_timeout = 1;
   
+#ifdef WIN32
+  while(!_kbhit())
+#else
   while(!kbhit())
+#endif
   {
     read_retval = usb_bulk_read(
       udev,
@@ -1054,10 +1078,14 @@ void displayAndPipeSignal(unsigned char * hexString, int len, int gap)
   FILE * pFile;
   unsigned char * freqArg;
   float freq;
+#ifndef WIN
+  int wnum;
+#endif
+
 
   freqArg = &hexString[5];
 //  freq = (float)1000000/((float)convert_quad(freqArg, 4)*0.241246);
-  freq = (1000000/0.241246f)  / (convert_quad(freqArg, 4));
+  freq = (float)((1000000/0.241246)  / (convert_quad(freqArg, 4)));
   
 #ifndef WIN
   if(pipeOnly == 1 && pipePtr > 0) {
@@ -1117,14 +1145,14 @@ void dump_signal(int gap)
   }
 
   freq = 1000000/(currentPCA_Frequency/48);
-  fileFreq = (int)((1000000/ (freq * 0.241246f)));
+  fileFreq = (int)(1000000/ (freq * 0.241246) );
 
   // makeHexString creates internalPipeBuffer
   snum = makeHexString(fileFreq, currentPCA_Frequency, gap);
 
   if(tcpRxListenersCount > 0) {
     // Don't know if the listeners are TCP or Pipe, to send to both:
-    internalPipeBuffer[snum++] = '\0';
+////// this already has it    internalPipeBuffer[snum++] = '\0';    Nov10
 #ifndef WIN    
     addTcpRxData(internalPipeBuffer, snum, 'R');
     pipeRxSend(snum);
@@ -1179,6 +1207,7 @@ int makeHexString(
     snum = sprintf(&internalPipeBuffer[slen], "%04X ", gapPulseCounts );
     slen+=snum;
   }      
+  slen--; // Take off trailing space
   snum = sprintf(&internalPipeBuffer[slen], "\n\0");  // EOL
   slen+=snum;
   return slen;
@@ -1305,7 +1334,8 @@ int commandir3_convert_RX(unsigned char *rxBuffer,
 					a_usb_rx_pulse = (struct usb_rx_pulse3 *)
 						&incomingBuffer[incomingBuffer_Read];
 
-					buffer_write =  (int)(a_usb_rx_pulse->t0_count * (1000000/ (1/( ((float)(currentPCA_Frequency))/48000000) ) )) ;
+					buffer_write =  (int)(a_usb_rx_pulse->t0_count * 
+						(1000000/ (1/( ((float)(currentPCA_Frequency))/48000000) ) ) );
 					buffer_write |= PULSE_BIT; 
 #ifdef WIN32
 					lirc_pipe_write(&buffer_write); 
@@ -1396,10 +1426,6 @@ int commandir3_convert_RX(unsigned char *rxBuffer,
 
 
 unsigned char * getCommandIR_pdataRaw(usb_dev_handle * c) {
-  // Pull the endpoint strings to actually get the pdata.
-  // Send a request packet, then loop until the request is answered
-  // Send a firmware packet with specific header
-
   // Send Request
   
   // The request packet is different than usb_pdata!
@@ -1407,6 +1433,11 @@ unsigned char * getCommandIR_pdataRaw(usb_dev_handle * c) {
   int read_retval, send_status, x;
   unsigned char * incoming_packet;
   // 5 = header id, 4 = bytes in packet.
+  
+#ifdef ENABLE_TEST_NULL_PDATA
+  printf("Simulating no pdata available: Returning NULL\n");
+  return NULL;
+#endif
   
   incoming_packet = malloc(64);
   
@@ -1433,21 +1464,22 @@ unsigned char * getCommandIR_pdataRaw(usb_dev_handle * c) {
         // This is the header for a usb_pdata packet, containing 56 bytes of pdata that we should extract.
 //        printf("Received a non-8-byte packet (%d bytes)\n", read_retval);
         return incoming_packet; // bytes 0-3 are header, but we better return the whole thing.
-      } else {
-//        printf("Received a packet that was not pdata (byte3 is %0X, length was %d)\n", incoming_packet[3], read_retval);
-      }
+      } 
     }
   }
-  printf("No persistent data returned from CommandIR - Firmware >=3.42 is required.\n");
-  exit(0);
+  printf("No persistent data returned from CommandIR. (Firmware >=3.42 is required)\n");
+  printf  ("Last packet returned from CommandIR was %d bytes (expeceting 8 bytes).\n", read_retval);
+  if(read_retval >=4)
+    printf("Received a packet that was not pdata (byte3 is %0X, length was %d)\n", incoming_packet[3], read_retval);
   return NULL;
-
 }
 
 unsigned char * getCommandIR_pdata(usb_dev_handle * c) {
   // Chop off the header
   unsigned char * d;
   d = getCommandIR_pdataRaw(c);
+  if(d == NULL)
+    return NULL;
   return &d[4];
 }
 
@@ -1529,7 +1561,8 @@ void setCommandIR_pdata(usb_dev_handle * c, unsigned char * pdata) {
 
 void pdataDisplay(unsigned char * pdata_raw) {
   struct persistent_data_03 * pdata_03; 
-//  struct persistent_data_04 * pdata_04; 
+  if(pdata_raw == NULL) 
+    return;
   
   switch(pdata_raw[1]) {  // Version Byte
     case 3: // Current version

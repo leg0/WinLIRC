@@ -6,8 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(WIN) || defined(__APPLE__)
+#if defined(WIN)
 #include <winsock.h>
+#endif
+
+#if defined(WIN) || defined(__APPLE__)
 #define SOCK_NONBLOCK 0
 #define MSG_DONTWAIT 0
 #endif
@@ -23,10 +26,10 @@
 #include "libcmdir.h"
 #include "libcmdir_send.h"
 #include "libcmdir_record.h"
+#include "libvalidate.h"
 #include "libtcp.h"
 
 #define LISTEN_PORT 65817
-
 
 
 int tcpRxListenersCount = 0;
@@ -70,24 +73,24 @@ void startServer()
   WSAStartup(MAKEWORD(1,1), &wsadata);
 #endif
 
-  root_tcp_server_conn = NULL;  // No connections yet to non-setup server
+  // No connections yet to non-setup server
+  root_tcp_server_conn = NULL;  
   
 	/* create socket */
-//	sockinet = socket(PF_INET, SOCK_STREAM, IPPROTO_IP);
 	sockinet = socket(PF_INET,SOCK_STREAM|SOCK_NONBLOCK,0);
 	if (sockinet == -1) {
 		printf("Could not create TCP/IP socket\n");
 		exit(-1);
 	}
-//	(void)setsockopt(sockinet, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+
 	serv_addr_in.sin_family = AF_INET;
-//	serv_addr_in.sin_addr.s_addr = htonl(INADDR_ANY); // address;
+  //	serv_addr_in.sin_addr.s_addr = htonl(INADDR_ANY); // address;
   serv_addr_in.sin_addr.s_addr = INADDR_ANY; 
 	serv_addr_in.sin_port = htons (65123); 
 
 	if (bind(sockinet, (struct sockaddr *)&serv_addr_in, sizeof(serv_addr_in)) == -1) {
-		fprintf(stderr, "Could not assign address to socket\n");
-		exit(0);
+		printf("Could not assign address to socket\n");
+		exit(-1);
 	}
 
 #ifdef WIN
@@ -95,7 +98,6 @@ void startServer()
 #endif
 	
 	listen(sockinet, 3);
-//	nolinger(sockinet);   // Non-blocking?
 }
 
 /* How do we want to handle multiple connections?  We have to know if they are
@@ -117,7 +119,7 @@ void check_tcp_connections()
     &sin_size);
   
   if(connected > 0) {
-    printf("New connection from (%s , %d)\n",
+    printf("Connection from (%s , %d)\n",
            inet_ntoa(client_addr.sin_addr),ntohs(client_addr.sin_port));
     a = malloc(sizeof(struct tcp_server_conn));
     a->connectionid = connected;
@@ -131,7 +133,9 @@ void check_tcp_connections()
 void addToConnList(struct tcp_server_conn *t)
 {
   struct tcp_server_conn *p;
+#ifdef ENABLE_DEBUG_TCP
   printf("addToConnList %p\n", t);
+#endif
   
   if(root_tcp_server_conn == NULL)
   {
@@ -148,14 +152,16 @@ void addToConnList(struct tcp_server_conn *t)
       return;
     }
   }
-  printf("Should never end up here\n");
+  printf("A serious error occured in the CommandIR libtcp.\n");
   exit(0);
 }
 
 void closeConn(struct tcp_server_conn *c) {
   struct tcp_server_conn *p;
   
+#ifdef ENABLE_DEBUG_TCP
   printf("closeConn %p\n", c);
+#endif
   
   closesocket(c->connectionid);
   if(c->connType == 'R')
@@ -178,7 +184,7 @@ void closeConn(struct tcp_server_conn *c) {
       return;
     }
   }
-  printf("This connection was not found in the list?! %p\n", c);
+  printf("A serious error occured in CommandIR libtcp: A connection was not found in the list: %p\n", c);
   exit(-1);
 }
 
@@ -192,56 +198,84 @@ void check_tcp_incoming()
     bytes_recieved = recv(p->connectionid,&p->recv_data[p->write_recv_data],4096,MSG_DONTWAIT);
     while(bytes_recieved > 0)
     {
+#ifdef ENABLE_DEBUG_TCP
       printf("check_tcp_incoming: %p - bytes_recieved %d\n", p, bytes_recieved);
+#endif
+      redirect_errors(ERRORS_TCP, p);
       
       if(bytes_recieved == -1) // -1 == WOULD_BLOCK
         break; // Non-blocking; nothing to process
       
       p->write_recv_data += bytes_recieved;
       
-      // The last received byte SHOULD BE a \0... Do not add in case it spans multiple packets
+      // The last received byte SHOULD BE a \0. Do not add in case it spans multiple packets
       if(p->recv_data[p->write_recv_data-1] == '\0')
       {
-        // printf("Zero terminated - here's everything: %s\n", recv_data);
+#ifdef ENABLE_DEBUG_TCP
+        printf("Zero terminated string - debugging: '%s'\n", recv_data);
+#endif
+
         // Process the data
-        
         if(strncmp(p->recv_data, "commandir_send ", 15)==0) {
           p->connType = 'S';
           // We might have multiple packets to send:
           processedData = 0;
           while(processedData < p->write_recv_data)
           {
-            // printf("Command_Send: '%s'\n", &recv_data[processedData]);
-            slen = strlen(&p->recv_data[processedData]) + 1; // send_cmd replaced ' ' with '\0'
+#ifdef ENABLE_DEBUG_TCP
+            printf("Command_Send: '%s'\n", &recv_data[processedData]);
+#endif
+            // send_cmd replaced ' ' with '\0'
+            slen = strlen(&p->recv_data[processedData]) + 1; 
             commandir_send_cmd(&p->recv_data[processedData]);
             processedData += slen;
           }
           p->write_recv_data = 0;  // reset the internal pointer for the next one
         }
+        if(strncmp(p->recv_data, "commandir_record_stop", 21)==0) {
+#ifdef ENABLE_DEBUG_TCP
+            printf("Command_Record_Stop: '%s'\n", &recv_data[processedData]);
+#endif
+          if(p->connType == 'R')
+          {
+            p->connType = '\0';
+            p->write_recv_data = 0;
+            tcpRxListenersCount--;
+          }
+        }
         if(strncmp(p->recv_data, "commandir_record", 16)==0) {
-          p->connType = 'R';
-          tcpRxListenersCount++;
+          if(p->connType != 'R')
+          {
+            p->connType = 'R';
+            tcpRxListenersCount++;
+          }
 
           processedData = 0;
           while(processedData < p->write_recv_data)
           {
-            // printf("Command_Record: '%s'\n", &recv_data[processedData]);
-            slen = strlen(&p->recv_data[processedData]) + 1; // send_cmd replaced ' ' with '\0'
+#ifdef ENABLE_DEBUG_TCP
+            printf("Command_Record: '%s'\n", &recv_data[processedData]);
+#endif
+            // send_cmd replaced ' ' with '\0'
+            slen = strlen(&p->recv_data[processedData]) + 1; 
             commandir_record_cmd(&p->recv_data[processedData]);
             processedData += slen;
           }
-          p->write_recv_data = 0;  // reset the internal pointer for the next one
+          p->write_recv_data = 0;
         }
         if(strncmp(p->recv_data, "commandir_timing ", 17)==0) {
           p->connType = 'T';
           tcpTimingListenersCount++;
-          p->write_recv_data = 0;  // reset the internal pointer for the next one
+          p->write_recv_data = 0;
         }
       } 
-// break;  // break, if we want to service all connections fairly
+      // break;  // break, if we want to service all connections fairly
       bytes_recieved = recv(p->connectionid,&p->recv_data[p->write_recv_data],4096,MSG_DONTWAIT);
     }
-    if(bytes_recieved == 0 || bytes_recieved < -1) {  // -1 == would block (waiting for data)
+    
+    // -1 == would block (waiting for data)
+    // bytes_recieved == 0 --> Let the client close the connection; we might have a msg to send back
+    if(bytes_recieved < -1) {  
       closeConn(p);
       return;
     }
@@ -264,29 +298,39 @@ void disconnectTcpFlagged()
   }
 }
 
-// CallbackForTcpData event? - we only have ONE listener?  
+void sendErrorString_tcp(unsigned char * sendDat, int bytes, struct tcp_server_conn *p)
+{
+  int r;
+  r = send(p->connectionid, sendDat, bytes, 0);
+  if(r < 0)
+    printf("Error returning error message to TCP client\n");
+}
+
 void addTcpRxData(unsigned char * sendDat, int bytes, unsigned char listenerTypeChar) {
-  // Copy internalPipeBuffer to EACH TCP LISTENER
   
   struct tcpListener * t;
   int r, flagged = 0;
   struct tcp_server_conn *p;
   
   /* Loop through looking for Rx connections; send to them */
-  
   for(p = root_tcp_server_conn; p != NULL; p = p->nextConn)
   {
 
 //    printf("Sending %d bytes on connected sock: %d: %s\n", bytes, p->connectionid, internalPipeBuffer);
 	if(p->connType != listenerTypeChar) continue;
 
-    r = send(p->connectionid, sendDat, bytes, 0); // what happens if other side has disconnected?
+    // what happens if other side has disconnected?
+    r = send(p->connectionid, sendDat, bytes, 0); 
     if(r < 0) {
-//      printf("Error sending (%d) - flagging for disconnect\n", r);
+#ifdef ENABLE_DEBUG_TCP
+      printf("Error sending (%d) - flagging for disconnect\n", r);
+#endif
       p->flagForDisconnect = 1;
       flagged++;
     }
-//    printf("Sent %d bytes\n", r);
+#ifdef ENABLE_DEBUG_TCP
+    printf("TCP Server Sent %d bytes to Rx listener.\n", r);
+#endif
   }
   
   if(flagged)

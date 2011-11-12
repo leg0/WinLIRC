@@ -18,6 +18,7 @@
 #include <strings.h>
 #endif
 
+#include <errno.h>
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -43,6 +44,35 @@ struct sockaddr_in csSA;
 struct hostent *server;
 int cs;
 unsigned char incomingData[65536];
+
+void networkWaitForResponse(int milliseconds)
+{
+  int msCount = 0;
+  int currentCount;
+  char retBuf[1024];
+  
+  while(msCount < milliseconds)
+  {
+    currentCount = networkClientRecv(retBuf, 1024);
+    if(currentCount > 0)
+    {
+      // Response probably includes a \n new line:
+      printf("Response from commandird: %s", retBuf); 
+      // return;  // Wait for more
+    }
+    if( (currentCount < -1) && (currentCount != EWOULDBLOCK) && (currentCount != EAGAIN) )
+    {
+      printf("Connection closed (%d)\n", currentCount);
+      return;
+    }
+#ifdef WIN
+    Sleep(5);
+#else
+    usleep(5000);
+#endif
+    msCount += 5;
+  }
+}
 
 int networkClientConnect(char * connectToName)
 {
@@ -94,7 +124,7 @@ int networkClientRecv(unsigned char * dat, int len)
 {
   int rc;
   rc = recv( cs , dat , len , MSG_DONTWAIT );
-//  printf("Received data (%d/%d)\n", rc, len);
+  // printf("Received data (%d/%d)\n", rc, len);
   return rc;
 }
 

@@ -1,4 +1,5 @@
-
+#ifndef LIBCMDIR_H
+#define LIBCMDIR_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +13,7 @@
 #endif
 
 #ifndef WIN32
-	int kbhit (void);
+int kbhit (void);
 #pragma BEGINDUMP
 #pragma comment( lib, "libusb\lib\bcc\libusb.lib" )
 #pragma ENDDUMP
@@ -38,13 +39,12 @@
 void displayAndPipeSignal(unsigned char * hexString, int len, int gap);
 int commandir_rec(usb_dev_handle * udev);
 int hardware_scan(void);
-int commandir3_convert_RX(unsigned char *rxBuffer,
-	int numNewValues);
+int commandir3_convert_RX(unsigned char *rxBuffer,int numNewValues);
 void dump_signal(int gap);
-struct sendir * tx_char_2_struct(char * buffer);
+struct sendir * tx_char_2_struct(unsigned char * buffer);
 void commandir_sendir(struct sendir * tx);
 char * load_file(char * filename);
-void transmit_tx_char(char * tx_char);
+void transmit_tx_char(unsigned char * tx_char);
 void set_all_bitmask(unsigned char d);
 int convert_quad(char * a, int len);
 void disconnectUnneededCommandIRs(void);
@@ -53,18 +53,19 @@ void clear_order(void);
 void set_long_tx_bit(int bitnum);
 void convert_set_long(char * a, int len);
 void detect_tx_per_commandir(void);
-void reserveCommandIR_By_Name(char * name) ;
+void reserveCommandIR_By_Name(unsigned char * name) ;
 void hardware_setorder_by_pdata_order(void);
 void connectReservedCommandIRs(void) ;
 int commandir_timings(usb_dev_handle * udev);
-int get_frequency_from_hex(char * hexarg);
-
+int get_frequency_from_hex(unsigned char * hexarg);
 
 void hardware_setorder(void);
+void set_transmitters_int(unsigned int t_enable);
 struct commandir_device * addCommandIR(struct usb_device *dev, struct usb_bus *bus);
 void hardware_disconnect(struct commandir_device *a);
 void commandir_disconnect(struct commandir_device * pcd);
 void software_disconnects(void);
+void check_commandir_add_remove();
 
 /* CommandIR Internal Structs */
 struct commandir_3_tx_signal
@@ -236,4 +237,20 @@ struct tx_signal {
 
 /* Prototypes that depend on an above struct */
 int commandir_send(char * packet, int bytes, struct commandir_device * pcd);
+
+//
+// externs
+//
+
+extern struct commandir_tx_order * ordered_commandir_devices;
+extern unsigned char standalone;
+extern unsigned char pipeOnly;
+extern unsigned char displayOnly;
+extern struct commandir_device * first_commandir_device;
+
+#endif
+
+
+
+	
 

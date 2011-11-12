@@ -92,7 +92,7 @@ int execute_commandir_record_arg(int argc, char *argv[])
     hardware_setorder();
     if(first_commandir_device == NULL)
     {
-      printf("No CommandIRs detected\n");
+      raise_error("No CommandIRs are detected to record from.\n\0");
       return 0;
     }
   }
@@ -147,7 +147,8 @@ int execute_commandir_record_arg(int argc, char *argv[])
           gap_size = atoi(&argv[x][2]);
           if(gap_size < 1000)
           {
-            printf("Please specify a larger gap size: %d microseconds is too small\n", gap_size);
+            sprintf(errorBuffer, "Please specify a larger gap size: %d microseconds is too small\n\0", gap_size);
+            send_error(SEND_ERROR);
             return -1;
           }
           printf("Using gap %d microseconds\n", gap_size);
@@ -157,16 +158,19 @@ int execute_commandir_record_arg(int argc, char *argv[])
           displayOnly = 1;
           break;
         default:
-          printf("Unknown command line argument %c\n", argv[x][1]);
+          sprintf(errorBuffer, "Unknown command line argument %c\n\0", argv[x][1]);
+          send_error(SEND_ERROR);
           return -1;
       }
     } else {
       if(displayOnly) {
-        printf("Do not specify a filename if you want to display codes with -d.\n");
+        sprintf(errorBuffer, "Do not specify a filename if you want to display codes with -d.\n\0");
+        send_error(SEND_ERROR);
         return -1;
       }
       if(pipeOnly) {
-        printf("Do not specify a filename if you want to pipe with -p.\n");
+        sprintf(errorBuffer, "Do not specify a filename if you want to pipe with -p.\n\0");
+        send_error(SEND_ERROR);
         return -1; 
       }
       rec_filename = argv[x];
