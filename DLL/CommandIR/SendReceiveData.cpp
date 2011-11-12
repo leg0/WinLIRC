@@ -25,7 +25,6 @@
 #include "Globals.h"
 #include <stdio.h>
 #include "Send.h"
-#include "winlirc.h"
 
 lirc_t			dataBuffer[256];
 unsigned char	bufferStart;
@@ -77,6 +76,15 @@ void setData(lirc_t data) {
 	bufferEnd++;
 
 	SetEvent( dataReadyEvent );	// tell thread data is ready :p
+}
+
+/* Replacing LIRC's function with one for libcmdir to call from C */
+extern "C" void lirc_pipe_write( int * data )
+{
+	// hw seems to be returning zeros at the end of the signal - we dont want those :p
+	if(*data) {	 //-- Actually, this encourages LIRC to decode a signal without waiting for space/timeout MB
+		setData(*data);
+	}
 }
 
 bool dataReady() {

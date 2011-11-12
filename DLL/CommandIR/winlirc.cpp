@@ -1,28 +1,17 @@
 #include <Windows.h>
 #include "winlirc.h"
+#include "SendReceiveData.h"
 
 extern "C" {
 	#include "CommandIRUtils\libcmdir.h"
 }
 
-#include "SendReceiveData.h"
-
-unsigned int currentTransmitterMask = 0x0f;
-int tcpRxListenersCount = 0;
-int doneReceiving = 0;
-HANDLE threadHandle = NULL;
-
 //
-// ugly ugly ugly the header should export these ..
+// local variables
 //
-extern "C" {
-	unsigned char standalone = 1;
-	extern struct commandir_tx_order * ordered_commandir_devices;
-	extern unsigned char pipeOnly;
-	extern unsigned char displayOnly;
-	extern struct commandir_device * first_commandir_device;
-	void check_commandir_add_remove();	// < -- should be declared in utils header file ...
-}
+unsigned int	currentTransmitterMask	= 0x0f;
+int				doneReceiving			= 0;
+HANDLE			threadHandle			= NULL;
 
 DWORD WINAPI receiveLoop(void *x) {
 
@@ -31,7 +20,7 @@ DWORD WINAPI receiveLoop(void *x) {
 			continue;
 		}
 		else {
-			Sleep(10);
+			Sleep(20);
 		}
 	}
   
@@ -63,15 +52,24 @@ int init_commandir()
 
 	threadHandle = CreateThread( NULL, 0, receiveLoop, NULL, 0, NULL );
 
+	if(first_commandir_device) {
+		return 1;
+	}
+
 	//
-	// need to return zero for initialisation failure
+	// failed to find device or get handle on it
 	//
-	return 1;
+	return 0;
 }
 
 void deinit_commandir() {
 
 	doneReceiving = 1;
+
+	while(first_commandir_device)
+	{
+		commandir_disconnect(first_commandir_device);
+	}
 
 	if( threadHandle != NULL ) {
 
@@ -92,16 +90,7 @@ void deinit_commandir() {
 		CloseHandle( threadHandle );
 		threadHandle = NULL;
 	}
-}
 
-extern "C" {	// deep sigh :p
-	void lirc_pipe_write( int * data )
-	{
-		// hw seems to be returning zeros at the end of the signal - we dont want those :p
-		if(*data) {
-			setData(*data);
-		}
-	}
 }
 
 

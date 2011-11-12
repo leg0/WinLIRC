@@ -9,9 +9,11 @@
 #include <string.h>
 
 #include "libpipes.h"
-extern unsigned char internalPipeBuffer[4096];  // libcmdir
+#include "libvalidate.h"
 
+extern unsigned char internalPipeBuffer[4096];  // libcmdir
 extern int tcpRxListenersCount; // libtcp
+int recording_mode;
 
 int openPipes[2];
 
@@ -74,17 +76,31 @@ void check_pipe_send()
     }
   }
   
+  redirect_errors(ERRORS_PIPE, (void *)0);
+  
   processedBytes = 0;
   while(processedBytes < bytesRead)
   {
     processNow = processedBytes;
     processedBytes+=strlen(&incoming[processedBytes]) + 1;
     if(strncmp(&incoming[processNow], "commandir_send", 14)==0)
+    {
       commandir_send_cmd(&incoming[processNow]);
-    if(strncmp(&incoming[processNow], "commandir_record", 16)==0) // Just change the current RX mode
+    }
+    if(strncmp(&incoming[processNow], "commandir_record", 16)==0) { // Just change the current RX mode
+      
       commandir_record_cmd(&incoming[processNow]); // That's valid
+      printf("Activating record mode on pipe\n");
+      recording_mode = 1;
+    }
+    if(strncmp(&incoming[processNow], "commandir_record_stop", 21)==0) { 
+      printf("Deactivating record mode on pipe\n");
+      recording_mode = 0;
+    }
     if(strncmp(&incoming[processNow], "commandir_clearmem", 18)==0)
-      commandir_record_clearmem(&incoming[processNow]);  // doesn't need 'incoming' right now, but for later
+    {
+      commandir_record_clearmem(&incoming[processNow]);
+    }
   }
 }
 
@@ -102,23 +118,27 @@ void reinit_pipe(int pipeNum)
   init_pipeNum(pipeNum);
 }
 
+void sendErrorString_pipe(unsigned char * sendDat, int bytes)
+{
+  int r;
+  if(openPipes[RX_PIPE] <= 0)
+    return; // nobody listening
+  r = write(openPipes[RX_PIPE], sendDat, bytes);
+  if(r < 0)
+    printf("Error returning message to pipe client\n");
+}
+
 void pipeRxSend(int bytes) {
   int r;
-  if(openPipes[RX_PIPE] > 0)
+  if( (openPipes[RX_PIPE] > 0) && (recording_mode > 0) )
   {
     r = write(openPipes[RX_PIPE], internalPipeBuffer, bytes);
     if(r < 0) {
       close(openPipes[RX_PIPE]);
-//      openPipes[RX_PIPE] = (int)NULL;
       openPipes[RX_PIPE] = 0;	// Changed from NULL for Mac compatibility
       tcpRxListenersCount--;
-    } /*else {
-      printf("Successfully wrote %d bytes to pipe\n", r);
-    }*/
-  } /* else {
-    printf("Trying to send to pipe, but pipe not open\n");
+    }
   }
-  */
 }
 
 void closePipes()
