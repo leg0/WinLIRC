@@ -30,7 +30,7 @@ void commandir_record_clearmem(char * cmdline)
   int read_retval;
   char discard[65];
   
-  printf("Clearing CommandIR Recording buffers\n");
+  // printf("Clearing CommandIR Recording buffers, by '%s'\n", cmdline);
   
   for(
     pcd = first_commandir_device; 

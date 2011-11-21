@@ -18,7 +18,6 @@ void addToConnList(struct tcp_server_conn *t);
 void closeConn(struct tcp_server_conn *c);
 void check_tcp_incoming(void);
 void disconnectTcpFlagged(void);
-void networkWaitForResponse(int milliseconds);
 
 extern int tcpRxListenersCount;
 

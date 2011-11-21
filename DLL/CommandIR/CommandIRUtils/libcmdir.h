@@ -39,7 +39,8 @@ int kbhit (void);
 void displayAndPipeSignal(unsigned char * hexString, int len, int gap);
 int commandir_rec(usb_dev_handle * udev);
 int hardware_scan(void);
-int commandir3_convert_RX(unsigned char *rxBuffer,int numNewValues);
+int commandir3_convert_RX(unsigned char *rxBuffer,
+	int numNewValues);
 void dump_signal(int gap);
 struct sendir * tx_char_2_struct(unsigned char * buffer);
 void commandir_sendir(struct sendir * tx);
@@ -251,6 +252,4 @@ extern struct commandir_device * first_commandir_device;
 #endif
 
 
-
-	
 

@@ -131,17 +131,18 @@ void send_lirc_buffer(unsigned char *buffer, int bytes, unsigned int frequency)
 	packetCounter = sizeof(struct commandir_3_tx_signal);
 
 	while (sendNextSignalsCounter < (bytes / (signed int)sizeof(lirc_t))) {
-		while ((packetCounter < (64 - 1))
-			    && (sendNextSignalsCounter < (bytes / (signed int)sizeof(lirc_t)))) {
-			tx_value =
-				signals[sendNextSignalsCounter++] * frequency /	1000000;
+
+		while ((packetCounter < (64 - 1)) && (sendNextSignalsCounter < (bytes / (signed int)sizeof(lirc_t)))) {
+
+			tx_value = signals[sendNextSignalsCounter++] * frequency /	1000000;
 			packet[packetCounter++] = tx_value & 0xff;	// low byte
 			packet[packetCounter++] = (tx_value >> 8) | (pulse_toggle << 7);
 			pulse_toggle = !pulse_toggle;
 		}
-		send_status =
-			usb_bulk_write(first_commandir_device->cmdir_udev, 2, (char *)packet, packetCounter, 50);
+
+		send_status = usb_bulk_write(first_commandir_device->cmdir_udev, 2, (char *)packet, packetCounter, 50);
 		packetCounter = 0;
+
 		if (send_status < 0) {
 			printf("Error on usb_bulk_write\n");
 			hardware_scan();

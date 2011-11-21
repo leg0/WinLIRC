@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include <stdio.h>
 #include "LIRCDefines.h"
 #define LIRCD_EXACT_GAP_THRESHOLD 10000
 
@@ -369,10 +370,9 @@ void send_signals(lirc_t *signals, int n)
 
 int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 {
-	int i, repeat=0;
+	int repeat=0;
 	
-	if(is_grundig(remote) || 
-	   is_goldstar(remote) || is_serial(remote) || is_bo(remote))
+	if(is_grundig(remote) ||  is_goldstar(remote) || is_serial(remote) || is_bo(remote))
 	{
 		return(0);
 	}
@@ -407,7 +407,6 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 					remote->toggle_mask_state=2;
 				}
 			}
-			send_buffer.data=send_buffer._data;
 		}
 		else
 		{
@@ -415,19 +414,8 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 			{
 				return 0;
 			}
-			if(send_buffer.wptr>0)
-			{
-				send_signals(code->signals, code->length);
-			}
-			else
-			{
-				send_buffer.data=code->signals;
-				send_buffer.wptr=code->length;
-				for(i=0; i<code->length; i++)
-				{
-					send_buffer.sum+=code->signals[i];
-				}
-			}
+			
+			send_signals(code->signals, code->length);
 		}
 	}
 	sync_send_buffer();
@@ -460,9 +448,7 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 		remote->max_remaining_gap=max_gap(remote);
 	}
 
-	//send_space(remote->min_remaining_gap);	// Returning this
-	// add the above line will stop raw sends from working ..
-	// if you need an extra zero at the end add it some other way :p
+	send_space(remote->min_remaining_gap);
 
 	flush_send_buffer();
 
@@ -476,9 +462,12 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 		goto init_send_loop;
 	}
 
+	send_buffer.data=send_buffer._data;
+
 	if(!check_send_buffer())
 	{
 		return 0;
 	}
+	
 	return 1;
 }

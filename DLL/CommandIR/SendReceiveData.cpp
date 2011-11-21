@@ -55,7 +55,7 @@ void waitTillDataIsReady(int maxUSecs) {
 		ResetEvent(dataReadyEvent);
 
 		if( maxUSecs ) {
-			res = WaitForMultipleObjects( evt, events, FALSE, ( maxUSecs*10 + 500 ) / 1000 );
+			res = WaitForMultipleObjects( evt, events, FALSE, ( maxUSecs + 500 ) / 1000 );
 		}
 		else {
 			res = WaitForMultipleObjects( evt, events, FALSE, INFINITE );

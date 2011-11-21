@@ -23,22 +23,26 @@ void lirc_pipe_write( int * data );
 
 #include "commandir_tests.h"
 
-extern int tcpRxListenersCount; // libtcp
-extern unsigned char standalone;  // All CLI-facing programas
+int tcpRxListenersCount; // libtcp
+unsigned char standalone;  // All CLI-facing programas
 
 unsigned char internalPipeBuffer[4096];
 
-
+int makeHexString(
+  int fileFreq, 
+  int currentPCA_Frequency,
+  int gapMicroseconds);
+  
 usb_dev_handle *cmdir_udev[127];
 // int cmdir_num_emitters[127];	// Outdated; this is part of the pcd now
+int numCommandIRs = 0;
 
-int		numCommandIRs = 0;
-char	incoming_packet[1024];
-char	*rec_filename = NULL;
-char	*send_filename = NULL;
-char	determining_gap = 0;
-char	outgoingBuffer[4096];
+char incoming_packet[1024];
+char * rec_filename = NULL;
+char * send_filename = NULL;
+char determining_gap = 0;
 unsigned int tx_bitmask = 0;
+char outgoingBuffer[4096];
 
 struct commandir_device * rx_device = NULL; // Not using this, but for later compat.
 
@@ -62,13 +66,9 @@ int pipePtr = 0;
 struct commandir_tx_order * ordered_commandir_devices = NULL;
 
 /* New in v0.3 */
-struct commandir_device * first_commandir_device = NULL;
+struct commandir_device * first_commandir_device;
 
-int makeHexString(int fileFreq, int currentPCA_Frequency, int gapMicroseconds);
 void timingEvent(unsigned char switchByte, unsigned int buffer_write);
-
-unsigned char	standalone = 1;
-int				tcpRxListenersCount;
 
 extern int tcpTimingListenersCount;
 

@@ -8,8 +8,11 @@ int is_numeric_digit(char byte);
 int is_hex_digit(char byte);
 
 extern unsigned char standalone;
-void sendErrorString_tcp(unsigned char * sendDat, int bytes, struct tcp_server_conn *p);
-void sendErrorString_pipe(unsigned char * sendDat, int bytes);
+extern void sendErrorString_tcp(unsigned char * sendDat, int bytes, struct tcp_server_conn *p);
+#ifndef WIN
+extern void sendErrorString_pipe(unsigned char * sendDat, int bytes);
+#endif
+int exit_or_error(void);
 
 int redirect_error_type = ERRORS_CONSOLE;
 void * redirect_error_specific_device = 0;
@@ -36,6 +39,7 @@ void send_error(int type)
       else
         printf("OK: %s\n", errorBuffer);
       break;
+#ifndef WIN
     case ERRORS_PIPE:
       if(type == SEND_ERROR)
         sendErrorString_pipe(strError, strlen(strError));
@@ -44,6 +48,7 @@ void send_error(int type)
         
       sendErrorString_pipe(errorBuffer, strlen(errorBuffer));
       break;
+#endif
     case ERRORS_TCP:
       if(type == SEND_ERROR)
         sendErrorString_tcp(strError, strlen(strError), (struct tcp_server_conn *)redirect_error_specific_device);
@@ -89,6 +94,7 @@ int exit_or_error()
 		exit(-1);
 	else
 		return -1;
+  return 0; // never reached; for compiler
 }
 
 int invalid_command_line_parameter_exit(char * errmsg)
@@ -100,7 +106,7 @@ int invalid_command_line_parameter_exit(char * errmsg)
 
 int validate_hex_parameter(char * p, char * errhelp)
 {
-	int x;
+	unsigned int x;
 	
 	if(strlen(p) < 3)
 		return invalid_command_line_parameter_exit(errhelp);
@@ -121,7 +127,7 @@ int validate_hex_parameter(char * p, char * errhelp)
 
 int validate_numeric_parameter(char * p, char * errhelp)
 {
-	int x;
+	unsigned int x;
 
 	if(strlen(p) < 3)
 		return invalid_command_line_parameter_exit(errhelp);
@@ -155,6 +161,7 @@ int validate_string_parameter(char * p, char * errhelp)
 		send_error(SEND_ERROR);
 		return exit_or_error();
 	}
+	return 0;
 }
 
 // Common Input Validation routines
