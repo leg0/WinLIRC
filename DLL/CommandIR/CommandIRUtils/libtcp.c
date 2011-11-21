@@ -28,6 +28,7 @@
 #include "libcmdir_record.h"
 #include "libvalidate.h"
 #include "libtcp.h"
+#include "commandir_tests.h"
 
 #define LISTEN_PORT 65817
 
@@ -190,7 +191,7 @@ void closeConn(struct tcp_server_conn *c) {
 
 void check_tcp_incoming() 
 {
-  int bytes_recieved, processedData, slen;
+  int bytes_recieved, processedData = 0, slen;
   struct tcp_server_conn *p;
   
   for(p = root_tcp_server_conn; p != NULL; p = p->nextConn)
@@ -212,7 +213,7 @@ void check_tcp_incoming()
       if(p->recv_data[p->write_recv_data-1] == '\0')
       {
 #ifdef ENABLE_DEBUG_TCP
-        printf("Zero terminated string - debugging: '%s'\n", recv_data);
+        printf("Zero terminated string - debugging: '%s'\n", p->recv_data);
 #endif
 
         // Process the data
@@ -223,26 +224,33 @@ void check_tcp_incoming()
           while(processedData < p->write_recv_data)
           {
 #ifdef ENABLE_DEBUG_TCP
-            printf("Command_Send: '%s'\n", &recv_data[processedData]);
+            printf("Command_Send: '%s'\n", &p->recv_data[processedData]);
 #endif
             // send_cmd replaced ' ' with '\0'
             slen = strlen(&p->recv_data[processedData]) + 1; 
             commandir_send_cmd(&p->recv_data[processedData]);
             processedData += slen;
           }
-          p->write_recv_data = 0;  // reset the internal pointer for the next one
+          if(processedData == p->write_recv_data)
+            p->write_recv_data = 0; // reset the internal pointer for the next one
         }
         if(strncmp(p->recv_data, "commandir_record_stop", 21)==0) {
 #ifdef ENABLE_DEBUG_TCP
-            printf("Command_Record_Stop: '%s'\n", &recv_data[processedData]);
+            printf("Command_Record_Stop: '%s'\n", &p->recv_data[processedData]);
 #endif
           if(p->connType == 'R')
           {
-            p->connType = '\0';
-            p->write_recv_data = 0;
+#ifdef ENABLE_DEBUG_TCP
+            printf("Setting %p to not be a recording listener\n", p);
+#endif
+            p->connType = '0';
+            slen = strlen(&p->recv_data[processedData]) + 1; 
+            processedData += slen;
             tcpRxListenersCount--;
           }
-        }
+          if(processedData == p->write_recv_data)
+            p->write_recv_data = 0; // reset the internal pointer for the next one
+        } else  // do not match commandir_record on commandir_record_stop
         if(strncmp(p->recv_data, "commandir_record", 16)==0) {
           if(p->connType != 'R')
           {
@@ -254,19 +262,21 @@ void check_tcp_incoming()
           while(processedData < p->write_recv_data)
           {
 #ifdef ENABLE_DEBUG_TCP
-            printf("Command_Record: '%s'\n", &recv_data[processedData]);
+            printf("Command_Record: '%s'\n", &p->recv_data[processedData]);
 #endif
             // send_cmd replaced ' ' with '\0'
             slen = strlen(&p->recv_data[processedData]) + 1; 
             commandir_record_cmd(&p->recv_data[processedData]);
             processedData += slen;
           }
-          p->write_recv_data = 0;
+          if(processedData == p->write_recv_data)
+            p->write_recv_data = 0; // reset the internal pointer for the next one
         }
         if(strncmp(p->recv_data, "commandir_timing ", 17)==0) {
           p->connType = 'T';
           tcpTimingListenersCount++;
-          p->write_recv_data = 0;
+          if(processedData == p->write_recv_data)
+            p->write_recv_data = 0; // reset the internal pointer for the next one
         }
       } 
       // break;  // break, if we want to service all connections fairly
@@ -319,7 +329,6 @@ void addTcpRxData(unsigned char * sendDat, int bytes, unsigned char listenerType
 //    printf("Sending %d bytes on connected sock: %d: %s\n", bytes, p->connectionid, internalPipeBuffer);
 	if(p->connType != listenerTypeChar) continue;
 
-    // what happens if other side has disconnected?
     r = send(p->connectionid, sendDat, bytes, 0); 
     if(r < 0) {
 #ifdef ENABLE_DEBUG_TCP

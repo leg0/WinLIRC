@@ -6,6 +6,7 @@ int networkClientConnect(char * connectToName);
 int networkClientRecv(unsigned char * dat, int len);
 void networkClientClose(void);
 int networkClientSend(unsigned char * bytes, int len);
+void networkWaitForResponse(int milliseconds);
 
 extern unsigned char networkSendName[160];
 extern unsigned char networkSend;

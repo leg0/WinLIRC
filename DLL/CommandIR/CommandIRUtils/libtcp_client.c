@@ -5,6 +5,7 @@
 
 #ifdef WIN
 #include <winsock.h>
+#define EWOULDBLOCK EAGAIN
 #define SOCK_NONBLOCK 0
 #define MSG_DONTWAIT 0
 #define bzero(p, l) memset(p, 0, l)
