@@ -313,7 +313,7 @@ bool SendReceiveData::daemonTransaction(unsigned char code, void *value, size_t 
 	return retval;
 }
 
-bool SendReceiveData::setTransmitters(DWORD channels) {
+bool SendReceiveData::setTransmitters(UCHAR channels) {
 
 	//
 	// santity check
