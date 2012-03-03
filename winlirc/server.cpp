@@ -414,7 +414,7 @@ void Cserver::ThreadProc(void)
 											}
 											else {
 												response = new char[64];
-												sprintf(response,"DATA\n1\nSetTransmitters failed/not supported.\n");
+												sprintf(response,"DATA\n1\nSetTransmitters failed/not supported\n");
 											}
 										}
 
@@ -422,45 +422,9 @@ void Cserver::ThreadProc(void)
 
 									}
 
-									else if ((!password.IsEmpty() && !password.CompareNoCase(command)) || (_stricmp(command,"SEND_ONCE")==0)) //only accept commands if a password is set and matches
+									else if (_stricmp(command,"SEND_ONCE")==0)
 									{
-										CString incoming = (LPCSTR) (cur);
-										int j=incoming.FindOneOf(" \t")+1;
-										remotename=strtok(NULL," \t\r");
-										if (remotename==NULL)
-										{
-											response = new char[23];
-											if (response) sprintf(response,"DATA\n1\nremote missing\n");
-										}
-										else 
-										{
-											buttonname=strtok(NULL," \t\r");
-											if (buttonname==NULL)
-											{
-												response = new char[21];
-												if (response) sprintf(response,"DATA\n1\ncode missing\n");
-											}
-											else
-											{
-												//====================
-												Cwinlirc	*app;
-												HWND		pOtherWnd;
-												//====================
-
-												app			= (Cwinlirc *)AfxGetApp();
-												pOtherWnd	= app->dlg->m_hWnd;
-				
-												if (pOtherWnd)
-												{
-													COPYDATASTRUCT cpd;
-													cpd.dwData = 0;
-													cpd.cbData = strlen(&cur[j])+1;	// +1 for string terminator !!!
-													cpd.lpData = (void*)&cur[j];
-
-													copyDataResult = SendMessage(pOtherWnd,WM_COPYDATA,NULL,(LPARAM)&cpd);
-												}
-											}
-										}
+										copyDataResult = parseSendString(cur,&response);
 									}
 									else
 									{
@@ -496,5 +460,71 @@ void Cserver::ThreadProc(void)
 			}
 		}
 	}
+}
+
+BOOL Cserver::parseSendString(char *string, char **errorString) {
+
+	//==========================
+	char	remoteName	[128];
+	char	keyName		[128];
+	int		repeats;
+	int		result;
+	BOOL	success;
+
+	struct ir_ncode		*codes;
+	struct ir_remote	*sender;
+	//==========================
+
+	remoteName[0]	= '\0';	// null terminate
+	keyName[0]		= '\0';
+	repeats			= 0;
+	result			= 0;
+
+	result = sscanf_s(string,"%*s %s %s %i",remoteName,sizeof(remoteName),keyName,sizeof(keyName),&repeats);
+
+	if(result<2) {
+		*errorString = new char[64];
+		strcpy_s(*errorString,64,"DATA\n1\nremote or code missing\n");
+		return FALSE;
+	}
+
+	sender = global_remotes;
+
+	while (sender!=NULL && _stricmp(remoteName,sender->name)) {
+		sender = sender->next;
+	}
+
+	if(sender==NULL) {
+		*errorString = new char[64];
+		strcpy_s(*errorString,64,"DATA\n1\nremote not found\n");
+		return FALSE;	
+	}
+
+	codes = sender->codes;
+
+	while (codes->name!=NULL && _stricmp(keyName,codes->name)) {
+		codes++;	// linked list would have been easier .. 
+	}
+
+	if(codes->name==NULL) {
+		*errorString = new char[64];
+		strcpy_s(*errorString,64,"DATA\n1\ncode not found\n");
+		return FALSE;	
+	}
+
+	repeats = max(repeats,sender->min_repeat);
+	repeats = min(repeats,10);	// sanity check
+
+	success = ((Cwinlirc *)AfxGetApp())->dlg->driver.sendIR(sender,codes,repeats);
+
+	if(success==FALSE) {
+		*errorString = new char[64];
+		strcpy_s(*errorString,64,"DATA\n1\nsend failed/not supported\n");
+		return FALSE;	
+	}
+
+	((Cwinlirc *)AfxGetApp())->dlg->GoBlue();
+
+	return TRUE;
 }
 

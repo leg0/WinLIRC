@@ -30,7 +30,6 @@
 #include "irdriver.h"
 #include <atlbase.h> //password stuff
 
-
 class Cserver {
 public:
 
@@ -46,11 +45,13 @@ public:
 	void ThreadProc(void);
 
 private:
-	void reply(const char *command,int client,bool success,const char *data);
-	SOCKET server;
-	SOCKET clients[MAX_CLIENTS];
-	CString password; //password for transmission
-	int tcp_port; //tcp port for server
+	void reply				(const char *command,int client,bool success,const char *data);
+	BOOL parseSendString	(char *string, char **errorString);
+
+	SOCKET	server;
+	SOCKET	clients[MAX_CLIENTS];
+	CString	password;				//password for transmission
+	int		tcp_port;				//tcp port for server
 
 	#define LINE_LEN 1024
 };
