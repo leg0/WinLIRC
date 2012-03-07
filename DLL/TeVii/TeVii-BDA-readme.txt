@@ -9,7 +9,7 @@ In config need select tuner device number (if installed many tuners).
 Supported Remotes
 =================
 
-Any China-made remotes :)
+NEC-encoded.
 
 Links
 =====
