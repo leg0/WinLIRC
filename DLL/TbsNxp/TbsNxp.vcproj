@@ -414,6 +414,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\rc_new.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\TbsNxp.rc"
 				>
 			</File>
