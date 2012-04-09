@@ -37,7 +37,7 @@ private:
 
 	void	setData(ir_code data);
 
-	IKsControl* m_pIKsControl;
+	CComPtr <IKsControl> m_pIKsControl;
 	WORD	m_wImplementationId;
 	BYTE	m_ucGpio;
 	CInterrupt_Interface* m_pInterruptLayer;
@@ -51,7 +51,6 @@ private:
 	UCHAR	bufferStart;
 	UCHAR	bufferEnd;
 	//===================
-
 };
 
 #endif

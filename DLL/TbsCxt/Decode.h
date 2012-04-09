@@ -19,30 +19,15 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef TBSNXPRC_H
-#define TBSNXPRC_H
+#ifndef DECODE_H
+#define DECODE_H
 
-#define IG_API __declspec(dllexport)
+void init_rec_buffer(void);
+bool decodeCommand(struct ir_remote *remotes, char *out);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-IG_API int	init		(HANDLE exitEvent);
-IG_API void	deinit		();
-IG_API int	hasGui		();
-IG_API void	loadSetupGui();
-IG_API int	sendIR		(struct ir_remote *remote, struct ir_ncode *code, int repeats);
-IG_API int	decodeIR	(struct ir_remote *remotes, char *out);
-
-//
-// This function will be for the IR-record port, well that's the plan anyway
-// It's not needed by the main app
-//
-IG_API struct hardware* getHardware();
-
-#ifdef __cplusplus
-}
-#endif
+int tevii_decode(struct ir_remote *remote,
+		   ir_code *prep,ir_code *codep,ir_code *postp,
+		   int *repeat_flagp,
+		   lirc_t *min_remaining_gapp, lirc_t *max_remaining_gapp);
 
 #endif

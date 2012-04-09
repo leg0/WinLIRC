@@ -19,30 +19,49 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef TBSNXPRC_H
-#define TBSNXPRC_H
+#include "Globals.h"
+#include "hardware.h"
+#include "Decode.h"
 
-#define IG_API __declspec(dllexport)
+struct hardware hw;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+ir_code get_ir_code() {
 
-IG_API int	init		(HANDLE exitEvent);
-IG_API void	deinit		();
-IG_API int	hasGui		();
-IG_API void	loadSetupGui();
-IG_API int	sendIR		(struct ir_remote *remote, struct ir_ncode *code, int repeats);
-IG_API int	decodeIR	(struct ir_remote *remotes, char *out);
+	if(!receive) return 0;
+	ir_code currentCode;
 
-//
-// This function will be for the IR-record port, well that's the plan anyway
-// It's not needed by the main app
-//
-IG_API struct hardware* getHardware();
+	receive->getData(&currentCode);
+	ResetEvent(dataReadyEvent);
 
-#ifdef __cplusplus
+	return currentCode;
 }
-#endif
 
-#endif
+void wait_for_data(lirc_t timeout) {
+
+	if(!receive) return;
+	receive->waitTillDataIsReady(timeout);
+}
+
+int data_ready() {
+
+	if(!receive) return 0;
+	return receive->dataReady();
+}
+
+void initHardwareStruct() {
+
+	hw.decode_func	= &tevii_decode;
+	hw.readdata		= NULL;
+	hw.wait_for_data= &wait_for_data;
+	hw.data_ready	= &data_ready;
+	hw.get_ir_code	= &get_ir_code;
+
+	hw.features		= LIRC_CAN_REC_LIRCCODE;
+	hw.send_mode	= 0;
+	hw.rec_mode		= LIRC_MODE_LIRCCODE;
+	hw.code_length	= 32;
+	hw.resolution	= 0;
+
+	strcpy(hw.device,"hw");
+	strcpy(hw.name,"TbsCxt");
+}

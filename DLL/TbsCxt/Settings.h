@@ -19,30 +19,26 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef TBSNXPRC_H
-#define TBSNXPRC_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
-#define IG_API __declspec(dllexport)
+class Settings 
+{
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+public:
+	Settings();
 
-IG_API int	init		(HANDLE exitEvent);
-IG_API void	deinit		();
-IG_API int	hasGui		();
-IG_API void	loadSetupGui();
-IG_API int	sendIR		(struct ir_remote *remote, struct ir_ncode *code, int repeats);
-IG_API int	decodeIR	(struct ir_remote *remotes, char *out);
+	void	setDeviceNumber	(int deviceNumber);
+	int		getDeviceNumber	();
+	void	saveSettings	();			// to ini file
+	void	loadSettings	();
 
-//
-// This function will be for the IR-record port, well that's the plan anyway
-// It's not needed by the main app
-//
-IG_API struct hardware* getHardware();
+private:
 
-#ifdef __cplusplus
-}
-#endif
+	//======================
+	int devNumber;
+	//======================
+};
 
 #endif
+
