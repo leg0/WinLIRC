@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <tchar.h>
 
-#include "TbsNxpRC.h"
+#include "TbsCxtRC.h"
 #include "Globals.h"
 #include "resource.h"
 #include "Receive.h"
@@ -19,7 +19,7 @@ IG_API int init(HANDLE exitEvent) {
 	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
 
 	receive = new Receive();
-	return receive->init(settings.getDeviceNumber(),(tmIrDecoderId)settings.getRcType());
+	return receive->init(settings.getDeviceNumber());
 
 }
 
@@ -64,7 +64,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 			{
 				// create a class enumerator for the desired category defined by classGuid.
 				CComPtr <IEnumMoniker> pEnumCat = NULL;	//moniker enumerator for filter categories
-				hr = pSysDevEnum->CreateClassEnumerator(CLSID_DeviceControlCategory, &pEnumCat, 0);
+				hr = pSysDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnumCat, 0);
 				if (hr == S_OK)
 				{
 
@@ -79,50 +79,55 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 					while(pEnumCat->Next(1, &pMoniker, &cFetched) == S_OK)
 					{
 						//get a pointer to property bag (which has filter)
-						CComPtr <IPropertyBag> pPropBag = NULL;	
+						IPropertyBag* pPropBag = NULL;	
 						if (pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag) != S_OK)
 							break;
 
 						TCHAR szFriendlyName[MAX_PATH];
-						VARIANT varName;
-						// retrieve the friendly name of the filter
-						VariantInit(&varName);
-						hr = pPropBag->Read(L"FriendlyName", &varName, 0);
-						WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, szFriendlyName, sizeof(szFriendlyName), 0, 0);
-						VariantClear(&varName);
-						if ( strstr(szFriendlyName,"TBS") || strstr(szFriendlyName,"TT-budget") )
-						{
-							PTCHAR t=strchr(strchr(szFriendlyName,' ')+1,' ');
-							if (t) t[0]=0;
-							SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)szFriendlyName);
-							numberOfDevices++;
+
+						CComPtr <IBaseFilter> pFilter = NULL;
+						// create an instance of the filter
+						hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pFilter);
+						if (hr == S_OK)
+						{							
+							VARIANT varName;
+							// retrieve the friendly name of the filter
+							VariantInit(&varName);
+							hr = pPropBag->Read(L"FriendlyName", &varName, 0);
+							WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, szFriendlyName, sizeof(szFriendlyName), 0, 0);
+							VariantClear(&varName);
+
+							CComPtr <IKsPropertySet> pKsVCPropSet = NULL;
+							// query for interface
+							hr = pFilter->QueryInterface(IID_IKsPropertySet, (void **)&pKsVCPropSet);
+							if (pKsVCPropSet)
+							{
+								DWORD type_support;
+								hr = pKsVCPropSet->QuerySupported(KSPROPSETID_CustomIRCaptureProperties,
+									KSPROPERTY_IRCAPTURE_COMMAND,
+									&type_support);
+								if ( SUCCEEDED(hr) && (type_support & KSPROPERTY_SUPPORT_SET) )
+								{
+									PTCHAR t=strchr(szFriendlyName,' ')+1;
+									if (strstr(szFriendlyName,"TBS") || strstr(szFriendlyName,"Prof") || strstr(szFriendlyName,"TeVii"))
+										t=strchr(t,' ');
+									if (t) t[0]=0;
+									SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)szFriendlyName);
+									numberOfDevices++;
+								}
+							}
 						}
 						pMoniker.Release();
 					}
 				}
 			}
-			
+		
 			if (settings.getDeviceNumber()>=numberOfDevices)
 				settings.setDeviceNumber(0);
 
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETITEMDATA,
-							   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC5"),
-							   IR_DECODER_ID_RC5);
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETITEMDATA,
-							   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC6"),
-							   IR_DECODER_ID_RC6);
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETITEMDATA,
-							   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC32"),
-							   IR_DECODER_ID_NEC_32);
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETITEMDATA,
-							   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC40"),
-							   IR_DECODER_ID_NEC_40);
-			
 			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_SETCURSEL,settings.getDeviceNumber(),0);
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETCURSEL,settings.getRcType(),0);
 
 			ShowWindow( GetDlgItem(hwnd,IDC_COMBO_DEVID), numberOfDevices ? SW_SHOW : SW_HIDE);
-			ShowWindow( GetDlgItem(hwnd,IDC_COMBO_RCTYPE), numberOfDevices ? SW_SHOW : SW_HIDE);
 
 			ShowWindow(hwnd, SW_SHOW);
 
@@ -133,8 +138,6 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 			switch(LOWORD(wParam)) {
 				case IDOK: {
 					settings.setDeviceNumber(SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_GETCURSEL,0,0));
-					settings.setRcType(SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_GETITEMDATA,
-									   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_GETCURSEL,0,0),0));
 					settings.saveSettings();
 					DestroyWindow (hwnd);
 					return TRUE;

@@ -20,22 +20,22 @@ Receive::~Receive(){
 }
 
 int Receive::init(int devNum, tmIrDecoderId tDecoderId, unsigned minRepeat)
-{
-	IBaseFilter* pFilter = NULL;
+{	
 	m_minRepeat = minRepeat;
 	deinit();
 
 	CoInitialize(NULL);
 	int devCount=0;
+	CComPtr <IBaseFilter> pFilter = NULL;
+
 	// create system device enumerator
-	ICreateDevEnum*	pSysDevEnum = NULL;	
-	HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_ICreateDevEnum, (void **)&pSysDevEnum);
+	CComPtr <ICreateDevEnum> pSysDevEnum = NULL;	
+	HRESULT hr = pSysDevEnum.CoCreateInstance(CLSID_SystemDeviceEnum);
 	if (hr == S_OK)
 	{
 		// create a class enumerator for the desired category defined by classGuid.
-		IEnumMoniker* pEnumCat = NULL;	//moniker enumerator for filter categories
+		CComPtr <IEnumMoniker> pEnumCat = NULL;	//moniker enumerator for filter categories
 		hr = pSysDevEnum->CreateClassEnumerator(CLSID_DeviceControlCategory, &pEnumCat, 0);
-		pSysDevEnum->Release();
 		if (hr == S_OK)
 		{
 
@@ -44,27 +44,21 @@ int Receive::init(int devNum, tmIrDecoderId tDecoderId, unsigned minRepeat)
 
 			// now iterate through enumeration
 			ULONG cFetched = 0;
-			IMoniker* pMoniker = NULL;
-
+			CComPtr <IMoniker> pMoniker = NULL;
 
 			// get a pointer to each moniker
 			while(pEnumCat->Next(1, &pMoniker, &cFetched) == S_OK)
 			{
 				//get a pointer to property bag (which has filter)
-				IPropertyBag* pPropBag = NULL;	
-				hr = pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag);
-				if (hr != S_OK)
-				{
-					pEnumCat->Release();
-					pMoniker->Release();
+				CComPtr <IPropertyBag> pPropBag = NULL;	
+				if (pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag) != S_OK)
 					break;
-				}
-				TCHAR szFriendlyName[MAX_PATH];
 
 				// create an instance of the filter
 				hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pFilter);
 				if (hr == S_OK)
 				{							
+					TCHAR szFriendlyName[MAX_PATH];
 					VARIANT varName;
 					// retrieve the friendly name of the filter
 					VariantInit(&varName);
@@ -72,32 +66,18 @@ int Receive::init(int devNum, tmIrDecoderId tDecoderId, unsigned minRepeat)
 					WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, szFriendlyName, sizeof(szFriendlyName), 0, 0);
 					VariantClear(&varName);
 					if ( strstr(szFriendlyName,"TBS") || strstr(szFriendlyName,"TT-budget") )
-					{
 						if (devCount == devNum)
-						{
-							pMoniker->Release();
-							pPropBag->Release();
 							break;
-						}
-					}
 				}
-				if (pFilter)
-				{
-					pFilter->Release();
-					pFilter = NULL;
-				}
-				pMoniker->Release();
-				pPropBag->Release();
+				pMoniker.Release();
 			}
 		}
-		pEnumCat->Release();
 	}
-	if (!pFilter) return 0;
+	if (pFilter == NULL) return 0;
 
 	m_pIKsControl = NULL;
 	// query for interface    
     hr = pFilter->QueryInterface(IID_IKsControl, (void **)&m_pIKsControl);
-	if (pFilter) pFilter->Release();
 
 	if ( FAILED(hr) || !m_pIKsControl )
 		return 0;
@@ -114,7 +94,7 @@ int Receive::init(int devNum, tmIrDecoderId tDecoderId, unsigned minRepeat)
 	tHwInfo.dwGpioNr           = m_ucGpio;
 	tHwInfo.tDecoderId         = tDecoderId;
 	tHwInfo.tInterruptType     = FALLING_EDGE_ACTIVATED;
-	tHwInfo.bInterruptDecoding = TRUE;//默认就采用中断的方式
+	tHwInfo.bInterruptDecoding = TRUE;
 
 	m_pIrDecoder = new tmIIrDecoder( this, m_pGpioLayer, m_pInterruptLayer, &tFactory, &tHwInfo );
 	if (!m_pIrDecoder) return 0;
@@ -141,11 +121,7 @@ void Receive::deinit()
 		m_pGpioLayer = NULL;
 	}
 
-	if (m_pIKsControl)
-	{
-		m_pIKsControl->Release();
-		m_pIKsControl = NULL;
-	}
+	m_pIKsControl.Release();
 }
 
 void Receive::setData(ir_code data) {

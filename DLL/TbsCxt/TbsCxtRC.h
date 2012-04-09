@@ -19,8 +19,8 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef TBSNXPRC_H
-#define TBSNXPRC_H
+#ifndef TBSCXTRC_H
+#define TBSCXTRC_H
 
 #define IG_API __declspec(dllexport)
 
