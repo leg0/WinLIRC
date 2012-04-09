@@ -28,6 +28,7 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 
 IDB_LOGO                BITMAP                  "logo.bmp"
 IDB_RC                  BITMAP                  "rc.bmp"
+IDB_RCNEW               BITMAP                  "rc_new.bmp"
 #endif    // русский resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -86,7 +87,7 @@ BEGIN
     LTEXT           "Copyright © 2012 CrazyCat",IDC_STATIC,7,114,91,8
     COMBOBOX        IDC_COMBO_RCTYPE,49,78,40,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "RC type",IDC_STATIC,13,81,27,8
-    CONTROL         106,IDC_STATIC,"Static",SS_BITMAP,112,19,32,76
+    CONTROL         110,IDC_STATIC,"Static",SS_BITMAP,112,19,32,89
 END
 
 
