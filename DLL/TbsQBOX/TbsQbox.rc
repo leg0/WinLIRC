@@ -29,6 +29,7 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 IDB_LOGO                BITMAP                  "logo.bmp"
 IDB_RC                  BITMAP                  "rc.bmp"
 IDB_RCNEW               BITMAP                  "rc_new.bmp"
+IDB_QBOX                BITMAP                  "Qbox.bmp"
 #endif    // русский resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -86,6 +87,7 @@ BEGIN
     LTEXT           "Device",IDC_STATIC,13,63,22,8
     LTEXT           "Copyright © 2012 CrazyCat",IDC_STATIC,7,99,91,8
     CONTROL         106,IDC_STATIC,"Static",SS_BITMAP,112,20,32,76
+    CONTROL         111,IDC_STATIC,"Static",SS_BITMAP,73,12,40,36
 END
 
 
