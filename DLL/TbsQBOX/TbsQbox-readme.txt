@@ -1,7 +1,7 @@
-TBS-CXT BDA 1.0
+TBS-QBOX BDA 1.0
 ============
 
-This plugin is for the CX2388x-based TBS,Prof PC-DVB tuners with BDA-drivers.
+This plugin is for the TBS PC-DVB USB tuners with BDA-drivers.
 
 In config need select tuner device number (if installed many tuners).
 
@@ -14,7 +14,6 @@ Links
 =====
 
 TBS PC-DVB tuners - http://www.tbsdtv.com
-Prof PC-DVB tuners - http://www.proftuners.com
 
 Contact
 =======

@@ -1,0 +1,219 @@
+#include <Windows.h>
+#include <stdio.h>
+#include <tchar.h>
+
+#include "TbsQboxRC.h"
+#include "Globals.h"
+#include "resource.h"
+#include "Receive.h"
+#include "Settings.h"
+#include "hardware.h"
+#include "decode.h"
+
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+
+IG_API int init(HANDLE exitEvent) {
+	initHardwareStruct();
+
+	threadExitEvent = exitEvent;
+	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
+
+	receive = new Receive();
+	return receive->init(settings.getDeviceNumber());
+
+}
+
+IG_API void deinit() {
+
+	if(receive) {
+		receive->deinit();
+		delete receive;
+		receive = NULL;
+	}
+
+	if(dataReadyEvent) {
+		CloseHandle(dataReadyEvent);
+		dataReadyEvent = NULL;
+	}
+
+	threadExitEvent = NULL;	
+}
+
+IG_API int hasGui() {
+
+	return TRUE;
+}
+
+BOOL CALLBACK dialogProc (HWND hwnd, 
+                          UINT message, 
+                          WPARAM wParam, 
+                          LPARAM lParam)
+{
+	USES_CONVERSION;	
+    switch (message) {
+
+		case WM_INITDIALOG: {
+			CoInitialize(NULL);
+			int numberOfDevices=0;
+			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_RESETCONTENT,0,0);
+
+			// create system device enumerator
+			CComPtr <ICreateDevEnum>	pSysDevEnum = NULL;	
+			HRESULT hr = pSysDevEnum.CoCreateInstance(CLSID_SystemDeviceEnum);
+			if (hr == S_OK)
+			{
+				// create a class enumerator for the desired category defined by classGuid.
+				CComPtr <IEnumMoniker> pEnumCat = NULL;	//moniker enumerator for filter categories
+				hr = pSysDevEnum->CreateClassEnumerator(KSCATEGORY_BDA_NETWORK_TUNER, &pEnumCat, 0);
+				if (hr == S_OK)
+				{
+
+					// reset the enumeration
+					pEnumCat->Reset();
+
+					// now iterate through enumeration
+					ULONG cFetched = 0;
+					CComPtr <IMoniker> pMoniker = NULL;
+
+					// get a pointer to each moniker
+					while(pEnumCat->Next(1, &pMoniker, &cFetched) == S_OK)
+					{
+						//get a pointer to property bag (which has filter)
+						IPropertyBag* pPropBag = NULL;	
+						if (pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag) != S_OK)
+							break;
+
+						TCHAR szFriendlyName[MAX_PATH];
+
+						CComPtr <IBaseFilter> pFilter = NULL;
+						// create an instance of the filter
+						hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pFilter);
+						if (hr == S_OK)
+						{							
+							VARIANT varName;
+							// retrieve the friendly name of the filter
+							VariantInit(&varName);
+							hr = pPropBag->Read(L"FriendlyName", &varName, 0);
+							WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, szFriendlyName, sizeof(szFriendlyName), 0, 0);
+							VariantClear(&varName);
+
+							CComPtr <IKsPropertySet> pKsTunerPropSet = NULL;
+							// query for interface
+							hr = pFilter->QueryInterface(IID_IKsPropertySet, (void **)&pKsTunerPropSet);
+							if (pKsTunerPropSet)
+							{
+								DWORD type_support;
+								hr = pKsTunerPropSet->QuerySupported(KSPROPERTYSET_QBOXControl,
+									KSPROPERTY_CTRL_IR,
+									&type_support);
+								if ( SUCCEEDED(hr) && (type_support & KSPROPERTY_SUPPORT_GET) )
+								{
+									PCHAR t=strstr(szFriendlyName,"Tuner");
+									if (t) *t=0;
+									SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)szFriendlyName);
+									numberOfDevices++;
+								}
+							}
+						}
+						pMoniker.Release();
+					}
+				}
+			}
+		
+			if (settings.getDeviceNumber()>=numberOfDevices)
+				settings.setDeviceNumber(0);
+
+			if (numberOfDevices == 0)
+				SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)"NO DEVICE");
+
+			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_SETCURSEL,settings.getDeviceNumber(),0);
+
+			ShowWindow(hwnd, SW_SHOW);
+
+			return TRUE;
+		}
+
+		case WM_COMMAND: {
+			switch(LOWORD(wParam)) {
+				case IDOK: {
+					settings.setDeviceNumber(SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_GETCURSEL,0,0));
+					settings.saveSettings();
+					DestroyWindow (hwnd);
+					return TRUE;
+				}
+
+				case IDCANCEL: {
+					DestroyWindow (hwnd);
+					return TRUE;
+				}
+
+			}
+			return FALSE;
+		}
+
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			return TRUE;
+		case WM_CLOSE:
+			DestroyWindow (hwnd);
+			return TRUE;
+	}
+
+    return FALSE;
+
+}
+
+IG_API void	loadSetupGui() {
+
+	//==============
+	HWND	hDialog;
+	MSG		msg;
+    INT		status;
+	//==============
+
+	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG_CFG),NULL,dialogProc);
+
+    while ((status = GetMessage (& msg, 0, 0, 0)) != 0) {
+
+        if (status == -1) return;
+
+        if (!IsDialogMessage (hDialog, & msg)) {
+
+            TranslateMessage ( & msg );
+            DispatchMessage ( & msg );
+        }
+    }
+
+}
+
+IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+
+	return 0;
+}
+
+IG_API int decodeIR(struct ir_remote *remotes, char *out) {
+
+	//wait till data is ready
+
+	if(receive)
+	{
+		receive->waitTillDataIsReady(0);
+
+		last = end;
+		gettimeofday(&start,NULL);
+		receive->getData(&irCode);
+		gettimeofday(&end,NULL);
+
+		if(decodeCommand(remotes,out)) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+IG_API struct hardware* getHardware() {
+
+	initHardwareStruct();
+	return &hw;
+}
