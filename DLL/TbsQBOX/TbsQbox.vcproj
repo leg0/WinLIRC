@@ -246,6 +246,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Qbox.bmp"
+				>
+			</File>
+			<File
 				RelativePath=".\rc.bmp"
 				>
 			</File>
