@@ -65,6 +65,7 @@ int Receive::init(int devNum, tmIrDecoderId tDecoderId, unsigned minRepeat)
 					hr = pPropBag->Read(L"FriendlyName", &varName, 0);
 					WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, szFriendlyName, sizeof(szFriendlyName), 0, 0);
 					VariantClear(&varName);
+
 					if ( strstr(szFriendlyName,"TBS") || strstr(szFriendlyName,"TT-budget") )
 						if (devCount == devNum)
 							break;

@@ -108,10 +108,8 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 									&type_support);
 								if ( SUCCEEDED(hr) && (type_support & KSPROPERTY_SUPPORT_SET) )
 								{
-									PTCHAR t=strchr(szFriendlyName,' ')+1;
-									if (strstr(szFriendlyName,"TBS") || strstr(szFriendlyName,"Prof") || strstr(szFriendlyName,"TeVii"))
-										t=strchr(t,' ');
-									if (t) t[0]=0;
+									PCHAR t=strstr(szFriendlyName,"Video Capture");
+									if (t) *t=0;
 									SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)szFriendlyName);
 									numberOfDevices++;
 								}
@@ -125,9 +123,10 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 			if (settings.getDeviceNumber()>=numberOfDevices)
 				settings.setDeviceNumber(0);
 
-			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_SETCURSEL,settings.getDeviceNumber(),0);
+			if (numberOfDevices == 0)
+				SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)"NO DEVICE");
 
-			ShowWindow( GetDlgItem(hwnd,IDC_COMBO_DEVID), numberOfDevices ? SW_SHOW : SW_HIDE);
+			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_SETCURSEL,settings.getDeviceNumber(),0);
 
 			ShowWindow(hwnd, SW_SHOW);
 
