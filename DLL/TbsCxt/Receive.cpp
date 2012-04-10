@@ -51,25 +51,11 @@ int Receive::init(int devNum, unsigned minRepeat)
 			// get a pointer to each moniker
 			while(pEnumCat->Next(1, &pMoniker, &cFetched) == S_OK)
 			{
-				//get a pointer to property bag (which has filter)
-				CComPtr <IPropertyBag> pPropBag = NULL;	
-				if (pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag) != S_OK)
-					break;
-
-				TCHAR szFriendlyName[MAX_PATH];
-
 				CComPtr <IBaseFilter> pFilter = NULL;
 				// create an instance of the filter
 				hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pFilter);
 				if (hr == S_OK)
 				{							
-					VARIANT varName;
-					// retrieve the friendly name of the filter
-					VariantInit(&varName);
-					hr = pPropBag->Read(L"FriendlyName", &varName, 0);
-					WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, szFriendlyName, sizeof(szFriendlyName), 0, 0);
-					VariantClear(&varName);
-
 					m_pKsVCPropSet = NULL;
 					// query for interface
 					hr = pFilter->QueryInterface(IID_IKsPropertySet, (void **)&m_pKsVCPropSet);
@@ -186,7 +172,7 @@ void Receive::threadProc() {
 		if (WaitForSingleObject (exitEvent,0) == WAIT_OBJECT_0)
 			break;
 
-		if ((kStore.dwAddress==0xffff) || (kStore.dwCommand==0xffff) || (kStore.dwCommand==0xff))
+		if ((kStore.dwAddress==0xffff) || (kStore.dwCommand==0xffff) || (kStore.dwCommand==0xff) || (kStore.dwCommand==0x00))
 			continue;
 
 		if (kStore.dwCommand==0x10000)
@@ -205,7 +191,7 @@ void Receive::threadProc() {
 
 #ifdef _DEBUG
 		char code_str[128];
-		sprintf(code_str,"TBS CXT RC: 0x%04X\n",(DWORD)code);
+		sprintf_s(code_str,"TBS CXT RC: 0x%04X\n",(DWORD)code);
 		OutputDebugString(code_str);
 #endif//RCCODE_DEBUGOUT
 		

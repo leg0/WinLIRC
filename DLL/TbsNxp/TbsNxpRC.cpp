@@ -55,7 +55,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 		case WM_INITDIALOG: {
 			CoInitialize(NULL);
 			int numberOfDevices=0;
-			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_RESETCONTENT,0,0);
+			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_RESETCONTENT,0,0);			
 
 			// create system device enumerator
 			CComPtr <ICreateDevEnum>	pSysDevEnum = NULL;	
@@ -90,10 +90,11 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 						hr = pPropBag->Read(L"FriendlyName", &varName, 0);
 						WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, szFriendlyName, sizeof(szFriendlyName), 0, 0);
 						VariantClear(&varName);
+
+						PCHAR t=strstr(szFriendlyName,"BDA Main Device");
+						if (t) *t=0;
 						if ( strstr(szFriendlyName,"TBS") || strstr(szFriendlyName,"TT-budget") )
 						{
-							PTCHAR t=strchr(strchr(szFriendlyName,' ')+1,' ');
-							if (t) t[0]=0;
 							SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)szFriendlyName);
 							numberOfDevices++;
 						}
@@ -102,27 +103,20 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 				}
 			}
 			
-			if (settings.getDeviceNumber()>=numberOfDevices)
+			if (settings.getDeviceNumber() >= numberOfDevices)
 				settings.setDeviceNumber(0);
 
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETITEMDATA,
-							   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC5"),
-							   IR_DECODER_ID_RC5);
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETITEMDATA,
-							   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC6"),
-							   IR_DECODER_ID_RC6);
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETITEMDATA,
-							   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC32"),
-							   IR_DECODER_ID_NEC_32);
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETITEMDATA,
-							   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC40"),
-							   IR_DECODER_ID_NEC_40);
+			if (numberOfDevices == 0)
+				SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)"NO DEVICE");
+
+			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_RESETCONTENT,0,0);
+			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC5");
+			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC6");
+			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC32");
+			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC40");
 			
 			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_SETCURSEL,settings.getDeviceNumber(),0);
 			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETCURSEL,settings.getRcType(),0);
-
-			ShowWindow( GetDlgItem(hwnd,IDC_COMBO_DEVID), numberOfDevices ? SW_SHOW : SW_HIDE);
-			ShowWindow( GetDlgItem(hwnd,IDC_COMBO_RCTYPE), numberOfDevices ? SW_SHOW : SW_HIDE);
 
 			ShowWindow(hwnd, SW_SHOW);
 
@@ -133,8 +127,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 			switch(LOWORD(wParam)) {
 				case IDOK: {
 					settings.setDeviceNumber(SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_GETCURSEL,0,0));
-					settings.setRcType(SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_GETITEMDATA,
-									   SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_GETCURSEL,0,0),0));
+					settings.setRcType(SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_GETCURSEL,0,0));
 					settings.saveSettings();
 					DestroyWindow (hwnd);
 					return TRUE;
