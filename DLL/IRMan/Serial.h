@@ -165,7 +165,8 @@ public:
 		EHandshakeUnknown		= -1,	// Unknown
 		EHandshakeOff			=  0,	// No handshaking
 		EHandshakeHardware		=  1,	// Hardware handshaking (RTS/CTS)
-		EHandshakeSoftware		=  2	// Software handshaking (XON/XOFF)
+		EHandshakeSoftware		=  2,	// Software handshaking (XON/XOFF)
+		ERTSDTR					=  3	// Not actually hand shaking, turn on RTS DTR for IRMan
 	} 
 	EHandshake;
 
