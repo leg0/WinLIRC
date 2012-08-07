@@ -390,13 +390,6 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 
 				serial.Write(temp,3);
 				Sleep(50);
-
-				//
-				// put back into sampling mode
-				//
-				temp[0] = 's';
-				serial.Write(temp,1);
-				Sleep(50);
 			}
 		}
 
