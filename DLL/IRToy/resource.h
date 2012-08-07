@@ -16,3 +16,7 @@
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
+
+#ifndef IDC_STATIC
+#define IDC_STATIC				-1
+#endif
