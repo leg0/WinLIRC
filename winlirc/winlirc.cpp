@@ -39,7 +39,7 @@ BOOL Cwinlirc::InitInstance() {
 	dlg		= NULL;
 	server	= NULL;
 
-	// set current direction for plugins from exe path
+	// set current directory for plugins from exe path
 
 	{
 		//=====================
