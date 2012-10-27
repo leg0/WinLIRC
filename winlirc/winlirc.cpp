@@ -39,7 +39,19 @@ BOOL Cwinlirc::InitInstance() {
 	dlg		= NULL;
 	server	= NULL;
 
-	SetCurrentDirectory(_T(".\\plugins\\"));
+	// set current direction for plugins from exe path
+
+	{
+		//=====================
+		CString	fullPath;
+		int		indexOfLastSep;
+		//=====================
+
+		GetModuleFileName(NULL, fullPath.GetBufferSetLength(MAX_PATH+1), MAX_PATH);
+		indexOfLastSep = fullPath.ReverseFind(_T('\\'));
+		
+		SetCurrentDirectory(fullPath.Left(indexOfLastSep) + _T("\\plugins\\"));
+	}
 
 	config.readINIFile();
 
