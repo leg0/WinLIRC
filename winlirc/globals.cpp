@@ -99,7 +99,10 @@ void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent)
 		{
 			//printf("still active\n");
 			SetEvent(ThreadEvent);
-			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,2000)) break; //maybe we just need to give it some time to quit
+			if(WaitForSingleObject((*ThreadHandle)->m_hThread, 5000) == WAIT_TIMEOUT) {
+				// The plug-in does not seem to respect the exitEvent. Kill it!
+				TerminateThread((*ThreadHandle)->m_hThread, 999);
+			}
 			ResetEvent(ThreadEvent);
 			*ThreadHandle=NULL;
 		}

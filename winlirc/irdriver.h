@@ -44,7 +44,7 @@ public:
 	int		decodeIR		(struct ir_remote *remote, char *out);
 	int		setTransmitters	(unsigned int transmitterMask);
 
-	void	DaemonThreadProc();
+	void	DaemonThreadProc() const;
 
 private:
 
@@ -56,17 +56,25 @@ private:
 	typedef int  (*DecodeFunction)			(struct ir_remote *remote, char *out);
 	typedef int  (*SetTransmittersFunction)	(unsigned int transmitterMask);
 
-	InitFunction			initFunction;
-	DeinitFunction			deinitFunction;
-	HasGuiFunction			hasGuiFunction;
-	LoadSetupGuiFunction	loadSetupGuiFunction;
-	SendFunction			sendFunction;
-	DecodeFunction			decodeFunction;
-	SetTransmittersFunction setTransmittersFunction;
+	/// Protects access to the functions imported from plug-in dll, and the
+	/// DLL handle.
+	/// TODO: move all the load/unload logic and related stuff to Dll class.
+	mutable CCriticalSection	dllLock;
+	struct Dll {
+		InitFunction			initFunction;
+		DeinitFunction			deinitFunction;
+		HasGuiFunction			hasGuiFunction;
+		LoadSetupGuiFunction	loadSetupGuiFunction;
+		SendFunction			sendFunction;
+		DecodeFunction			decodeFunction;
+		SetTransmittersFunction setTransmittersFunction;
+		HMODULE		dllFile;
+	};
+
+	Dll dll;
 
 	//==============================
 	CString		loadedPlugin;
-	HMODULE		dllFile;
 	HANDLE		daemonThreadEvent;
 	CWinThread	*daemonThreadHandle;
 	//==============================

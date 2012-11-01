@@ -509,7 +509,7 @@ BOOL Cserver::parseSendString(char *string, char **errorString) {
 	if(codes->name==NULL) {
 		*errorString = new char[64];
 		strcpy_s(*errorString,64,"DATA\n1\ncode not found\n");
-		return FALSE;	
+		return FALSE;
 	}
 
 	repeats = max(repeats,sender->min_repeat);
