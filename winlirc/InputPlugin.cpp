@@ -379,7 +379,11 @@ void InputPlugin::OnBnClickedButton3() {
 		&si,								// Pointer to STARTUPINFO structure
 		&pi );								// Pointer to PROCESS_INFORMATION structure
 
-	if(!processCreated) {
+	if(processCreated) {
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+	}
+	else {
 		MessageBox(_T("IRRecord.exe missing"));
 	}
 
