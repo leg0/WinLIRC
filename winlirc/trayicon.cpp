@@ -44,7 +44,7 @@ CTrayIcon::~CTrayIcon()
 
 void CTrayIcon::SetNotificationWnd(CWnd *notifywnd, UINT message)
 {
-	if(notifywnd!=NULL && !::IsWindow(notifywnd->GetSafeHwnd()))
+	if(notifywnd==NULL || !::IsWindow(notifywnd->GetSafeHwnd()))
 	{
 		DEBUG("Invalid window\n");
 		return;
