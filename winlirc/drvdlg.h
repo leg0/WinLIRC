@@ -87,7 +87,7 @@ protected:
 	afx_msg void OnConfig();
 	afx_msg void OnHideme();
 	afx_msg void OnExitLirc();
-	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSendcode();
 	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);

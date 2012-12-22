@@ -220,7 +220,7 @@ void Cdrvdlg::GoBlue()
 	}
 }
 
-void Cdrvdlg::OnTimer(UINT nIDEvent) {
+void Cdrvdlg::OnTimer(UINT_PTR nIDEvent) {
 
 	if(nIDEvent==1) {
 		KillTimer(1);
