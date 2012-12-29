@@ -284,6 +284,31 @@ bool SendReceiveData::getData(lirc_t *out) {
 	return true;
 }
 
+void SendReceiveData::stop() {
+
+	UCHAR startPacket[] = {0x00, 0xFF, 0xAA};
+}
+
+void SendReceiveData::resume() {
+
+	//================
+	UCHAR *stopPacket;
+	//================
+
+	stopPacket = new UCHAR[194];
+
+	stopPacket[0] = 0xFF;
+	stopPacket[1] = 0xBB;
+
+	for(int i=2; i<194; i++) {
+		stopPacket[i] = 0xFF;
+	}
+
+	// send data
+
+	delete [] stopPacket;
+}
+
 //======================================================================================
 // sending stuff below
 //======================================================================================

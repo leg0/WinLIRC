@@ -73,7 +73,7 @@ IG_API int hasGui() {
 	return TRUE;
 }
 
-BOOL CALLBACK dialogProc (HWND hwnd, 
+INT_PTR CALLBACK dialogProc (HWND hwnd, 
                           UINT message, 
                           WPARAM wParam, 
                           LPARAM lParam) {

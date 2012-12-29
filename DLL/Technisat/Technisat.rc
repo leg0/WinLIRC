@@ -27,7 +27,6 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 //
 
 IDB_LOGO                BITMAP                  "logo.bmp"
-IDB_RC                  BITMAP                  "RC.bmp"
 #endif    // русский resources
 /////////////////////////////////////////////////////////////////////////////
 

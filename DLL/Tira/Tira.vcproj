@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="Tira"
-	ProjectGUID="{39B99323-7031-4FA1-AE2A-29D8155DC966}"
+	ProjectGUID="{87136993-6E20-42C7-932A-6463C22B1780}"
 	RootNamespace="Tira"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"

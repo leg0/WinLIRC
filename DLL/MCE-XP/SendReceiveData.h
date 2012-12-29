@@ -45,6 +45,8 @@ private:
 	void	setData(lirc_t data);
 	void	killThread();
 	void	decodeRaw(UCHAR *in);
+	void	stop();
+	void	resume();
 
 	//==========================
 	lirc_t			dataBuffer[256];

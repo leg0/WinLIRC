@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="Iguana"
-	ProjectGUID="{39B99323-7031-4FA1-AE2A-29D8155DC966}"
+	ProjectGUID="{273662D2-B105-4C8B-A603-D4ABCEA29A38}"
 	RootNamespace="Tira"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"

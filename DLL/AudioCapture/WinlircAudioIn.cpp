@@ -227,7 +227,7 @@ void addAudioFormats(HWND hwnd, int item) {
 	}
 }
 
-BOOL CALLBACK dialogProc (HWND hwnd, 
+INT_PTR CALLBACK dialogProc (HWND hwnd, 
                           UINT message, 
                           WPARAM wParam, 
                           LPARAM lParam) {
@@ -417,9 +417,9 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 					if(HIWORD(wParam)==CBN_SELCHANGE) {
 
-						//========
-						int index;
-						//========
+						//============
+						LRESULT index;
+						//============
 						
 						index = SendDlgItemMessage(hwnd,IDC_COMBO3,CB_GETCURSEL,0,0);
 

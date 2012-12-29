@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="MCE"
-	ProjectGUID="{39B99323-7031-4FA1-AE2A-29D8155DC966}"
+	Name="MCE-XP"
+	ProjectGUID="{8D39188B-5C83-4556-B176-BDEF3E0C4D3E}"
 	RootNamespace="Tira"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="196613"

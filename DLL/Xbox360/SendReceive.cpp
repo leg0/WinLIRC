@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include "LIRCDefines.h"
 
-#pragma comment(lib, "XInput.lib")
-
 DWORD WINAPI XBThread(void *recieveClass) {
 
 	((SendReceive*)recieveClass)->threadProc();
