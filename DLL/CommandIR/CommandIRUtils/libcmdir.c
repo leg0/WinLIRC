@@ -21,8 +21,6 @@ void lirc_pipe_write( int * data );
 #include "libtcp.h"
 #include "libpipes.h"
 
-#include "commandir_tests.h"
-
 int tcpRxListenersCount; // libtcp
 unsigned char standalone;  // All CLI-facing programas
 
