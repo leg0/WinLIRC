@@ -200,7 +200,6 @@ void Cdrvdlg::OnHideme()
 
 void Cdrvdlg::GoGreen()
 {
-
 	if(!config.showTrayIcon) {
 		return;
 	}
