@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chinavision", "Chinavision.vcproj", "{93E2C256-1CCD-4399-BAE0-EDC8C171349F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93E2C256-1CCD-4399-BAE0-EDC8C171349F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{93E2C256-1CCD-4399-BAE0-EDC8C171349F}.Debug|Win32.Build.0 = Debug|Win32
+		{93E2C256-1CCD-4399-BAE0-EDC8C171349F}.Release|Win32.ActiveCfg = Release|Win32
+		{93E2C256-1CCD-4399-BAE0-EDC8C171349F}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
