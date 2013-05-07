@@ -34,7 +34,9 @@ BOOL Cwinlirc::InitInstance() {
 
 	AfxInitRichEdit();
 
-	//RedirectIOToConsole();
+#ifdef _DEBUG
+	RedirectIOToConsole();
+#endif
 
 	dlg		= NULL;
 	server	= NULL;
@@ -114,16 +116,6 @@ BOOL Cwinlirc::InitInstance() {
 		return FALSE;
 	}
 	
-	DEBUG("Checking for high-resolution timer...\n");
-
-	INT64 x=0;
-
-	if(QueryPerformanceFrequency((LARGE_INTEGER *)&x)!=TRUE || x==0) {
-
-		MessageBox(NULL,"This system does not support a high-resolution timer. Sorry.","WinLIRC",MB_OK|MB_ICONERROR);
-		return FALSE;
-	}
-
 	if(server->init()==false) {
 
 		MessageBox(NULL,"Could not start server.","WinLIRC",MB_OK|MB_ICONERROR);
@@ -134,7 +126,6 @@ BOOL Cwinlirc::InitInstance() {
 		return FALSE;
 	}
 	
-
 	DEBUG("Creating main dialog...\n");
 
 	if(!dlg->Create(IDD_DIALOG,NULL)) {
