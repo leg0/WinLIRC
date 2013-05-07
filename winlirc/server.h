@@ -46,11 +46,13 @@ public:
 
 private:
 	void reply				(const char *command,int client,bool success,const char *data);
-	BOOL parseSendString	(char *string, char **errorString);
+	BOOL parseSendString	(char *string, CStringA &response);
+	BOOL parseListString	(char *string, CStringA &response);
+	BOOL parseVersion		(char *string, CStringA &response);
+	BOOL parseTransmitters	(char *string, CStringA &response);
 
 	SOCKET	server;
 	SOCKET	clients[MAX_CLIENTS];
-	CString	password;				//password for transmission
 	int		tcp_port;				//tcp port for server
 
 	#define LINE_LEN 1024

@@ -26,7 +26,8 @@ unsigned int ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
 
 Cserver::Cserver()
 {
-	for(int i=0;i<MAX_CLIENTS;i++) clients[i]=INVALID_SOCKET;
+	for(int i=0;i<MAX_CLIENTS;i++) 
+		clients[i]=INVALID_SOCKET;
 	server=INVALID_SOCKET;
 }
 
@@ -73,18 +74,12 @@ bool Cserver::init()
 			DEBUG("warning: can't open Software\\LIRC key");
 		}
 
-	char s[512];
-	DWORD len=512;
-	if(!haveKey || key.QueryStringValue("password",s,&len)!=ERROR_SUCCESS)
-		password.Empty();
-	else
-		password=s;
-	/* end password stuff */
 	DWORD x;
 	if(!haveKey || key.QueryDWORDValue("tcp_port",x)!=ERROR_SUCCESS)
 		tcp_port=IR_PORT;
 	else
 		tcp_port=x;
+
 	if(startserver()==false)
 		return false;
 
@@ -158,22 +153,40 @@ void Cserver::send(const char *s)
 
 void Cserver::reply(const char *command,int client,bool success,const char *data)
 {
-	int length=strlen(command);
-	if (data) length+=strlen(data);
-	if (success) length+=19;
-	else length+=17;
-	char *packet=new char[length+1];
-	if (!packet) return;
-	strcpy(packet,"BEGIN\n");
-	strcat(packet,command);
-	if (success) strcat(packet,"\nSUCCESS\n");
-	else strcat(packet,"\nERROR\n");
-	if (data) strcat(packet,data);
-	strcat(packet,"END\n");
+	//==============
+	CStringA packet;
+	//==============
 	
-	if (clients[client]!=INVALID_SOCKET) ::send(clients[client],packet,length,0);
-	if (packet) delete[] packet;
-	return;
+	packet  = "BEGIN\n";
+	packet += command;
+
+	if(success)	packet += "\nSUCCESS\n";
+	else		packet += "\nERROR\n";
+	if(data)	packet += data;
+	
+	packet += "END\n";
+
+	if (clients[client]!=INVALID_SOCKET) {
+
+		//==================
+		int	length;
+		int	sent;
+		const char *pPacket;
+		//==================
+
+		length	= packet.GetLength();
+		sent	= 0;
+		pPacket	= packet;
+
+		while(length>0) {
+			sent = ::send(clients[client],pPacket+sent,length,0);
+
+			if(sent == SOCKET_ERROR) break;
+
+			length -= sent;
+		}
+	}
+	
 }
 
 void Cserver::ThreadProc(void)
@@ -235,7 +248,7 @@ void Cserver::ThreadProc(void)
 				if(clients[i]==INVALID_SOCKET) break;
 			if(i==MAX_CLIENTS)
 			{
-				DEBUG("Server full.  Closing server socket.\n");
+				DEBUG("Server full. Closing server socket.\n");
 				stopserver();
 				server_running=false;
 			}
@@ -290,165 +303,43 @@ void Cserver::ThreadProc(void)
 									// ----------------------------
 									// Do something with the received line (cur)
 									DEBUG("Got string: %s\n",cur);
-									LRESULT copyDataResult=false;
-									char *response=NULL;
-									strcpy(toparse,cur);
-									char *command=NULL;
-									char *remotename=NULL;
-									char *buttonname=NULL;
-									char *repeats=NULL;
-									if (toparse) command=strtok(toparse," \t\r");
+
+									//==========================
+									CStringA	response;
+									BOOL		success;
+									char		*command = NULL;
+									//==========================
+
+									strcpy_s(toparse,cur);
+
+									if (toparse) {
+										command = strtok(toparse," \t\r");
+									}
 
 									if (!command) //ignore lines with only whitespace
 									{
-										cur=nl+1;
+										cur = nl + 1;
 										break;
 									}
 									else if (_stricmp(command,"VERSION")==0)
 									{
-
-										if (strtok(NULL," \t\r")==NULL)
-										{
-											copyDataResult = true;
-											response = new char[strlen(id)+9];
-											if (response) sprintf(response,"DATA\n1\n%s\n",id);
-										}
-										else copyDataResult=-100;
+										success = parseVersion(cur,response);
 									}
 									else if (_stricmp(command,"LIST")==0)
 									{
-										remotename=strtok(NULL," \t\r");
-										struct ir_remote *all=global_remotes;
-										int n=0;
-										if (!remotename)
-										{
-											copyDataResult = true;
-											while(all)
-											{
-												n++;
-												all=all->next;
-											}
-											if (n!=0)
-											{
-												response = new char[n*(LINE_LEN+2)+7];
-												sprintf(response,"DATA\n%d\n",n);
-												all=global_remotes;
-												while(all)
-												{
-													strcat(response,all->name);
-													strcat(response,"\n");
-													all=all->next;
-												}
-											}
-										}
-										else
-										{
-											while (all!=NULL && _stricmp(remotename,all->name)) all=all->next;
-											if (all)
-											{
-												copyDataResult = true;
-												struct ir_ncode *allcodes=all->codes;
-												while (allcodes->name)
-												{
-													n++;
-													allcodes++;
-												}
-												if (n!=0)
-												{
-													response = new char[n*(LINE_LEN+2)+7];
-													sprintf(response,"DATA\n%d\n",n);
-													allcodes=all->codes;
-													while(allcodes->name)
-													{
-														strcat(response,allcodes->name);
-														strcat(response,"\n");
-														allcodes++;
-													}
-												}
-											}
-											else copyDataResult=-1; //unknown remote
-										}
+										success = parseListString(cur,response);
 									}
-
-									else if (_stricmp(command,"SET_TRANSMITTERS")==0) {
-	
-										//======================
-										char *transmitterNumber;
-										DWORD transmitterMask;
-										int transNumber;
-										BOOL success;
-										//======================
-
-										transmitterNumber = NULL;
-										transmitterMask = 0;
-										success = TRUE;
-
-										while(transmitterNumber = strtok(NULL," \t\r")) {
-
-											transNumber = atoi(transmitterNumber);
-
-											if(transNumber==0) continue;
-
-											if(transNumber>32) {
-												success		= FALSE;
-												response	= new char[64];
-												sprintf(response,"DATA\n1\nCannot support more than 32 transmitters.\n");
-												break;
-											}
-
-											transmitterMask |= 1 << (transNumber-1);
-										}
-
-										if(success) {
-
-											//============
-											Cwinlirc *app;
-											//============
-
-											app = (Cwinlirc *)AfxGetApp();
-
-											success = app->dlg->driver.setTransmitters(transmitterMask);
-
-											if(success) {
-												copyDataResult = true;
-											}
-											else {
-												response = new char[64];
-												sprintf(response,"DATA\n1\nSetTransmitters failed/not supported\n");
-											}
-										}
-
-										//printf("transmitter mask %i\n",transmitterMask);
-
+									else if (_stricmp(command,"SET_TRANSMITTERS")==0) 
+									{
+										success = parseTransmitters(cur,response);
 									}
-
 									else if (_stricmp(command,"SEND_ONCE")==0)
 									{
-										copyDataResult = parseSendString(cur,&response);
+										success = parseSendString(cur,response);
 									}
-									else
-									{
-										response = new char[strlen(command)+26];
-										if (response) sprintf(response,"DATA\n1\n%s%s\n","unknown command: ",command);
-									}
-									if (copyDataResult==-1)
-									{
-										response = new char[strlen(remotename)+25];
-										if (response) sprintf(response,"DATA\n1\n%s%s\n","unknown remote: ",remotename);
-									}
-									else if (copyDataResult==-2)
-									{
-										response = new char[strlen(buttonname)+23];
-										if (response) sprintf(response,"DATA\n1\n%s%s\n","unknown code: ",buttonname);
-									}
-									else if (copyDataResult==-100)
-									{
-										response = new char[24];
-										if (response) sprintf(response,"DATA\n1\nbad send packet\n");
-									}
-									reply(cur,i,copyDataResult==1,response);
-									if (response) delete [] response;
-									cur=nl+1;
+	
+									reply(cur,i,success>0,response);
+									cur = nl + 1;
 								}
 							}
 						
@@ -462,7 +353,7 @@ void Cserver::ThreadProc(void)
 	}
 }
 
-BOOL Cserver::parseSendString(char *string, char **errorString) {
+BOOL Cserver::parseSendString(char *string, CStringA &response) {
 
 	//==========================
 	char	remoteName	[128];
@@ -483,8 +374,7 @@ BOOL Cserver::parseSendString(char *string, char **errorString) {
 	result = sscanf_s(string,"%*s %s %s %i",remoteName,sizeof(remoteName),keyName,sizeof(keyName),&repeats);
 
 	if(result<2) {
-		*errorString = new char[64];
-		strcpy_s(*errorString,64,"DATA\n1\nremote or code missing\n");
+		response.Format("DATA\n1\nremote or code missing\n");
 		return FALSE;
 	}
 
@@ -495,8 +385,7 @@ BOOL Cserver::parseSendString(char *string, char **errorString) {
 	}
 
 	if(sender==NULL) {
-		*errorString = new char[64];
-		strcpy_s(*errorString,64,"DATA\n1\nremote not found\n");
+		response.Format("DATA\n1\nremote not found\n");
 		return FALSE;	
 	}
 
@@ -507,8 +396,7 @@ BOOL Cserver::parseSendString(char *string, char **errorString) {
 	}
 
 	if(codes->name==NULL) {
-		*errorString = new char[64];
-		strcpy_s(*errorString,64,"DATA\n1\ncode not found\n");
+		response.Format("DATA\n1\ncode not found\n");
 		return FALSE;
 	}
 
@@ -518,13 +406,154 @@ BOOL Cserver::parseSendString(char *string, char **errorString) {
 	success = ((Cwinlirc *)AfxGetApp())->dlg->driver.sendIR(sender,codes,repeats);
 
 	if(success==FALSE) {
-		*errorString = new char[64];
-		strcpy_s(*errorString,64,"DATA\n1\nsend failed/not supported\n");
+		response.Format("DATA\n1\nsend failed/not supported\n");
 		return FALSE;	
 	}
 
 	((Cwinlirc *)AfxGetApp())->dlg->GoBlue();
 
 	return TRUE;
+}
+
+BOOL Cserver::parseListString(char *string, CStringA &response) {
+
+	//====================
+	char	*remoteName;
+	int		n;
+	BOOL	success;
+	struct ir_remote *all;
+	//====================
+
+	remoteName	= strtok(NULL," \t\r");
+	n			= 0;
+	all			= global_remotes;
+	success		= TRUE;
+
+	if (!remoteName)
+	{
+		while(all) 
+		{
+			n++;
+			all = all->next;
+		}
+
+		if (n!=0)
+		{
+			response.Format("DATA\n%d\n",n);
+			all = global_remotes;
+
+			while(all)
+			{
+				response += all->name;
+				response += "\n";
+				all = all->next;
+			}
+		}
+	}
+	else
+	{
+		while (all!=NULL && _stricmp(remoteName,all->name)) {
+			all = all->next;
+		}
+
+		if (all) 
+		{
+			//========================
+			struct ir_ncode *allcodes;
+			//========================
+
+			success		= TRUE;
+			allcodes	= all->codes;
+
+			while (allcodes->name)
+			{
+				n++;
+				allcodes++;
+			}
+			if (n!=0)
+			{
+				response.Format("DATA\n%d\n",n);
+				allcodes = all->codes;
+
+				while(allcodes->name)
+				{
+					response += allcodes->name;
+					response += "\n";
+					allcodes++;
+				}
+			}
+		}
+		else
+		{
+			success = FALSE;
+			response.Format("DATA\n1\n%s%s\n","unknown remote: ",remoteName);
+		}
+	}
+
+	return success;
+}
+
+BOOL Cserver::parseVersion(char *string, CStringA &response) {
+
+	//===========
+	BOOL success;
+	//===========
+
+	if (strtok(NULL," \t\r")==NULL) {
+		success = TRUE;
+		response.Format("DATA\n1\n%s\n",id);
+	}
+	else {
+		success = FALSE;
+		response.Format("DATA\n1\nbad send packet\n");
+	}
+
+	return success;
+}
+
+BOOL Cserver::parseTransmitters(char *string, CStringA &response) {
+
+	//=========================
+	char	*transmitterNumber;
+	DWORD	transmitterMask;
+	int		transNumber;
+	BOOL	success;
+	//=========================
+
+	transmitterNumber	= NULL;
+	transmitterMask		= 0;
+	success				= TRUE;
+
+	while(transmitterNumber = strtok(NULL," \t\r")) {
+
+		transNumber = atoi(transmitterNumber);
+
+		if(transNumber==0) continue;
+
+		if(transNumber>32) {
+			success	= FALSE;
+			response.Format("DATA\n1\ncannot support more than 32 transmitters\n");
+			break;
+		}
+
+		transmitterMask |= 1 << (transNumber-1);
+	}
+
+	if(success) {
+
+		//============
+		Cwinlirc *app;
+		//============
+
+		app = (Cwinlirc *)AfxGetApp();
+
+		success = app->dlg->driver.setTransmitters(transmitterMask);
+
+		if(!success) {
+			response.Format("DATA\n1\nSetTransmitters failed/not supported\n");
+		}
+	}
+
+	return success;
 }
 
