@@ -17,16 +17,18 @@ public:
 private:
 	void listDllFiles	();
 	bool checkDllFile	(CString file);
+	bool checkRecording	(CString file);
+	void enableWindows	(bool canRecord);					// enable windows based upon selection
 	void loadDll		(CString file);
 	void unloadDll		();
 
 	typedef int  (*HasGuiFunction)			();
 	typedef void (*LoadSetupGuiFunction)	();
 
-	HasGuiFunction			hasGuiFunction;
-	LoadSetupGuiFunction	loadSetupGuiFunction;
+	HasGuiFunction			m_hasGuiFunction;
+	LoadSetupGuiFunction	m_loadSetupGuiFunction;
 
-	HMODULE					dllFile;
+	HMODULE					m_dllFile;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -44,12 +46,14 @@ private:
 	afx_msg void OnBnClickedCheck1();
 	afx_msg void OnBnClickedButton3();
 
-	CComboBox	cboxInputPlugin;
-	CButton		setupButton;
-	CEdit		configPath;
-	CButton		disableKeyRepeats;
-	CEdit		disableFirstRepeats;
-	CStatic		disableFirstRepeatsLabel;
-	CButton		allowLocalConnectionsOnly;
-	CButton		disableSystemTrayIcon;	
+	CComboBox	m_cboxInputPlugin;
+	CButton		m_setupButton;
+	CEdit		m_configPath;
+	CButton		m_disableKeyRepeats;
+	CEdit		m_disableFirstRepeats;
+	CStatic		m_disableFirstRepeatsLabel;
+	CButton		m_allowLocalConnectionsOnly;
+	CButton		m_disableSystemTrayIcon;	
+	CButton		m_createConfigButton;
+	CButton		m_browseButton;
 };

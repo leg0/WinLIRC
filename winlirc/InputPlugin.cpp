@@ -14,15 +14,13 @@ IMPLEMENT_DYNAMIC(InputPlugin, CDialog)
 InputPlugin::InputPlugin(CWnd* pParent /*=NULL*/)
 	: CDialog(InputPlugin::IDD, pParent)
 {
-	hasGuiFunction			= NULL;
-	loadSetupGuiFunction	= NULL;
-
-	dllFile					= NULL;
+	m_hasGuiFunction		= NULL;
+	m_loadSetupGuiFunction	= NULL;
+	m_dllFile				= NULL;
 }
 
 InputPlugin::~InputPlugin()
 {
-	//printf("window closed and died :(\n");
 }
 
 void InputPlugin::listDllFiles() {
@@ -32,6 +30,7 @@ void InputPlugin::listDllFiles() {
 	CString		searchFile;
 	BOOL		found;
 	BOOL		foundMatch;			// match with the ini config
+	bool		canRecord;
 	CString		temp;
 	int			i;
 	int			matchIndex;
@@ -56,39 +55,33 @@ void InputPlugin::listDllFiles() {
 
 		if(checkDllFile(cFileFind.GetFilePath())) {
 
-			cboxInputPlugin.AddString(cFileFind.GetFileName());
+			m_cboxInputPlugin.AddString(cFileFind.GetFileName());
 		
 			if(cFileFind.GetFileName() == config.plugin) {
-				cboxInputPlugin.SetCurSel(i);
-				foundMatch = TRUE;
-				matchIndex = i;
+				m_cboxInputPlugin.SetCurSel(i);
+				foundMatch	= TRUE;
+				matchIndex	= i;
+				canRecord	= checkRecording(cFileFind.GetFilePath());
 			}
 			
 			i++;
 		}
 	}
 
-	cboxInputPlugin.SetCurSel(matchIndex);
-	cboxInputPlugin.GetLBText(matchIndex,temp);
+	m_cboxInputPlugin.SetCurSel(matchIndex);
+	m_cboxInputPlugin.GetLBText(matchIndex,temp);
 
 	temp = _T(".\\") + temp;
 
 	loadDll(temp);
-
-	if(hasGuiFunction) {
-		setupButton.EnableWindow(hasGuiFunction());
-	}
-	else {
-		//printf("failed :( %s \n",temp);
-		setupButton.EnableWindow(FALSE);
-	}
+	enableWindows(canRecord);
 }
 
 bool InputPlugin::checkDllFile(CString file) {
 
-	//==============
+	//==========
 	HMODULE tmp;
-	//==============
+	//==========
 
 	tmp = LoadLibrary(file);
 
@@ -106,14 +99,55 @@ bool InputPlugin::checkDllFile(CString file) {
 	return true;
 }
 
+bool InputPlugin::checkRecording(CString file) {
+
+	//==========
+	HMODULE tmp;
+	//==========
+
+	tmp = LoadLibrary(file);
+
+	if(!tmp) return false;
+
+	if(!GetProcAddress(tmp,_T("getHardware"))) { 
+		FreeLibrary(tmp); return false; 
+	}
+
+	FreeLibrary(tmp);
+
+	return true;
+}
+
+void InputPlugin::enableWindows(bool canRecord) {
+
+	if(m_hasGuiFunction) {
+		m_setupButton.EnableWindow(m_hasGuiFunction());
+	}
+	else {
+		m_setupButton.EnableWindow(FALSE);
+	}
+
+	if(canRecord) {
+		m_configPath.EnableWindow();
+		m_createConfigButton.EnableWindow();
+		m_browseButton.EnableWindow();
+	}
+	else {
+		m_configPath.EnableWindow(FALSE);
+		m_createConfigButton.EnableWindow(FALSE);
+		m_browseButton.EnableWindow(FALSE);
+	}
+
+}
+
 void InputPlugin::loadDll(CString file) {
 
-	dllFile = LoadLibrary(file);
+	m_dllFile = LoadLibrary(file);
 
-	if(!dllFile) return;
+	if(!m_dllFile) return;
 
-	hasGuiFunction			= (HasGuiFunction)		GetProcAddress(dllFile,_T("hasGui"));
-	loadSetupGuiFunction	= (LoadSetupGuiFunction)GetProcAddress(dllFile,_T("loadSetupGui"));
+	m_hasGuiFunction		= (HasGuiFunction)			GetProcAddress(m_dllFile,_T("hasGui"));
+	m_loadSetupGuiFunction	= (LoadSetupGuiFunction)	GetProcAddress(m_dllFile,_T("loadSetupGui"));
 }
 
 void InputPlugin::unloadDll() {
@@ -121,26 +155,28 @@ void InputPlugin::unloadDll() {
 	//
 	// make sure we have cleaned up
 	//
-	hasGuiFunction			= NULL;
-	loadSetupGuiFunction	= NULL;
+	m_hasGuiFunction		= NULL;
+	m_loadSetupGuiFunction	= NULL;
 
-	FreeLibrary(dllFile);
+	FreeLibrary(m_dllFile);
 
-	dllFile					= NULL;
+	m_dllFile				= NULL;
 }
 
 
 void InputPlugin::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_COMBO1, cboxInputPlugin);
-	DDX_Control(pDX, IDC_BUTTON1, setupButton);
-	DDX_Control(pDX, IDC_EDIT1, configPath);
-	DDX_Control(pDX, IDC_CHECK1, disableKeyRepeats);
-	DDX_Control(pDX, IDC_EDIT3, disableFirstRepeats);
-	DDX_Control(pDX, IDC_DISABLE_FIRST_REPEATS, disableFirstRepeatsLabel);
-	DDX_Control(pDX, IDC_CHECK2, allowLocalConnectionsOnly);
-	DDX_Control(pDX, IDC_CHECK3, disableSystemTrayIcon);
+	DDX_Control(pDX, IDC_COMBO1, m_cboxInputPlugin);
+	DDX_Control(pDX, IDC_BUTTON1, m_setupButton);
+	DDX_Control(pDX, IDC_EDIT1, m_configPath);
+	DDX_Control(pDX, IDC_CHECK1, m_disableKeyRepeats);
+	DDX_Control(pDX, IDC_EDIT3, m_disableFirstRepeats);
+	DDX_Control(pDX, IDC_DISABLE_FIRST_REPEATS, m_disableFirstRepeatsLabel);
+	DDX_Control(pDX, IDC_CHECK2, m_allowLocalConnectionsOnly);
+	DDX_Control(pDX, IDC_CHECK3, m_disableSystemTrayIcon);
+	DDX_Control(pDX, IDC_BUTTON3, m_createConfigButton);
+	DDX_Control(pDX, IDC_BUTTON2, m_browseButton);
 }
 
 BEGIN_MESSAGE_MAP(InputPlugin, CDialog)
@@ -161,31 +197,24 @@ void InputPlugin::OnCbnSelchangeCombo1() {
 	//======================
 	int		cursorSelection;
 	CString file;
+	bool	validFile;
+	bool	canRecord;
 	//======================
 
 	unloadDll();
 
-	cursorSelection = cboxInputPlugin.GetCurSel();
+	cursorSelection = m_cboxInputPlugin.GetCurSel();
 
-	cboxInputPlugin.GetLBText(cboxInputPlugin.GetCurSel(),file);
+	m_cboxInputPlugin.GetLBText(m_cboxInputPlugin.GetCurSel(),file);
 
-	file = _T(".\\") + file;
+	file		= _T(".\\") + file;
+	validFile	= checkDllFile(file);
+	canRecord	= checkRecording(file);
 
-	bool tmp = checkDllFile(file);
-
-	//printf("%i worked \n",tmp);
-	if(!tmp) MessageBox(_T("Invalid dll file"),_T("Error"),0);
+	if(!validFile) MessageBox(_T("Invalid dll file"),_T("Error"),0);
 
 	loadDll(file);
-
-	if(hasGuiFunction) {
-		setupButton.EnableWindow(hasGuiFunction());
-	}
-	else {
-		setupButton.EnableWindow(FALSE);
-	}
-
-
+	enableWindows(canRecord);
 }
 
 void InputPlugin::OnBnClickedOk() {
@@ -195,7 +224,7 @@ void InputPlugin::OnBnClickedOk() {
 	CString fKeyReps;
 	//=================
 
-	configPath.GetWindowText(confPath);
+	m_configPath.GetWindowText(confPath);
 
 	//
 	// some basic error checking
@@ -221,16 +250,16 @@ void InputPlugin::OnBnClickedOk() {
 
 	config.remoteConfig = confPath;
 
-	cboxInputPlugin.GetWindowText(config.plugin);
+	m_cboxInputPlugin.GetWindowText(config.plugin);
 
-	if(disableKeyRepeats.GetCheck()==BST_CHECKED) {
+	if(m_disableKeyRepeats.GetCheck()==BST_CHECKED) {
 		config.disableRepeats = TRUE;
 	}
 	else {
 		config.disableRepeats = FALSE;
 	}
 
-	disableFirstRepeats.GetWindowText(fKeyReps);
+	m_disableFirstRepeats.GetWindowText(fKeyReps);
 
 	if(fKeyReps!="") {
 		config.disableFirstKeyRepeats = _tstoi(fKeyReps);
@@ -239,14 +268,14 @@ void InputPlugin::OnBnClickedOk() {
 		config.disableFirstKeyRepeats = 0;
 	}
 
-	if(allowLocalConnectionsOnly.GetCheck()==BST_CHECKED) {
+	if(m_allowLocalConnectionsOnly.GetCheck()==BST_CHECKED) {
 		config.localConnectionsOnly = TRUE;
 	}
 	else {
 		config.localConnectionsOnly = FALSE;
 	}
 
-	if(disableSystemTrayIcon.GetCheck()==BST_CHECKED) {
+	if(m_disableSystemTrayIcon.GetCheck()==BST_CHECKED) {
 		config.showTrayIcon = FALSE;
 	}
 	else {
@@ -263,7 +292,7 @@ void InputPlugin::OnBnClickedButton2() {
 	CFileDialog fileDlg(TRUE,NULL,NULL,OFN_PATHMUSTEXIST|OFN_NOCHANGEDIR|OFN_ENABLESIZING,NULL,this,0,TRUE);
 
 	if( fileDlg.DoModal ()==IDOK ) {
-		configPath.SetWindowText(fileDlg.GetPathName());
+		m_configPath.SetWindowText(fileDlg.GetPathName());
 	}
 }
 
@@ -275,10 +304,10 @@ void InputPlugin::OnBnClickedCancel()
 
 void InputPlugin::OnBnClickedButton1()
 {
-	if(loadSetupGuiFunction) {
+	if(m_loadSetupGuiFunction) {
 
 		this->EnableWindow(FALSE);
-		loadSetupGuiFunction();
+		m_loadSetupGuiFunction();
 		this->EnableWindow(TRUE);
 		this->SetFocus();
 	}
@@ -294,24 +323,24 @@ BOOL InputPlugin::OnInitDialog() {
 
 	listDllFiles();
 
-	configPath.SetWindowText(config.remoteConfig);
+	m_configPath.SetWindowText(config.remoteConfig);
 
 	temp.Format("%i",config.disableFirstKeyRepeats);
 
-	disableFirstRepeats.SetWindowText(temp);
+	m_disableFirstRepeats.SetWindowText(temp);
 
 	if(config.disableRepeats) {
-		disableKeyRepeats.SetCheck(BST_CHECKED);
-		disableFirstRepeats.EnableWindow(FALSE);
-		disableFirstRepeatsLabel.EnableWindow(FALSE);
+		m_disableKeyRepeats.SetCheck(BST_CHECKED);
+		m_disableFirstRepeats.EnableWindow(FALSE);
+		m_disableFirstRepeatsLabel.EnableWindow(FALSE);
 	}
 
 	if(config.localConnectionsOnly) {
-		allowLocalConnectionsOnly.SetCheck(BST_CHECKED);
+		m_allowLocalConnectionsOnly.SetCheck(BST_CHECKED);
 	}
 
 	if(!config.showTrayIcon) {
-		disableSystemTrayIcon.SetCheck(BST_CHECKED);
+		m_disableSystemTrayIcon.SetCheck(BST_CHECKED);
 	}
    
 	return TRUE;
@@ -324,15 +353,15 @@ void InputPlugin::OnBnClickedCheck1() {
 	INT	checkState;
 	//=============
 
-	checkState = disableKeyRepeats.GetCheck();
+	checkState = m_disableKeyRepeats.GetCheck();
 
 	if(checkState==BST_CHECKED) {
-		disableFirstRepeats.EnableWindow(FALSE);
-		disableFirstRepeatsLabel.EnableWindow(FALSE);
+		m_disableFirstRepeats.EnableWindow(FALSE);
+		m_disableFirstRepeatsLabel.EnableWindow(FALSE);
 	}
 	else {
-		disableFirstRepeats.EnableWindow(TRUE);
-		disableFirstRepeatsLabel.EnableWindow(TRUE);
+		m_disableFirstRepeats.EnableWindow(TRUE);
+		m_disableFirstRepeatsLabel.EnableWindow(TRUE);
 	}
 
 }
@@ -348,14 +377,14 @@ void InputPlugin::OnBnClickedButton3() {
 	BOOL				processCreated;
 	//==============================
 
-	configPath.GetWindowText(confPath);
+	m_configPath.GetWindowText(confPath);
 
 	if(confPath==_T("")) {
-		configPath.SetWindowText(_T("..\\config.cf"));
-		configPath.GetWindowText(confPath);
+		m_configPath.SetWindowText(_T("..\\config.cf"));
+		m_configPath.GetWindowText(confPath);
 	}
 
-	cboxInputPlugin.GetWindowText(pluginName);
+	m_cboxInputPlugin.GetWindowText(pluginName);
 
 	if(pluginName==_T("")) {
 		MessageBox(_T("No valid plugins selected."));
