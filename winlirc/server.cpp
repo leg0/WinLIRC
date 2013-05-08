@@ -228,7 +228,17 @@ void Cserver::ThreadProc(void)
 				if(clients[i]==INVALID_SOCKET) break;
 			if(i==MAX_CLIENTS)
 			{
-				DEBUG("Should have at least 1 empty client, but none found\n");
+				//================
+				SOCKET tempSocket;
+				CStringA errorMsg;
+				//================
+
+				errorMsg	= "Sorry the server is full.\n";
+				tempSocket	= accept(server,NULL,NULL);
+				
+				::send(tempSocket,errorMsg,errorMsg.GetLength(),0);
+				closesocket(tempSocket);
+
 				continue;
 			}
 			
@@ -243,15 +253,6 @@ void Cserver::ThreadProc(void)
 			ClientEvent[i].ResetEvent();
 			ClientData[i][0]='\0';
 			DEBUG("Client connection %d accepted\n",i);
-
-			for(i=0;i<MAX_CLIENTS;i++)
-				if(clients[i]==INVALID_SOCKET) break;
-			if(i==MAX_CLIENTS)
-			{
-				DEBUG("Server full. Closing server socket.\n");
-				stopserver();
-				server_running=false;
-			}
 		}
 		else /* client closed or data received */
 		{
