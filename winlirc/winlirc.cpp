@@ -126,7 +126,7 @@ BOOL Cwinlirc::InitInstance() {
 		return FALSE;
 	}
 	
-	DEBUG("Creating main dialog...\n");
+	WL_DEBUG("Creating main dialog...\n");
 
 	if(!dlg->Create(IDD_DIALOG,NULL)) {
 
@@ -153,10 +153,6 @@ int Cwinlirc::ExitInstance()
 {
 	delete server;
 	delete dlg;
-
-	if(debugfile!=NULL) {
-		fclose(debugfile);
-	}
 
 	return CWinApp::ExitInstance();
 }

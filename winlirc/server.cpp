@@ -38,14 +38,14 @@ Cserver::~Cserver()
 	{
 		if(clients[i]!=INVALID_SOCKET)
 		{
-			DEBUG("closing socket %d\n",i);
+			WL_DEBUG("closing socket %d\n",i);
 			closesocket(clients[i]);
 		}
 	}
 	if(server!=INVALID_SOCKET)
 	{
 		closesocket(server);
-		DEBUG("Server socket closed.\n");
+		WL_DEBUG("Server socket closed.\n");
 	}
 	WSACleanup();
 }
@@ -57,7 +57,7 @@ bool Cserver::init()
 	int res=WSAStartup(0x0002,&data);
 	if(res!=0) 
 	{ 
-		DEBUG("WSAStartup failed\n");
+		WL_DEBUG("WSAStartup failed\n");
 		MessageBox(NULL,"Could not initialize Windows Sockets.\n"
 			"Note that this program requires WinSock 2.0 or higher.","WinLIRC",MB_OK);
 		return false;
@@ -71,7 +71,7 @@ bool Cserver::init()
 		   !=ERROR_SUCCESS)
 		{
 			haveKey=false;
-			DEBUG("warning: can't open Software\\LIRC key");
+			WL_DEBUG("warning: can't open Software\\LIRC key");
 		}
 
 	DWORD x;
@@ -89,7 +89,7 @@ bool Cserver::init()
 	if((ServerThreadHandle=
 		AfxBeginThread(ServerThread,(void *)this,THREAD_PRIORITY_IDLE))==NULL)
 	{
-		DEBUG("AfxBeginThread failed\n");
+		WL_DEBUG("AfxBeginThread failed\n");
 		return false;
 	}	
     
@@ -111,7 +111,7 @@ bool Cserver::startserver(void)
 
 	if(server==INVALID_SOCKET)
 	{ 
-		DEBUG("socket failed, WSAGetLastError=%d\n",WSAGetLastError());
+		WL_DEBUG("socket failed, WSAGetLastError=%d\n",WSAGetLastError());
 		return false;
 	}
 
@@ -126,10 +126,10 @@ bool Cserver::startserver(void)
 	}
 
 	if(bind(server,(struct sockaddr *)&serv_addr,sizeof(serv_addr))==SOCKET_ERROR)
-		{ DEBUG("bind failed\n"); return false; }
+		{ WL_DEBUG("bind failed\n"); return false; }
 
 	if(listen(server,LISTENQ)==SOCKET_ERROR)
-		{ DEBUG("listen failed\n"); return false; }
+		{ WL_DEBUG("listen failed\n"); return false; }
 
 	return true;
 }
@@ -218,7 +218,7 @@ void Cserver::ThreadProc(void)
 		unsigned int res=WaitForMultipleObjects(count,events,FALSE,INFINITE);
 		if(res==WAIT_OBJECT_0)
 		{
-			DEBUG("ServerThread terminating\n");
+			WL_DEBUG("ServerThread terminating\n");
 			AfxEndThread(0);
 			return;
 		}
@@ -245,14 +245,14 @@ void Cserver::ThreadProc(void)
 			clients[i]=accept(server,NULL,NULL);
 			if(clients[i]==INVALID_SOCKET)
 			{
-				DEBUG("accept() failed\n");
+				WL_DEBUG("accept() failed\n");
 				continue;
 			}
 
 			WSAEventSelect(clients[i],ClientEvent[i],FD_CLOSE|FD_READ);
 			ClientEvent[i].ResetEvent();
 			ClientData[i][0]='\0';
-			DEBUG("Client connection %d accepted\n",i);
+			WL_DEBUG("Client connection %d accepted\n",i);
 		}
 		else /* client closed or data received */
 		{
@@ -272,11 +272,11 @@ void Cserver::ThreadProc(void)
 							/* Connection was closed or something's screwy */
 							closesocket(clients[i]);
 							clients[i]=INVALID_SOCKET;
-							DEBUG("Client connection %d closed\n",i);
+							WL_DEBUG("Client connection %d closed\n",i);
 
 							if(server_running==false)
 							{
-								DEBUG("Slot open.  Restarting server.\n");
+								WL_DEBUG("Slot open.  Restarting server.\n");
 								if(startserver()==true)
 								{
 									WSAEventSelect(server,ServerEvent,FD_ACCEPT);
@@ -284,7 +284,7 @@ void Cserver::ThreadProc(void)
 								}
 								else
 								{
-									DEBUG("Server failed to restart.\n");
+									WL_DEBUG("Server failed to restart.\n");
 									stopserver();
 								}
 							}
@@ -303,7 +303,7 @@ void Cserver::ThreadProc(void)
 									*nl='\0';
 									// ----------------------------
 									// Do something with the received line (cur)
-									DEBUG("Got string: %s\n",cur);
+									WL_DEBUG("Got string: %s\n",cur);
 
 									//==========================
 									CStringA	response;

@@ -28,28 +28,24 @@
 #include "irconfig.h"
 
 /* Debugging stuff */
-bool debug=false;
-FILE *debugfile=NULL;
-char *__file="?";
-int __line=0;
-void winlirc_debug(char *format, ...)
+
+void winlirc_debug(const char *file, int line, char *format, ...)
 {
+	//=========
+	CStringA s;
+	CStringA t;
+	//=========
+
 	va_list args;
 	va_start(args,format);
 
-	char s[1024];
-	char t[512];
-	_vsnprintf(t,512,format,args);
-	_snprintf(s,1024,"%s(%d) : %s",__file,__line,t);
+	s.Format("%s(%i) : ",file,line);
+	t.FormatV(format,args);
 
-#ifdef _DEBUG
-	afxDump << s;
-#else
-	fprintf(debugfile,s);
-	fflush(debugfile);
-#endif
+	s += t;
+
+	printf(s);
 }
-
 
 /* End of Debugging stuff */
 
@@ -69,8 +65,8 @@ void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 		DWORD result=0;
 		if(GetExitCodeThread((*ThreadHandle)->m_hThread,&result)==0) 
 		{
-			DEBUG("GetExitCodeThread failed, error=%d\n",GetLastError());
-			DEBUG("(the thread may have already been terminated)\n");
+			WL_DEBUG("GetExitCodeThread failed, error=%d\n",GetLastError());
+			WL_DEBUG("(the thread may have already been terminated)\n");
 			return;
 		}
 		if(result==STILL_ACTIVE)
@@ -91,8 +87,8 @@ void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent)
 		DWORD result=0;
 		if(GetExitCodeThread((*ThreadHandle)->m_hThread,&result)==0) 
 		{
-			DEBUG("GetExitCodeThread failed, error=%d\n",GetLastError());
-			DEBUG("(the thread may have already been terminated)\n");
+			WL_DEBUG("GetExitCodeThread failed, error=%d\n",GetLastError());
+			WL_DEBUG("(the thread may have already been terminated)\n");
 			return;
 		}
 		if(result==STILL_ACTIVE)

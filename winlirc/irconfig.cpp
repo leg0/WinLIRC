@@ -39,7 +39,7 @@ CIRConfig::CIRConfig() {
 
 CIRConfig::~CIRConfig()
 {
-	DEBUG("~CIRConfig\n");
+	WL_DEBUG("~CIRConfig\n");
 		
 	CSingleLock lock(&CS_global_remotes,TRUE);
 
@@ -48,7 +48,7 @@ CIRConfig::~CIRConfig()
 		global_remotes = NULL;
 	}
 	
-	DEBUG("~CIRConfig done\n");
+	WL_DEBUG("~CIRConfig done\n");
 }
 
 bool CIRConfig::readConfig() {
@@ -73,7 +73,7 @@ bool CIRConfig::readConfig() {
 	if(global_remotes==(struct ir_remote *)-1)
 	{
 		global_remotes=NULL;
-		DEBUG("read_config returned -1\n");
+		WL_DEBUG("read_config returned -1\n");
 		return false;
 	}
 
@@ -84,7 +84,7 @@ bool CIRConfig::readConfig() {
 	{
 		if(sr->codes==NULL)
 		{
-			DEBUG("read_config returned remote with null codes\n");
+			WL_DEBUG("read_config returned remote with null codes\n");
 			free_config(global_remotes);
 			global_remotes = NULL;
 
@@ -94,7 +94,7 @@ bool CIRConfig::readConfig() {
 
 	if(global_remotes==NULL)
 	{
-		DEBUG("read_config returned null\n");
+		WL_DEBUG("read_config returned null\n");
 		return false;
 	}
 

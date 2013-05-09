@@ -26,17 +26,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Debugging stuff */
-extern bool debug;
-extern FILE *debugfile;
-extern char *__file;
-extern int __line;
-#ifdef DEBUG
-#undef DEBUG
+#ifdef _DEBUG
+	#define WL_DEBUG(...) winlirc_debug(__FILE__,__LINE__,__VA_ARGS__)
+#else
+	#define WL_DEBUG(a, ...)
 #endif
-#define DEBUG if(debug) __file=__FILE__,__line=__LINE__,winlirc_debug
-extern void winlirc_debug(char *format, ...);
-/* End of Debugging stuff */
+
+extern void winlirc_debug(const char *file, int line, char *format, ...);
 
 /* Constants */
 #include "version.h"

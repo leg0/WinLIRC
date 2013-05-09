@@ -38,7 +38,6 @@ class Cwinlirc : public CWinApp
 {
 public:
 	Cdrvdlg *dlg;
-
 	Cserver *server;
 
 	virtual BOOL InitInstance();

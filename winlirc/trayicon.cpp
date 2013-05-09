@@ -46,7 +46,7 @@ void CTrayIcon::SetNotificationWnd(CWnd *notifywnd, UINT message)
 {
 	if(notifywnd==NULL || !::IsWindow(notifywnd->GetSafeHwnd()))
 	{
-		DEBUG("Invalid window\n");
+		WL_DEBUG("Invalid window\n");
 		return;
 	}
 
@@ -54,7 +54,7 @@ void CTrayIcon::SetNotificationWnd(CWnd *notifywnd, UINT message)
 
 	if(message!=0 && message<WM_USER)
 	{
-		DEBUG("Invalid message\n");
+		WL_DEBUG("Invalid message\n");
 		message=0;
 	}
 	icondata.uCallbackMessage=message;
