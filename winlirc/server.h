@@ -37,11 +37,12 @@ public:
 	~Cserver();
 
 	bool init(void);
-	void send(const char *s); 
+	void sendToClients(const char *s); 
 
 	void ThreadProc(void);
 
 private:
+	void sendData			(SOCKET socket, const char *s);
 	bool startserver		(void);
 	void stopserver			(void);
 	void reply				(const char *command,int client,bool success,const char *data);
@@ -50,9 +51,9 @@ private:
 	BOOL parseVersion		(char *string, CStringA &response);
 	BOOL parseTransmitters	(char *string, CStringA &response);
 
-	SOCKET	server;
-	SOCKET	clients[MAX_CLIENTS];
-	int		tcp_port;				//tcp port for server
+	SOCKET	m_server;
+	SOCKET	m_clients[MAX_CLIENTS];
+	int		m_tcp_port;				//tcp port for server
 
 	#define LINE_LEN 1024
 };

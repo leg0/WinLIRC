@@ -238,7 +238,7 @@ void CIRDriver::DaemonThreadProc(void) const {
 			}
 
 			app->dlg->GoGreen();
-			app->server->send(message);
+			app->server->sendToClients(message);
 		}
 
 	}

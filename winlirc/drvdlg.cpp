@@ -297,7 +297,7 @@ bool Cdrvdlg::InitializeDaemon() {
 		return false;
 	}
 	
-	((Cwinlirc *)AfxGetApp())->server->send("BEGIN\nSIGHUP\nEND\n");
+	((Cwinlirc *)AfxGetApp())->server->sendToClients("BEGIN\nSIGHUP\nEND\n");
 	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
 	return true;
 }
