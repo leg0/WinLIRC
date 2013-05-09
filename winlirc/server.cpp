@@ -351,6 +351,8 @@ BOOL Cserver::parseSendString(char *string, CStringA &response) {
 	struct ir_remote	*sender;
 	//==========================
 
+	CSingleLock lock(&CS_global_remotes,TRUE);
+
 	remoteName[0]	= '\0';	// null terminate
 	keyName[0]		= '\0';
 	repeats			= 0;
@@ -408,6 +410,8 @@ BOOL Cserver::parseListString(char *string, CStringA &response) {
 	BOOL	success;
 	struct ir_remote *all;
 	//====================
+
+	CSingleLock lock(&CS_global_remotes,TRUE);
 
 	remoteName	= strtok(NULL," \t\r");
 	n			= 0;
