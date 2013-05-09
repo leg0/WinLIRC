@@ -168,7 +168,7 @@ void Cserver::sendData(SOCKET socket, const char *s) {
 		return;				
 	}
 
-	length	= strlen(s);				// must be null terminated
+	length	= (int)strlen(s);			// must be null terminated
 	sent	= 0;
 
 	while(length>0) {
@@ -277,9 +277,10 @@ void Cserver::ThreadProc(void)
 					if(res==(WAIT_OBJECT_0+(2+i)))
 					{
 						/* either we got data or the connection closed */
-						int curlen=strlen(ClientData[i]);
-						int maxlen=MAX_DATA-curlen-1;
-						int bytes=recv(	m_clients[i], ClientData[i]+curlen, maxlen, 0);
+						int curlen	= (int)strlen(ClientData[i]);
+						int maxlen	= MAX_DATA-curlen-1;
+						int bytes	= recv(	m_clients[i], ClientData[i]+curlen, maxlen, 0);
+
 						if(bytes==0 || bytes==SOCKET_ERROR)
 						{
 							/* Connection was closed or something's screwy */
