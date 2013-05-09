@@ -36,15 +36,14 @@ public:
 	Cserver();
 	~Cserver();
 
-	bool startserver(void);
-	void stopserver(void);
-
 	bool init(void);
 	void send(const char *s); 
 
 	void ThreadProc(void);
 
 private:
+	bool startserver		(void);
+	void stopserver			(void);
 	void reply				(const char *command,int client,bool success,const char *data);
 	BOOL parseSendString	(char *string, CStringA &response);
 	BOOL parseListString	(char *string, CStringA &response);

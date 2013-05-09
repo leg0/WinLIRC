@@ -200,7 +200,6 @@ void Cserver::ThreadProc(void)
 	char ClientData[MAX_CLIENTS][MAX_DATA];
 	char toparse[MAX_DATA];
 	HANDLE events[MAX_CLIENTS+2];
-	bool server_running=true;
 	
 	WSAEventSelect(server,ServerEvent,FD_ACCEPT);
 
@@ -210,7 +209,8 @@ void Cserver::ThreadProc(void)
 	{		
 		int count=0;
 		events[count++]=ServerThreadEvent;
-		if(server_running) events[count++]=ServerEvent;
+		events[count++]=ServerEvent;
+
 		for(i=0;i<MAX_CLIENTS;i++)
 			if(clients[i]!=INVALID_SOCKET)
 				events[count++]=ClientEvent[i];
@@ -222,7 +222,7 @@ void Cserver::ThreadProc(void)
 			AfxEndThread(0);
 			return;
 		}
-		else if(server_running && res==(WAIT_OBJECT_0+1))
+		else if(res==(WAIT_OBJECT_0+1))
 		{
 			for(i=0;i<MAX_CLIENTS;i++)
 				if(clients[i]==INVALID_SOCKET) break;
@@ -256,12 +256,11 @@ void Cserver::ThreadProc(void)
 		}
 		else /* client closed or data received */
 		{
-			count=server_running?2:1;
 			for(i=0;i<MAX_CLIENTS;i++)
 			{
 				if(clients[i]!=INVALID_SOCKET)
 				{
-					if(res==(WAIT_OBJECT_0+(count++)))
+					if(res==(WAIT_OBJECT_0+(2+i)))
 					{
 						/* either we got data or the connection closed */
 						int curlen=strlen(ClientData[i]);
@@ -273,21 +272,6 @@ void Cserver::ThreadProc(void)
 							closesocket(clients[i]);
 							clients[i]=INVALID_SOCKET;
 							WL_DEBUG("Client connection %d closed\n",i);
-
-							if(server_running==false)
-							{
-								WL_DEBUG("Slot open.  Restarting server.\n");
-								if(startserver()==true)
-								{
-									WSAEventSelect(server,ServerEvent,FD_ACCEPT);
-									server_running=true;
-								}
-								else
-								{
-									WL_DEBUG("Server failed to restart.\n");
-									stopserver();
-								}
-							}
 						}
 						else /* bytes > 0, we read data */
 						{
