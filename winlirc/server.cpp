@@ -421,17 +421,17 @@ BOOL Cserver::parseListString(char *string, CStringA &response) {
 
 	//====================
 	char	*remoteName;
+	char	*codeName;
 	int		n;
-	BOOL	success;
 	struct ir_remote *all;
 	//====================
 
 	CSingleLock lock(&CS_global_remotes,TRUE);
 
 	remoteName	= strtok(NULL," \t\r");
+	codeName	= strtok(NULL," \t\r");
 	n			= 0;
 	all			= global_remotes;
-	success		= TRUE;
 
 	if (!remoteName)
 	{
@@ -453,48 +453,75 @@ BOOL Cserver::parseListString(char *string, CStringA &response) {
 				all = all->next;
 			}
 		}
+
+		return TRUE;
 	}
-	else
-	{
+
+	// find remote name
+
+	if(remoteName) {
+
 		while (all!=NULL && _stricmp(remoteName,all->name)) {
 			all = all->next;
 		}
 
-		if (all) 
-		{
-			//========================
-			struct ir_ncode *allcodes;
-			//========================
-
-			success		= TRUE;
-			allcodes	= all->codes;
-
-			while (allcodes->name)
-			{
-				n++;
-				allcodes++;
-			}
-			if (n!=0)
-			{
-				response.Format("DATA\n%d\n",n);
-				allcodes = all->codes;
-
-				while(allcodes->name)
-				{
-					response += allcodes->name;
-					response += "\n";
-					allcodes++;
-				}
-			}
-		}
-		else
-		{
-			success = FALSE;
+		if(!all) {
 			response.Format("DATA\n1\n%s%s\n","unknown remote: ",remoteName);
+			return FALSE;
 		}
 	}
 
-	return success;
+	if(remoteName && !codeName)
+	{		
+		//========================
+		struct ir_ncode *allcodes;
+		//========================
+
+		allcodes = all->codes;
+
+		while (allcodes->name)
+		{
+			n++;
+			allcodes++;
+		}
+		if (n!=0)
+		{
+			response.Format("DATA\n%d\n",n);
+			allcodes = all->codes;
+
+			while(allcodes->name)
+			{
+				response += allcodes->name;
+				response += "\n";
+				allcodes++;
+			}
+		}
+		return TRUE;
+	}
+
+	if(remoteName && codeName) {
+
+		//====================
+		struct ir_ncode *code;
+		//====================
+
+		code = all->codes;
+
+		while(code->name!=NULL)
+		{
+			if(_stricmp(code->name,codeName)==0)
+			{
+				response.Format("DATA\n1\n%016llX %s\n",code->code,code->name);
+				return TRUE;
+			}
+			code++;
+		}
+
+		response.Format("DATA\n1\n%s%s\n","unknown code: ",codeName);
+		return FALSE;
+	}
+
+	return FALSE;
 }
 
 BOOL Cserver::parseVersion(char *string, CStringA &response) {
