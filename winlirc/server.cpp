@@ -457,7 +457,7 @@ BOOL Cserver::parseListString(char *string, CStringA &response) {
 		return TRUE;
 	}
 
-	// find remote name
+	// find remote name 
 
 	if(remoteName) {
 
