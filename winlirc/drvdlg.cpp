@@ -336,54 +336,56 @@ BOOL Cdrvdlg::OnInitDialog()
 	return TRUE;
 }
 
-static struct ir_remote * Remotes_GetRemote(struct ir_remote* remotes, const char* const name)
-{
-	ir_remote* iter = remotes;
-	while (iter != NULL)
-	{
-		if (_stricmp(name,iter->name) == 0)
-		{
-			return iter;
-		}
-		iter=iter->next;	//look for remote
-	}
-	return NULL;
-}
-
 void Cdrvdlg::OnSendcode() 
 {
 	EnableWindow(FALSE);
 	UpdateData(TRUE);
 
+	//=======================
 	struct ir_ncode *codes;
 	struct ir_remote *sender;
-	
-	sender=global_remotes;
+	//=======================
 
 	m_remote_edit.TrimRight();
 	m_ircode_edit.TrimRight();
 	m_remote_edit.TrimLeft();
 	m_ircode_edit.TrimLeft();
-	//while (sender!=NULL && sender->next!=NULL && stricmp(m_remote_edit,sender->name)) sender=sender->next;	//look for remote
-	sender = Remotes_GetRemote(global_remotes, m_remote_edit);
-	//if (sender==NULL || stricmp(m_remote_edit,sender->name) )	MessageBox("No match found for remote!");
-	if (sender==NULL) MessageBox("No match found for remote!");
-	else
-	{
-		codes=sender->codes;
-		while (codes->name!=NULL && _stricmp(m_ircode_edit,codes->name)) codes++;
-		if (codes==NULL || codes->name==NULL) MessageBox("No match found for ircode!");	//look for ircode
-		else
-		{
-			if (m_reps_edit < sender->min_repeat)
-			{
-				m_reps_edit=sender->min_repeat;		//set minimum number of repeats
-				UpdateData(FALSE);					//update the display
+
+	CSingleLock lock(&CS_global_remotes,TRUE);
+	sender = get_remote_by_name(global_remotes, m_remote_edit);
+
+	if (sender==NULL) {
+		MessageBox("No match found for remote!");
+	}
+	else {
+
+		codes = sender->codes;
+
+		while (codes->name!=NULL && _stricmp(m_ircode_edit,codes->name)) {
+			codes++;
+		}
+
+		if (codes==NULL || codes->name==NULL) {
+			MessageBox("No match found for ircode!");
+		}
+		else {
+
+			if (m_reps_edit < sender->min_repeat) {
+				m_reps_edit = sender->min_repeat;		//set minimum number of repeats
+				UpdateData(FALSE);						//update the display
 			}
 
-			//
-			//transmit the ircode
-			//
+			//reset toggle masks
+
+			if(has_toggle_mask(sender)) {
+				sender->toggle_mask_state = 0;
+			}
+
+			if(has_toggle_bit_mask(sender)) {
+				sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state^sender->toggle_bit_mask);
+			}
+
+			//send code
 
 			if(driver.sendIR(sender,codes,m_reps_edit)) {
 				GoBlue();
@@ -394,6 +396,7 @@ void Cdrvdlg::OnSendcode()
 		}
 	}
 
+	UpdateData(FALSE);
 	EnableWindow(TRUE);
 }
 
@@ -403,51 +406,15 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 // remotename	ircodename	reps
 // where reps is an optional parameter indicating the number of times to repeat the code (default=0)
 {
+	//================
+	CStringA string;
+	CStringA response;
+	//================
+
+	string  = "SEND_ONCE ";
+	string += (LPCSTR) (pCopyDataStruct->lpData);
 	
-	CString tosend = (LPCSTR) (pCopyDataStruct->lpData);
-	CString remotename,codename,times;
-	struct ir_ncode *codes;
-	struct ir_remote *sender;
-	int i,j;
-	BOOL success;
-
-	success = FALSE;
-
-	i=tosend.FindOneOf(" \t");
-	if (i!=-1)
-	{
-		remotename=tosend.Left(i);
-		codename=tosend.Mid(i);
-		codename.TrimLeft();
-		j=codename.FindOneOf(" \t");
-		if (j>0)
-		{
-			times=codename.Mid(j);
-			codename=codename.Left(j);
-			j=atoi(times);
-		} else j=0;						//should replace with min reps when that's implemented
-		codename.TrimRight();
-
-		sender=global_remotes;
-		while (sender!=NULL /*&& sender->next!=NULL*/ && _stricmp(remotename,sender->name)) sender=sender->next;
-		if (sender!=NULL /*&& !stricmp(remotename,sender->name)*/)
-		{
-			codes=sender->codes;
-			while (codes->name!=NULL && _stricmp(codename,codes->name)) codes++;
-			if (codes!=NULL && codes->name!=NULL)
-			{
-				if (j < sender->min_repeat) j=sender->min_repeat;  //set minimum number of repeats
-				
-				if(driver.sendIR(sender,codes,j)) {			//transmit the code
-					GoBlue();								//turn icon blue to indicate a transmission
-					success=TRUE;
-				}
-				
-			} else success=FALSE; //unknown code
-		} else success=FALSE; //unknown remote
-	}
-	return(success);
-//	return CDialog::OnCopyData(pWnd, pCopyDataStruct);
+	return ((Cwinlirc *)AfxGetApp())->server->parseSendString(string,response);
 }
 
 void Cdrvdlg::UpdateRemoteComboLists()
@@ -478,7 +445,7 @@ void Cdrvdlg::UpdateIrCodeComboLists()
 	UpdateData(TRUE);
 	
 	//Retrieve pointer to remote by name
-	struct ir_remote* selected_remote = Remotes_GetRemote(global_remotes,m_remote_edit);
+	struct ir_remote* selected_remote = get_remote_by_name(global_remotes,m_remote_edit);
 
 	m_IrCodeEditCombo.ResetContent();
 

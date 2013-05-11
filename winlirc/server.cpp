@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "server.h"
+#include "remote.h"
 
 unsigned int ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
 
@@ -311,7 +312,7 @@ void Cserver::ThreadProc(void)
 									//================
 
 									strcpy_s(toparse,cur);									
-									command = strtok(toparse," \t\r");
+									command = strtok(toparse," \t\r");	// strtok is not thread safe ..
 							
 									if (!command) //ignore lines with only whitespace
 									{
@@ -350,7 +351,7 @@ void Cserver::ThreadProc(void)
 	}
 }
 
-BOOL Cserver::parseSendString(char *string, CStringA &response) {
+BOOL Cserver::parseSendString(const char *string, CStringA &response) {
 
 	//==========================
 	char	remoteName	[128];
@@ -377,22 +378,14 @@ BOOL Cserver::parseSendString(char *string, CStringA &response) {
 		return FALSE;
 	}
 
-	sender = global_remotes;
-
-	while (sender!=NULL && _stricmp(remoteName,sender->name)) {
-		sender = sender->next;
-	}
+	sender = get_remote_by_name(global_remotes,remoteName);
 
 	if(sender==NULL) {
 		response.Format("DATA\n1\nremote not found\n");
 		return FALSE;	
 	}
 
-	codes = sender->codes;
-
-	while (codes->name!=NULL && _stricmp(keyName,codes->name)) {
-		codes++;	// linked list would have been easier .. 
-	}
+	codes = get_code_by_name(sender->codes,keyName);
 
 	if(codes->name==NULL) {
 		response.Format("DATA\n1\ncode not found\n");
@@ -401,6 +394,16 @@ BOOL Cserver::parseSendString(char *string, CStringA &response) {
 
 	repeats = max(repeats,sender->min_repeat);
 	repeats = min(repeats,10);	// sanity check
+
+	// reset toggle masks
+
+	if(has_toggle_mask(sender)) {
+		sender->toggle_mask_state = 0;
+	}
+
+	if(has_toggle_bit_mask(sender)) {
+		sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state^sender->toggle_bit_mask);
+	}
 
 	success = ((Cwinlirc *)AfxGetApp())->dlg->driver.sendIR(sender,codes,repeats);
 
@@ -414,7 +417,7 @@ BOOL Cserver::parseSendString(char *string, CStringA &response) {
 	return TRUE;
 }
 
-BOOL Cserver::parseListString(char *string, CStringA &response) {
+BOOL Cserver::parseListString(const char *string, CStringA &response) {
 
 	//====================
 	char	*remoteName;
@@ -458,9 +461,7 @@ BOOL Cserver::parseListString(char *string, CStringA &response) {
 
 	if(remoteName) {
 
-		while (all!=NULL && _stricmp(remoteName,all->name)) {
-			all = all->next;
-		}
+		all = get_remote_by_name(all,remoteName);
 
 		if(!all) {
 			response.Format("DATA\n1\n%s%s\n","unknown remote: ",remoteName);
@@ -502,26 +503,22 @@ BOOL Cserver::parseListString(char *string, CStringA &response) {
 		struct ir_ncode *code;
 		//====================
 
-		code = all->codes;
+		code = get_code_by_name(all->codes,codeName);
 
-		while(code->name!=NULL)
-		{
-			if(_stricmp(code->name,codeName)==0)
-			{
-				response.Format("DATA\n1\n%016llX %s\n",code->code,code->name);
-				return TRUE;
-			}
-			code++;
+		if(code) {
+			response.Format("DATA\n1\n%016llX %s\n",code->code,code->name);
+			return TRUE;
 		}
-
-		response.Format("DATA\n1\n%s%s\n","unknown code: ",codeName);
-		return FALSE;
+		else {
+			response.Format("DATA\n1\n%s%s\n","unknown code: ",codeName);
+			return FALSE;
+		}
 	}
 
 	return FALSE;
 }
 
-BOOL Cserver::parseVersion(char *string, CStringA &response) {
+BOOL Cserver::parseVersion(const char *string, CStringA &response) {
 
 	//===========
 	BOOL success;
@@ -539,7 +536,7 @@ BOOL Cserver::parseVersion(char *string, CStringA &response) {
 	return success;
 }
 
-BOOL Cserver::parseTransmitters(char *string, CStringA &response) {
+BOOL Cserver::parseTransmitters(const char *string, CStringA &response) {
 
 	//=========================
 	char	*transmitterNumber;

@@ -36,8 +36,12 @@ public:
 	Cserver();
 	~Cserver();
 
-	bool init(void);
-	void sendToClients(const char *s); 
+	bool init				(void);
+	void sendToClients		(const char *s);
+	BOOL parseSendString	(const char *string, CStringA &response);
+	BOOL parseListString	(const char *string, CStringA &response);
+	BOOL parseVersion		(const char *string, CStringA &response);
+	BOOL parseTransmitters	(const char *string, CStringA &response);
 
 	void ThreadProc(void);
 
@@ -46,10 +50,6 @@ private:
 	bool startserver		(void);
 	void stopserver			(void);
 	void reply				(const char *command,int client,bool success,const char *data);
-	BOOL parseSendString	(char *string, CStringA &response);
-	BOOL parseListString	(char *string, CStringA &response);
-	BOOL parseVersion		(char *string, CStringA &response);
-	BOOL parseTransmitters	(char *string, CStringA &response);
 
 	SOCKET	m_server;
 	SOCKET	m_clients[MAX_CLIENTS];

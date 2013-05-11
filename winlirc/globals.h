@@ -104,31 +104,6 @@ typedef int lirc_t;
 //Structure definitions
 //
 
-struct rbuf
-{
-	lirc_t data[RBUF_SIZE];
-	ir_code decoded;
-	int rptr;
-	int wptr;
-	int too_long;
-	int is_biphase;
-	lirc_t pendingp;
-	lirc_t pendings;
-	lirc_t sum;
-};
-
-struct sbuf
-{
-	lirc_t *data;
-	lirc_t _data[WBUF_SIZE];
-	int wptr;
-	int too_long;
-	int is_biphase;
-	lirc_t pendingp;
-	lirc_t pendings;
-	lirc_t sum;
-};
-
 struct ir_code_node
 {
 	ir_code code;

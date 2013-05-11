@@ -336,5 +336,22 @@ static inline int expect_at_most(struct ir_remote *remote,
 	return 0;
 }
 
+static inline struct ir_remote* get_remote_by_name(struct ir_remote* remotes, const char *name)
+{
+	while (remotes!=NULL && _stricmp(name,remotes->name)) {
+		remotes = remotes->next;
+	}
+
+	return remotes;
+}
+
+static inline struct ir_ncode* get_code_by_name(struct ir_ncode *codes, const char *name)
+{
+	while (codes->name!=NULL && _stricmp(name,codes->name)) {
+		codes++;	// linked list would have been easier .. 
+	}
+
+	return codes;
+}
 
 #endif
