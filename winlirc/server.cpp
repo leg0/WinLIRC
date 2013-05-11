@@ -304,38 +304,35 @@ void Cserver::ThreadProc(void)
 									// Do something with the received line (cur)
 									WL_DEBUG("Got string: %s\n",cur);
 
-									//==========================
-									CStringA	response;
-									BOOL		success;
-									char		*command = NULL;
-									//==========================
+									//================
+									CStringA response;
+									BOOL	 success;
+									char	 *command;
+									//================
 
-									strcpy_s(toparse,cur);
-
-									if (toparse) {
-										command = strtok(toparse," \t\r");
-									}
-
+									strcpy_s(toparse,cur);									
+									command = strtok(toparse," \t\r");
+							
 									if (!command) //ignore lines with only whitespace
 									{
 										cur = nl + 1;
 										break;
 									}
-									else if (_stricmp(command,"VERSION")==0)
-									{
+									
+									if (_stricmp(command,"VERSION")==0) {
 										success = parseVersion(cur,response);
 									}
-									else if (_stricmp(command,"LIST")==0)
-									{
+									else if (_stricmp(command,"LIST")==0) {
 										success = parseListString(cur,response);
 									}
-									else if (_stricmp(command,"SET_TRANSMITTERS")==0) 
-									{
+									else if (_stricmp(command,"SET_TRANSMITTERS")==0) {
 										success = parseTransmitters(cur,response);
 									}
-									else if (_stricmp(command,"SEND_ONCE")==0)
-									{
+									else if (_stricmp(command,"SEND_ONCE")==0) {
 										success = parseSendString(cur,response);
+									}
+									else {
+										success = FALSE;
 									}
 	
 									reply(cur,i,success>0,response);
