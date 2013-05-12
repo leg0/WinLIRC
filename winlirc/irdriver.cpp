@@ -195,12 +195,9 @@ void CIRDriver::DaemonThreadProc(void) const {
 	/* When data comes in, decode it	*/
 	/* and send the result to clients.	*/
 
-	//=================================
-	char		message[PACKET_SIZE+1];
-    Cwinlirc	*app;
-	//=================================
-
-	app = (Cwinlirc *)AfxGetApp();
+	//==========================
+	char message[PACKET_SIZE+1];
+	//==========================
 
 	while(WaitForSingleObject(daemonThreadEvent, 0) == WAIT_TIMEOUT) {
 
@@ -237,8 +234,8 @@ void CIRDriver::DaemonThreadProc(void) const {
 				}
 			}
 
-			app->dlg->GoGreen();
-			app->server->sendToClients(message);
+			app.dlg->GoGreen();
+			app.server->sendToClients(message);
 		}
 
 	}

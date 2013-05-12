@@ -297,7 +297,7 @@ bool Cdrvdlg::InitializeDaemon() {
 		return false;
 	}
 	
-	((Cwinlirc *)AfxGetApp())->server->sendToClients("BEGIN\nSIGHUP\nEND\n");
+	app.server->sendToClients("BEGIN\nSIGHUP\nEND\n");
 	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
 	return true;
 }
@@ -414,7 +414,7 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	string  = "SEND_ONCE ";
 	string += (LPCSTR) (pCopyDataStruct->lpData);
 	
-	return ((Cwinlirc *)AfxGetApp())->server->parseSendString(string,response);
+	return app.server->parseSendString(string,response);
 }
 
 void Cdrvdlg::UpdateRemoteComboLists()

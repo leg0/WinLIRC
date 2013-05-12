@@ -405,14 +405,14 @@ BOOL Cserver::parseSendString(const char *string, CStringA &response) {
 		sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state^sender->toggle_bit_mask);
 	}
 
-	success = ((Cwinlirc *)AfxGetApp())->dlg->driver.sendIR(sender,codes,repeats);
+	success = app.dlg->driver.sendIR(sender,codes,repeats);
 
 	if(success==FALSE) {
 		response.Format("DATA\n1\nsend failed/not supported\n");
 		return FALSE;	
 	}
 
-	((Cwinlirc *)AfxGetApp())->dlg->GoBlue();
+	app.dlg->GoBlue();
 
 	return TRUE;
 }

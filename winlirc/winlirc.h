@@ -46,4 +46,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
+extern Cwinlirc app;
+
 #endif
