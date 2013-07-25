@@ -107,7 +107,7 @@ struct ir_ncode ncode;
 
 /* the longest signal I've seen up to now was 48-bit signal with header */
 
-#define MAX_SIGNALS 200
+#define MAX_SIGNALS 512
 
 lirc_t signals[MAX_SIGNALS];
 
