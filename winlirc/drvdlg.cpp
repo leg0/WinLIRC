@@ -142,7 +142,7 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 			//is probably off.
 		case PBT_APMRESUMEAUTOMATIC:
 			if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
-			
+			Sleep(1000);
 			if(driver.init()==false)
 			{
 				WL_DEBUG("InitPort failed\n");
