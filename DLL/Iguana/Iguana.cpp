@@ -24,13 +24,14 @@
 #include "resource.h"
 #include "Settings.h"
 #include "Globals.h"
-#include "Decode.h"
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
+#include "../Common/IRRemote.h"
+#include "../Common/Receive.h"
+#include "../Common/Hardware.h"
+#include "../Common/Send.h"
 #include "iguanaIR.h"
 #include <stdio.h>
 #include "SendReceiveData.h"
-#include "hardware.h"
-#include "Send.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -193,10 +194,12 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(sendReceiveData) {
 		sendReceiveData->waitTillDataIsReady(0);
-	}
 
-	if(decodeCommand(remotes,out)) {
-		return 1;
+		clear_rec_buffer();
+
+		if(decodeCommand(remotes,out)) {
+			return 1;
+		}
 	}
 
 	return 0;
