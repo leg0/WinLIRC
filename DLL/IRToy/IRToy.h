@@ -23,7 +23,7 @@
 #define IRTOY_H
 
 //
-// TIRA API
+// API
 //
 #define IG_API __declspec(dllexport)
 

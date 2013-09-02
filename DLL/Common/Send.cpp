@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include "LIRCDefines.h"
+
 #define LIRCD_EXACT_GAP_THRESHOLD 10000
 
 struct sbuf send_buffer;
@@ -396,7 +397,18 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 	{
 		if(!is_raw(remote))
 		{	
-			send_code(remote, code->code, repeat);
+			ir_code next_code;
+			
+			if(code->transmit_state == NULL)
+			{
+				next_code = code->code;
+			}
+			else
+			{
+				next_code = code->transmit_state->code;
+			}
+
+			send_code(remote, next_code, repeat);
 
 			if(has_toggle_mask(remote))
 			{
@@ -447,17 +459,36 @@ int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 		remote->max_remaining_gap=max_gap(remote);
 	}
 
-	send_space(remote->min_remaining_gap);
+	// only used for two part codes
+	if(code->next != NULL)
+	{
+		if(code->transmit_state == NULL)
+		{
+			code->transmit_state = code->next;
+		}
+		else
+		{
+			code->transmit_state = code->transmit_state->next;
+			if(is_xmp(remote) && code->transmit_state == NULL)
+			{
+				code->transmit_state = code->next;
+			}
+		}
+	}
 
+	send_space(remote->min_remaining_gap);
 	flush_send_buffer();
 
-	if(remote->repeat_countdown>0)
+	if(remote->repeat_countdown>0 || code->transmit_state != NULL )
 	{
-		remote->repeat_countdown--;
+		if(code->next == NULL || code->transmit_state == NULL)
+		{
+			remote->repeat_countdown--;
+			repeat = 1;
+		}
 		
 		send_buffer.sum	= 0;
-		repeat			= 1;
-
+		
 		goto init_send_loop;
 	}
 

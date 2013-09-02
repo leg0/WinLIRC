@@ -24,7 +24,7 @@
 #include "Globals.h"
 #include <stdio.h>
 #include <tchar.h>
-#include "Send.h"
+#include "../Common/Send.h"
 
 DWORD WINAPI IRToy(void *recieveClass) {
 
@@ -490,7 +490,6 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 
 		return success;
 	}
-
 
 	return 0;
 }

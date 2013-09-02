@@ -22,9 +22,6 @@
 #ifndef HARDWARE_H
 #define HARDWARE_H
 
-#include "LIRCDefines.h"
-#include <Windows.h>
-
 void initHardwareStruct();
 
 //

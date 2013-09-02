@@ -20,11 +20,12 @@
  */
 
 #include <Windows.h>
-#include "LIRCDefines.h"
+#include "../Common/LircDefines.h"
+#include "../Common/Hardware.h"
+#include "../Common/IRRemote.h"
+#include "../Common/Receive.h"
 #include <stdio.h>
 #include "Globals.h"
-#include "hardware.h"
-#include "Decode.h"
 #include "IRToy.h"
 #include "resource.h"
 #include <tchar.h>
@@ -60,7 +61,6 @@ IG_API void deinit() {
 	}
 
 	threadExitEvent = NULL;
-
 }
 
 IG_API int hasGui() {
@@ -168,7 +168,8 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(sendReceiveData) {
 		sendReceiveData->waitTillDataIsReady(0);
-		
+		clear_rec_buffer();
+
 		if(decodeCommand(remotes,out)) {
 			return 1;
 		}

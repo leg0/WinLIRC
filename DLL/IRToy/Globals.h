@@ -34,6 +34,4 @@ extern HANDLE dataReadyEvent;
 
 extern SendReceiveData *sendReceiveData;
 
-int gettimeofday(struct mytimeval *a, void *);
-
 #endif
