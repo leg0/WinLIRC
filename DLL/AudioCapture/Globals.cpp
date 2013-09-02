@@ -21,8 +21,6 @@
 
 #include "Globals.h"
 #include <Windows.h>
-#include <stdio.h>
-#include "LircDefines.h"
 
 RecordAudio		*recordAudio	= NULL;
 AnalyseAudio	*analyseAudio	= NULL;

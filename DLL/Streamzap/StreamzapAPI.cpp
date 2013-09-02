@@ -1,7 +1,6 @@
 #include "StreamzapAPI.h"
 #include <stdio.h>
 #include "Globals.h"
-#include "LIRCDefines.h"
 #include <initguid.h>
 #include <setupapi.h>
 #include <tchar.h>

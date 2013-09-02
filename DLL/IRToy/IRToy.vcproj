@@ -344,10 +344,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\IRToy.h"
-				>
-			</File>
-			<File
 				RelativePath=".\resource.h"
 				>
 			</File>
@@ -406,6 +402,10 @@
 				</File>
 				<File
 					RelativePath="..\Common\Send.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\WLPluginAPI.h"
 					>
 				</File>
 			</Filter>

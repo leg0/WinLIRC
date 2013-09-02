@@ -31,6 +31,4 @@ extern Settings settings;
 extern HANDLE threadExitEvent;
 extern HANDLE dataReadyEvent;
 
-int gettimeofday(struct mytimeval *a, void *);
-
 #endif

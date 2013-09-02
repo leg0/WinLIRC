@@ -21,18 +21,18 @@
 
 #include <Windows.h>
 #include "SendReceive.h"
-#include "Xbox360.h"
+#include "../Common/WLPluginAPI.h"
 
 SendReceive *sendReceive = NULL;
 
-XB_API int init(HANDLE exitEvent) {
+WL_API int init(HANDLE exitEvent) {
 
 	sendReceive = new SendReceive();
 
 	return sendReceive->init(exitEvent);
 }
 
-XB_API void deinit() {
+WL_API void deinit() {
 
 	if(sendReceive) {
 		sendReceive->deinit();
@@ -41,21 +41,21 @@ XB_API void deinit() {
 	}
 }
 
-XB_API int hasGui() {
+WL_API int hasGui() {
 
 	return FALSE;
 }
 
-XB_API void	loadSetupGui() {
+WL_API void	loadSetupGui() {
 
 }
 
-XB_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-XB_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(sendReceive) {
 		sendReceive->waitTillDataIsReady(0);

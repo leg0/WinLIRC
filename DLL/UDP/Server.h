@@ -4,7 +4,7 @@
 
 #include <winsock2.h>
 #include <Windows.h>
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
 
 class Server {
 

@@ -221,7 +221,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="setupapi.lib"
-				OutputFile="$(OutDir)\MCEVista64.dll"
+				OutputFile="$(OutDir)\MCEVista.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"

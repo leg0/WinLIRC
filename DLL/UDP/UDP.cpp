@@ -21,14 +21,15 @@
 
 #include <winsock2.h>
 #include <Windows.h>
-#include "LIRCDefines.h"
+#include "../Common/LircDefines.h"
+#include "../Common/Hardware.h"
+#include "../Common/IRRemote.h"
+#include "../Common/Receive.h"
+#include "../Common/WLPluginAPI.h"
 #include <stdio.h>
 #include "Globals.h"
-#include "hardware.h"
-#include "Decode.h"
-#include "UDP.h"
 
-IG_API int init(HANDLE exitEvent) {
+WL_API int init(HANDLE exitEvent) {
 
 	//===========
 	BOOL success;
@@ -46,7 +47,7 @@ IG_API int init(HANDLE exitEvent) {
 	return success;
 }
 
-IG_API void deinit() {
+WL_API void deinit() {
 
 	if(server) {
 		server->deinit();
@@ -62,24 +63,26 @@ IG_API void deinit() {
 	threadExitEvent = NULL;
 }
 
-IG_API int hasGui() {
+WL_API int hasGui() {
 
 	return FALSE;
 }
 
-IG_API void	loadSetupGui() {
+WL_API void	loadSetupGui() {
 
 }
 
-IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-IG_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(server) {
 		server->waitTillDataIsReady(0);
+
+		clear_rec_buffer();
 		
 		if(decodeCommand(remotes,out)) {
 			return 1;
@@ -89,7 +92,7 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 	return 0;
 }
 
-IG_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
 	initHardwareStruct();
 	return &hw;

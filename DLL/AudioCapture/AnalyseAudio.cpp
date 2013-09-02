@@ -23,7 +23,7 @@
 #include <Math.h>
 #include <stdio.h>
 #include "Globals.h"
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
 
 //
 // A simple algorithm for decoding audio

@@ -20,18 +20,20 @@
  */
 
 #include <Windows.h>
-#include "LIRCDefines.h"
-#include "WinlircAudioIn.h"
+#include "../Common/LIRCDefines.h"
+#include "../Common/IRRemote.h"
+#include "../Common/Receive.h"
+#include "../Common/Hardware.h"
+#include "../Common/WLPluginAPI.h"
 #include "resource.h"
 #include <tchar.h>
 #include "Globals.h"
 #include <stdio.h>
 #include "AudioFormats.h"
-#include <atlstr.h>
-#include "Decode.h"
-#include "hardware.h"
 #include "StringFunctions.h"
 #include <Commctrl.h>
+
+EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 //For the GUI
 //==============================
@@ -40,7 +42,7 @@ int			indexNumber = 0;
 Settings	*guiSettings = NULL;
 //==============================
 
-SI_API int init(HANDLE exitEvent) {
+WL_API int init(HANDLE exitEvent) {
 
 	//=====================
 	TCHAR	deviceName[32];
@@ -79,7 +81,7 @@ SI_API int init(HANDLE exitEvent) {
 	}
 }
 
-SI_API void deinit() {
+WL_API void deinit() {
 
 	if(recordAudio) {
 		recordAudio->stopRecording();
@@ -100,7 +102,7 @@ SI_API void deinit() {
 	threadExitEvent = NULL;	//this one is created outside the DLL
 }
 
-SI_API int hasGui() {
+WL_API int hasGui() {
 
 	return TRUE;
 }
@@ -448,7 +450,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
     return FALSE;
 }
 
-SI_API void loadSetupGui() {
+WL_API void loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -474,7 +476,7 @@ SI_API void loadSetupGui() {
 	delete guiSettings;
 }
 
-SI_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
 
 	//
 	// return false - since we don't support this function
@@ -483,9 +485,11 @@ SI_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 	return 0;
 }
 
-SI_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	waitTillDataIsReady(0);
+
+	clear_rec_buffer();
 
 	if(decodeCommand(remotes, out)) {
 		return 1;
@@ -494,7 +498,7 @@ SI_API int decodeIR(struct ir_remote *remotes, char *out) {
 	return 0;
 }
 
-SI_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
 	initHardwareStruct();	//make sure values are setup
 

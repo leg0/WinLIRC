@@ -2,7 +2,7 @@
 #define STREAMZAPAPI_H
 
 #include <Windows.h>
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
 #include "XInput.h"
 
 class SendReceive {

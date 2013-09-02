@@ -21,8 +21,8 @@
 
 #include <winsock2.h>
 #include "Globals.h"
-#include "hardware.h"
-#include "Decode.h"
+#include "../Common/Hardware.h"
+#include "../Common/Receive.h"
 
 struct hardware hw;
 

@@ -1,6 +1,6 @@
 #include "SendReceive.h"
 #include <stdio.h>
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
 
 DWORD WINAPI XBThread(void *recieveClass) {
 

@@ -24,10 +24,7 @@
 
 #include <Windows.h>
 #include "StreamzapAPI.h"
-#include <sys/timeb.h>
 
 extern StreamzapAPI *streamzapAPI;
-
-int gettimeofday(struct mytimeval *a, void *);
 
 #endif

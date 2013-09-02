@@ -32,6 +32,4 @@ extern HANDLE dataReadyEvent;
 
 extern Server *server;
 
-int gettimeofday(struct mytimeval *a, void *);
-
 #endif

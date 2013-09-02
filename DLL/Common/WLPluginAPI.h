@@ -19,26 +19,26 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef STREAMZAP_H
-#define STREAMZAP_H
+#ifndef _WL_API_H_
+#define _WL_API_H_
 
 //
-// UDP
+// API
 //
-#define IG_API __declspec(dllexport)
+#define WL_API __declspec(dllexport)
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-IG_API int	init		(HANDLE exitEvent);
-IG_API void	deinit		();
-IG_API int	hasGui		();
-IG_API void	loadSetupGui();
-IG_API int	sendIR		(struct ir_remote *remote, struct ir_ncode *code, int repeats);
-IG_API int	decodeIR	(struct ir_remote *remotes, char *out);
+WL_API int	init		(HANDLE exitEvent);
+WL_API void	deinit		();
+WL_API int	hasGui		();
+WL_API void	loadSetupGui();
+WL_API int	sendIR		(struct ir_remote *remote, struct ir_ncode *code, int repeats);
+WL_API int	decodeIR	(struct ir_remote *remotes, char *out);
 
-IG_API struct hardware* getHardware();
+WL_API struct hardware* getHardware();
 
 #ifdef __cplusplus
 }

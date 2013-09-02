@@ -20,8 +20,9 @@
  */
 
 #include "Globals.h"
-#include "hardware.h"
-#include "Decode.h"
+#include "../Common/LIRCDefines.h"
+#include "../Common/Receive.h"
+#include "../Common/Hardware.h"
 
 //
 // All this stuff below is for irrecord, it's totally optional
