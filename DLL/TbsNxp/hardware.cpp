@@ -62,6 +62,6 @@ void initHardwareStruct() {
 	hw.code_length	= 32;
 	hw.resolution	= 0;
 
-	strcpy(hw.device,"hw");
-	strcpy(hw.name,"TbsNxp");
+	strcpy_s(hw.device,"hw");
+	strcpy_s(hw.name,"TbsNxp");
 }

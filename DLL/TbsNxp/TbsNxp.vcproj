@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="TbsNxp"
 	ProjectGUID="{0D403482-77CC-405A-84FF-15E62FBFB5AF}"
 	RootNamespace="TbsNxp"
@@ -59,7 +59,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="winmm.lib strmiids.lib strmbasd.lib ksproxy.lib MultiIRDecoder.lib"
+				AdditionalDependencies="winmm.lib strmiids.lib ksproxy.lib MultiIRDecoder.lib"
 				AdditionalLibraryDirectories="&quot;$(WindowsSdkDir)\Samples\multimedia\directshow\baseclasses\$(ConfigurationName)&quot;;&quot;$(ProjectDir)\IRLib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -131,7 +131,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="winmm.lib strmiids.lib strmbase.lib ksproxy.lib MultiIRDecoder.lib"
+				AdditionalDependencies="winmm.lib strmiids.lib ksproxy.lib MultiIRDecoder.lib"
 				AdditionalLibraryDirectories="&quot;$(WindowsSdkDir)\Samples\multimedia\directshow\baseclasses\$(ConfigurationName)&quot;;&quot;$(ProjectDir)\IRLib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"

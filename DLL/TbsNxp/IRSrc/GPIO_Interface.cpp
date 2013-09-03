@@ -1,9 +1,7 @@
 #include "stdafx.h"
-#include <streams.h>
 #include <dshow.h>
 #include <ks.h>
 #include "GPIO_Interface.h"
-//#include "atlbase.h" // needed for string conversions
 
 // constructor
 CGPIO_Interface::CGPIO_Interface(IKsControl* pKsDeviceControl, UInt16 wImplementationID)

@@ -1,7 +1,11 @@
 #include "stdafx.h"
-#include <streams.h>
+#include <dshow.h>
 #include <ks.h>
 #include "Interrupt_Interface.h"
+
+#ifndef CheckPointer
+	#define CheckPointer(p,ret) {if((p)==NULL) return (ret);}
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -48,6 +52,7 @@ DWORD WINAPI InterruptWaitThread( LPVOID pParam )
         else if( dwRet == 2 )
             break;
     }
+
     return 0;
 }
 
