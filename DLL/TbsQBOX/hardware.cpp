@@ -20,7 +20,7 @@
  */
 
 #include "Globals.h"
-#include "hardware.h"
+#include "../Common/Hardware.h"
 #include "Decode.h"
 
 struct hardware hw;
@@ -62,6 +62,6 @@ void initHardwareStruct() {
 	hw.code_length	= 32;
 	hw.resolution	= 0;
 
-	strcpy(hw.device,"hw");
-	strcpy(hw.name,"TbsCxt");
+	strcpy_s(hw.device,"hw");
+	strcpy_s(hw.name,"TbsCxt");
 }

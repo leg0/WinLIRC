@@ -39,7 +39,6 @@ SendReceiveData::SendReceiveData() {
 	exitEvent		= NULL;
 }
 
-
 bool SendReceiveData::init() {
 
 	//==========================
@@ -93,7 +92,6 @@ void SendReceiveData::deinit() {
 
 	killThread();
 }
-
 
 void SendReceiveData::threadProc() {
 

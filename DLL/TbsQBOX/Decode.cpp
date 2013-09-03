@@ -22,10 +22,11 @@
 #include <stdio.h>
 #include <sys/timeb.h>
 #include <string.h>
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
+#include "../Common/Hardware.h"
+#include "../Common/Linux.h"
 #include <limits.h>
 #include "Globals.h"
-#include "hardware.h"
 
 #define CODE_LENGTH 32
 

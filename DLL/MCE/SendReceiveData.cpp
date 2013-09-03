@@ -23,7 +23,7 @@
 #include "SendReceiveData.h"
 #include "Globals.h"
 #include <stdio.h>
-#include "Send.h"
+#include "../Common/Send.h"
 
 DWORD WINAPI MCEthread(void *recieveClass) {
 

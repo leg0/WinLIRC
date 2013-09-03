@@ -2,7 +2,7 @@
 #define RECEIVE_H
 
 #include <windows.h>
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
 
 #include "bdaiface.h"
 #include "bdatif.h"
@@ -12,8 +12,8 @@
 #include <ks.h>
 #include <ksmedia.h>
 #include <bdamedia.h>
-#include "atlbase.h" //needed for string conversions
-#include "dshow.h"
+#include <atlbase.h> //needed for string conversions
+#include <dshow.h>
 
 const GUID KSPROPSETID_CustomIRCaptureProperties = 
 { 0xb51c4994, 0x54, 0x4749, { 0x82, 0x43, 0x2, 0x9a, 0x66, 0x86, 0x36, 0x36 }};

@@ -24,7 +24,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "stdafx.h"
-#include "winlirc-hauppauge-ir.h"
+#include "../Common/WLPluginAPI.h"
 #include "irremote.h"
 
 const wchar_t *g_cPluginName = L"hauppauge-irremote";
@@ -68,7 +68,7 @@ bool getLibraryPath(wchar_t *path, size_t maxPathLen)
 // WinLIRC-Interface //
 ///////////////////////
 
-IG_API int	init		(HANDLE exitEvent)
+WL_API int init(HANDLE exitEvent)
 {
 	trace(L"init");
 	g_exitEvent = exitEvent;
@@ -96,7 +96,7 @@ IG_API int	init		(HANDLE exitEvent)
 	return TRUE;
 }
 
-IG_API void	deinit		()
+WL_API void	deinit()
 {
 	trace(L"deinit");
 
@@ -107,13 +107,13 @@ IG_API void	deinit		()
 	}
 }
 
-IG_API int	hasGui		()
+WL_API int hasGui()
 {
 	trace(L"hasGui");
 	return TRUE;
 }
 
-IG_API void	loadSetupGui()
+WL_API void	loadSetupGui()
 {
 	trace(L"loadSetupGui");
 
@@ -162,13 +162,13 @@ IG_API void	loadSetupGui()
 	}
 }
 
-IG_API int	sendIR		(struct ir_remote *remote, struct ir_ncode *code, int repeats)
+WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats)
 {
 	trace(L"sendIR");
 	return FALSE;
 }
 
-IG_API int	decodeIR	(struct ir_remote *remotes, char *out)
+WL_API int decodeIR(struct ir_remote *remotes, char *out)
 {
 	trace(L"decodeIR");
 

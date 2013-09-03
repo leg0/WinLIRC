@@ -20,7 +20,7 @@
  */
 
 #include "Globals.h"
-#include "hardware.h"
+#include "../Common/hardware.h"
 #include "Decode.h"
 
 struct hardware hw;

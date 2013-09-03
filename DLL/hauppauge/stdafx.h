@@ -18,7 +18,7 @@
 #endif
 
 #include "irremote.h"
-#include "LIRCDefines.h" //get this from winlirc ( http://sourceforge.net/projects/winlirc/ ) 
+#include "../Common/LIRCDefines.h" //get this from winlirc ( http://sourceforge.net/projects/winlirc/ ) 
 
 extern HINSTANCE hInstance;
 

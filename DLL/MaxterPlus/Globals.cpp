@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include "LircDefines.h"
 
-
 HANDLE	threadExitEvent	= NULL;
 HANDLE	dataReadyEvent	= NULL;
 

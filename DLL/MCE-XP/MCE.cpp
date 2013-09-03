@@ -20,20 +20,21 @@
  */
 
 #include <Windows.h>
-#include "MCE.h"
+#include "../Common/LircDefines.h"
+#include "../Common/Hardware.h"
+#include "../Common/IRRemote.h"
+#include "../Common/Receive.h"
+#include "../Common/WLPluginAPI.h"
+#include "../Common/Send.h"
 #include "resource.h"
 #include "Globals.h"
-#include "Decode.h"
-#include "LIRCDefines.h"
 #include <stdio.h>
 #include "SendReceiveData.h"
-#include "hardware.h"
-#include "Send.h"
 #include "Registry.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-IG_API int init(HANDLE exitEvent) {
+WL_API int init(HANDLE exitEvent) {
 
 	init_rec_buffer();
 	init_send_buffer();
@@ -49,7 +50,7 @@ IG_API int init(HANDLE exitEvent) {
 	return 1;
 }
 
-IG_API void deinit() {
+WL_API void deinit() {
 
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
@@ -66,7 +67,7 @@ IG_API void deinit() {
 
 }
 
-IG_API int hasGui() {
+WL_API int hasGui() {
 
 	return TRUE;
 }
@@ -166,7 +167,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 }
 
-IG_API void	loadSetupGui() {
+WL_API void	loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -189,7 +190,7 @@ IG_API void	loadSetupGui() {
 
 }
 
-IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	if(sendReceiveData) {
 		return sendReceiveData->send(remote,code,repeats);
@@ -198,20 +199,22 @@ IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 	return 0;
 }
 
-IG_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(sendReceiveData) {
 		sendReceiveData->waitTillDataIsReady(0);
-	}
 
-	if(decodeCommand(remotes,out)) {
-		return 1;
+		clear_rec_buffer();
+
+		if(decodeCommand(remotes,out)) {
+			return 1;
+		}
 	}
 
 	return 0;
 }
 
-IG_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
 	initHardwareStruct();
 	return &hw;
