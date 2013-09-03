@@ -23,7 +23,6 @@
 #define GLOBALS_H
 
 #include <Windows.h>
-#include <sys/timeb.h>
 #include "SendReceiveData.h"
 #include "Settings.h"
 
@@ -39,7 +38,5 @@ extern struct mytimeval start,end,last;
 extern ir_code irCode;
 
 extern SendReceiveData *sendReceiveData;
-
-int gettimeofday(struct mytimeval *a, void *);
 
 #endif

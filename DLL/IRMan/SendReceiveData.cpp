@@ -24,6 +24,7 @@
 #include "Globals.h"
 #include <stdio.h>
 #include <tchar.h>
+#include "../Common/Linux.h"
 
 DWORD WINAPI IRMan(void *recieveClass) {
 
