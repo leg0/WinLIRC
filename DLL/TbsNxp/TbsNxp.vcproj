@@ -170,10 +170,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Decode.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Globals.cpp"
 				>
 			</File>
@@ -224,19 +220,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Decode.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Globals.h"
-				>
-			</File>
-			<File
-				RelativePath=".\hardware.h"
-				>
-			</File>
-			<File
-				RelativePath=".\LIRCDefines.h"
 				>
 			</File>
 			<File
@@ -253,10 +237,6 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TbsNxpRC.h"
 				>
 			</File>
 			<Filter
@@ -485,7 +465,19 @@
 				Name="Source Files"
 				>
 				<File
+					RelativePath="..\Common\IRRemote.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\Common\Linux.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Receive.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Send.cpp"
 					>
 				</File>
 			</Filter>

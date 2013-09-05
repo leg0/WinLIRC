@@ -2,17 +2,20 @@
 #include <stdio.h>
 #include <tchar.h>
 
-#include "GeniatechRC.h"
+#include "../Common/LIRCDefines.h"
+#include "../Common/Hardware.h"
+#include "../Common/WLPluginAPI.h"
+#include "../Common/IRRemote.h"
+#include "../Common/Linux.h"
+
 #include "Globals.h"
 #include "resource.h"
 #include "Receive.h"
 #include "Settings.h"
-#include "hardware.h"
-#include "decode.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-IG_API int init(HANDLE exitEvent) {
+WL_API int init(HANDLE exitEvent) {
 
 	initHardwareStruct();
 
@@ -23,7 +26,7 @@ IG_API int init(HANDLE exitEvent) {
 	return receive->init();
 }
 
-IG_API void deinit() {
+WL_API void deinit() {
 
 	if(receive) {
 		receive->deinit();
@@ -39,7 +42,7 @@ IG_API void deinit() {
 	threadExitEvent = NULL;
 }
 
-IG_API int hasGui() {
+WL_API int hasGui() {
 
 	return TRUE;
 }
@@ -84,7 +87,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 }
 
-IG_API void	loadSetupGui() {
+WL_API void	loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -105,12 +108,12 @@ IG_API void	loadSetupGui() {
     }
 }
 
-IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-IG_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	//wait till data is ready
 
@@ -124,14 +127,17 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 		gettimeofday(&end,NULL);
 
 		if(decodeCommand(remotes,out)) {
+			ResetEvent(dataReadyEvent);
 			return 1;
 		}
+
+		ResetEvent(dataReadyEvent);
 	}
 
 	return 0;
 }
 
-IG_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
 	initHardwareStruct();
 	return &hw;

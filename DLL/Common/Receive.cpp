@@ -20,10 +20,9 @@
  */
 
 #include <stdio.h>
-#include <sys/timeb.h>
 #include <string.h>
-#include "../Common/LIRCDefines.h"
-#include "../Common/Hardware.h"
+#include "LIRCDefines.h"
+#include "Hardware.h"
 #include <limits.h>
 #include "Linux.h"
 

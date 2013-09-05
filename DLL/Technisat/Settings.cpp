@@ -76,5 +76,5 @@ void Settings::loadSettings() {
 
 	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
 
-	devNumber	= GetPrivateProfileInt(_T("TechnisatPlugin"),_T("DeviceNumber"),0,currentDirectory);
+	devNumber = GetPrivateProfileInt(_T("TechnisatPlugin"),_T("DeviceNumber"),0,currentDirectory);
 }

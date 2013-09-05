@@ -20,10 +20,31 @@
  */
 
 #include "Globals.h"
-#include "hardware.h"
-#include "Decode.h"
+#include "../Common/LIRCDefines.h"
+#include "../Common/Hardware.h"
+#include "../Common/IRRemote.h"
 
-struct hardware hw;
+#define CODE_LENGTH 32
+
+int technisat_decode(struct ir_remote *remote, ir_code *prep, ir_code *codep,
+		 ir_code *postp, int *repeat_flagp,
+		 lirc_t *min_remaining_gapp,
+		 lirc_t *max_remaining_gapp)
+{
+	//==========
+	int success;
+	//==========
+
+	success = 0;
+
+	success = map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
+
+	if(!success) return 0;
+
+	map_gap(remote, &start, &last, 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
+	
+	return 1;
+}
 
 ir_code get_ir_code() {
 
@@ -48,9 +69,11 @@ int data_ready() {
 	return receive->dataReady();
 }
 
+struct hardware hw;
+
 void initHardwareStruct() {
 
-	hw.decode_func	= &tevii_decode;
+	hw.decode_func	= &technisat_decode;
 	hw.readdata		= NULL;
 	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;
@@ -62,6 +85,6 @@ void initHardwareStruct() {
 	hw.code_length	= 32;
 	hw.resolution	= 0;
 
-	strcpy(hw.device,"hw");
-	strcpy(hw.name,"Technisat");
+	strcpy_s(hw.device,"hw");
+	strcpy_s(hw.name,"Technisat");
 }

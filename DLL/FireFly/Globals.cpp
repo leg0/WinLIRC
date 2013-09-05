@@ -22,8 +22,6 @@
 #include <Windows.h>
 #include "Globals.h"
 #include <stdio.h>
-#include "LircDefines.h"
-
 
 HANDLE	threadExitEvent	= NULL;
 HANDLE	dataReadyEvent	= NULL;

@@ -1,17 +1,18 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <tchar.h>
-#include "TechnisatRC.h"
 #include "Globals.h"
 #include "resource.h"
 #include "Receive.h"
 #include "Settings.h"
-#include "hardware.h"
-#include "decode.h"
+#include "../Common/WLPluginAPI.h"
+#include "../Common/Linux.h"
+#include "../Common/Hardware.h"
+#include "../Common/IRRemote.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-IG_API int init(HANDLE exitEvent) {
+WL_API int init(HANDLE exitEvent) {
 
 	initHardwareStruct();
 
@@ -20,10 +21,9 @@ IG_API int init(HANDLE exitEvent) {
 
 	receive = new Receive();
 	return receive->init(settings.getDeviceNumber());
-
 }
 
-IG_API void deinit() {
+WL_API void deinit() {
 
 	if(receive) {
 		receive->deinit();
@@ -39,7 +39,7 @@ IG_API void deinit() {
 	threadExitEvent = NULL;
 }
 
-IG_API int hasGui() {
+WL_API int hasGui() {
 
 	return TRUE;
 }
@@ -66,11 +66,11 @@ INT_PTR CALLBACK dialogProc(HWND hwnd,
 
 			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_RESETCONTENT,0,0);
 
-			_stprintf(temp,_T("%i"),0);
+			_stprintf_s(temp,_T("%i"),0);
 			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)temp);
 
 			for(int i=1; i<numberOfDevices; i++) {
-				_stprintf(temp,_T("%i"),i);
+				_stprintf_s(temp,_T("%i"),i);
 				SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)temp);
 			}
 
@@ -116,7 +116,7 @@ INT_PTR CALLBACK dialogProc(HWND hwnd,
 
 }
 
-IG_API void	loadSetupGui() {
+WL_API void	loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -139,12 +139,12 @@ IG_API void	loadSetupGui() {
 
 }
 
-IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-IG_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	//wait till data is ready
 
@@ -158,14 +158,17 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 		gettimeofday(&end,NULL);
 
 		if(decodeCommand(remotes,out)) {
+			ResetEvent(dataReadyEvent);
 			return 1;
 		}
+
+		ResetEvent(dataReadyEvent);
 	}
 
 	return 0;
 }
 
-IG_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
 	initHardwareStruct();
 	return &hw;

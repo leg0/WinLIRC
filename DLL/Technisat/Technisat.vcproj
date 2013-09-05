@@ -90,6 +90,78 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="0"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories=""
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;TTUSBIR_STATIC_LIBRARY"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="strmiids.lib"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="true"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
@@ -140,78 +212,6 @@
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="2"
-			CharacterSet="0"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="3"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories=""
-				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;TTUSBIR_STATIC_LIBRARY"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="1"
-				WarningLevel="3"
-				DebugInformationFormat="3"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				AdditionalDependencies="strmiids.lib"
-				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="true"
-				TargetMachine="17"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -320,10 +320,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Decode.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Globals.cpp"
 				>
 			</File>
@@ -358,15 +354,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Decode.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Globals.h"
-				>
-			</File>
-			<File
-				RelativePath=".\hardware.h"
 				>
 			</File>
 			<File
@@ -382,10 +370,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\LIRCDefines.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Receive.h"
 				>
 			</File>
@@ -395,10 +379,6 @@
 			</File>
 			<File
 				RelativePath=".\Settings.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TechnisatRC.h"
 				>
 			</File>
 		</Filter>
@@ -423,6 +403,62 @@
 				RelativePath=".\Technisat-readme.txt"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="Common"
+			>
+			<Filter
+				Name="Header Files"
+				>
+				<File
+					RelativePath="..\Common\Hardware.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\IRRemote.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Linux.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\LIRCDefines.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Receive.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Send.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\WLPluginAPI.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				>
+				<File
+					RelativePath="..\Common\IRRemote.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Linux.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Receive.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Send.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

@@ -26,7 +26,7 @@
 #include <tchar.h>
 #include <cstdio>
 
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
 
 #include "BeholdRC.h"
 

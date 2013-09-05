@@ -19,13 +19,16 @@
  * Copyright (C) 2011 Artem Golubev
  */
 
-#include "Beholder.h"
 #include "Globals.h"
 #include <Windows.h>
-#include "hardware.h"
-#include "decode.h"
 
-IG_API int init( HANDLE exitEvent )
+#include "../Common/LIRCDefines.h"
+#include "../Common/WLPluginAPI.h"
+#include "../Common/Linux.h"
+#include "../Common/Hardware.h"
+#include "../Common/IRRemote.h"
+
+WL_API int init( HANDLE exitEvent )
 {
 	initHardwareStruct();
 
@@ -43,7 +46,7 @@ IG_API int init( HANDLE exitEvent )
 	return 1;
 }
 
-IG_API void deinit()
+WL_API void deinit()
 {
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
@@ -61,36 +64,39 @@ IG_API void deinit()
 	threadExitEvent = NULL;
 }
 
-IG_API int hasGui()
+WL_API int hasGui()
 {
 	return FALSE;
 }
 
-IG_API void	loadSetupGui()
+WL_API void	loadSetupGui()
 {
    // @TODO
 }
 
-IG_API int sendIR( struct ir_remote *remote, struct ir_ncode *code, int repeats )
+WL_API int sendIR( struct ir_remote *remote, struct ir_ncode *code, int repeats )
 {
 	return 0;
 }
 
-IG_API int decodeIR( struct ir_remote *remotes, char *out )
+WL_API int decodeIR( struct ir_remote *remotes, char *out )
 {
 	if(sendReceiveData) {
 
 		sendReceiveData->waitTillDataIsReady( 0 );
 	   	
 		if(decodeCommand(remotes,out)) {
+			ResetEvent(dataReadyEvent);
 			return 1;
 		}
+
+		ResetEvent(dataReadyEvent);
 	}
 
 	return 0;
 }
 
-IG_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
 	initHardwareStruct();
 	return &hw;

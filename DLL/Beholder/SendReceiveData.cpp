@@ -21,6 +21,7 @@
 
 #include "Globals.h"
 #include "SendReceiveData.h"
+#include "../Common/Linux.h"
 
 DWORD WINAPI BeholdRC(void *recieveClass)
 {

@@ -6,10 +6,11 @@
 #include "resource.h"
 #include "Receive.h"
 #include "Settings.h"
-#include "../Common/hardware.h"
+
 #include "../Common/WLPluginAPI.h"
+#include "../Common/Hardware.h"
 #include "../Common/Linux.h"
-#include "decode.h"
+#include "../Common/IRRemote.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -196,8 +197,11 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 		gettimeofday(&end,NULL);
 
 		if(decodeCommand(remotes,out)) {
+			ResetEvent(dataReadyEvent);
 			return 1;
 		}
+
+		ResetEvent(dataReadyEvent);
 	}
 
 	return 0;

@@ -363,14 +363,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\LIRCDefines.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MaxterPlus.h"
-				>
-			</File>
-			<File
 				RelativePath=".\resource.h"
 				>
 			</File>

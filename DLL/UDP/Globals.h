@@ -24,7 +24,6 @@
 
 #include <winsock2.h>
 #include <Windows.h>
-#include <sys/timeb.h>
 #include "Server.h"
 
 extern HANDLE threadExitEvent;
