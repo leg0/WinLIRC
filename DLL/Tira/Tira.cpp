@@ -1,12 +1,16 @@
 #include <Windows.h>
-#include "Tira.h"
+#include <stdio.h>
+
 #include "TiraDLL.h"
 #include "resource.h"
 #include "Settings.h"
 #include "Globals.h"
-#include "Decode.h"
-#include "LIRCDefines.h"
-#include <stdio.h>
+
+#include "../Common/LIRCDefines.h"
+#include "../Common/Hardware.h"
+#include "../Common/WLPluginAPI.h"
+#include "../Common/IRRemote.h"
+#include "../Common/Linux.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -15,9 +19,12 @@ TiraDLL		tiraDLL;
 Settings	settings;
 //===================
 
-TI_API int init(HANDLE exitEvent) {
+int WINAPI tiraCallbackFunction(const char * eventstring);
 
-	if(tiraDLL.tira_init()!=TIRA_TRUE) return 0;
+WL_API int init(HANDLE exitEvent) {
+
+	if(tiraDLL.tira_init()!=TIRA_TRUE) 
+		return 0;
 
 	threadExitEvent = exitEvent;
 	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
@@ -26,13 +33,16 @@ TI_API int init(HANDLE exitEvent) {
 
 	gettimeofday(&end,NULL); // initialise to something meaninful
 
-	tiraDLL.tira_start(settings.getComPort());
-	tiraDLL.tira_set_handler(tiraCallbackFunction);
+	if(tiraDLL.tira_start(settings.getComPort())!=TIRA_TRUE) 
+		return 0;
+
+	if(tiraDLL.tira_set_handler(tiraCallbackFunction)!=TIRA_TRUE) 
+		return 0;
 
 	return 1;
 }
 
-TI_API void deinit() {
+WL_API void deinit() {
 
 	tiraDLL.tira_stop();
 	tiraDLL.tira_cleanup();
@@ -45,10 +55,9 @@ TI_API void deinit() {
 	threadExitEvent = NULL;
 
 	DeleteCriticalSection(&criticalSection);
-
 }
 
-TI_API int hasGui() {
+WL_API int hasGui() {
 
 	return TRUE;
 }
@@ -136,7 +145,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 }
 
-TI_API void	loadSetupGui() {
+WL_API void	loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -159,7 +168,7 @@ TI_API void	loadSetupGui() {
 
 }
 
-TI_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
 
 	//
 	// return false - since we don't support this function yet .. Tira should be able to send though
@@ -168,23 +177,25 @@ TI_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 	return 0;
 }
 
-TI_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	last = end;
 
 	gettimeofday		(&start,NULL);
-	waitTillDataIsReady	(0);
+	hw.wait_for_data	(0);
 	gettimeofday		(&end,NULL);
 
 	if(decodeCommand(remotes,out)) {
+		ResetEvent(dataReadyEvent);
 		return 1;
 	}
+
+	ResetEvent(dataReadyEvent);
 
 	return 0;
 }
 
-TI_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
-	return 0;
-
+	return &hw;
 }

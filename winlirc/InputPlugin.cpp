@@ -41,6 +41,7 @@ void InputPlugin::listDllFiles() {
 	foundMatch	= FALSE;
 	i			= 0;
 	matchIndex	= 0;
+	canRecord	= false;
 
 	if(!found) {
 

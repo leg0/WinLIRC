@@ -21,29 +21,30 @@ void Settings::setComPort(int port) {
 
 void Settings::saveSettings() {
 
-	//===============================
-	TCHAR currentDirectory[MAX_PATH];
-	TCHAR temp[8];
-	FILE  *file;	
-	//===============================
+	//=================================
+	TCHAR	currentDirectory[MAX_PATH];
+	TCHAR	temp[8];
+	FILE	*file;
+	errno_t	success;
+	//=================================
 
 	GetCurrentDirectory(MAX_PATH,currentDirectory);
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
+	_tcscat_s(currentDirectory, _T("\\WinLIRC.ini"));
 
 	//
 	// if our ini files doesn't exist try and create it
 	//
-	file = _tfopen(currentDirectory,_T("r"));
+	success = _tfopen_s(&file,currentDirectory,_T("r"));
 
-	if(!file) {
-		file = _tfopen(currentDirectory,_T("w"));
-		if(file) fclose(file);
+	if(success!=0) {
+		success = _tfopen_s(&file,currentDirectory,_T("w"));
+		if(success==0) fclose(file);
 	}
 	else {
 		fclose(file);
 	}
 	
-	_sntprintf(temp, _countof(temp), _T("%i"), comPort);
+	_sntprintf_s(temp, _countof(temp), _TRUNCATE, _T("%i"), comPort);
 	WritePrivateProfileString(_T("TiraPlugin"),_T("ComPort"),temp, currentDirectory);
 }
 
@@ -55,7 +56,7 @@ void Settings::loadSettings() {
 
 	GetCurrentDirectory(MAX_PATH,currentDirectory);
 
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
+	_tcscat_s(currentDirectory, _T("\\WinLIRC.ini"));
 
 	comPort	= GetPrivateProfileInt(_T("TiraPlugin"),_T("ComPort"),0,currentDirectory);
 
