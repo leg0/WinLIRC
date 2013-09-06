@@ -197,5 +197,6 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 WL_API struct hardware* getHardware() {
 
+	initHardwareStruct();
 	return &hw;
 }
