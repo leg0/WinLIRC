@@ -76,6 +76,8 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 		irDriver->waitTillDataIsReady(0);
 	}
 
+	clear_rec_buffer();
+
 	if(decodeCommand(remotes, out)) {
 		return 1;
 	}
