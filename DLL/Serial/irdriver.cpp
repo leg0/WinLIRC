@@ -25,8 +25,8 @@
 #include "irdriver.h"
 #include "Globals.h"
 #include <tchar.h>
-#include "LIRCDefines.h"
-#include "Send.h"
+#include "../Common/LIRCDefines.h"
+#include "Transmit.h"
 	
 unsigned int IRThread(void *drv) {
 	((CIRDriver *)drv)->ThreadProc();

@@ -23,6 +23,9 @@
 #include "SerialDialog.h"
 #include "Globals.h"
 
+#include "../Common/LIRCDefines.h"
+#include "Transmit.h"
+
 
 // SerialDialog dialog
 

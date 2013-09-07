@@ -1,6 +1,3 @@
-#include "Globals.h"
-#include <stdio.h>
-#include "LIRCDefines.h"
 /* 
  * This file is part of the WinLIRC package, which was derived from
  * LIRC (Linux Infrared Remote Control) 0.8.6.
@@ -22,15 +19,19 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#include "Serial.h"
+#include "Globals.h"
+#include <stdio.h>
 #include "SerialDialog.h"
 #include "irdriver.h"
-#include "Decode.h"
-#include "hardware.h"
-#include "Send.h"
 
+#include "../Common/LircDefines.h"
+#include "../Common/Hardware.h"
+#include "../Common/IRRemote.h"
+#include "../Common/Receive.h"
+#include "../Common/WLPluginAPI.h"
+#include "Transmit.h"
 
-SI_API int init(HANDLE exitEvent) {
+WL_API int init(HANDLE exitEvent) {
 
 	threadExitEvent	= exitEvent;
 
@@ -43,7 +44,7 @@ SI_API int init(HANDLE exitEvent) {
 	return 0;
 }
 
-SI_API void deinit() {
+WL_API void deinit() {
 
 	threadExitEvent = NULL;	//this one is created outside the DLL
 
@@ -53,30 +54,23 @@ SI_API void deinit() {
 	}
 }
 
-SI_API int hasGui() {
+WL_API int hasGui() {
 
 	return TRUE;
 }
 
-SI_API void loadSetupGui() {
+WL_API void loadSetupGui() {
 
 	SerialDialog serialDialog;
 	serialDialog.DoModal();
 }
 
-SI_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
 
-	//
-	// This function is totally untested since i have no hardware to test it
-	// By some miracle it might work
-	//
-
-	send(code,remotes,repeats);
-
-	return 1;
+	return Transmit(code,remotes,repeats);
 }
 
-SI_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(irDriver) {
 		irDriver->waitTillDataIsReady(0);
@@ -89,7 +83,7 @@ SI_API int decodeIR(struct ir_remote *remotes, char *out) {
 	return 0;
 }
 
-SI_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
 	initHardwareStruct();	//make sure values are setup
 

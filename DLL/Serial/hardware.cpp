@@ -20,8 +20,10 @@
  */
 
 #include "Globals.h"
-#include "hardware.h"
-#include "Decode.h"
+
+#include "../Common/LIRCDefines.h"
+#include "../Common/hardware.h"
+#include "../Common/Receive.h"
 
 struct hardware hw;
 
