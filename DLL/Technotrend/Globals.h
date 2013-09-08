@@ -2,7 +2,7 @@
 #define GLOBALS_H
 
 #include <Windows.h>
-#include "Receive.h"
+#include "SendReceive.h"
 #include "Settings.h"
 
 extern HANDLE threadExitEvent;

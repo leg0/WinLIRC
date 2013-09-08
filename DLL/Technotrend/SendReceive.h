@@ -2,7 +2,7 @@
 #define RECEIVE_H
 
 #include <windows.h>
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
 #include "ttusbirapiexp.h"
 
 class Receive {
@@ -28,7 +28,6 @@ private:
 	UCHAR	bufferStart;
 	UCHAR	bufferEnd;
 	//===================
-
 };
 
 #endif

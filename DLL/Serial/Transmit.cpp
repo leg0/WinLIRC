@@ -42,7 +42,9 @@ void off_tx_hard(void)
 	ClearCommBreak(tPort);
 }
 
-void off_tx_soft(void){;};
+void off_tx_soft(void)
+{
+}
 
 int init_timer()
 {

@@ -1,17 +1,22 @@
 #include <Windows.h>
-#include "Technotrend.h"
-#include "Globals.h"
-#include "hardware.h"
-#include "Decode.h"
-#include "resource.h"
-#include "Receive.h"
 #include <stdio.h>
 #include <tchar.h>
+
+#include "../Common/LIRCDefines.h"
+#include "../Common/IRRemote.h"
+#include "../Common/Receive.h"
+#include "../Common/Hardware.h"
+#include "../Common/Send.h"
+#include "../Common/WLPluginAPI.h"
+
+#include "Globals.h"
+#include "resource.h"
+#include "SendReceive.h"
 #include "Settings.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-TE_API int init(HANDLE exitEvent) {
+WL_API int init(HANDLE exitEvent) {
 
 	init_rec_buffer();
 	initHardwareStruct();
@@ -23,7 +28,7 @@ TE_API int init(HANDLE exitEvent) {
 	return receive->init(settings.getDeviceNumber(),settings.getBusyLED(),settings.getPowerLED());
 }
 
-TE_API void deinit() {
+WL_API void deinit() {
 
 	if(receive) {
 		receive->deinit();
@@ -40,7 +45,7 @@ TE_API void deinit() {
 
 }
 
-TE_API int hasGui() {
+WL_API int hasGui() {
 
 	return TRUE;
 }
@@ -132,7 +137,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 }
 
-TE_API void	loadSetupGui() {
+WL_API void	loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -155,18 +160,20 @@ TE_API void	loadSetupGui() {
 
 }
 
-TE_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-TE_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	//wait till data is ready
 
 	if(receive) {
 		receive->waitTillDataIsReady(0);
 	}
+
+	clear_rec_buffer();
 
 	if(decodeCommand(remotes,out)) {
 		return 1;
@@ -175,9 +182,8 @@ TE_API int decodeIR(struct ir_remote *remotes, char *out) {
 	return 0;
 }
 
-TE_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
 	initHardwareStruct();
 	return &hw;
-
 }

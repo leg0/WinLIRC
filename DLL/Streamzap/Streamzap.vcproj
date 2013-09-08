@@ -344,10 +344,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\hardware.h"
-				>
-			</File>
-			<File
 				RelativePath=".\StreamzapAPI.h"
 				>
 			</File>

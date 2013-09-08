@@ -1,4 +1,4 @@
-#include "Receive.h"
+#include "SendReceive.h"
 #include "Globals.h"
 
 Receive::Receive() {

@@ -20,10 +20,9 @@
  */
 
 #include "Globals.h"
-#include "hardware.h"
-#include "Decode.h"
-
-struct hardware hw;
+#include "../Common/LIRCDefines.h"
+#include "../Common/Receive.h"
+#include "../Common/Hardware.h"
 
 lirc_t readData(lirc_t timeout) {
 
@@ -57,6 +56,8 @@ int data_ready() {
 
 	return 0;
 }
+
+struct hardware hw;
 
 void initHardwareStruct() {
 
