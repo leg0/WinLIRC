@@ -31,14 +31,15 @@
 extern "C" {
 #endif
 
-WL_API int	init		(HANDLE exitEvent);
-WL_API void	deinit		();
-WL_API int	hasGui		();
-WL_API void	loadSetupGui();
-WL_API int	sendIR		(struct ir_remote *remote, struct ir_ncode *code, int repeats);
-WL_API int	decodeIR	(struct ir_remote *remotes, char *out);
+WL_API int	init			(HANDLE exitEvent);
+WL_API void	deinit			();
+WL_API int	hasGui			();
+WL_API void	loadSetupGui	();
+WL_API int	sendIR			(struct ir_remote *remote, struct ir_ncode *code, int repeats);
+WL_API int	decodeIR		(struct ir_remote *remotes, char *out);
+WL_API int	setTransmitters	(unsigned int transmitterMask);
 
-WL_API struct hardware* getHardware();	// optional API for IRRecord
+WL_API struct hardware* getHardware();							// optional API for IRRecord
 
 #ifdef __cplusplus
 }

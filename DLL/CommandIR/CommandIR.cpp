@@ -20,21 +20,23 @@
  */
 
 #include <Windows.h>
-#include "CommandIR.h"
-#include "Settings.h"
-#include "Globals.h"
+#include <stdio.h>
+
 #include "../Common/LIRCDefines.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Receive.h"
 #include "../Common/Hardware.h"
 #include "../Common/Send.h"
-#include <stdio.h>
+#include "../Common/WLPluginAPI.h"
+
+#include "Settings.h"
+#include "Globals.h"
 #include "SendReceiveData.h"
 #include "winlirc.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-IG_API int init(HANDLE exitEvent) {
+WL_API int init(HANDLE exitEvent) {
 
 	//==========
 	int success;
@@ -52,7 +54,7 @@ IG_API int init(HANDLE exitEvent) {
 	return success;
 }
 
-IG_API void deinit() {
+WL_API void deinit() {
 
 	deinit_commandir();
 
@@ -64,21 +66,21 @@ IG_API void deinit() {
 	threadExitEvent = NULL;
 }
 
-IG_API int hasGui() {
+WL_API int hasGui() {
 
 	return FALSE;
 }
 
-IG_API void	loadSetupGui() {
+WL_API void	loadSetupGui() {
 
 }
 
-IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return send(remote,code,repeats);
 }
 
-IG_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	waitTillDataIsReady(0);
 
@@ -91,14 +93,14 @@ IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 	return 0;
 }
 
-IG_API int setTransmitters(unsigned int transmitterMask) {
+WL_API int setTransmitters(unsigned int transmitterMask) {
 
 	currentTransmitterMask = transmitterMask;
 
 	return 1;	// assume success ... for now :p
 }
 
-IG_API struct hardware* getHardware() {
+WL_API struct hardware* getHardware() {
 
 	initHardwareStruct();
 	return &hw;
