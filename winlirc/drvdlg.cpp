@@ -111,62 +111,69 @@ int Cdrvdlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 }
 
 afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
-	{
-	LRESULT retval=TRUE;
+{
+	LRESULT retval = TRUE;
+
 	switch (wPowerEvent)
-		{
-			//can we suspend?
-			// bit 0 false => automated or emergency power down 
+	{
 		case PBT_APMQUERYSUSPEND:
 			{
+				//can we suspend?
+				//bit 0 false => automated or emergency power down 
 				//UI iff bit 0 is set
-			BOOL bUIEnabled=(lP & 0x00000001)!=0;
-			retval=TRUE;
-			break;
+				BOOL bUIEnabled=(lP & 0x00000001)!=0;
+				retval = TRUE;
+				break;
 			}
-	
-			//shutdown happening
 		case PBT_APMSUSPEND:
 			{
 				driver.deinit(); //if we RequestDeviceWakeup instead we could wake on irevents
-				retval=TRUE;		//if the RI pin was connected to the receiving device
+				retval = TRUE;		//if the RI pin was connected to the receiving device
 				break;
 			}
 
 			//wake up from a critical power shutdown
 		case PBT_APMRESUMECRITICAL:
 			//standard wake up evrnt; UI is on
+			break;
 		case PBT_APMRESUMESUSPEND:
 			//New for Win98;NT5
 			//unattended wake up; no user interaction possible; screen
 			//is probably off.
+			break;
 		case PBT_APMRESUMEAUTOMATIC:
-			if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+
+			//system power source has changed, or 
+			//battery life has just got into the near-critical state
+
+			if(config.showTrayIcon) {
+				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+			}
+
 			Sleep(1000);
-			if(driver.init()==false)
-			{
+
+			if(driver.init()==false) {
 				WL_DEBUG("InitPort failed\n");
 				if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
-				retval=false;
+				retval = false;
 				break;
 			}
 
-			if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
-			retval=TRUE;
-			break;
-							
-			//system power source has changed, or 
-			//battery life has just got into the near-critical state
-		case PBT_APMPOWERSTATUSCHANGE:
-			retval=TRUE;
-			break;
+			if(config.showTrayIcon) {
+				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
+			}
 
-			//we don't know what happened
+			retval = TRUE;
+			break;
+		case PBT_APMPOWERSTATUSCHANGE:
+			retval = TRUE;
+			break;
 		default:
 			retval=TRUE;
 			break;
 		}
-	return retval;
+
+		return retval;
 	}
 
 LRESULT Cdrvdlg::OnTrayNotification(WPARAM uID, LPARAM lEvent)
@@ -290,7 +297,9 @@ bool Cdrvdlg::InitializeDaemon() {
 		return false;
 	}
 
-	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+	if(config.showTrayIcon) {
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+	}
 
 	if(driver.init()==false) {
 		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
