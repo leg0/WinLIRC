@@ -26,6 +26,7 @@
 #include "Globals.h"
 #include <stdio.h>
 #include "../Common/Send.h"
+#include "../Common/DebugOutput.h"
 
 DWORD WINAPI IGThread(void *recieveClass) {
 
@@ -56,6 +57,7 @@ bool SendReceiveData::init() {
 	sendConnection	= iguanaConnect(deviceNumber);
 
 	if (connection == INVALID_PIPE || sendConnection == INVALID_PIPE) {
+		DPRINTF("connection == INVALID_PIPE || sendConnection == INVALID_PIPE\n");
 		return false;
 	}
 
@@ -192,7 +194,7 @@ void SendReceiveData::receiveLoop() {
 				if (iguanaResponseIsError(response))
 				{
 					/* be quiet during exit */
-
+					DPRINTF("Error response, exiting read thread\n");
 					break;
 				}
 				else if (iguanaCode(response) == IG_DEV_RECV)
