@@ -48,6 +48,9 @@ char* gnt_ids[] = {
 	"USB\\VID_1FE1&PID_5457",
 	"USB\\VID_0CCD&PID_00A8",
 	"USB\\VID_0CCD&PID_00B0",
+	"USB\\VID_0572&PID_C682",
+	"USB\\VID_1F4D&PID_D220",
+	"USB\\VID_0572&PID_C686",
 };
 
 int Receive::init() {
