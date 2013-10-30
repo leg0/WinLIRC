@@ -27,7 +27,6 @@
 #include "resource.h"
 #include "remote.h"
 #include "globals.h"
-#include <pbt.h> // power management stuff ??
 #include "server.h" //so we can send SIGHUP
 #include "InputPlugin.h"
 
@@ -147,20 +146,20 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 			//battery life has just got into the near-critical state
 
 			if(config.showTrayIcon) {
-				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),_T("WinLIRC / Initializing"));
 			}
 
 			Sleep(1000);
 
 			if(driver.init()==false) {
 				WL_DEBUG("InitPort failed\n");
-				if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+				if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Initialization Error"));
 				retval = false;
 				break;
 			}
 
 			if(config.showTrayIcon) {
-				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
+				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),_T("WinLIRC / Ready"));
 			}
 
 			retval = TRUE;
@@ -212,7 +211,7 @@ void Cdrvdlg::GoGreen()
 	}
 
 	if(SetTimer(1,250,NULL)) {
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_RECV),"WinLIRC / Received Signal");
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_RECV),_T("WinLIRC / Received Signal"));
 	}
 }
 void Cdrvdlg::GoBlue()
@@ -222,7 +221,7 @@ void Cdrvdlg::GoBlue()
 	}
 
 	if(SetTimer(1,250,NULL)) {
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_SEND),"WinLIRC / Sent Signal");
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_SEND),_T("WinLIRC / Sent Signal"));
 	}
 }
 
@@ -230,7 +229,7 @@ void Cdrvdlg::OnTimer(UINT_PTR nIDEvent) {
 
 	if(nIDEvent==1) {
 		KillTimer(1);
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),_T("WinLIRC / Ready"));
 	}
 	
 	CDialog::OnTimer(nIDEvent);
@@ -258,9 +257,9 @@ bool Cdrvdlg::DoInitializeDaemon()
 		if(!IsWindowVisible())
 			OnToggleWindow();
 
-		if(MessageBox(	"WinLIRC failed to initialize.\n"
-						"Would you like to change the configuration\n"
-						"and try again?","WinLIRC Error",MB_OKCANCEL)==IDCANCEL)
+		if(MessageBox(	_T("WinLIRC failed to initialize.\n")
+						_T("Would you like to change the configuration\n")
+						_T("and try again?"),_T("WinLIRC Error"),MB_OKCANCEL)==IDCANCEL)
 			return false;
 		
 		InputPlugin inputPlugin(this);
@@ -279,8 +278,8 @@ bool Cdrvdlg::InitializeDaemon() {
 
 		if(!config.readConfig()) {
 
-			if(!config.exitOnError) MessageBox(	"Error loading config file.","Configuration Error");
-			if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+			if(!config.exitOnError) MessageBox(	_T("Error loading config file."),_T("Configuration Error"));
+			if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Initialization Error"));
 			return false;
 		}
 	}
@@ -293,21 +292,21 @@ bool Cdrvdlg::InitializeDaemon() {
 	tmp = tmp + config.plugin;
 
 	if(driver.loadPlugin(tmp)==false) {
-		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Initialization Error"));
 		return false;
 	}
 
 	if(config.showTrayIcon) {
-		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),"WinLIRC / Initializing");
+		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),_T("WinLIRC / Initializing"));
 	}
 
 	if(driver.init()==false) {
-		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Initialization Error");
+		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Initialization Error"));
 		return false;
 	}
 	
 	app.server->sendToClients("BEGIN\nSIGHUP\nEND\n");
-	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),"WinLIRC / Ready");
+	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),_T("WinLIRC / Ready"));
 	return true;
 }
 
@@ -320,7 +319,7 @@ void Cdrvdlg::OnConfig()
 
 	AllowTrayNotification=false;
 	KillTimer(1);
-	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),"WinLIRC / Disabled During Configuration");
+	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Disabled During Configuration"));
 
 	if(DoInitializeDaemon()==false)
 		OnCancel();
@@ -361,21 +360,23 @@ void Cdrvdlg::OnSendcode()
 	m_ircode_edit.TrimLeft();
 
 	CSingleLock lock(&CS_global_remotes,TRUE);
-	sender = get_remote_by_name(global_remotes, m_remote_edit);
+	USES_CONVERSION;
+	char const* const remoteName = T2A(m_remote_edit.GetBuffer());
+	sender = get_remote_by_name(global_remotes, remoteName);
 
 	if (sender==NULL) {
-		MessageBox("No match found for remote!");
+		MessageBox(_T("No match found for remote!"));
 	}
 	else {
 
 		codes = sender->codes;
 
-		while (codes->name!=NULL && _stricmp(m_ircode_edit,codes->name)) {
+		while (codes->name!=NULL && _stricmp(remoteName,codes->name)) {
 			codes++;
 		}
 
 		if (codes==NULL || codes->name==NULL) {
-			MessageBox("No match found for ircode!");
+			MessageBox(_T("No match found for ircode!"));
 		}
 		else {
 
@@ -428,6 +429,7 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 
 void Cdrvdlg::UpdateRemoteComboLists()
 {
+	USES_CONVERSION;
 	UpdateData(TRUE);
 	m_remote_DropDown.ResetContent();
 
@@ -435,7 +437,7 @@ void Cdrvdlg::UpdateRemoteComboLists()
 	struct ir_remote* sender=global_remotes;
 	while (sender!=NULL)
 	{
-		m_remote_DropDown.AddString(sender->name);
+		m_remote_DropDown.AddString(A2T(sender->name));
 		sender=sender->next;
 	}
 	//Set selected item
@@ -451,10 +453,11 @@ void Cdrvdlg::UpdateRemoteComboLists()
 
 void Cdrvdlg::UpdateIrCodeComboLists()
 {
+	USES_CONVERSION;
 	UpdateData(TRUE);
 	
 	//Retrieve pointer to remote by name
-	struct ir_remote* selected_remote = get_remote_by_name(global_remotes,m_remote_edit);
+	struct ir_remote* selected_remote = get_remote_by_name(global_remotes,T2A(m_remote_edit.GetBuffer()));
 
 	m_IrCodeEditCombo.ResetContent();
 
@@ -463,7 +466,7 @@ void Cdrvdlg::UpdateIrCodeComboLists()
 		ir_ncode* codes = selected_remote->codes;
 		while (codes && codes->name!=NULL)
 		{
-			m_IrCodeEditCombo.AddString(codes->name);
+			m_IrCodeEditCombo.AddString(A2T(codes->name));
 			codes++;
 		}
 	}

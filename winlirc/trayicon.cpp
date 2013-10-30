@@ -77,7 +77,7 @@ bool CTrayIcon::SetIcon(UINT uID) {
 	return SetIcon(icon,NULL);
 }
 
-bool CTrayIcon::SetIcon(HICON icon, const char *tip) {
+bool CTrayIcon::SetIcon(HICON icon, LPCTSTR tip) {
 
 	//==========
 	UINT	msg;
@@ -104,7 +104,7 @@ bool CTrayIcon::SetIcon(HICON icon, const char *tip) {
 	}
 
 	if(tip) {
-		strncpy(icondata.szTip,tip,sizeof(icondata.szTip));
+		_tcsncpy(icondata.szTip,tip,_countof(icondata.szTip));
 	}
 
 	if(*icondata.szTip) {
@@ -150,12 +150,12 @@ LRESULT CTrayIcon::OnTrayNotification(WPARAM id, LPARAM event)
 	return 1;
 }
 
-bool CTrayIcon::SetStandardIcon(const char *iconname, const char *tip)
+bool CTrayIcon::SetStandardIcon(LPCTSTR iconname, LPCTSTR tip)
 {
 	return SetIcon(::LoadIcon(NULL,iconname),tip);
 }
 
-bool CTrayIcon::SetIcon(const char *resname, const char *tip)
+bool CTrayIcon::SetIcon(LPCTSTR resname, LPCTSTR tip)
 {
 	return SetIcon(resname?AfxGetApp()->LoadIcon(resname):NULL,tip);
 }

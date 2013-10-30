@@ -34,9 +34,9 @@ public:
    ~CTrayIcon();
 
 	bool SetIcon			(UINT uID);
-	bool SetIcon			(HICON hicon, const char *tip);
-	bool SetIcon			(const char *resname, const char *tip);
-	bool SetStandardIcon	(const char *iconname, const char *tip);
+	bool SetIcon			(HICON hicon, LPCTSTR tip);
+	bool SetIcon			(LPCTSTR resname, LPCTSTR tip);
+	bool SetStandardIcon	(LPCTSTR iconname, LPCTSTR tip);
 	void SetNotificationWnd	(CWnd *notifywnd, UINT message);
 	void DisableTrayIcon	();
 

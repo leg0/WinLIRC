@@ -58,7 +58,7 @@ bool CIRConfig::readConfig() {
 	FILE *file;
 	//========================================
 
-	if(remoteConfig=="" || (file=fopen(remoteConfig,"r"))==NULL)	
+	if(remoteConfig=="" || (file=_tfopen(remoteConfig,_T("r")))==NULL)	
 		return false;
 
 	if(global_remotes!=NULL) {
@@ -66,7 +66,8 @@ bool CIRConfig::readConfig() {
 		global_remotes = NULL;
 	}
 	
-	global_remotes = read_config(file,remoteConfig);
+	USES_CONVERSION;
+	global_remotes = read_config(file,T2A(remoteConfig.GetBuffer()));
 
 	fclose(file);
 

@@ -88,12 +88,12 @@ bool InputPlugin::checkDllFile(CString file) {
 
 	if(!tmp) return false;
 
-	if(!GetProcAddress(tmp,_T("init")))			{ FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,_T("deinit")))		{ FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,_T("hasGui")))		{ FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,_T("loadSetupGui"))) { FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,_T("sendIR")))		{ FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,_T("decodeIR")))		{ FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,"init"))			{ FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,"deinit"))		{ FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,"hasGui"))		{ FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,"loadSetupGui")) { FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,"sendIR"))		{ FreeLibrary(tmp); return false; }
+	if(!GetProcAddress(tmp,"decodeIR"))		{ FreeLibrary(tmp); return false; }
 
 	FreeLibrary(tmp);
 
@@ -110,7 +110,7 @@ bool InputPlugin::checkRecording(CString file) {
 
 	if(!tmp) return false;
 
-	if(!GetProcAddress(tmp,_T("getHardware"))) { 
+	if(!GetProcAddress(tmp,"getHardware")) { 
 		FreeLibrary(tmp); return false; 
 	}
 
@@ -147,8 +147,8 @@ void InputPlugin::loadDll(CString file) {
 
 	if(!m_dllFile) return;
 
-	m_hasGuiFunction		= (HasGuiFunction)			GetProcAddress(m_dllFile,_T("hasGui"));
-	m_loadSetupGuiFunction	= (LoadSetupGuiFunction)	GetProcAddress(m_dllFile,_T("loadSetupGui"));
+	m_hasGuiFunction		= (HasGuiFunction)			GetProcAddress(m_dllFile,"hasGui");
+	m_loadSetupGuiFunction	= (LoadSetupGuiFunction)	GetProcAddress(m_dllFile,"loadSetupGui");
 }
 
 void InputPlugin::unloadDll() {
@@ -237,11 +237,11 @@ void InputPlugin::OnBnClickedOk() {
 		FILE *tmp;
 		//========
 
-		tmp = fopen(confPath,"r");
+		tmp = _tfopen(confPath,_T("r"));
 
 		if(tmp==NULL) {
-			MessageBox(	"The configuration filename is invalid.\n"
-				"Please try again.","Configuration Error");
+			MessageBox(	_T("The configuration filename is invalid.\n")
+				_T("Please try again."),_T("Configuration Error"));
 			return;
 		}
 		else {
@@ -326,7 +326,7 @@ BOOL InputPlugin::OnInitDialog() {
 
 	m_configPath.SetWindowText(config.remoteConfig);
 
-	temp.Format("%i",config.disableFirstKeyRepeats);
+	temp.Format(_T("%i"),config.disableFirstKeyRepeats);
 
 	m_disableFirstRepeats.SetWindowText(temp);
 

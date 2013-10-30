@@ -72,17 +72,17 @@ BOOL Cwinlirc::InitInstance() {
 	dlg		= new Cdrvdlg();
 	server	= new Cserver();
 
-	if(!CreateMutex(0,FALSE,"WinLIRC Multiple Instance Lockout") || GetLastError()==ERROR_ALREADY_EXISTS) {
+	if(!CreateMutex(0,FALSE,_T("WinLIRC Multiple Instance Lockout")) || GetLastError()==ERROR_ALREADY_EXISTS) {
 
 		//=======
 		HWND tmp;
 		//=======
 
-		tmp=FindWindow(NULL,"WinLIRC");
+		tmp=FindWindow(NULL,_T("WinLIRC"));
 
 		if(!tmp)
 		{
-			MessageBox(NULL,"WinLIRC is already running","WinLIRC",MB_OK);
+			MessageBox(NULL,_T("WinLIRC is already running"),_T("WinLIRC"),MB_OK);
 		}
 		else
 		{
@@ -112,13 +112,13 @@ BOOL Cwinlirc::InitInstance() {
 	//
 	if(SetPriorityClass(GetCurrentProcess(),REALTIME_PRIORITY_CLASS)==0 || SetThreadPriority(THREAD_PRIORITY_IDLE)==0)
 	{
-		MessageBox(NULL,"Could not set thread priority.","WinLIRC",MB_OK|MB_ICONERROR);
+		MessageBox(NULL,_T("Could not set thread priority."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 		return FALSE;
 	}
 	
 	if(server->init()==false) {
 
-		MessageBox(NULL,"Could not start server.","WinLIRC",MB_OK|MB_ICONERROR);
+		MessageBox(NULL,_T("Could not start server."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 
 		delete server; 
 		server = NULL;
@@ -130,7 +130,7 @@ BOOL Cwinlirc::InitInstance() {
 
 	if(!dlg->Create(IDD_DIALOG,NULL)) {
 
-		MessageBox(NULL,"Program exiting.","WinLIRC",MB_OK|MB_ICONERROR);
+		MessageBox(NULL,_T("Program exiting."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 
 		delete dlg;
 		delete server; 

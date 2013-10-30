@@ -61,16 +61,16 @@ bool Cserver::init()
 	if(res!=0) 
 	{ 
 		WL_DEBUG("WSAStartup failed\n");
-		MessageBox(NULL,"Could not initialize Windows Sockets.\n"
-			"Note that this program requires WinSock 2.0 or higher.","WinLIRC",MB_OK);
+		MessageBox(NULL,_T("Could not initialize Windows Sockets.\n")
+			_T("Note that this program requires WinSock 2.0 or higher."),_T("WinLIRC"),MB_OK);
 		return false;
 	}
 
 	/* begin password stuff */
 	CRegKey key;
 	bool haveKey=true;
-	if(key.Open(HKEY_CURRENT_USER,"Software\\LIRC")!=ERROR_SUCCESS) //First try HKCU, then HKLM
-		if(key.Open(HKEY_LOCAL_MACHINE,"Software\\LIRC")
+	if(key.Open(HKEY_CURRENT_USER,_T("Software\\LIRC"))!=ERROR_SUCCESS) //First try HKCU, then HKLM
+		if(key.Open(HKEY_LOCAL_MACHINE,_T("Software\\LIRC"))
 		   !=ERROR_SUCCESS)
 		{
 			haveKey=false;
@@ -78,7 +78,7 @@ bool Cserver::init()
 		}
 
 	DWORD x;
-	if(!haveKey || key.QueryDWORDValue("tcp_port",x)!=ERROR_SUCCESS)
+	if(!haveKey || key.QueryDWORDValue(_T("tcp_port"),x)!=ERROR_SUCCESS)
 		m_tcp_port=IR_PORT;
 	else
 		m_tcp_port=x;
