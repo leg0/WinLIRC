@@ -526,7 +526,7 @@ BOOL Cserver::parseVersion(const char *string, CStringA &response) {
 
 	if (strtok(NULL," \t\r")==NULL) {
 		success = TRUE;
-		response.Format("DATA\n1\n%s\n",id);
+		response.Format("DATA\n1\n%s\n",T2A(id));
 	}
 	else {
 		success = FALSE;
