@@ -24,12 +24,6 @@
 
 #include "globals.h"
 
-#include "stdafx.h"
-#include "winlirc.h"
-#include "drvdlg.h"
-#include "irdriver.h"
-#include <atlbase.h> //password stuff
-
 class Cserver {
 public:
 

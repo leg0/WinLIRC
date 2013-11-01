@@ -22,6 +22,9 @@
 #include "stdafx.h"
 #include "server.h"
 #include "remote.h"
+#include <atlbase.h> //password stuff
+#include "winlirc.h"
+#include "drvdlg.h"
 
 unsigned int ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
 
@@ -526,6 +529,7 @@ BOOL Cserver::parseVersion(const char *string, CStringA &response) {
 
 	if (strtok(NULL," \t\r")==NULL) {
 		success = TRUE;
+		USES_CONVERSION;
 		response.Format("DATA\n1\n%s\n",T2A(id));
 	}
 	else {
