@@ -61,6 +61,7 @@ WL_API int hasGui() {
 
 WL_API void loadSetupGui() {
 
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	SerialDialog serialDialog;
 	serialDialog.DoModal();
 }
