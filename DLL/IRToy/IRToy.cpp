@@ -29,6 +29,7 @@
 #include "Globals.h"
 #include "resource.h"
 #include <tchar.h>
+#include <vector>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -68,6 +69,34 @@ WL_API int hasGui() {
 	return TRUE;
 }
 
+static void enumSerialPorts(HWND hwnd, int idcCombo)
+{
+#if TEST
+	TCHAR const testData[] = _T("COM1\0") _T("COM3\0") _T("COM123\0");
+	std::vector<TCHAR> devices(testData, testData + _countof(testData));
+#else
+	std::vector<TCHAR> devices(1024, 0);
+	while (devices.size() < 1024*1024) // guard against allocating too much memory
+	{
+		DWORD size = ::QueryDosDevice(NULL, &devices[0], devices.size());
+		if (size == 0 && ::GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			devices.resize(devices.size() * 2);
+		else
+			break;
+	}
+#endif
+
+	LPCTSTR s = &devices[0];
+	while (_tcslen(s) > 0)
+	{
+		if (_tcsncmp(_T("COM"), s, 3) == 0)
+		{
+			SendDlgItemMessage(hwnd, idcCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(s));
+		}
+		s += _tcslen(s) + 1;
+	}
+}
+
 INT_PTR CALLBACK dialogProc (HWND hwnd, 
                           UINT message, 
                           WPARAM wParam, 
@@ -77,17 +106,12 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 		case WM_INITDIALOG: {
 
-			//============
-			TCHAR temp[3];
-			//============
+			enumSerialPorts(hwnd, IDC_COMBO1);
 
-			for(int i=1; i<=20; i++) {
-
-				_sntprintf(temp,_countof(temp),_T("%i"),i);
-				SendDlgItemMessage(hwnd,IDC_COMBO1,CB_ADDSTRING,0,(LPARAM)temp);
-			}
-
-			SendDlgItemMessage(hwnd,IDC_COMBO1,CB_SETCURSEL,settings.getComPort()-1,0);
+			TCHAR portName[32];
+			_stprintf(portName, _T("COM%d"), settings.getComPort());
+			int const portIdx = SendDlgItemMessage(hwnd, IDC_COMBO1, CB_FINDSTRINGEXACT, -1, reinterpret_cast<LPARAM>(portName));
+			SendDlgItemMessage(hwnd, IDC_COMBO1, CB_SETCURSEL, portIdx, 0);
 
 			ShowWindow(hwnd, SW_SHOW);
 
@@ -100,8 +124,18 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 				case IDOK: {
 
-					settings.setComPort(SendDlgItemMessage(hwnd,IDC_COMBO1,CB_GETCURSEL,0,0)+1);
-					settings.saveSettings();
+					int const curSel = SendDlgItemMessage(hwnd, IDC_COMBO1, CB_GETCURSEL, 0, 0);
+					if (curSel != CB_ERR)
+					{
+						int const textLen = SendDlgItemMessage(hwnd, IDC_COMBO1, CB_GETLBTEXTLEN, curSel, 0);
+						std::vector<TCHAR> text(textLen + 1);
+						SendDlgItemMessage(hwnd, IDC_COMBO1, CB_GETLBTEXT, curSel, reinterpret_cast<LPARAM>(&text[0]));
+						if (text.size() > 3) // should start with "COM"
+						{
+							settings.setComPort(_tstoi(&text[3]));
+							settings.saveSettings();
+						}
+					}
 
 					DestroyWindow (hwnd);
 					return TRUE;
