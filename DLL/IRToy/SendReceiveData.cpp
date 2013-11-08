@@ -46,7 +46,7 @@ SendReceiveData::SendReceiveData() {
 bool SendReceiveData::init() {
 
 	//===================
-	TCHAR comPortName[10];
+	TCHAR comPortName[32];
 	char tempBuffer[32];
 	//===================
 

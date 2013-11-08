@@ -80,4 +80,9 @@ void Settings::loadSettings() {
 	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
 
 	comPort = GetPrivateProfileInt(_T("IRToyPlugin"),_T("ComPort"),1,currentDirectory);
+
+	// make sure that comPort is in range 0..255
+	if (comPort < 0 || 255 < comPort) {
+		comPort = 0;
+	}
 }
