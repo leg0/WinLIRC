@@ -37,14 +37,14 @@ public:
 
 private:
 
-	void openAudioDevice		(int deviceID, int frequency, int numberOfChannels, bool leftChannel);
-	void closeAudioDevice		();
-	void prepareBuffers			(int bufferSize);
-	void unPrepareBuffers		();
-	int	 calcBufferSize			(int frequency);
+	void openAudioDevice	(int deviceID, int frequency, int numberOfChannels, bool leftChannel);
+	void closeAudioDevice	();
+	void prepareBuffers		(int bufferSize);
+	void unPrepareBuffers	();
+	int	 calcBufferSize		(int frequency, int numberOfChannels);
 	
 
-	#define NUMBER_OF_BUFFERS 3
+	#define NUMBER_OF_BUFFERS 8
 
 	HWAVEIN hWaveIn;
 	WAVEHDR	waveHDR[NUMBER_OF_BUFFERS];

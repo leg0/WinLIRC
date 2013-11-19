@@ -2,9 +2,9 @@
 
 void removeTrailingWhiteSpace(TCHAR *string) {
 
-	//===============
-	int stringLength;
-	//===============
+	//==================
+	size_t stringLength;
+	//==================
 
 	//
 	// get string length

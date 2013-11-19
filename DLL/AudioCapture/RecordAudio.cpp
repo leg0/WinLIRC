@@ -46,17 +46,18 @@ RecordAudio::~RecordAudio() {
 	analyseAudio = NULL;
 }
 
-int RecordAudio::calcBufferSize(int frequency){
+int RecordAudio::calcBufferSize(int frequency, int numberOfChannels) {
 
 	//
-	// just calc a rough guide, stereo/mono halves/doubles value but not so concerned with that
-	// If the buffer is too big, we'll have latency issues, too small could cause other probs
+	// buffer should hold roughly 1/20th of a second of audio or 50,00us
+	// if buffers are too large we might be waiting too long for the next one
+	// or cause latency issues with button presses
 	//
-	if(frequency==11025) return 1024;
-	if(frequency==22050) return 2048;
-	if(frequency==44100) return 4096;
-	if(frequency==48000) return 4096;
-	if(frequency==96000) return 8192;
+	if(frequency==11025) return 512 * numberOfChannels;
+	if(frequency==22050) return 1024 * numberOfChannels;
+	if(frequency==44100) return 2048 * numberOfChannels;
+	if(frequency==48000) return 2048 * numberOfChannels;
+	if(frequency==96000) return 4096 * numberOfChannels;
 
 	//
 	// some unknown frequency
@@ -71,7 +72,7 @@ bool RecordAudio::startRecording(int deviceID, int frequency, int numberOfChanne
 	//==============
 
 	openAudioDevice(deviceID,frequency,numberOfChannels,leftChannel);
-	prepareBuffers(calcBufferSize(frequency));
+	prepareBuffers(calcBufferSize(frequency,numberOfChannels));
 
 	result = waveInStart(hWaveIn);
 
