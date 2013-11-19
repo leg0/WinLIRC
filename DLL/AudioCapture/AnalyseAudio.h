@@ -42,8 +42,6 @@ private:
 	void setData(UINT data);
 	void sendBuffer(bool space);
 
-	void dataTest();
-
 	//=======================
 	double	m_multiplyConstant; 
 	double	m_sampleCount;

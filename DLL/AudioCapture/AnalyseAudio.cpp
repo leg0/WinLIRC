@@ -27,7 +27,6 @@
 
 #define MAX_SPACE 10000	// this should work with 90%+ of remote protocols
 
-
 //
 // A simple algorithm for decoding audio
 //
@@ -52,8 +51,6 @@ AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel
 
 	m_bufferStart	= 0;
 	m_bufferEnd		= 0;
-
-	dataTest();
 
 	m_pulse = false;
 }
@@ -170,86 +167,4 @@ bool AnalyseAudio::dataReady() {
 	if(m_bufferStart==m_bufferEnd) return false;
 	
 	return true;
-}
-
-void AnalyseAudio::dataTest() {
-
-	//
-	// Dump raw data here for decoding test
-	//
-
-	/*
-	setData(1979421);
-	setData(16786296);
-	setData(4486);
-	setData(16777808);
-	setData(540);
-	setData(16777811);
-	setData(519);
-	setData(16777808);
-	setData(1659);
-	setData(16777832);
-	setData(542);
-	setData(16777784);
-	setData(544);
-	setData(16777810);
-	setData(542);
-	setData(16777809);
-	setData(541);
-	setData(16777785);
-	setData(546);
-	setData(16777811);
-	setData(1678);
-	setData(16777788);
-	setData(1678);
-	setData(16777810);
-	setData(540);
-	setData(16777787);
-	setData(1678);
-	setData(16777787);
-	setData(1680);
-	setData(16777813);
-	setData(1678);
-	setData(16777788);
-	setData(1675);
-	setData(16777786);
-	setData(1683);
-	setData(16777812);
-	setData(1676);
-	setData(16777786);
-	setData(540);
-	setData(16777811);
-	setData(1687);
-	setData(16777777);
-	setData(1679);
-	setData(16777787);
-	setData(545);
-	setData(16777809);
-	setData(542);
-	setData(16777815);
-	setData(1673);
-	setData(16777796);
-	setData(537);
-	setData(16777812);
-	setData(515);
-	setData(16777809);
-	setData(1679);
-	setData(16777811);
-	setData(540);
-	setData(16777787);
-	setData(566);
-	setData(16777763);
-	setData(1702);
-	setData(16777811);
-	setData(1656);
-	setData(16777809);
-	setData(540);
-	setData(16777811);
-	setData(1658);
-	setData(16777810);
-	setData(40061);
-	setData(16786287);
-	setData(2225);
-	setData(16777810);
-	*/
 }
