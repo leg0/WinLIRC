@@ -1,3 +1,9 @@
+AudioInPlugin 1.5
+=================
+
+- Signals that spanned multiple audio buffers would often fail to decode. The decoding was timing out, while 
+  the next audio buffer was waiting to fill up. Buffering the audio data until a complete signal arrived fixed this.
+
 AudioInPlugin 1.4
 =================
 
