@@ -1,5 +1,15 @@
+WinLIRC 0.9.0g
+==============
+
+- Decoding bug fixes for the audio plugin.
+- Changed the MAX_SIGNALS in irrecord to support remotes with crazy long codes (air conditioners)
+- Plugins now have 1 second to re-init after sleep. Should stop usb failing after re-awakening from sleep.
+- Two parting transmission code is (hopefully) working.
+- The IRToy plugin now only shows valid com ports on the system.
+- Geniatech T200, T220, T220A are now supported by the Geniatech plugin.
+
 WinLIRC 0.9.0f
-=============
+==============
 
 - Plugins that don't support recording of remotes now have the options blanked out in WinLIRC.
 - Implemented the rest of the LIST LIRC protocol.
@@ -13,7 +23,7 @@ If anyone has the skills or wants to do this please contact me at the email addr
 I can make something to validate config files to stop people uploading spam.
 
 WinLIRC 0.9.0e
-=============
+==============
 
 - A fix to stop plugins failing to load when the program is started from the registry or by other tools that
   mess with the current directory of the program. ( Thanks leg0 )
