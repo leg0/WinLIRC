@@ -20,6 +20,7 @@
  */
 
 #include <Windows.h>
+#include "../Common/enumSerialPorts.h"
 #include "../Common/LIRCDefines.h"
 #include "../Common/Hardware.h"
 #include "../Common/WLPluginAPI.h"
@@ -79,17 +80,12 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 		case WM_INITDIALOG: {
 
-			//============
-			TCHAR temp[2];
-			//============
+			enumSerialPorts(hwnd, IDC_COMBO1);
 
-			for(int i=1; i<10; i++) {
-
-				_sntprintf(temp,_countof(temp),_T("%i"),i);
-				SendDlgItemMessage(hwnd,IDC_COMBO1,CB_ADDSTRING,0,(LPARAM)temp);
-			}
-
-			SendDlgItemMessage(hwnd,IDC_COMBO1,CB_SETCURSEL,settings.getComPort()-1,0);
+			TCHAR portName[32];
+			_stprintf(portName, _T("COM%d"), settings.getComPort());
+			int const portIdx = SendDlgItemMessage(hwnd, IDC_COMBO1, CB_FINDSTRINGEXACT, -1, reinterpret_cast<LPARAM>(portName));
+			SendDlgItemMessage(hwnd, IDC_COMBO1, CB_SETCURSEL, portIdx, 0);
 
 			ShowWindow(hwnd, SW_SHOW);
 
@@ -102,8 +98,18 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 				case IDOK: {
 
-					settings.setComPort(SendDlgItemMessage(hwnd,IDC_COMBO1,CB_GETCURSEL,0,0)+1);
-					settings.saveSettings();
+					int const curSel = SendDlgItemMessage(hwnd, IDC_COMBO1, CB_GETCURSEL, 0, 0);
+					if (curSel != CB_ERR)
+					{
+						int const textLen = SendDlgItemMessage(hwnd, IDC_COMBO1, CB_GETLBTEXTLEN, curSel, 0);
+						std::vector<TCHAR> text(textLen + 1);
+						SendDlgItemMessage(hwnd, IDC_COMBO1, CB_GETLBTEXT, curSel, reinterpret_cast<LPARAM>(&text[0]));
+						if (text.size() > 3) // should start with "COM"
+						{
+							settings.setComPort(_tstoi(&text[3]));
+							settings.saveSettings();
+						}
+					}
 
 					DestroyWindow (hwnd);
 					return TRUE;

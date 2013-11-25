@@ -9,6 +9,7 @@ add_library(Common
 	Send.cpp
 
     DebugOutput.h
+    enumSerialPorts.h
     Hardware.h
     IRRemote.h
     Linux.h

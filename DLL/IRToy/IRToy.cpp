@@ -20,6 +20,7 @@
  */
 
 #include <Windows.h>
+#include "../Common/enumSerialPorts.h"
 #include "../Common/LircDefines.h"
 #include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
@@ -67,34 +68,6 @@ WL_API void deinit() {
 WL_API int hasGui() {
 
 	return TRUE;
-}
-
-static void enumSerialPorts(HWND hwnd, int idcCombo)
-{
-#if TEST
-	TCHAR const testData[] = _T("COM1\0") _T("COM3\0") _T("COM123\0");
-	std::vector<TCHAR> devices(testData, testData + _countof(testData));
-#else
-	std::vector<TCHAR> devices(1024, 0);
-	while (devices.size() < 1024*1024) // guard against allocating too much memory
-	{
-		DWORD size = ::QueryDosDevice(NULL, &devices[0], devices.size());
-		if (size == 0 && ::GetLastError() == ERROR_INSUFFICIENT_BUFFER)
-			devices.resize(devices.size() * 2);
-		else
-			break;
-	}
-#endif
-
-	LPCTSTR s = &devices[0];
-	while (_tcslen(s) > 0)
-	{
-		if (_tcsncmp(_T("COM"), s, 3) == 0)
-		{
-			SendDlgItemMessage(hwnd, idcCombo, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(s));
-		}
-		s += _tcslen(s) + 1;
-	}
 }
 
 INT_PTR CALLBACK dialogProc (HWND hwnd, 
