@@ -44,14 +44,14 @@ SendReceiveData::SendReceiveData() {
 bool SendReceiveData::init() {
 
 	//===================
-	TCHAR comPortName[8];
+	TCHAR comPortName[32];
 	char tempBuffer[32];
 	//===================
 
 	irCode = 0;
 	gettimeofday(&end,NULL);	// initialise
 
-	_sntprintf(comPortName,_countof(comPortName),_T("COM%i"),settings.getComPort());
+	_sntprintf(comPortName,_countof(comPortName),_T("\\\\.\\COM%i"),settings.getComPort());
 
 	//_tprintf(_T("com port name %s\n"),comPortName);
 
