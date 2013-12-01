@@ -65,7 +65,8 @@ void waitTillDataIsReady(int maxUSecs) {
 		}
 
 		if(res==(WAIT_OBJECT_0+1)) {
-			ExitThread(0);
+			// don't block waiting to receive, thread will exit soon
+			return;
 		}
 	}
 
