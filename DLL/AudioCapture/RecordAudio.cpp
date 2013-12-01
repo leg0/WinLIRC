@@ -21,9 +21,9 @@
 
 #include "RecordAudio.h"
 #include <MMSystem.h>
-#include <stdio.h>
 #include <tchar.h>
 #include "Globals.h"
+#include "../Common/DebugOutput.h"
 
 #pragma comment(lib,"winmm.lib")
 
@@ -35,7 +35,8 @@ void CALLBACK waveInProc(HWAVEIN hwi,UINT uMsg,DWORD dwInstance,DWORD dwParam1,D
 
 RecordAudio::RecordAudio() {
 
-	hWaveIn	= NULL;
+	m_hWaveIn	= NULL;
+	m_stop		= FALSE;
 }
 
 RecordAudio::~RecordAudio() {
@@ -74,12 +75,12 @@ bool RecordAudio::startRecording(int deviceID, int frequency, int numberOfChanne
 	openAudioDevice(deviceID,frequency,numberOfChannels,leftChannel);
 	prepareBuffers(calcBufferSize(frequency,numberOfChannels));
 
-	result = waveInStart(hWaveIn);
+	m_stop = FALSE;
+
+	result = waveInStart(m_hWaveIn);
 
 	if(result!=MMSYSERR_NOERROR) {
-
-		//failed somehow
-		//printf("failed\n");
+		DPRINTF("waveInStart failed\n");
 		return false;
 	}
 
@@ -88,6 +89,8 @@ bool RecordAudio::startRecording(int deviceID, int frequency, int numberOfChanne
 }
 
 void RecordAudio::stopRecording() {
+
+	m_stop = TRUE;
 
 	closeAudioDevice();
 }
@@ -110,21 +113,21 @@ void RecordAudio::openAudioDevice(int deviceID, int frequency, int numberOfChann
 	//need to change this
 	//
 
-	MMRESULT result = waveInOpen(&hWaveIn,deviceID,&waveFormat,(DWORD_PTR)waveInProc,(DWORD_PTR)this,CALLBACK_FUNCTION);
+	MMRESULT result = waveInOpen(&m_hWaveIn,deviceID,&waveFormat,(DWORD_PTR)waveInProc,(DWORD_PTR)this,CALLBACK_FUNCTION);
 
-	//printf("open result %i\n",result);
+	DPRINTF("waveInOpen result %i\n",result);
 
 	analyseAudio = new AnalyseAudio(frequency,waveFormat.nChannels,leftChannel,settings->getInverted(),settings->getNoiseValue());
 }
 
 void RecordAudio::closeAudioDevice() {
 
-	if(hWaveIn) {
+	if(m_hWaveIn) {
 
 		unPrepareBuffers();
-		waveInClose(hWaveIn);
+		waveInClose(m_hWaveIn);
 
-		hWaveIn = NULL;
+		m_hWaveIn = NULL;
 	}
 }
 
@@ -139,44 +142,40 @@ void RecordAudio::prepareBuffers(int bufferSize) {
 
 	for(i=0;i<NUMBER_OF_BUFFERS; i++) {
 
-		ZeroMemory(&waveHDR[i],sizeof(WAVEHDR));
+		ZeroMemory(&m_waveHDR[i],sizeof(WAVEHDR));
 
-		waveHDR[i].lpData			= (LPSTR) new UCHAR[bufferSize];
-		waveHDR[i].dwBufferLength	= bufferSize;		// must be aligned with nBlockAlign
-		waveHDR[i].dwUser			= i;
+		m_waveHDR[i].lpData			= (LPSTR) new UCHAR[bufferSize];
+		m_waveHDR[i].dwBufferLength	= bufferSize;		// must be aligned with nBlockAlign
+		m_waveHDR[i].dwUser			= i;
 
-		res = waveInPrepareHeader(hWaveIn,&waveHDR[i],sizeof(WAVEHDR));
-
-		if(res!=MMSYSERR_NOERROR) {
-			//failed somehow
-			//printf("failed somehow prepareheader\n");
-		}
-
-		res = waveInAddBuffer(hWaveIn,&waveHDR[i],sizeof(WAVEHDR));
+		res = waveInPrepareHeader(m_hWaveIn,&m_waveHDR[i],sizeof(WAVEHDR));
 
 		if(res!=MMSYSERR_NOERROR) {
-			//failed somehow
-			//printf("failed somehow waveInAddBuffer\n");
+			DPRINTF("waveInPrepareHeader failed\n");
 		}
 
-		//printf("added buffer %i\n",i);
+		res = waveInAddBuffer(m_hWaveIn,&m_waveHDR[i],sizeof(WAVEHDR));
+
+		if(res!=MMSYSERR_NOERROR) {
+			DPRINTF("waveInPrepareHeader failed\n");
+		}
 	}
 
 }
 
 void RecordAudio::unPrepareBuffers() {
 
-	if(hWaveIn) {
+	if(m_hWaveIn) {
 
-		waveInStop(hWaveIn);
+		waveInStop(m_hWaveIn);
 
 		for(int i=0; i<NUMBER_OF_BUFFERS; i++) {
 
-			if(waveHDR[i].lpData) {
+			if(m_waveHDR[i].lpData) {
 
-				waveInUnprepareHeader(hWaveIn,&waveHDR[i],sizeof(WAVEHDR));
+				waveInUnprepareHeader(m_hWaveIn,&m_waveHDR[i],sizeof(WAVEHDR));
 
-				delete [] waveHDR[i].lpData;
+				delete [] m_waveHDR[i].lpData;
 			}
 
 		}
@@ -198,7 +197,9 @@ void RecordAudio::processHeader(WAVEHDR *waveHeader) {
 		//
 		// use buffer again for recording
 		//
-		waveInAddBuffer(hWaveIn,waveHeader,sizeof(WAVEHDR));
+		if(!m_stop) {
+			waveInAddBuffer(m_hWaveIn,waveHeader,sizeof(WAVEHDR));
+		}
 	}
 }
 

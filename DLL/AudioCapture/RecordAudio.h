@@ -46,8 +46,9 @@ private:
 
 	#define NUMBER_OF_BUFFERS 8
 
-	HWAVEIN hWaveIn;
-	WAVEHDR	waveHDR[NUMBER_OF_BUFFERS];
+	HWAVEIN m_hWaveIn;
+	WAVEHDR	m_waveHDR[NUMBER_OF_BUFFERS];
+	BOOL	m_stop;
 
 };
 
