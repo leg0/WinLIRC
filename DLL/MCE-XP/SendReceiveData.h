@@ -36,7 +36,7 @@ public:
 
 	bool	getData(lirc_t *out);
 	bool	dataReady();
-	void	waitTillDataIsReady(int maxUSecs);
+	bool	waitTillDataIsReady(int maxUSecs);
 	void	threadProc();
 	int		send(struct ir_remote *remote, struct ir_ncode *code, int repeats);
 	

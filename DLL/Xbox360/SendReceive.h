@@ -14,7 +14,7 @@ public:
 	BOOL init					(HANDLE exit);
 	void deinit					();
 	void threadProc				();
-	void waitTillDataIsReady	(int maxUSecs);
+	bool waitTillDataIsReady	(int maxUSecs);
 	bool dataReady				();
 	int	 decodeCommand			(char *out);
 

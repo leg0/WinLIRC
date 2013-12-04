@@ -74,7 +74,9 @@ WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(irDriver) {
-		irDriver->waitTillDataIsReady(0);
+		if(!irDriver->waitTillDataIsReady(0)) {
+			return 0;
+		}
 	}
 
 	clear_rec_buffer();

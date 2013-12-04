@@ -36,7 +36,7 @@ public:
 	unsigned long	readData(unsigned long maxusec);
 	bool			dataReady();
 	bool			getData(UINT *out);
-	void			waitTillDataIsReady(int maxUSecs);
+	bool			waitTillDataIsReady(int maxUSecs);
 
 private:
 

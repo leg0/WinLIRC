@@ -15,11 +15,11 @@ public:
 	void threadProc	();
 	bool getData	(lirc_t *out);
 	bool dataReady	();
-	void findDevice	();
-	void waitTillDataIsReady(int maxUSecs);
+	bool waitTillDataIsReady(int maxUSecs);
 
 private:
 
+	void findDevice	();
 	void decode		(BYTE data);
 	void killThread	();
 	void setData	(lirc_t data);

@@ -30,7 +30,7 @@ lirc_t			dataBuffer[256];
 unsigned char	bufferStart;
 unsigned char	bufferEnd;
 
-void waitTillDataIsReady(int maxUSecs) {
+bool waitTillDataIsReady(int maxUSecs) {
 
 	//================
 	HANDLE	events[2];
@@ -52,6 +52,7 @@ void waitTillDataIsReady(int maxUSecs) {
 		//======
 		int res;
 		//======
+
 		ResetEvent(dataReadyEvent);
 
 		if( maxUSecs ) {
@@ -62,11 +63,11 @@ void waitTillDataIsReady(int maxUSecs) {
 		}
 
 		if( res == (WAIT_OBJECT_0+1) ) {
-			ExitThread( 0 );
-			return;
+			return false;
 		}
-
 	}
+
+	return true;
 }
 
 void setData(lirc_t data) {

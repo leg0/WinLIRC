@@ -80,7 +80,10 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(server) {
-		server->waitTillDataIsReady(0);
+
+		if(!server->waitTillDataIsReady(0)) {
+			return 0;
+		}
 
 		clear_rec_buffer();
 		

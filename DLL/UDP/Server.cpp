@@ -204,7 +204,7 @@ bool Server::getData(lirc_t *out) {
 	return true;
 }
 
-void Server::waitTillDataIsReady(int maxUSecs) {
+bool Server::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
@@ -221,10 +221,9 @@ void Server::waitTillDataIsReady(int maxUSecs) {
 			res=WaitForMultipleObjects(evt,events,FALSE,INFINITE);
 		if(res==(WAIT_OBJECT_0+1))
 		{
-			//DEBUG("Unknown thread terminating (readdata)\n");
-			ExitThread(0);
-			return;
+			return false;
 		}
 	}
 
+	return true;
 }

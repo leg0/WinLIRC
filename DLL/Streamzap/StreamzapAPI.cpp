@@ -119,7 +119,7 @@ void StreamzapAPI::threadProc() {
 	//printf("exited thread\n");
 }
 
-void StreamzapAPI::waitTillDataIsReady(int maxUSecs) {
+bool StreamzapAPI::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
@@ -136,9 +136,11 @@ void StreamzapAPI::waitTillDataIsReady(int maxUSecs) {
 			res=WaitForMultipleObjects(evt,events,FALSE,INFINITE);
 		if(res==(WAIT_OBJECT_0+1))
 		{
-			ExitThread(0);
+			return false;
 		}
 	}
+
+	return true;
 }
 
 void StreamzapAPI::killThread() {

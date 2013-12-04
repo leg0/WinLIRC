@@ -170,7 +170,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 	//wait till data is ready
 
 	if(receive) {
-		receive->waitTillDataIsReady(0);
+		if(!receive->waitTillDataIsReady(0)) {
+			return false;
+		}
 	}
 
 	clear_rec_buffer();

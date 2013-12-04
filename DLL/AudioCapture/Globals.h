@@ -32,6 +32,6 @@ extern Settings		*settings;
 extern HANDLE		dataReadyEvent;
 extern HANDLE		threadExitEvent;
 
-void waitTillDataIsReady(int maxUSecs);
+bool waitTillDataIsReady(int maxUSecs);
 
 #endif

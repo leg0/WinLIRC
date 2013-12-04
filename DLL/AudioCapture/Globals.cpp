@@ -28,13 +28,13 @@ Settings		*settings		= NULL;
 HANDLE			dataReadyEvent	= NULL;
 HANDLE			threadExitEvent	= NULL;
 
-void waitTillDataIsReady(int maxUSecs) {
+bool waitTillDataIsReady(int maxUSecs) {
 
 	//
 	// if buffer start = buffer end we need to wait and read more data
 	//
 
-	if(!analyseAudio) return;
+	if(!analyseAudio) return false;
 
 	if(!analyseAudio->dataReady()) {
 
@@ -65,9 +65,10 @@ void waitTillDataIsReady(int maxUSecs) {
 		}
 
 		if(res==(WAIT_OBJECT_0+1)) {
-			// don't block waiting to receive, thread will exit soon
-			return;
+			return false;
 		}
 	}
+
+	return true;
 
 }

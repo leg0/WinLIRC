@@ -27,7 +27,7 @@
 
 struct hardware hw;
 
-lirc_t readData(lirc_t timeout) {
+lirc_t readdata(lirc_t timeout) {
 
 	//==========
 	lirc_t data;
@@ -54,11 +54,16 @@ int data_ready() {
 	return 0;
 }
 
+void wait_for_data(lirc_t uSecs) {
+
+	waitTillDataIsReady(uSecs);
+}
+
 void initHardwareStruct() {
 
 	hw.decode_func	= &receive_decode;
-	hw.readdata		= &readData;
-	hw.wait_for_data= &waitTillDataIsReady;
+	hw.readdata		= &readdata;
+	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;
 	hw.get_ir_code	= NULL;
 

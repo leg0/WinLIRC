@@ -101,7 +101,7 @@ int data_ready() {
 	return 0;
 }
 
-void wait_for_data(lirc_t timeout) {
+bool waitForData(lirc_t timeout) {
 
 	//================
 	HANDLE	events[2];
@@ -133,9 +133,16 @@ void wait_for_data(lirc_t timeout) {
 		}
 
 		if(result==(WAIT_OBJECT_0+1)) {
-			ExitThread(0);
+			return false;
 		}
 	}
+
+	return true;
+}
+
+void wait_for_data(lirc_t timeout) {
+
+	waitForData(timeout);
 }
 
 struct hardware hw;

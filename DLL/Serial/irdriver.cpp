@@ -319,7 +319,7 @@ unsigned long CIRDriver::readData(unsigned long maxusec)
 	return x;
 }
 
-void CIRDriver::waitTillDataIsReady(int maxUSecs) {
+bool CIRDriver::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={hDataReadyEvent,threadExitEvent};
 	int evt;
@@ -336,10 +336,10 @@ void CIRDriver::waitTillDataIsReady(int maxUSecs) {
 			res=WaitForMultipleObjects(evt,events,FALSE,INFINITE);
 		if(res==(WAIT_OBJECT_0+1))
 		{
-			//DEBUG("Unknown thread terminating (readdata)\n");
-			AfxEndThread(0);
-			return;
+			return false;
 		}
 	}
+
+	return true;
 }
 

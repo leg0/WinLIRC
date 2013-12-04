@@ -14,7 +14,7 @@ public:
 	void	deinit();
 	bool	getData(ir_code *out);
 	bool	dataReady();
-	void	waitTillDataIsReady(int maxUSecs);
+	bool	waitTillDataIsReady(int maxUSecs);
 	void	threadProc();
 private:
 	void	setData(ir_code data);

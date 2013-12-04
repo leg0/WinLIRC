@@ -32,7 +32,7 @@ public:
 	bool	getData(ir_code *out);
 	bool	dataReady();
 	void	IR_DecoderCallback(tmIrDecoderId Id, PVOID pContext);
-	void	waitTillDataIsReady(int maxUSecs);
+	bool	waitTillDataIsReady(int maxUSecs);
 private:
 
 	void	setData(ir_code data);

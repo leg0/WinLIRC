@@ -177,12 +177,18 @@ WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 	return 0;
 }
 
+extern bool waitForData(lirc_t timeout);
+
 WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	last = end;
 
 	gettimeofday		(&start,NULL);
-	hw.wait_for_data	(0);
+
+	if(!waitForData) {
+		return 0;
+	}
+
 	gettimeofday		(&end,NULL);
 
 	if(decodeCommand(remotes,out)) {

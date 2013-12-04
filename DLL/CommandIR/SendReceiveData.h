@@ -37,7 +37,7 @@ extern unsigned int		currentTransmitterMask;
 // methods
 //
 
-void waitTillDataIsReady	(int maxUSecs);
+bool waitTillDataIsReady	(int maxUSecs);
 void setData				(lirc_t data);
 bool dataReady				();
 bool getData				(lirc_t *out);

@@ -42,7 +42,7 @@ public:
 	bool	init();
 	void	deinit();
 
-	void	waitTillDataIsReady(int maxUSecs);
+	bool	waitTillDataIsReady(int maxUSecs);
 	void	threadProc();
 	int		decodeCommand(char *out);
 	

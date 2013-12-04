@@ -94,7 +94,7 @@ void Receive::callBackFunction(PVOID Buf, ULONG len, USBIR_MODES IRMode, HANDLE 
 	SetEvent(dataReadyEvent);
 }
 
-void Receive::waitTillDataIsReady(int maxUSecs) {
+bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
@@ -111,10 +111,9 @@ void Receive::waitTillDataIsReady(int maxUSecs) {
 			res=WaitForMultipleObjects(evt,events,FALSE,INFINITE);
 		if(res==(WAIT_OBJECT_0+1))
 		{
-			//DEBUG("Unknown thread terminating (readdata)\n");
-			ExitThread(0);
-			return;
+			return false;
 		}
 	}
 
+	return true;
 }

@@ -16,7 +16,7 @@ public:
 	bool	getData(lirc_t *out);
 	bool	dataReady();
 	void	callBackFunction(PVOID Buf, ULONG len, USBIR_MODES IRMode, HANDLE hOpen, BYTE DevIdx);
-	void	waitTillDataIsReady(int maxUSecs);
+	bool	waitTillDataIsReady(int maxUSecs);
 
 private:
 

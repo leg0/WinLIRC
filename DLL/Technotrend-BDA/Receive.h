@@ -15,14 +15,14 @@ public:
 	bool	getData(ir_code *out);
 	bool	dataReady();
 	void	callBackFunction(DWORD key);
-	void	waitTillDataIsReady(int maxUSecs);
+	bool	waitTillDataIsReady(int maxUSecs);
 private:
 
 	void	setData(ir_code data);
 
 	//===================
-	int	DevID;
-	HANDLE deviceHandle;
+	int		DevID;
+	HANDLE	deviceHandle;
 	ir_code	dataBuffer[256];
 	UCHAR	bufferStart;
 	UCHAR	bufferEnd;

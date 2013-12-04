@@ -40,7 +40,7 @@ public:
 	void   deinit();
 
 	int		dataReady();
-	void	waitTillDataIsReady( int maxUSecs );
+	bool	waitTillDataIsReady( int maxUSecs );
 	void	threadProc();
 
 private:

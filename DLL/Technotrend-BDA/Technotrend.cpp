@@ -187,7 +187,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(receive)
 	{
-		receive->waitTillDataIsReady(0);
+		if(!receive->waitTillDataIsReady(0)) {
+			return 0;
+		}
 
 		last = end;
 		gettimeofday(&start,NULL);
