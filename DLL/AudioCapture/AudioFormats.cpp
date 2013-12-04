@@ -62,7 +62,7 @@ void AudioFormats::getFormatString(int format, TCHAR *outString, int noBuffEleme
 	if(format & WAVE_FORMAT_48S08) { _tcscpy_s(outString,noBuffElements,_T("48 kHz, Stereo, 8-bit")); return; }
 
 	if(format & WAVE_FORMAT_96M08) { _tcscpy_s(outString,noBuffElements,_T("96 kHz, Mono, 8-bit")); return; }
-	if(format & WAVE_FORMAT_96S08) { _tcscpy_s(outString,noBuffElements,_T("96 kHz, Stereo, 16-bit")); return; }
+	if(format & WAVE_FORMAT_96S08) { _tcscpy_s(outString,noBuffElements,_T("96 kHz, Stereo, 8-bit")); return; }
 
 	_tcscpy_s(outString,noBuffElements,_T("Format not supported"));
 }
