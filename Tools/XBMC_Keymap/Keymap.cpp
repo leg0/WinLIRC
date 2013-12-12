@@ -46,7 +46,7 @@ BOOL CKeymapApp::InitInstance()
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
-	CWinAppEx::InitInstance();
+	CWinApp::InitInstance();
 
 	if (!AfxSocketInit())
 	{

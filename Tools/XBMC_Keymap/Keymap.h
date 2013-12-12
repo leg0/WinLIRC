@@ -15,7 +15,7 @@
 // See Keymap.cpp for the implementation of this class
 //
 
-class CKeymapApp : public CWinAppEx
+class CKeymapApp : public CWinApp
 {
 public:
 	CKeymapApp();
