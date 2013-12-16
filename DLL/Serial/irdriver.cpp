@@ -27,9 +27,14 @@
 #include <tchar.h>
 #include "../Common/LIRCDefines.h"
 #include "Transmit.h"
-	
+
 unsigned int IRThread(void *drv) {
-	((CIRDriver *)drv)->ThreadProc();
+	HANDLE const hProcess = ::GetCurrentProcess();
+	DWORD const oldPriorityClass = ::GetPriorityClass(hProcess);
+	::SetPriorityClass(hProcess, REALTIME_PRIORITY_CLASS);
+	::SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
+	static_cast<CIRDriver*>(drv)->ThreadProc();
+	::SetPriorityClass(hProcess, oldPriorityClass);
 	return 0;
 }
 
