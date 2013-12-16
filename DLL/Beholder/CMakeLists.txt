@@ -9,7 +9,6 @@ add_library(Beholder SHARED
 
     BeholdRC.h
     Globals.h
-    hardware.h
     resource.h
     SendReceiveData.h
 	)
