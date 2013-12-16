@@ -360,8 +360,11 @@ void Cdrvdlg::OnSendcode()
 	m_ircode_edit.TrimLeft();
 
 	CSingleLock lock(&CS_global_remotes,TRUE);
+
 	USES_CONVERSION;
-	char const* const remoteName = T2A(m_remote_edit.GetBuffer());
+	const char *remoteName	= T2A(m_remote_edit);
+	const char *codeName	= T2A(m_ircode_edit);
+
 	sender = get_remote_by_name(global_remotes, remoteName);
 
 	if (sender==NULL) {
@@ -369,11 +372,7 @@ void Cdrvdlg::OnSendcode()
 	}
 	else {
 
-		codes = sender->codes;
-
-		while (codes->name!=NULL && _stricmp(remoteName,codes->name)) {
-			codes++;
-		}
+		codes = get_code_by_name(sender->codes,codeName);
 
 		if (codes==NULL || codes->name==NULL) {
 			MessageBox(_T("No match found for ircode!"));
