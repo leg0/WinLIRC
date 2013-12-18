@@ -35,32 +35,31 @@ unsigned int DaemonThread(void* drv) {
 	
 CIRDriver::CIRDriver()
 {
-	dll.initFunction			= NULL;
-	dll.deinitFunction			= NULL;
-	dll.hasGuiFunction			= NULL;
-	dll.loadSetupGuiFunction	= NULL;
-	dll.sendFunction			= NULL;
-	dll.decodeFunction			= NULL;
-	dll.setTransmittersFunction	= NULL;
+	m_dll.initFunction				= NULL;
+	m_dll.deinitFunction			= NULL;
+	m_dll.hasGuiFunction			= NULL;
+	m_dll.loadSetupGuiFunction		= NULL;
+	m_dll.sendFunction				= NULL;
+	m_dll.decodeFunction			= NULL;
+	m_dll.setTransmittersFunction	= NULL;
 
-	dll.dllFile					= NULL;
+	m_dll.dllFile					= NULL;
 
-	daemonThreadHandle		= NULL;
-	daemonThreadEvent		= CreateEvent(NULL,TRUE,FALSE,NULL);
+	m_daemonThreadHandle			= NULL;
+	m_daemonThreadEvent				= CreateEvent(NULL,TRUE,FALSE,NULL);
 }
 
 CIRDriver::~CIRDriver()
 {
 	unloadPlugin();
 
-	if(daemonThreadEvent) {
-		CloseHandle(daemonThreadEvent);
-		daemonThreadEvent = NULL;
+	if(m_daemonThreadEvent) {
+		CloseHandle(m_daemonThreadEvent);
+		m_daemonThreadEvent = NULL;
 	}
 
-	if(daemonThreadHandle) {
-		delete daemonThreadHandle;
-		daemonThreadHandle = NULL;
+	if(m_daemonThreadHandle) {
+		m_daemonThreadHandle = NULL;
 	}
 }
 
@@ -70,23 +69,23 @@ BOOL CIRDriver::loadPlugin(CString plugin) {
 	//make sure we have cleaned up first
 	//
 
-	CSingleLock l(&dllLock);
+	CSingleLock l(&m_dllLock);
 	unloadPlugin();
 
-	loadedPlugin	= plugin;
-	dll.dllFile		= LoadLibrary(plugin);
+	m_loadedPlugin	= plugin;
+	m_dll.dllFile	= LoadLibrary(plugin);
 
-	if(!dll.dllFile) return FALSE;
+	if(!m_dll.dllFile) return FALSE;
 
-	dll.initFunction			= (InitFunction)			GetProcAddress(dll.dllFile,"init");
-	dll.deinitFunction			= (DeinitFunction)			GetProcAddress(dll.dllFile,"deinit");
-	dll.hasGuiFunction			= (HasGuiFunction)			GetProcAddress(dll.dllFile,"hasGui");
-	dll.loadSetupGuiFunction	= (LoadSetupGuiFunction)	GetProcAddress(dll.dllFile,"loadSetupGui");
-	dll.sendFunction			= (SendFunction)			GetProcAddress(dll.dllFile,"sendIR");
-	dll.decodeFunction			= (DecodeFunction)			GetProcAddress(dll.dllFile,"decodeIR");
-	dll.setTransmittersFunction	= (SetTransmittersFunction)	GetProcAddress(dll.dllFile,"setTransmitters");
+	m_dll.initFunction				= (InitFunction)			GetProcAddress(m_dll.dllFile,"init");
+	m_dll.deinitFunction			= (DeinitFunction)			GetProcAddress(m_dll.dllFile,"deinit");
+	m_dll.hasGuiFunction			= (HasGuiFunction)			GetProcAddress(m_dll.dllFile,"hasGui");
+	m_dll.loadSetupGuiFunction		= (LoadSetupGuiFunction)	GetProcAddress(m_dll.dllFile,"loadSetupGui");
+	m_dll.sendFunction				= (SendFunction)			GetProcAddress(m_dll.dllFile,"sendIR");
+	m_dll.decodeFunction			= (DecodeFunction)			GetProcAddress(m_dll.dllFile,"decodeIR");
+	m_dll.setTransmittersFunction	= (SetTransmittersFunction)	GetProcAddress(m_dll.dllFile,"setTransmitters");
 
-	if(dll.initFunction && dll.deinitFunction && dll.hasGuiFunction && dll.loadSetupGuiFunction && dll.sendFunction && dll.decodeFunction) {
+	if(m_dll.initFunction && m_dll.deinitFunction && m_dll.hasGuiFunction && m_dll.loadSetupGuiFunction && m_dll.sendFunction && m_dll.decodeFunction) {
 		return TRUE;
 	}
 
@@ -101,21 +100,21 @@ void CIRDriver::unloadPlugin() {
 	deinit();
 
 	// daemon thread should not be dead now.
-	ASSERT(daemonThreadHandle == NULL);
+	ASSERT(m_daemonThreadHandle == NULL);
 
-	dll.initFunction			= NULL;
-	dll.deinitFunction			= NULL;
-	dll.hasGuiFunction			= NULL;
-	dll.loadSetupGuiFunction	= NULL;
-	dll.sendFunction			= NULL;
-	dll.decodeFunction			= NULL;
-	dll.setTransmittersFunction	= NULL;
+	m_dll.initFunction				= NULL;
+	m_dll.deinitFunction			= NULL;
+	m_dll.hasGuiFunction			= NULL;
+	m_dll.loadSetupGuiFunction		= NULL;
+	m_dll.sendFunction				= NULL;
+	m_dll.decodeFunction			= NULL;
+	m_dll.setTransmittersFunction	= NULL;
 
-	if(dll.dllFile) {
-		FreeLibrary(dll.dllFile);
+	if(m_dll.dllFile) {
+		FreeLibrary(m_dll.dllFile);
 	}
 
-	dll.dllFile					= NULL;
+	m_dll.dllFile					= NULL;
 }
 
 BOOL CIRDriver::init() {
@@ -126,16 +125,14 @@ BOOL CIRDriver::init() {
 	deinit();
 
 	// daemon thread should be dead now.
-	ASSERT(daemonThreadHandle == NULL);
+	ASSERT(m_daemonThreadHandle == NULL);
 
-	if(dll.initFunction) {
-		if(dll.initFunction(daemonThreadEvent)) {
+	if(m_dll.initFunction) {
+		if(m_dll.initFunction(m_daemonThreadEvent)) {
 
-			//printf("started thread ..\n");
+			m_daemonThreadHandle = AfxBeginThread(DaemonThread, this, THREAD_PRIORITY_IDLE);
 
-			daemonThreadHandle = AfxBeginThread(DaemonThread, this, THREAD_PRIORITY_IDLE);
-
-			if(daemonThreadHandle) {
+			if(m_daemonThreadHandle) {
 				return TRUE;
 			}
 		}
@@ -149,20 +146,20 @@ BOOL CIRDriver::init() {
 
 void CIRDriver::deinit() {
 
-	KillThread2(&daemonThreadHandle,daemonThreadEvent);
+	KillThread2(&m_daemonThreadHandle,m_daemonThreadEvent);
 	// daemon thread should be dead now.
-	ASSERT(daemonThreadHandle == NULL);
+	ASSERT(m_daemonThreadHandle == NULL);
 
-	if(dll.deinitFunction) {
-		dll.deinitFunction();
+	if(m_dll.deinitFunction) {
+		m_dll.deinitFunction();
 	}
 }
 
 int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeats) {
 
-	CSingleLock l(&dllLock);
-	if(dll.sendFunction) {
-		return dll.sendFunction(remote,code,repeats);
+	CSingleLock l(&m_dllLock);
+	if(m_dll.sendFunction) {
+		return m_dll.sendFunction(remote,code,repeats);
 	}
 
 	return 0;
@@ -170,9 +167,9 @@ int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeat
 
 int	CIRDriver::decodeIR(struct ir_remote *remote, char *out) {
 
-	CSingleLock l(&dllLock);
-	if(dll.decodeFunction) {
-		return dll.decodeFunction(remote,out);
+	CSingleLock l(&m_dllLock);
+	if(m_dll.decodeFunction) {
+		return m_dll.decodeFunction(remote,out);
 	}
 
 	return 0;
@@ -180,9 +177,9 @@ int	CIRDriver::decodeIR(struct ir_remote *remote, char *out) {
 
 int	CIRDriver::setTransmitters(unsigned int transmitterMask) {
 
-	CSingleLock l(&dllLock);
-	if(dll.setTransmittersFunction) {
-		return dll.setTransmittersFunction(transmitterMask);
+	CSingleLock l(&m_dllLock);
+	if(m_dll.setTransmittersFunction) {
+		return m_dll.setTransmittersFunction(transmitterMask);
 	}
 
 	return 0;
@@ -199,11 +196,11 @@ void CIRDriver::DaemonThreadProc(void) const {
 	char message[PACKET_SIZE+1];
 	//==========================
 
-	while(WaitForSingleObject(daemonThreadEvent, 0) == WAIT_TIMEOUT) {
+	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {
 
-		CSingleLock l(&dllLock);
-		ASSERT(dll.decodeFunction != NULL);
-		if(dll.decodeFunction(global_remotes,message)) {
+		CSingleLock l(&m_dllLock);
+		ASSERT(m_dll.decodeFunction != NULL);
+		if(m_dll.decodeFunction(global_remotes,message)) {
 			l.Unlock();
 
 			//======================

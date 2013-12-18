@@ -59,7 +59,7 @@ private:
 	/// Protects access to the functions imported from plug-in dll, and the
 	/// DLL handle.
 	/// TODO: move all the load/unload logic and related stuff to Dll class.
-	mutable CCriticalSection	dllLock;
+	mutable CCriticalSection	m_dllLock;
 	struct Dll {
 		InitFunction			initFunction;
 		DeinitFunction			deinitFunction;
@@ -71,13 +71,12 @@ private:
 		HMODULE		dllFile;
 	};
 
-	Dll dll;
-
-	//==============================
-	CString		loadedPlugin;
-	HANDLE		daemonThreadEvent;
-	CWinThread	*daemonThreadHandle;
-	//==============================
+	//===============================
+	Dll			m_dll;
+	CString		m_loadedPlugin;
+	HANDLE		m_daemonThreadEvent;
+	CWinThread*	m_daemonThreadHandle;
+	//===============================
 };
 
 #endif
