@@ -5,6 +5,7 @@
 #include "winlirc.h"
 #include "InputPlugin.h"
 #include "irconfig.h"
+#include <atlbase.h>
 
 
 // InputPlugin dialog
@@ -178,6 +179,7 @@ void InputPlugin::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK3, m_disableSystemTrayIcon);
 	DDX_Control(pDX, IDC_BUTTON3, m_createConfigButton);
 	DDX_Control(pDX, IDC_BUTTON2, m_browseButton);
+	DDX_Control(pDX, IDC_CHECK4, m_startWithWindows);
 }
 
 BEGIN_MESSAGE_MAP(InputPlugin, CDialog)
@@ -283,6 +285,13 @@ void InputPlugin::OnBnClickedOk() {
 		config.showTrayIcon = TRUE;
 	}
 
+	if(m_startWithWindows.GetCheck()==BST_CHECKED) {
+		setStartup(true);
+	}
+	else {
+		setStartup(false);
+	}
+
 	config.writeINIFile();
 
 	OnOK();
@@ -342,6 +351,10 @@ BOOL InputPlugin::OnInitDialog() {
 
 	if(!config.showTrayIcon) {
 		m_disableSystemTrayIcon.SetCheck(BST_CHECKED);
+	}
+
+	if(getStartup()) {
+		m_startWithWindows.SetCheck(BST_CHECKED);
 	}
    
 	return TRUE;
@@ -418,3 +431,51 @@ void InputPlugin::OnBnClickedButton3() {
 	}
 
 }
+
+bool InputPlugin::getStartup() {
+
+	//==========
+	CRegKey	key;
+	//==========
+
+	if(key.Open(HKEY_CURRENT_USER,_T("Software\\Microsoft\\Windows\\CurrentVersion\\Run"),KEY_READ)==ERROR_SUCCESS) {
+
+		//===================
+		TCHAR path[MAX_PATH];
+		ULONG pathLength;
+		//===================
+
+		pathLength = _countof(path);
+
+		if(key.QueryStringValue(_T("WinLIRC"),path,&pathLength)==ERROR_SUCCESS) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void InputPlugin::setStartup(bool start) {
+
+	//==========
+	CRegKey	key;
+	//==========
+
+	if(key.Open(HKEY_CURRENT_USER,_T("Software\\Microsoft\\Windows\\CurrentVersion\\Run"))==ERROR_SUCCESS) {
+
+		if(start) {
+
+			//=========================
+			TCHAR modulePath[MAX_PATH];
+			//=========================
+
+			GetModuleFileName(NULL,modulePath,_countof(modulePath));
+
+			key.SetStringValue(_T("WinLIRC"),modulePath);
+		}
+		else {
+			key.DeleteValue(_T("WinLIRC"));
+		}
+	}
+}
+

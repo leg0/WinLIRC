@@ -15,12 +15,14 @@ public:
 	enum { IDD = IDD_DIALOG1 };
 
 private:
-	void listDllFiles	();
-	bool checkDllFile	(CString file);
-	bool checkRecording	(CString file);
-	void enableWindows	(bool canRecord);					// enable windows based upon selection
-	void loadDll		(CString file);
-	void unloadDll		();
+	void	listDllFiles	();
+	bool	checkDllFile	(CString file);
+	bool	checkRecording	(CString file);
+	void	enableWindows	(bool canRecord);					// enable windows based upon selection
+	void	loadDll			(CString file);
+	void	unloadDll		();
+	bool	getStartup		();
+	void	setStartup		(bool start);
 
 	typedef int  (*HasGuiFunction)			();
 	typedef void (*LoadSetupGuiFunction)	();
@@ -56,4 +58,5 @@ private:
 	CButton		m_disableSystemTrayIcon;	
 	CButton		m_createConfigButton;
 	CButton		m_browseButton;
+	CButton		m_startWithWindows;
 };
