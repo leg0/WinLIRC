@@ -52,7 +52,9 @@ BOOL Cwinlirc::InitInstance() {
 		GetModuleFileName(NULL, fullPath.GetBufferSetLength(MAX_PATH+1), MAX_PATH);
 		indexOfLastSep = fullPath.ReverseFind(_T('\\'));
 		
-		SetCurrentDirectory(fullPath.Left(indexOfLastSep) + _T("\\plugins\\"));
+		if(!SetCurrentDirectory(fullPath.Left(indexOfLastSep) + _T("\\plugins\\"))) {
+			SetCurrentDirectory(fullPath.Left(indexOfLastSep) + _T("\\"));
+		}
 	}
 
 	config.readINIFile();
