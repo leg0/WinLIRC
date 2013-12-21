@@ -6,6 +6,7 @@
 #include "Keymap.h"
 #include "KeymapDlg.h"
 #include "./tinyxml2/tinyxml2.h"
+#include <Shlwapi.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -371,7 +372,11 @@ void CKeymapDlg::WinLIRCData()
 	{
 		if(!m_xbmcHello)
 		{
-			m_xbmcClient.SendHELO("WinLIRC", ICON_PNG, "WinLIRC_48.png");
+			if(PathFileExists(_T(".\\WinLIRC_48.png")))
+			{
+				m_xbmcClient.SendHELO("WinLIRC", ICON_PNG, "WinLIRC_48.png");
+			}
+
 			m_xbmcHello = TRUE;
 		}
 
