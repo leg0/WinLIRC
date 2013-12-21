@@ -127,7 +127,7 @@ void CGen_irApp::WriteConfig()
 	// Delete key and recreate it
 	{
 		CRegKey tmp;
-		if(tmp.Open(HKEY_LOCAL_MACHINE,"Software\\Winamp")!=ERROR_SUCCESS) 
+		if(tmp.Open(HKEY_CURRENT_USER,"Software\\Winamp")!=ERROR_SUCCESS) 
 		{
 			MessageBox(NULL,"Can't open registry key.","WinLIRC Plugin",MB_OK);
 			return;
@@ -137,7 +137,7 @@ void CGen_irApp::WriteConfig()
 	
 	CRegKey key;
 
-	if(key.Create(HKEY_LOCAL_MACHINE,"Software\\Winamp\\WinLIRC Plugin")!=ERROR_SUCCESS)
+	if(key.Create(HKEY_CURRENT_USER,"Software\\Winamp\\WinLIRC Plugin")!=ERROR_SUCCESS)
 	{
 		MessageBox(NULL,"Can't recreate registry key.","WinLIRC Plugin",MB_OK);
 		return;
@@ -155,12 +155,12 @@ bool CGen_irApp::ReadConfig()
 	
 	{
 		CRegKey tmp;
-		tmp.Create(HKEY_LOCAL_MACHINE,"Software\\Winamp");
+		tmp.Create(HKEY_CURRENT_USER,"Software\\Winamp");
 	}
 
 	CRegKey key;
 
-	if(key.Create(HKEY_LOCAL_MACHINE,"Software\\Winamp\\WinLIRC Plugin")!=ERROR_SUCCESS) 
+	if(key.Create(HKEY_CURRENT_USER,"Software\\Winamp\\WinLIRC Plugin")!=ERROR_SUCCESS) 
 		return false;
 	int count=0;
 	char value[256];
