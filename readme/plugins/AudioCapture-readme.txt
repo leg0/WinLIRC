@@ -1,3 +1,10 @@
+AudioInPlugin 1.6
+=================
+
+- Fixed one of the modes being marked as stereo when it was in fact mono. (thanks v0rt)
+- Fixed a dead lock bug. If used audio buffers were being re-adding for recording whilst the plugin was shuttind down,
+  it would dead lock.
+
 AudioInPlugin 1.5
 =================
 

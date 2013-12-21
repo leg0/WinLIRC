@@ -1,3 +1,13 @@
+WinLIRC 0.9.0h
+==============
+
+- Added an option to automaticaly start WinLIRC when windows boots. Since the program currently has no
+  uninstaller its advised to untick the button before deleting WinLIRC.
+- Fixed the "No match found for ircode" bug that was introduced in the previous build.
+- Fixed an incorrect string in the audio receiver plugin. ( thanks Vort )
+- Fixed a dead lock threading bug (on closing) in the audio receiver plugin.
+- Fixed a dead lock threading bug effecting all plugins when trying to shut down. ( thanks leg0 for finding this one )
+
 WinLIRC 0.9.0g
 ==============
 
