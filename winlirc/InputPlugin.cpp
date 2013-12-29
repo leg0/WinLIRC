@@ -169,33 +169,33 @@ void InputPlugin::unloadDll() {
 void InputPlugin::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_COMBO1, m_cboxInputPlugin);
-	DDX_Control(pDX, IDC_BUTTON1, m_setupButton);
-	DDX_Control(pDX, IDC_EDIT1, m_configPath);
-	DDX_Control(pDX, IDC_CHECK1, m_disableKeyRepeats);
-	DDX_Control(pDX, IDC_EDIT3, m_disableFirstRepeats);
+	DDX_Control(pDX, IDC_CMB_INPUT_PLUGIN, m_cboxInputPlugin);
+	DDX_Control(pDX, IDC_BN_PLUGIN_SETUP, m_setupButton);
+	DDX_Control(pDX, IDC_EDIT_CONFIG_PATH, m_configPath);
+	DDX_Control(pDX, IDC_CHK_DISABLE_KEY_REPEATS, m_disableKeyRepeats);
+	DDX_Control(pDX, IDC_EDIT_DISABLE_FIRST_REPEATS, m_disableFirstRepeats);
 	DDX_Control(pDX, IDC_DISABLE_FIRST_REPEATS, m_disableFirstRepeatsLabel);
-	DDX_Control(pDX, IDC_CHECK2, m_allowLocalConnectionsOnly);
-	DDX_Control(pDX, IDC_CHECK3, m_disableSystemTrayIcon);
-	DDX_Control(pDX, IDC_BUTTON3, m_createConfigButton);
-	DDX_Control(pDX, IDC_BUTTON2, m_browseButton);
-	DDX_Control(pDX, IDC_CHECK4, m_startWithWindows);
+	DDX_Control(pDX, IDC_CHK_LOCAL_CONNECTIONS_ONLY, m_allowLocalConnectionsOnly);
+	DDX_Control(pDX, IDC_CHK_DISABLE_TRAY_ICON, m_disableSystemTrayIcon);
+	DDX_Control(pDX, IDC_BN_CREATE_CONFIG, m_createConfigButton);
+	DDX_Control(pDX, IDC_BN_BROWSE, m_browseButton);
+	DDX_Control(pDX, IDC_CHK_START_WITH_WINDOWS, m_startWithWindows);
 }
 
 BEGIN_MESSAGE_MAP(InputPlugin, CDialog)
-	ON_CBN_SELCHANGE(IDC_COMBO1, &InputPlugin::OnCbnSelchangeCombo1)
+	ON_CBN_SELCHANGE(IDC_CMB_INPUT_PLUGIN, &InputPlugin::OnCbnSelchangeInputPlugin)
 	ON_BN_CLICKED(IDOK, &InputPlugin::OnBnClickedOk)
-	ON_BN_CLICKED(IDC_BUTTON2, &InputPlugin::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BN_BROWSE, &InputPlugin::OnBnClickedBrowse)
 	ON_BN_CLICKED(IDCANCEL, &InputPlugin::OnBnClickedCancel)
-	ON_BN_CLICKED(IDC_BUTTON1, &InputPlugin::OnBnClickedButton1)
-	ON_BN_CLICKED(IDC_CHECK1, &InputPlugin::OnBnClickedCheck1)
-	ON_BN_CLICKED(IDC_BUTTON3, &InputPlugin::OnBnClickedButton3)
+	ON_BN_CLICKED(IDC_BN_PLUGIN_SETUP, &InputPlugin::OnBnClickedPluginSetup)
+	ON_BN_CLICKED(IDC_CHK_DISABLE_KEY_REPEATS, &InputPlugin::OnBnClickedDisableKeyRepeats)
+	ON_BN_CLICKED(IDC_BN_CREATE_CONFIG, &InputPlugin::OnBnClickedCreateConfig)
 END_MESSAGE_MAP()
 
 
 // InputPlugin message handlers
 
-void InputPlugin::OnCbnSelchangeCombo1() {
+void InputPlugin::OnCbnSelchangeInputPlugin() {
 
 	//======================
 	int		cursorSelection;
@@ -285,19 +285,14 @@ void InputPlugin::OnBnClickedOk() {
 		config.showTrayIcon = TRUE;
 	}
 
-	if(m_startWithWindows.GetCheck()==BST_CHECKED) {
-		setStartup(true);
-	}
-	else {
-		setStartup(false);
-	}
+	setStartup(m_startWithWindows.GetCheck() == BST_CHECKED);
 
 	config.writeINIFile();
 
 	OnOK();
 }
 
-void InputPlugin::OnBnClickedButton2() {
+void InputPlugin::OnBnClickedBrowse() {
 
 	CFileDialog fileDlg(TRUE,NULL,NULL,OFN_PATHMUSTEXIST|OFN_NOCHANGEDIR|OFN_ENABLESIZING,NULL,this,0,TRUE);
 
@@ -312,7 +307,7 @@ void InputPlugin::OnBnClickedCancel()
 	OnCancel();
 }
 
-void InputPlugin::OnBnClickedButton1()
+void InputPlugin::OnBnClickedPluginSetup()
 {
 	if(m_loadSetupGuiFunction) {
 
@@ -361,7 +356,7 @@ BOOL InputPlugin::OnInitDialog() {
 
 }
 
-void InputPlugin::OnBnClickedCheck1() {
+void InputPlugin::OnBnClickedDisableKeyRepeats() {
 
 	//=============
 	INT	checkState;
@@ -380,7 +375,7 @@ void InputPlugin::OnBnClickedCheck1() {
 
 }
 
-void InputPlugin::OnBnClickedButton3() {
+void InputPlugin::OnBnClickedCreateConfig() {
 	
 	//==============================
 	CString				confPath;

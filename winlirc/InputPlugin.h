@@ -40,13 +40,13 @@ protected:
 
 private:
 
-	afx_msg void OnCbnSelchangeCombo1();
+	afx_msg void OnCbnSelchangeInputPlugin();
 	afx_msg void OnBnClickedOk();
-	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedBrowse();
 	afx_msg void OnBnClickedCancel();
-	afx_msg void OnBnClickedButton1();
-	afx_msg void OnBnClickedCheck1();
-	afx_msg void OnBnClickedButton3();
+	afx_msg void OnBnClickedPluginSetup();
+	afx_msg void OnBnClickedDisableKeyRepeats();
+	afx_msg void OnBnClickedCreateConfig();
 
 	CComboBox	m_cboxInputPlugin;
 	CButton		m_setupButton;
