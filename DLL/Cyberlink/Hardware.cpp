@@ -24,7 +24,6 @@
 #include "../Common/LIRCDefines.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Hardware.h"
-#include "Decode.h"
 
 #define CODE_LENGTH 32
 
