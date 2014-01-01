@@ -30,3 +30,5 @@ HANDLE	dataReadyEvent	= NULL;
 ReceiveData *receiveData = NULL;
 
 ir_code irCode = 0;
+
+struct mytimeval start,end,last;

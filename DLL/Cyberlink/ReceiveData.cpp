@@ -218,6 +218,8 @@ void ReceiveData::threadProc(int threadNumber)
 
 		if ( result == WAIT_OBJECT_0 ) {
 
+			gettimeofday(&start,NULL);
+
 			WinUsb_GetOverlappedResult(usbHandle[threadNumber], &overlappedRead, &bytesRead, FALSE);
 
 			if ( (bytesRead == 8) || (bytesRead == 4) ) {
@@ -231,6 +233,10 @@ void ReceiveData::threadProc(int threadNumber)
 				code = CLBADCODE;
 				//continue;
 			}
+
+			last = end;
+
+			gettimeofday(&end,NULL);
 
 			setData(code);
 		} else {

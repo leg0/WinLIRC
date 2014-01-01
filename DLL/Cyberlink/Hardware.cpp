@@ -37,7 +37,6 @@ int receive_decode (struct ir_remote *remote, ir_code *prep, ir_code *codep,
 {
 	//==========
 	int success;
-	struct mytimeval start, last;
 	//==========
 
 	success = map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
