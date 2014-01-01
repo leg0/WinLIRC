@@ -114,6 +114,8 @@ bool ReceiveData::init()
 	WINUSB_PIPE_INFORMATION pipeInfo;
 	//====================
 
+	gettimeofday(&end,NULL);	// initialise
+
 	findCyberLinkDevicePaths((LPGUID)&CYBERLINK_RC_DEVICE); 
 
 	if ( CyberLinkDevicePaths.empty() ) return false;		// no hardware
