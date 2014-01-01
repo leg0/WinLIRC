@@ -24,8 +24,8 @@
 #include "../Common/LIRCDefines.h"
 #include "../Common/Hardware.h"
 #include "../Common/WLPluginAPI.h"
+#include "../Common/IRRemote.h"
 #include "Globals.h"
-#include "Decode.h"
 #include "ReceiveData.h"
 
 WL_API int init(HANDLE exitEvent)
