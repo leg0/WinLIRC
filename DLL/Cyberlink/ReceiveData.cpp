@@ -25,6 +25,7 @@
 #include <setupapi.h>
 #include "Globals.h"
 #include "ReceiveData.h"
+#include "../Common/DebugOutput.h"
 
 #define CLMAKECODE(a, b, c, d) ( (a)<<24 | (b)<<16 | (c)<<8 | (d) )
 #define CLBADCODE	0xFFFFFFFF
@@ -66,7 +67,7 @@ void ReceiveData::findCyberLinkDevicePaths(LPGUID  pGuid )
     hardwareDeviceInfo = SetupDiGetClassDevs(pGuid, NULL, NULL, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
 
     if (hardwareDeviceInfo == INVALID_HANDLE_VALUE) {
-		//printf("Could not find any CyberLink remote controller.");
+		DPRINTF("Could not find any CyberLink remote controller.");
         return;
 	}
  
@@ -127,24 +128,24 @@ bool ReceiveData::init()
 		deviceHandle[i] = CreateFile(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
 
 		if ( deviceHandle[i] == INVALID_HANDLE_VALUE ) {
-			//printf("Invalid device handle\n");
+			DPRINTF("Invalid device handle\n");
 			return false;
 		}
 
 		if ( WinUsb_Initialize(deviceHandle[i], &(usbHandle[i]) ) == 0 ) {
-			//printf("WinUsb_Initialize failed, error - %ld\n", GetLastError());
+			DPRINTF("WinUsb_Initialize failed, error - %ld\n", GetLastError());
 			return false;
 		}
 
 		if ( WinUsb_QueryInterfaceSettings(usbHandle[i], 0, &ifaceDescriptor) == 0 ) {
-			//printf("WinUsb_QueryInterfaceSettings failed, error - %ld\n", GetLastError());
+			DPRINTF("WinUsb_QueryInterfaceSettings failed, error - %ld\n", GetLastError());
 			return false;
 		}
 
 		inPipeId[i] = 0;
 		for (int j = 0; j < ifaceDescriptor.bNumEndpoints; j++) {
 			if ( WinUsb_QueryPipe(usbHandle[i], 0, (UCHAR)j, &pipeInfo) == 0 ) {
-				//printf("WinUsb_QueryPipe failed, error - %ld\n", GetLastError());
+				DPRINTF("WinUsb_QueryPipe failed, error - %ld\n", GetLastError());
 				return false;
 			}
 
