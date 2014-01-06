@@ -31,7 +31,7 @@
 // A simple algorithm for decoding audio
 //
 
-AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, bool invertedSignal, int noiseValue) {
+AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, int noiseValue) {
 
 	m_multiplyConstant	= 1000000 / (double)frequency;
 	m_maxCount			= (~0) / (DWORD)m_multiplyConstant;
@@ -39,7 +39,6 @@ AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel
 	m_gapInSamples		= 0;
 
 	m_numberOfChans		= numberOfChannels;
-	m_inverted			= invertedSignal;
 	m_leftChannel		= leftChannel;
 	m_noiseValue		= noiseValue;
 
@@ -52,7 +51,25 @@ AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel
 	m_bufferStart	= 0;
 	m_bufferEnd		= 0;
 
-	m_pulse = false;
+	m_pulse		= false;
+	m_inverted	= false;
+	m_detected	= false;
+}
+
+// Some audio hardware will give inverted signals.
+// We check the first signal against the noise value and see 
+// which way up the signal is. Technically this could fail
+// if the zero point value is lower than the noise value. Not
+// quite sure what hardware would have such an altered zero point.
+void AnalyseAudio::detectSignalPolarity(UCHAR sample) {
+
+	if(abs(sample-128) > m_noiseValue) {
+
+		if(sample>128)	m_inverted	= false;
+		else			m_inverted	= true;
+		
+		m_detected	= true;
+	}
 }
 
 void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
@@ -74,6 +91,10 @@ void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 		}
 		else {
 			currentSample = data[i];
+		}
+
+		if(!m_detected) {
+			detectSignalPolarity(currentSample);
 		}
 
 		if(m_sampleCount > m_maxCount) {

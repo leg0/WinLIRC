@@ -114,10 +114,9 @@ void RecordAudio::openAudioDevice(int deviceID, int frequency, int numberOfChann
 	//
 
 	MMRESULT result = waveInOpen(&m_hWaveIn,deviceID,&waveFormat,(DWORD_PTR)waveInProc,(DWORD_PTR)this,CALLBACK_FUNCTION);
-
 	DPRINTF("waveInOpen result %i\n",result);
 
-	analyseAudio = new AnalyseAudio(frequency,waveFormat.nChannels,leftChannel,settings->getInverted(),settings->getNoiseValue());
+	analyseAudio = new AnalyseAudio(frequency,waveFormat.nChannels,leftChannel,settings->getNoiseValue());
 }
 
 void RecordAudio::closeAudioDevice() {

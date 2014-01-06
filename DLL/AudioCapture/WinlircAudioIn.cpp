@@ -291,13 +291,6 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 			}
 
 			//
-			// invert audio settings
-			//
-			if(guiSettings->getInverted()) {
-				SendDlgItemMessage(hwnd,IDC_CHECK1,BM_SETCHECK,BST_CHECKED,0);
-			}
-
-			//
 			// slider control
 			//
 			SendDlgItemMessage(hwnd,IDC_SLIDER1,TBM_SETRANGEMIN,FALSE,0);
@@ -336,13 +329,6 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 			switch(LOWORD(wParam)) {
 
 				case IDOK: {
-
-					if(SendDlgItemMessage(hwnd,IDC_CHECK1,BM_GETSTATE,0,0)==BST_CHECKED) {
-						guiSettings->setInverted(true);
-					}
-					else {
-						guiSettings->setInverted(false);
-					}
 
 					guiSettings->saveSettings();
 					DestroyWindow (hwnd);

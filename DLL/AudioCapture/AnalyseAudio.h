@@ -31,7 +31,7 @@
 class AnalyseAudio {
 
 public:
-	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, bool invertedSignal, int noiseValue);
+	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, int noiseValue);
 
 	void decodeData(UCHAR *data, int bytesRecorded);
 	bool getData(UINT *out);
@@ -41,6 +41,7 @@ private:
 
 	void setData(UINT data);
 	void sendBuffer(bool space);
+	void detectSignalPolarity(UCHAR sample);
 
 	//=======================
 	double	m_multiplyConstant; 
@@ -51,6 +52,7 @@ private:
 	bool	m_pulse;
 	int		m_noiseValue;
 	bool	m_inverted;
+	bool	m_detected;
 	int		m_gapInSamples;
 	//=======================
 	UINT	m_dataBuffer[256];
