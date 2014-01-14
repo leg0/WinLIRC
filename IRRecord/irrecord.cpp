@@ -494,7 +494,7 @@ int main(int argc,char **argv)
 		"controls\" for how to get help.\n"
 		"\n"
 		"If there already is a remote control of the same brand available at\n"
-		"http://www.lirc.org/remotes/ you might also want to try using such a\n"
+		"http://www.winlirc.org/remotes/ you might also want to try using such a\n"
 		"remote as a template. The config files already contain all\n"
 		"parameters of the protocol used by remotes of a certain brand and\n"
 		"knowing these parameters makes the job of this program much\n"
@@ -503,8 +503,8 @@ int main(int argc,char **argv)
 		"distribution of this package. You can use a template files by\n"
 		"providing the path of the file as command line parameter.\n"
 		"\n"
-		"Please send the finished config files to <lirc@bartelmus.de> so that I\n"
-		"can make them available to others. Don't forget to put all information\n"
+		"Please send the finished config files to <winlirc.configs@gmail.com> so that\n"
+		"I can make them available to others. Don't forget to put all information\n"
 		"that you can get about the remote control in the header of the file.\n"
 		"\n"
 		"Press RETURN to continue.\n\n");
@@ -2415,5 +2415,5 @@ void fprint_copyright(FILE *fout)
 	fprintf(fout,
 		"\n"
 		"# Please make this file available to others\n"
-		"# by sending it to <lirc@bartelmus.de>\n");
+		"# by sending it to <winlirc.configs@gmail.com>\n");
 }
