@@ -37,6 +37,7 @@ RecordAudio::RecordAudio() {
 
 	m_hWaveIn	= NULL;
 	m_stop		= FALSE;
+	m_skipFirst	= TRUE;
 }
 
 RecordAudio::~RecordAudio() {
@@ -184,18 +185,17 @@ void RecordAudio::unPrepareBuffers() {
 
 void RecordAudio::processHeader(WAVEHDR *waveHeader) {
 
-	//printf("process header !\n");
-
 	if(WHDR_DONE==(WHDR_DONE &waveHeader->dwFlags)) {
 
-		//
 		// process audio here identify spaces and pulses etc
-		//
-		analyseAudio->decodeData((UCHAR*)waveHeader->lpData,waveHeader->dwBytesRecorded);
+		if(!m_skipFirst) {
+			analyseAudio->decodeData((UCHAR*)waveHeader->lpData,waveHeader->dwBytesRecorded);
+		}
 
-		//
+		// skip the first data chunk since most of the time it appears to be filled with junk
+		m_skipFirst = FALSE;
+
 		// use buffer again for recording
-		//
 		if(!m_stop) {
 			waveInAddBuffer(m_hWaveIn,waveHeader,sizeof(WAVEHDR));
 		}

@@ -49,6 +49,7 @@ private:
 	HWAVEIN m_hWaveIn;
 	WAVEHDR	m_waveHDR[NUMBER_OF_BUFFERS];
 	BOOL	m_stop;
+	BOOL	m_skipFirst;
 
 };
 
