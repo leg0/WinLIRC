@@ -27,8 +27,11 @@ bool AudioFormats::formatSupported(int format) {
 
 	//ignore all 16 bit formats
 
-	if(format & WAVE_FORMAT_1M08) return true;
-	if(format & WAVE_FORMAT_1S08) return true;
+	//11khz sampling frequency samples at 90us. This can produce errors up to 180us,
+	//too high for the default 100us error tolerence.
+
+	//if(format & WAVE_FORMAT_1M08) return true;
+	//if(format & WAVE_FORMAT_1S08) return true;
 
 	if(format & WAVE_FORMAT_2M08) return true;
 	if(format & WAVE_FORMAT_2S08) return true;
