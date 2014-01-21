@@ -52,7 +52,7 @@ END
 // Dialog
 //
 
-IDD_DIALOG1 DIALOGEX 0, 0, 190, 128
+IDD_DIALOG1 DIALOGEX 0, 0, 190, 152
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Audio Input"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -68,6 +68,7 @@ BEGIN
     CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,18,84,126,12
     GROUPBOX        "Noise Offset",IDC_STATIC,6,72,174,30
     EDITTEXT        IDC_EDIT1,150,84,24,12,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Note: When you record configs, always select the highest sampling frequency.",IDC_STATIC,21,126,147,19
 END
 
 
@@ -84,7 +85,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 183
         TOPMARGIN, 7
-        BOTTOMMARGIN, 121
+        BOTTOMMARGIN, 145
     END
 END
 #endif    // APSTUDIO_INVOKED

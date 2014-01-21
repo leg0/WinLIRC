@@ -28,7 +28,6 @@
 #include "resource.h"
 #include <tchar.h>
 #include "Globals.h"
-#include <stdio.h>
 #include "AudioFormats.h"
 #include "StringFunctions.h"
 #include <Commctrl.h>
@@ -72,7 +71,6 @@ WL_API int init(HANDLE exitEvent) {
 	deviceID = AudioFormats::getAudioIndex(deviceName);
 
 	if(deviceID==-1) {
-		//printf("device id -1 failed to match :(\n");
 		return 0;
 	}
 	else {
@@ -132,9 +130,6 @@ void addAudioDeviceList(HWND hwnd, int item) {
 
 		SendDlgItemMessage(hwnd,item,CB_ADDSTRING,0,(LPARAM)caps.szPname);
 
-		//_tprintf(_T("caps %s z\n"),caps.szPname);
-		//_tprintf(_T("audio device %s z\n"),audioDeviceName);
-
 		if(! _tcscmp(caps.szPname,audioDeviceName)) {
 			foundDevice		= TRUE;
 			foundIndex		= i;
@@ -193,13 +188,9 @@ void addAudioFormats(HWND hwnd, int item) {
 
 			tempFormat = caps.dwFormats & shiftFormat;
 
-			//printf("temp format %i\n",tempFormat);
-
 			if(tempFormat) {
 
 				//check we support this one 
-
-				//printf("format supported %i\n",AudioFormats::formatSupported(tempFormat));
 
 				if(AudioFormats::formatSupported(tempFormat)) {
 
@@ -208,8 +199,6 @@ void addAudioFormats(HWND hwnd, int item) {
 					//===============
 
 					AudioFormats::getFormatString(tempFormat,string,64);
-
-					//_tprintf(_T("string %s %i\n"),string,tempFormat);
 
 					//add string to combo box thing !
 					SendDlgItemMessage(hwnd,item,CB_ADDSTRING,0,(LPARAM)string);
@@ -233,8 +222,6 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
                           UINT message, 
                           WPARAM wParam, 
                           LPARAM lParam) {
-
-	//printf("message %i\n",message);
 
     switch (message) {
 
@@ -375,11 +362,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 						//==============
 						
 						index = SendDlgItemMessage(hwnd,IDC_COMBO2,CB_GETCURSEL,0,0);
-						//printf("index value %i\n",index);
-
 						audioFormat = formatArray[index];
-
-						//printf("%i audio format\n",audioFormat);
 
 						//
 						// double check it case of cataclysm
