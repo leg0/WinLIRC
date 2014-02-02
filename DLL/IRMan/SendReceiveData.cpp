@@ -75,6 +75,9 @@ bool SendReceiveData::init() {
 		return false;
 	}
 
+	// Lines for RTS and DTR should now be live. Give the device a little time to boot up.
+	Sleep(250);
+
 	if(m_serial.SetupReadTimeouts(CSerial::EReadTimeoutNonblocking)!=ERROR_SUCCESS) {
 		DPRINTF("Setting up read timeouts failed\n");
 		return false;
