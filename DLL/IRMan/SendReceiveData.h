@@ -44,13 +44,13 @@ private:
 	void	killThread();
 	void	receiveLoop();
 
-	//==========================
-	HANDLE		threadHandle;
-	CSerial		serial;
-	HANDLE		exitEvent;
-	HANDLE		overlappedEvent;
-	OVERLAPPED	overlapped;
-	//==========================
+	//============================
+	HANDLE		m_threadHandle;
+	CSerial		m_serial;
+	HANDLE		m_exitEvent;
+	HANDLE		m_overlappedEvent;
+	OVERLAPPED	m_overlapped;
+	//============================
 };
 
 #endif

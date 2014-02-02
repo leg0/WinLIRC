@@ -22,8 +22,7 @@
 #include <windows.h>
 #include "SendReceiveData.h"
 #include "Globals.h"
-#include <stdio.h>
-#include <tchar.h>
+#include "../Common/DebugOutput.h"
 #include "../Common/Linux.h"
 
 DWORD WINAPI IRMan(void *recieveClass) {
@@ -34,11 +33,11 @@ DWORD WINAPI IRMan(void *recieveClass) {
 
 SendReceiveData::SendReceiveData() {
 
-	threadHandle	= NULL;
-	exitEvent		= NULL;
-	overlappedEvent	= NULL;
+	m_threadHandle		= NULL;
+	m_exitEvent			= NULL;
+	m_overlappedEvent	= NULL;
 
-	memset(&overlapped,0,sizeof(OVERLAPPED));
+	memset(&m_overlapped,0,sizeof(OVERLAPPED));
 }
 
 bool SendReceiveData::init() {
@@ -53,39 +52,66 @@ bool SendReceiveData::init() {
 
 	_sntprintf(comPortName,_countof(comPortName),_T("\\\\.\\COM%i"),settings.getComPort());
 
-	//_tprintf(_T("com port name %s\n"),comPortName);
+	TPRINTF(_T("Opening port %s\n"),comPortName);
 
-	if(CSerial::CheckPort(comPortName)!=CSerial::EPortAvailable) return false;
+	if(CSerial::CheckPort(comPortName)!=CSerial::EPortAvailable) {
+		DPRINTF("Port unavailable\n"); 	
+		return false;
+	}
 
-	//printf("INIT\n");
-
-	//
 	//open serial port
-	//
-	if(serial.Open(comPortName,0,0,true)!=ERROR_SUCCESS) return false;;
-	if(serial.Setup(CSerial::EBaud9600,CSerial::EData8,CSerial::EParNone,CSerial::EStop1)!=ERROR_SUCCESS) return false;
-	if(serial.SetupHandshaking(CSerial::ERTSDTR)!=ERROR_SUCCESS) return false;	//change this to none?
-	if(serial.SetupReadTimeouts(CSerial::EReadTimeoutNonblocking)!=ERROR_SUCCESS) return false;
+	if(m_serial.Open(comPortName,0,0,true)!=ERROR_SUCCESS) {
+		DPRINTF("Opening port failed\n");
+		return false;
+	}
+
+	if(m_serial.Setup(CSerial::EBaud9600,CSerial::EData8,CSerial::EParNone,CSerial::EStop1)!=ERROR_SUCCESS) {
+		DPRINTF("Setting up failed\n");
+		return false;
+	}
+
+	if(m_serial.SetupHandshaking(CSerial::ERTSDTR)!=ERROR_SUCCESS) {
+		DPRINTF("Setting up handshaking failed\n");
+		return false;
+	}
+
+	if(m_serial.SetupReadTimeouts(CSerial::EReadTimeoutNonblocking)!=ERROR_SUCCESS) {
+		DPRINTF("Setting up read timeouts failed\n");
+		return false;
+	}
+
+	// clear read buffer if there is any data in there
+
+	DWORD bytesRead;
+	while(m_serial.Read(tempBuffer,1,&bytesRead)==ERROR_SUCCESS) {
+		if(bytesRead==0) break;
+	}
+
+	// Send IR to the device and await response
+
 	tempBuffer[0] = 'I';
-	if(serial.Write(tempBuffer,1)!=ERROR_SUCCESS) return false;
+	tempBuffer[1] = 'R';
+
+	m_serial.Write(tempBuffer,1);
 	Sleep(250);
-	tempBuffer[0] = 'R';
-	if(serial.Write(tempBuffer,1)!=ERROR_SUCCESS) return false;
+	m_serial.Write(tempBuffer+1,1);
 	Sleep(250);
-	serial.Read(tempBuffer,sizeof(tempBuffer));
 
-	tempBuffer[2] = '\0';	// null terminate string
+	m_serial.Read(tempBuffer,sizeof(tempBuffer));
 
-	if(strcmp(tempBuffer,"OK")) return false;	// okay not returned
+	if(strncmp(tempBuffer,"OK",2)) {
+		DPRINTF("OK not returned from the device\n");
+		return false;
+	}
 
-	serial.SetMask(CSerial::EEventRecv);
+	m_serial.SetMask(CSerial::EEventRecv);
 	
-	exitEvent			= CreateEvent(NULL,FALSE,FALSE,NULL);
-	overlappedEvent		= CreateEvent(NULL,FALSE,FALSE,NULL);
-	overlapped.hEvent	= overlappedEvent;
-	threadHandle		= CreateThread(NULL,0,IRMan,(void *)this,0,NULL);
+	m_exitEvent			= CreateEvent(NULL,FALSE,FALSE,NULL);
+	m_overlappedEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
+	m_overlapped.hEvent	= m_overlappedEvent;
+	m_threadHandle		= CreateThread(NULL,0,IRMan,(void *)this,0,NULL);
 
-	if(threadHandle) {
+	if(m_threadHandle) {
 		return true;
 	}
 
@@ -96,16 +122,15 @@ void SendReceiveData::deinit() {
 
 	killThread();
 
-	if(exitEvent) {
-		CloseHandle(exitEvent);
-		exitEvent = NULL;
+	if(m_exitEvent) {
+		CloseHandle(m_exitEvent);
+		m_exitEvent = NULL;
 	}
 
-	if(overlappedEvent) {
-		CloseHandle(overlappedEvent);
-		overlappedEvent = NULL;
+	if(m_overlappedEvent) {
+		CloseHandle(m_overlappedEvent);
+		m_overlappedEvent = NULL;
 	}
-
 }
 
 
@@ -120,9 +145,9 @@ void SendReceiveData::killThread() {
 	// need to kill thread here
 	//
 
-	SetEvent(exitEvent);
+	SetEvent(m_exitEvent);
 
-	if(threadHandle!=NULL) {
+	if(m_threadHandle!=NULL) {
 
 		//===========
 		DWORD result;
@@ -130,20 +155,20 @@ void SendReceiveData::killThread() {
 
 		result = 0;
 
-		if(GetExitCodeThread(threadHandle,&result)==0) 
+		if(GetExitCodeThread(m_threadHandle,&result)==0) 
 		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
+			CloseHandle(m_threadHandle);
+			m_threadHandle = NULL;
 			return;
 		}
 
 		if(result==STILL_ACTIVE)
 		{
-			WaitForSingleObject(threadHandle,INFINITE);
+			WaitForSingleObject(m_threadHandle,INFINITE);
 		}
 
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
+		CloseHandle(m_threadHandle);
+		m_threadHandle = NULL;
 	}
 }
 
@@ -189,16 +214,13 @@ int SendReceiveData::dataReady() {
 
 void SendReceiveData::receiveLoop() {
 
-	//=================
+	//==============
 	HANDLE	wait[2];
 	DWORD	result;
-	//=================
+	//==============
 
-	wait[0] = overlappedEvent;
-	wait[1] = exitEvent;
-
-
-	//printf("entering receive loop !!!!!!!!!\n");
+	wait[0] = m_overlappedEvent;
+	wait[1] = m_exitEvent;
 
 	while(1)
 	{
@@ -206,9 +228,9 @@ void SendReceiveData::receiveLoop() {
 		CSerial::EEvent eEvent;
 		//=====================
 
-		serial.WaitEvent(&overlapped);
+		m_serial.WaitEvent(&m_overlapped);
 
-		result = WaitForMultipleObjects(sizeof(wait)/sizeof(*wait),wait,FALSE,INFINITE);
+		result = WaitForMultipleObjects(_countof(wait),wait,FALSE,INFINITE);
 
 		if(result==WAIT_OBJECT_0) {
 
@@ -217,15 +239,15 @@ void SendReceiveData::receiveLoop() {
 			char	buffer[256];
 			//==================
 
-			eEvent = serial.GetEventType();
+			eEvent = m_serial.GetEventType();
 
-			if (!(eEvent & CSerial::EEventRecv)) { printf("wrong event\n"); continue; }
+			if (!(eEvent & CSerial::EEventRecv)) { DPRINTF("wrong event\n"); continue; }
 
 			gettimeofday(&start,NULL);
 
 			while(1) {
 
-				if(serial.Read(buffer,sizeof(buffer),&dwBytesRead)!=ERROR_SUCCESS) {
+				if(m_serial.Read(buffer,sizeof(buffer),&dwBytesRead)!=ERROR_SUCCESS) {
 					break;					// read error
 				}
 
@@ -247,7 +269,7 @@ void SendReceiveData::receiveLoop() {
 					irCode = irCode|(ir_code) (unsigned char) buffer[i];					
 				}
 
-				//printf("ir code %I64d\n",irCode);
+				DPRINTF("ir code %I64d\n",irCode);
 
 				LeaveCriticalSection(&criticalSection);
 
@@ -265,9 +287,9 @@ void SendReceiveData::receiveLoop() {
 		}
 	}
 
-	//printf("thread exited\n");
+	DPRINTF("Thread exited\n");
 
-	serial.Close();
+	m_serial.Close();
 }
 
 //======================================================================================
