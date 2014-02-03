@@ -20,6 +20,7 @@
  */
 
 #include <windows.h>
+#include <tchar.h>
 #include "SendReceiveData.h"
 #include "Globals.h"
 #include "../Common/DebugOutput.h"
