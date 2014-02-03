@@ -26,6 +26,8 @@
 #include <limits.h>
 #include "Linux.h"
 
+#pragma warning( disable : 4018 )
+
 struct rbuf rec_buffer;
 
 extern struct ir_remote *decoding;
