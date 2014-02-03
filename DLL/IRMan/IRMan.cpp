@@ -83,7 +83,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 			enumSerialPorts(hwnd, IDC_COMBO1);
 
 			TCHAR portName[32];
-			_stprintf(portName, _T("COM%d"), settings.getComPort());
+			_sntprintf_s(portName,_countof(portName),_TRUNCATE,_T("COM%d"), settings.getComPort());
 			int const portIdx = SendDlgItemMessage(hwnd, IDC_COMBO1, CB_FINDSTRINGEXACT, -1, reinterpret_cast<LPARAM>(portName));
 			SendDlgItemMessage(hwnd, IDC_COMBO1, CB_SETCURSEL, portIdx, 0);
 
