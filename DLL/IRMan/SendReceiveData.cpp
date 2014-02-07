@@ -48,7 +48,9 @@ bool SendReceiveData::init() {
 	char tempBuffer[32];
 	//===================
 
-	irCode = 0;
+	m_count	= 0;
+	irCode	= 0;
+
 	gettimeofday(&end,NULL);	// initialise
 
 	_sntprintf(comPortName,_countof(comPortName),_T("\\\\.\\COM%i"),settings.getComPort());
@@ -240,40 +242,36 @@ void SendReceiveData::receiveLoop() {
 
 			//==================
 			DWORD	dwBytesRead;
-			char	buffer[256];
+			char	buffer[6];
 			//==================
 
 			eEvent = m_serial.GetEventType();
 
 			if (!(eEvent & CSerial::EEventRecv)) { DPRINTF("wrong event\n"); continue; }
 
-			gettimeofday(&start,NULL);
+			if(m_count==0) {
+				gettimeofday(&start,NULL);
+			}
 
-			while(1) {
+			if(m_serial.Read(buffer+m_count,sizeof(buffer)-m_count,&dwBytesRead)!=ERROR_SUCCESS) {
+				break;					// read error
+			}
 
-				if(m_serial.Read(buffer,sizeof(buffer),&dwBytesRead)!=ERROR_SUCCESS) {
-					break;					// read error
-				}
+			m_count += dwBytesRead;
 
-				if(dwBytesRead<=0) break;	//finished reading
-
-				if(dwBytesRead!=6) break;
-
-				//
-				// assume we will read 6 bytes at a time if not we fail :p
-				//
+			if(m_count==6) {
 
 				EnterCriticalSection(&criticalSection);
 
 				last = end;
 				irCode = 0xffff;
 
-				for(DWORD i=0; i<dwBytesRead;i++) {
+				for(DWORD i=0; i<6; i++) {
 					irCode = irCode<<8;
 					irCode = irCode|(ir_code) (unsigned char) buffer[i];					
 				}
 
-				DPRINTF("ir code %I64d\n",irCode);
+				m_count = 0;
 
 				LeaveCriticalSection(&criticalSection);
 
@@ -281,7 +279,6 @@ void SendReceiveData::receiveLoop() {
 
 				SetEvent(dataReadyEvent);
 			}
-
 		}
 		else if(result==WAIT_OBJECT_0+1) {
 			break;	//exit thread

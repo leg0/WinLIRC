@@ -50,6 +50,7 @@ private:
 	HANDLE		m_exitEvent;
 	HANDLE		m_overlappedEvent;
 	OVERLAPPED	m_overlapped;
+	UINT		m_count;
 	//============================
 };
 
