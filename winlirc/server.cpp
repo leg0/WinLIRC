@@ -218,15 +218,17 @@ void Cserver::ThreadProc(void)
 		events[count++]=ServerThreadEvent;
 		events[count++]=ServerEvent;
 
-		for(i=0;i<MAX_CLIENTS;i++)
-			if(m_clients[i]!=INVALID_SOCKET)
+		for(i=0;i<MAX_CLIENTS;i++) {
+			if(m_clients[i]!=INVALID_SOCKET) {
 				events[count++]=ClientEvent[i];
+			}
+		}
 		
-		unsigned int res=WaitForMultipleObjects(count,events,FALSE,INFINITE);
-		if(res==WAIT_OBJECT_0)
+		DWORD res = WaitForMultipleObjects(count,events,FALSE,INFINITE);
+
+		if(res==WAIT_OBJECT_0) 
 		{
 			WL_DEBUG("ServerThread terminating\n");
-			AfxEndThread(0);
 			return;
 		}
 		else if(res==(WAIT_OBJECT_0+1))
