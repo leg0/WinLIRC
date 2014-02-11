@@ -26,6 +26,8 @@
 #include "winlirc.h"
 #include "drvdlg.h"
 
+#define SAFE_CLOSE_SOCKET(a) if(a!=INVALID_SOCKET) { closesocket(a); a = INVALID_SOCKET; }
+
 unsigned int ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
 
 Cserver::Cserver()
@@ -40,19 +42,13 @@ Cserver::Cserver()
 Cserver::~Cserver()
 {
 	KillThread(&ServerThreadHandle,&ServerThreadEvent);
-	for(int i=0;i<MAX_CLIENTS;i++)
-	{
-		if(m_clients[i]!=INVALID_SOCKET)
-		{
-			WL_DEBUG("closing socket %d\n",i);
-			closesocket(m_clients[i]);
-		}
+
+	for(int i=0;i<MAX_CLIENTS;i++) {
+		SAFE_CLOSE_SOCKET(m_clients[i]);
 	}
-	if(m_server!=INVALID_SOCKET)
-	{
-		closesocket(m_server);
-		WL_DEBUG("Server socket closed.\n");
-	}
+
+	SAFE_CLOSE_SOCKET(m_server);
+
 	WSACleanup();
 }
 
@@ -110,8 +106,7 @@ bool Cserver::startserver(void)
 
 	/* make the server socket */
 
-	if(m_server!=NULL && m_server!=INVALID_SOCKET)
-		closesocket(m_server);
+	SAFE_CLOSE_SOCKET(m_server);
 
 	m_server = socket(AF_INET,SOCK_STREAM,0);
 
@@ -146,10 +141,7 @@ bool Cserver::startserver(void)
 
 void Cserver::stopserver(void)
 {
-	/* make the server socket */
-	if(m_server!=NULL)
-		closesocket(m_server);
-	m_server = NULL;
+	SAFE_CLOSE_SOCKET(m_server);
 }
 
 void Cserver::sendToClients(const char *s)
@@ -288,8 +280,7 @@ void Cserver::ThreadProc(void)
 						if(bytes==0 || bytes==SOCKET_ERROR)
 						{
 							/* Connection was closed or something's screwy */
-							closesocket(m_clients[i]);
-							m_clients[i]=INVALID_SOCKET;
+							SAFE_CLOSE_SOCKET(m_clients[i]);
 							WL_DEBUG("Client connection %d closed\n",i);
 						}
 						else /* bytes > 0, we read data */
