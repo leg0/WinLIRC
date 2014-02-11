@@ -51,9 +51,6 @@ void winlirc_debug(const char *file, int line, char *format, ...)
 
 struct ir_remote *global_remotes=NULL;
 
-CWinThread *ServerThreadHandle=NULL;
-CEvent ServerThreadEvent;
-
 CCriticalSection CS_global_remotes;
 
 CIRConfig config;

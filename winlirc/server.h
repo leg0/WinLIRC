@@ -22,7 +22,7 @@
 #ifndef SERVER__H
 #define SERVER__H
 
-#include "globals.h"
+#define MAX_CLIENTS 8
 
 class Cserver {
 public:
@@ -45,11 +45,11 @@ private:
 	void stopserver			(void);
 	void reply				(const char *command,int client,bool success,const char *data);
 
-	SOCKET	m_server;
-	SOCKET	m_clients[MAX_CLIENTS];
-	int		m_tcp_port;				//tcp port for server
-
-	#define LINE_LEN 1024
+	SOCKET		m_server;
+	SOCKET		m_clients[MAX_CLIENTS];
+	int			m_tcp_port;				//tcp port for server
+	CWinThread* m_serverThreadHandle;
+	CEvent		m_serverThreadEvent;
 };
 
 #endif

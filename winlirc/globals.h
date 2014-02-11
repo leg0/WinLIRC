@@ -41,9 +41,6 @@ extern void winlirc_debug(const char *file, int line, char *format, ...);
 #define PACKET_SIZE (256)
 #define PULSE_BIT 0x1000000
 #define WM_TRAY (WM_USER+34)
-#define MAX_CLIENTS 8
-#define IR_PORT 8765
-#define LISTENQ 4
 #define LONG_IR_CODE
 
 
@@ -196,12 +193,8 @@ struct ir_remote
 /* externs */
 extern struct ir_remote *global_remotes;
 
-
 /* Change this stuff */
 extern class CCriticalSection CS_global_remotes;
-extern class CWinThread *ServerThreadHandle;
-extern class CEvent ServerThreadEvent;
-
 extern class CIRConfig config;
 
 void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent);

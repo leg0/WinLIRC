@@ -27,8 +27,11 @@
 #include "drvdlg.h"
 
 #define SAFE_CLOSE_SOCKET(a) if(a!=INVALID_SOCKET) { closesocket(a); a = INVALID_SOCKET; }
+#define IR_PORT		8765	// port we will listen on
+#define LISTENQ		4		// listen queue size
+#define MAX_DATA	1024	// longest message a client can send
 
-unsigned int ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
+UINT ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
 
 Cserver::Cserver()
 {
@@ -37,11 +40,13 @@ Cserver::Cserver()
 	}
 
 	m_server = INVALID_SOCKET;
+
+	m_serverThreadHandle = NULL;
 }
 
 Cserver::~Cserver()
 {
-	KillThread(&ServerThreadHandle,&ServerThreadEvent);
+	KillThread(&m_serverThreadHandle,&m_serverThreadEvent);
 
 	for(int i=0;i<MAX_CLIENTS;i++) {
 		SAFE_CLOSE_SOCKET(m_clients[i]);
@@ -88,8 +93,7 @@ bool Cserver::init()
 	/* start thread */
 	/* THREAD_PRIORITY_IDLE combined with the REALTIME_PRIORITY_CLASS */
 	/* of this program still results in a really high priority. (16 out of 31) */
-	if((ServerThreadHandle=
-		AfxBeginThread(ServerThread,(void *)this,THREAD_PRIORITY_IDLE))==NULL)
+	if((m_serverThreadHandle = AfxBeginThread(ServerThread,(void *)this,THREAD_PRIORITY_IDLE))==NULL)
 	{
 		WL_DEBUG("AfxBeginThread failed\n");
 		return false;
@@ -198,29 +202,33 @@ void Cserver::reply(const char *command,int client,bool success,const char *data
 
 void Cserver::ThreadProc(void)
 {
-	if(m_server==INVALID_SOCKET) return;
-	int i;
-	
-	CEvent ServerEvent;
-	CEvent ClientEvent[MAX_CLIENTS];
-#define MAX_DATA 1024	// longest message a client can send
-	char ClientData[MAX_CLIENTS][MAX_DATA];
-	char toparse[MAX_DATA];
-	HANDLE events[MAX_CLIENTS+2];
-	
-	WSAEventSelect(m_server,ServerEvent,FD_ACCEPT);
+	if(m_server==INVALID_SOCKET) 
+		return;
 
-	for(i=0;i<MAX_CLIENTS;i++) ClientData[i][0]=0;
+	//=========================================
+	int		i;
+	CEvent	serverEvent;
+	CEvent	clientEvent[MAX_CLIENTS];
+	char	clientData[MAX_CLIENTS][MAX_DATA];
+	char	toparse[MAX_DATA];
+	HANDLE	events[MAX_CLIENTS+2];
+	//=========================================
+	
+	WSAEventSelect(m_server,serverEvent,FD_ACCEPT);
+
+	for(i=0;i<MAX_CLIENTS;i++) {
+		clientData[i][0] = NULL;
+	}
 	
 	for(;;)
 	{		
 		int count=0;
-		events[count++]=ServerThreadEvent;
-		events[count++]=ServerEvent;
+		events[count++] = m_serverThreadEvent;	// exit event
+		events[count++] = serverEvent;
 
 		for(i=0;i<MAX_CLIENTS;i++) {
 			if(m_clients[i]!=INVALID_SOCKET) {
-				events[count++]=ClientEvent[i];
+				events[count++] = clientEvent[i];
 			}
 		}
 		
@@ -261,9 +269,9 @@ void Cserver::ThreadProc(void)
 				continue;
 			}
 
-			WSAEventSelect(m_clients[i],ClientEvent[i],FD_CLOSE|FD_READ);
-			ClientEvent[i].ResetEvent();
-			ClientData[i][0]='\0';
+			WSAEventSelect(m_clients[i],clientEvent[i],FD_CLOSE|FD_READ);
+			clientEvent[i].ResetEvent();
+			clientData[i][0]='\0';
 			WL_DEBUG("Client connection %d accepted\n",i);
 		}
 		else /* client closed or data received */
@@ -275,9 +283,9 @@ void Cserver::ThreadProc(void)
 					if(res==(WAIT_OBJECT_0+(2+i)))
 					{
 						/* either we got data or the connection closed */
-						int curlen	= (int)strlen(ClientData[i]);
+						int curlen	= (int)strlen(clientData[i]);
 						int maxlen	= MAX_DATA-curlen-1;
-						int bytes	= recv(	m_clients[i], ClientData[i]+curlen, maxlen, 0);
+						int bytes	= recv(	m_clients[i], clientData[i]+curlen, maxlen, 0);
 
 						if(bytes==0 || bytes==SOCKET_ERROR)
 						{
@@ -287,13 +295,13 @@ void Cserver::ThreadProc(void)
 						}
 						else /* bytes > 0, we read data */
 						{
-							ClientData[i][curlen+bytes]='\0';
-							char *cur=ClientData[i];
+							clientData[i][curlen+bytes]='\0';
+							char *cur=clientData[i];
 							for(;;) {
 								char *nl=strchr(cur,'\n');
 								if(nl==NULL) {
-									if(cur!=ClientData[i]) 
-										memmove(ClientData[i],cur,strlen(cur)+1);
+									if(cur!=clientData[i]) 
+										memmove(clientData[i],cur,strlen(cur)+1);
 									break;
 								} else {
 									*nl='\0';
