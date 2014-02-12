@@ -112,7 +112,7 @@ BOOL Cwinlirc::InitInstance() {
 	//
 	//Process initialization and sanity checks
 	//
-	if(SetPriorityClass(GetCurrentProcess(),REALTIME_PRIORITY_CLASS)==0 || SetThreadPriority(THREAD_PRIORITY_IDLE)==0)
+	if(SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS)==0 || SetThreadPriority(THREAD_PRIORITY_IDLE)==0)
 	{
 		MessageBox(NULL,_T("Could not set thread priority."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 		return FALSE;
