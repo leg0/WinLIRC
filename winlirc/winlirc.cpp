@@ -118,16 +118,10 @@ BOOL Cwinlirc::InitInstance() {
 		return FALSE;
 	}
 	
-	if(server->init()==false) {
-
-		MessageBox(NULL,_T("Could not start server."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
-
-		delete server; 
-		server = NULL;
-
-		return FALSE;
+	if(server->startServer()==false) {
+		MessageBox(NULL,_T("Server could not be started. Try checking the port."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 	}
-	
+
 	WL_DEBUG("Creating main dialog...\n");
 
 	if(!dlg->Create(IDD_DIALOG,NULL)) {

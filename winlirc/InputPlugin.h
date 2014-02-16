@@ -59,4 +59,5 @@ private:
 	CButton		m_createConfigButton;
 	CButton		m_browseButton;
 	CButton		m_startWithWindows;
+	CEdit		m_editDefaultPort;
 };

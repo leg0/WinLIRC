@@ -43,6 +43,7 @@ public:
 	CString plugin;
 	BOOL	disableRepeats;
 	INT		disableFirstKeyRepeats;
+	INT		serverPort;
 	BOOL	localConnectionsOnly;
 	BOOL	showTrayIcon;
 	BOOL	exitOnError;

@@ -30,7 +30,9 @@ public:
 	Cserver();
 	~Cserver();
 
-	bool init				(void);
+	bool startServer		(void);
+	void stopServer			(void);
+	bool restartServer		(void);
 	void sendToClients		(const char *s);
 	BOOL parseSendString	(const char *string, CStringA &response);
 	BOOL parseListString	(const char *string, CStringA &response);
@@ -41,8 +43,6 @@ public:
 
 private:
 	void sendData			(SOCKET socket, const char *s);
-	bool startserver		(void);
-	void stopserver			(void);
 	void reply				(const char *command,int client,bool success,const char *data);
 
 	SOCKET		m_server;
@@ -50,6 +50,7 @@ private:
 	int			m_tcp_port;				//tcp port for server
 	CWinThread* m_serverThreadHandle;
 	CEvent		m_serverThreadEvent;
+	int			m_winsockStart;
 };
 
 #endif

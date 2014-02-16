@@ -107,7 +107,7 @@ bool CIRConfig::writeINIFile() {
 	//=====================
 	TCHAR	path[MAX_PATH];
 	CString tempPath;
-	TCHAR	tempIni[4];
+	TCHAR	tempIni[16];
 	//=====================
 
 	GetCurrentDirectory(MAX_PATH,path);
@@ -126,6 +126,9 @@ bool CIRConfig::writeINIFile() {
 
 	_sntprintf(tempIni,_countof(tempIni),_T("%i"),localConnectionsOnly);
 	WritePrivateProfileString(_T("WinLIRC"),_T("LocalConnectionsOnly"),tempIni,tempPath);
+
+	_sntprintf(tempIni,_countof(tempIni),_T("%i"),serverPort);
+	WritePrivateProfileString(_T("WinLIRC"),_T("ServerPort"),tempIni,tempPath);
 
 	_sntprintf(tempIni,_countof(tempIni),_T("%i"),showTrayIcon);
 	WritePrivateProfileString(_T("WinLIRC"),_T("ShowTrayIcon"),tempIni,tempPath);
@@ -153,6 +156,7 @@ bool CIRConfig::readINIFile() {
 	disableRepeats			= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableKeyRepeats"),FALSE,tempPath);
 	disableFirstKeyRepeats	= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),FALSE,tempPath);
 	localConnectionsOnly	= GetPrivateProfileInt(_T("WinLIRC"),_T("LocalConnectionsOnly"),TRUE,tempPath);
+	serverPort				= GetPrivateProfileInt(_T("WinLIRC"),_T("ServerPort"),8765,tempPath);
 	showTrayIcon			= GetPrivateProfileInt(_T("WinLIRC"),_T("ShowTrayIcon"),TRUE,tempPath);
 
 	remoteConfig			= remoteConfigName;

@@ -6,6 +6,7 @@
 #include "InputPlugin.h"
 #include "irconfig.h"
 #include <atlbase.h>
+#include "Server.h"
 
 
 // InputPlugin dialog
@@ -180,6 +181,7 @@ void InputPlugin::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BN_CREATE_CONFIG, m_createConfigButton);
 	DDX_Control(pDX, IDC_BN_BROWSE, m_browseButton);
 	DDX_Control(pDX, IDC_CHK_START_WITH_WINDOWS, m_startWithWindows);
+	DDX_Control(pDX, IDC_EDIT2, m_editDefaultPort);
 }
 
 BEGIN_MESSAGE_MAP(InputPlugin, CDialog)
@@ -224,7 +226,7 @@ void InputPlugin::OnBnClickedOk() {
 
 	//=================
 	CString confPath;
-	CString fKeyReps;
+	CString tempString;
 	//=================
 
 	m_configPath.GetWindowText(confPath);
@@ -262,10 +264,10 @@ void InputPlugin::OnBnClickedOk() {
 		config.disableRepeats = FALSE;
 	}
 
-	m_disableFirstRepeats.GetWindowText(fKeyReps);
+	m_disableFirstRepeats.GetWindowText(tempString);
 
-	if(fKeyReps!="") {
-		config.disableFirstKeyRepeats = _tstoi(fKeyReps);
+	if(tempString!="") {
+		config.disableFirstKeyRepeats = _tstoi(tempString);
 	}
 	else {
 		config.disableFirstKeyRepeats = 0;
@@ -283,6 +285,32 @@ void InputPlugin::OnBnClickedOk() {
 	}
 	else {
 		config.showTrayIcon = TRUE;
+	}
+
+	{
+		//===========
+		int tempPort;
+		//===========
+
+		m_editDefaultPort.GetWindowText(tempString);
+
+		if(tempString!="")	{ tempPort = _tstoi(tempString); }
+		else				{ tempPort = 8765; }
+
+		if(tempPort!=config.serverPort) {
+
+			//===========
+			bool success;
+			//===========
+
+			config.serverPort = tempPort;
+			success = app.server->restartServer();
+
+			if(!success) {
+				MessageBox(_T("Server could not be started. Try checking the port."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
+				return;
+			}
+		}
 	}
 
 	setStartup(m_startWithWindows.GetCheck() == BST_CHECKED);
@@ -303,7 +331,6 @@ void InputPlugin::OnBnClickedBrowse() {
 
 void InputPlugin::OnBnClickedCancel()
 {
-	// TODO: Add your control notification handler code here
 	OnCancel();
 }
 
@@ -331,7 +358,6 @@ BOOL InputPlugin::OnInitDialog() {
 	m_configPath.SetWindowText(config.remoteConfig);
 
 	temp.Format(_T("%i"),config.disableFirstKeyRepeats);
-
 	m_disableFirstRepeats.SetWindowText(temp);
 
 	if(config.disableRepeats) {
@@ -351,6 +377,9 @@ BOOL InputPlugin::OnInitDialog() {
 	if(getStartup()) {
 		m_startWithWindows.SetCheck(BST_CHECKED);
 	}
+
+	temp.Format(_T("%i"),config.serverPort);
+	m_editDefaultPort.SetWindowText(temp);
    
 	return TRUE;
 

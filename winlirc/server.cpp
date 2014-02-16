@@ -27,7 +27,6 @@
 #include "drvdlg.h"
 
 #define SAFE_CLOSE_SOCKET(a) if(a!=INVALID_SOCKET) { closesocket(a); a = INVALID_SOCKET; }
-#define IR_PORT		8765	// port we will listen on
 #define LISTENQ		4		// listen queue size
 #define MAX_DATA	1024	// longest message a client can send
 
@@ -35,87 +34,47 @@ UINT ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
 
 Cserver::Cserver()
 {
+	//===========
+	WSADATA data;
+	//===========
+
 	for(int i=0;i<MAX_CLIENTS;i++) {
 		m_clients[i] = INVALID_SOCKET;
 	}
 
 	m_server = INVALID_SOCKET;
-
 	m_serverThreadHandle = NULL;
+
+	m_winsockStart = WSAStartup(MAKEWORD(2,0),&data);
 }
 
 Cserver::~Cserver()
 {
-	KillThread(&m_serverThreadHandle,&m_serverThreadEvent);
-
-	for(int i=0;i<MAX_CLIENTS;i++) {
-		SAFE_CLOSE_SOCKET(m_clients[i]);
-	}
-
-	SAFE_CLOSE_SOCKET(m_server);
-
+	stopServer();
 	WSACleanup();
 }
 
-bool Cserver::init()
-{
-	/* init winsock */
-	WSADATA data;
-	int res=WSAStartup(0x0002,&data);
-	if(res!=0) 
-	{ 
-		WL_DEBUG("WSAStartup failed\n");
-		MessageBox(NULL,_T("Could not initialize Windows Sockets.\n")
-			_T("Note that this program requires WinSock 2.0 or higher."),_T("WinLIRC"),MB_OK);
-		return false;
-	}
+bool Cserver::restartServer() {
 
-	/* begin password stuff */
-	CRegKey key;
-	bool haveKey=true;
-	if(key.Open(HKEY_CURRENT_USER,_T("Software\\LIRC"))!=ERROR_SUCCESS) //First try HKCU, then HKLM
-		if(key.Open(HKEY_LOCAL_MACHINE,_T("Software\\LIRC"))
-		   !=ERROR_SUCCESS)
-		{
-			haveKey=false;
-			WL_DEBUG("warning: can't open Software\\LIRC key");
-		}
-
-	DWORD x;
-	if(!haveKey || key.QueryDWORDValue(_T("tcp_port"),x)!=ERROR_SUCCESS)
-		m_tcp_port=IR_PORT;
-	else
-		m_tcp_port=x;
-
-	if(startserver()==false)
-		return false;
-
-	/* start thread */
-	/* THREAD_PRIORITY_IDLE combined with the REALTIME_PRIORITY_CLASS */
-	/* of this program still results in a really high priority. (16 out of 31) */
-	if((m_serverThreadHandle = AfxBeginThread(ServerThread,(void *)this,THREAD_PRIORITY_IDLE))==NULL)
-	{
-		WL_DEBUG("AfxBeginThread failed\n");
-		return false;
-	}	
-    
-	return true;
+	stopServer();
+	return startServer();
 }
 
-bool Cserver::startserver(void)
+bool Cserver::startServer()
 {
 	//===========================
 	struct sockaddr_in serv_addr;
 	//===========================
 
-	/* make the server socket */
-
-	SAFE_CLOSE_SOCKET(m_server);
+	if(m_winsockStart!=0) { 
+		MessageBox(NULL,_T("Could not initialize Windows Sockets.\n")
+			_T("Note that this program requires WinSock 2.0 or higher."),_T("WinLIRC"),MB_OK);
+		return false;
+	}
 
 	m_server = socket(AF_INET,SOCK_STREAM,0);
 
-	if(m_server==INVALID_SOCKET)
-	{ 
+	if(m_server==INVALID_SOCKET) { 
 		WL_DEBUG("socket failed, WSAGetLastError=%d\n",WSAGetLastError());
 		return false;
 	}
@@ -124,7 +83,7 @@ bool Cserver::startserver(void)
 
 	serv_addr.sin_family		= AF_INET;
 	serv_addr.sin_addr.s_addr	= htonl(INADDR_ANY);
-	serv_addr.sin_port			= htons(m_tcp_port);
+	serv_addr.sin_port			= htons(config.serverPort);
 
 	if(config.localConnectionsOnly) {
 		serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -140,11 +99,24 @@ bool Cserver::startserver(void)
 		return false; 
 	}
 
+	// THREAD_PRIORITY_IDLE combined with the HIGH_PRIORITY_CLASS
+	// of this program still results in a really high priority. (16 out of 31)
+	if((m_serverThreadHandle = AfxBeginThread(ServerThread,(void *)this,THREAD_PRIORITY_IDLE))==NULL) {
+		WL_DEBUG("AfxBeginThread failed\n");
+		return false;
+	}
+
 	return true;
 }
 
-void Cserver::stopserver(void)
+void Cserver::stopServer()
 {
+	KillThread(&m_serverThreadHandle,&m_serverThreadEvent);
+
+	for(int i=0;i<MAX_CLIENTS;i++) {
+		SAFE_CLOSE_SOCKET(m_clients[i]);
+	}
+
 	SAFE_CLOSE_SOCKET(m_server);
 }
 
