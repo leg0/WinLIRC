@@ -20,6 +20,7 @@
  */
 
 #include <Windows.h>
+#include <tchar.h>
 #include "../Common/LircDefines.h"
 #include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
@@ -33,7 +34,15 @@
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
+HANDLE hMutexLockout = NULL;
+
 WL_API int init(HANDLE exitEvent) {
+
+	hMutexLockout = CreateMutex(0,FALSE,_T("WinLIRC_MCE_Plugin_Lock_Out"));
+
+	if(hMutexLockout==NULL || GetLastError()==ERROR_ALREADY_EXISTS) {
+		return 0;
+	}
 
 	init_rec_buffer();
 	initHardwareStruct();
@@ -61,6 +70,11 @@ WL_API void deinit() {
 	if(dataReadyEvent) {
 		CloseHandle(dataReadyEvent);
 		dataReadyEvent = NULL;
+	}
+
+	if(hMutexLockout) {
+		CloseHandle(hMutexLockout);
+		hMutexLockout = NULL;
 	}
 
 	threadExitEvent = NULL;

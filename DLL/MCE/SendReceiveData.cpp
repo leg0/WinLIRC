@@ -24,6 +24,7 @@
 #include "Globals.h"
 #include <stdio.h>
 #include "../Common/Send.h"
+#include "../Common/DebugOutput.h"
 
 DWORD WINAPI MCEthread(void *recieveClass) {
 
@@ -43,12 +44,15 @@ bool SendReceiveData::init() {
 
 	QueryPerformanceCounter(&lastTime);
 
-	if(irDeviceList.get().empty()) return false;	//no hardware
+	if(irDeviceList.get().empty()) {
+		DPRINTF("No hardware.\n");
+		return false;	//no hardware
+	}
 
 	deviceHandle = CreateFile(irDeviceList.get().begin()->c_str(), GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
 
 	if(deviceHandle==INVALID_HANDLE_VALUE) {
-		//printf("invalid device handle\n");
+		DPRINTF("invalid device handle.\n");
 		return false;
 	}
 
@@ -57,7 +61,7 @@ bool SendReceiveData::init() {
 	resetHardware();
 
 	if(!getCapabilities()) {
-		//printf("getCapabilities fail\n");
+		DPRINTF("getCapabilities failed.\n");
 		return false;
 	}
 
@@ -99,7 +103,7 @@ void SendReceiveData::threadProc() {
 	//================================
 
 	if(!startReceive((int)receivePort,30)) {
-		//printf("start receive fail\n");
+		DPRINTF("Start failed.\n");
 		return;
 	}
 
@@ -109,23 +113,18 @@ void SendReceiveData::threadProc() {
 
 	while(true) {
 
-		//printf("in thread loop\n");
-
 		interupted	= false;
         result		= DeviceIo(IoCtrl_Receive, NULL, 0, receiveParams, receiveParamsSize, bytesRead, INFINITE, false, interupted);
 
 		if (result) {
 			if ( bytesRead <= sizeof(ReceiveParams)) {
-				//printf("failed somehow \n");
 				continue;	// error of some sort try and recover
 			}
 
 			sendToDecoder((lirc_t *)((PUCHAR)receiveParams + sizeof(ReceiveParams)), (bytesRead - sizeof(ReceiveParams)) / 4);
-			//printf("decode !\n");
 		}
 		else {
-			//printf("failed somehow\n");
-			//break;
+
 		}
 		if(interupted) {
 			break;
@@ -136,7 +135,7 @@ void SendReceiveData::threadProc() {
 
 	stopReceive();
 
-	//printf("exited thread\n");
+	DPRINTF("Thread exited.\n");
 }
 
 void SendReceiveData::killThread() {
@@ -298,13 +297,12 @@ bool SendReceiveData::getCapabilities() {
 
     receivePort	= FirstLowBit((int)mceDeviceCapabilities.LearningMask);
 
-	//printf("ProtocolVersion %i\n",mceDeviceCapabilities.ProtocolVersion);
-	//printf("NumTransmitPorts %i\n",mceDeviceCapabilities.NumTransmitPorts);
-	//printf("NumReceivePorts %i\n",mceDeviceCapabilities.NumReceivePorts);
-	//printf("LearningMask %i\n",mceDeviceCapabilities.LearningMask);
-	//printf("DetailsFlags %i\n",mceDeviceCapabilities.DetailsFlags);
-
-	//printf("receive port %i\n",receivePort);
+	DPRINTF("ProtocolVersion %i\n",mceDeviceCapabilities.ProtocolVersion);
+	DPRINTF("NumTransmitPorts %i\n",mceDeviceCapabilities.NumTransmitPorts);
+	DPRINTF("NumReceivePorts %i\n",mceDeviceCapabilities.NumReceivePorts);
+	DPRINTF("LearningMask %i\n",mceDeviceCapabilities.LearningMask);
+	DPRINTF("DetailsFlags %i\n",mceDeviceCapabilities.DetailsFlags);
+	DPRINTF("receive port %i\n",receivePort);
 
 	return true;
 }
@@ -399,7 +397,6 @@ void SendReceiveData::sendToDecoder(lirc_t *pData, int len) {
 			timeDifference = PULSE_MASK;
 		}
 
-		//printf("added value %i\n",timeDifference);
 		setData(timeDifference);
 	}
 
@@ -436,7 +433,7 @@ bool SendReceiveData::getAvailableBlasters() {
 		return false;
 	}
 
-	//printf("available blasters %i %i\n",availableBlasters.Blasters,bytesReturned);
+	DPRINTF("Available blasters %i %i\n",availableBlasters.Blasters,bytesReturned);
 
 	return true;     
 }
@@ -494,13 +491,9 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			}
 
 			space = !space;
-
-			//printf("mceData[%i] %i\n",i,mceData[i]);
 		}
 
 		success = transmit(mceData,length,blasterPort,1000000/carrierFrequency);
-
-		//printf("transmit success %i\n",success);
 
 		delete [] mceData;
 
@@ -572,8 +565,6 @@ int SendReceiveData::calcBlasterPort() {
 		default:
 		return 0;
 	}
-
-	//printf("transmit port number %i\n",tempPort);
 
 	return tempPort;
 }
