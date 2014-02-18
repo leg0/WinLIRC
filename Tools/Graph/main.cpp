@@ -136,7 +136,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	}
 
 	if(!irDriver.init()) {
-		MessageBox(NULL,_T("Intialising plugin failed."),_T("Error"),MB_OK);
+		MessageBox(NULL,_T("Initialising plugin failed."),_T("Error"),MB_OK);
 		return 0;
 	}
 
