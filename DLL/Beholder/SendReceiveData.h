@@ -44,7 +44,6 @@ public:
 	void	threadProc();
 
 private:
-	void	killThread();
 	void	getCode(); // @TODO
 
 	HANDLE	threadHandle;

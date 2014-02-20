@@ -26,6 +26,7 @@
 #include "../Common/IRRemote.h"
 #include "../Common/Receive.h"
 #include "../Common/WLPluginAPI.h"
+#include "../Common/Win32Helpers.h"
 #include <stdio.h>
 #include "Globals.h"
 
@@ -55,10 +56,7 @@ WL_API void deinit() {
 		server = NULL;
 	}
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	threadExitEvent = NULL;
 }

@@ -41,13 +41,11 @@ public:
 	bool	getData(lirc_t *out);
 	bool	dataReady();
 	bool	waitTillDataIsReady(int maxUSecs);
-
 	void	threadProc(int threadNumber);
 
 private:
 
 	void	setData(lirc_t data);
-	void	killThreads();
 	void	findCyberLinkDevicePaths(LPGUID  pGuid );
 
 	//==========================

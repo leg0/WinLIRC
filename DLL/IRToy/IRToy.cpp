@@ -26,11 +26,11 @@
 #include "../Common/IRRemote.h"
 #include "../Common/Receive.h"
 #include "../Common/WLPluginAPI.h"
-#include <stdio.h>
+#include "../Common/Win32Helpers.h"
+
 #include "Globals.h"
 #include "resource.h"
 #include <tchar.h>
-#include <vector>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -57,10 +57,7 @@ WL_API void deinit() {
 		sendReceiveData = NULL;
 	}
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	threadExitEvent = NULL;
 }

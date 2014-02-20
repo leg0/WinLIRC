@@ -48,7 +48,6 @@ public:
 private:
 
 	void	setData(ir_code data);
-	void	killThread();
 	HANDLE	threadHandle;
 	HANDLE	exitEvent;
 

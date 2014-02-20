@@ -28,6 +28,7 @@
 #include "../Common/Hardware.h"
 #include "../Common/Send.h"
 #include "../Common/WLPluginAPI.h"
+#include "../Common/Win32Helpers.h"
 
 #include "Settings.h"
 #include "Globals.h"
@@ -58,10 +59,7 @@ WL_API void deinit() {
 
 	deinit_commandir();
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	threadExitEvent = NULL;
 }

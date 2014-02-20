@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include "../Common/Send.h"
 #include "../Common/DebugOutput.h"
+#include "../Common/Win32Helpers.h"
 
 DWORD WINAPI IGThread(void *recieveClass) {
 
@@ -74,7 +75,8 @@ bool SendReceiveData::init() {
 
 void SendReceiveData::deinit() {
 
-	killThread();
+	recvDone = 1;
+	KillThread(NULL,threadHandle);
 
 	if(connection!=INVALID_PIPE) {
 		iguanaClose(connection);
@@ -87,39 +89,9 @@ void SendReceiveData::deinit() {
 	}
 }
 
-
 void SendReceiveData::threadProc() {
 
 	receiveLoop();
-}
-
-void SendReceiveData::killThread() {
-
-	recvDone = 1;
-
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(threadHandle,&result)==0) 
-		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
 }
 
 bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {

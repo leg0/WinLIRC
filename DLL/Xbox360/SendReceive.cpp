@@ -1,6 +1,7 @@
 #include "SendReceive.h"
 #include <stdio.h>
 #include "../Common/LIRCDefines.h"
+#include "../Common/Win32Helpers.h"
 
 DWORD WINAPI XBThread(void *recieveClass) {
 
@@ -10,18 +11,18 @@ DWORD WINAPI XBThread(void *recieveClass) {
 
 SendReceive::SendReceive() {
 
-	threadHandle	= NULL;
-	dataReadyEvent	= NULL;
-	threadExitEvent	= NULL;
+	m_threadHandle		= NULL;
+	m_dataReadyEvent	= NULL;
+	m_threadExitEvent	= NULL;
 }
 
 BOOL SendReceive::init(HANDLE exit) {
 
-	threadExitEvent	= exit;
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
-	threadHandle	= CreateThread(NULL,0,XBThread,(void *)this,0,NULL);
+	m_threadExitEvent	= exit;
+	m_dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	m_threadHandle		= CreateThread(NULL,0,XBThread,(void *)this,0,NULL);
 	
-	if(threadHandle && dataReadyEvent) {
+	if(m_threadHandle && m_dataReadyEvent) {
 		return TRUE;
 	}
 
@@ -30,21 +31,20 @@ BOOL SendReceive::init(HANDLE exit) {
 
 void SendReceive::deinit() {
 
-	killThread();
+	m_done = TRUE;
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	KillThread(NULL,m_threadHandle);
+
+	SAFE_CLOSE_HANDLE(m_dataReadyEvent);
 }
 
 void SendReceive::threadProc() {
 
-	value		= 0;
-	repeats		= 0;
-	done		= FALSE;
+	m_value		= 0;
+	m_repeats	= 0;
+	m_done		= FALSE;
 
-	while(!done) {
+	while(!m_done) {
 
 		//============================
 		XINPUT_KEYSTROKE	keyStroke;
@@ -57,23 +57,23 @@ void SendReceive::threadProc() {
 
 			if(keyStroke.Flags&XINPUT_KEYSTROKE_KEYDOWN) {
 
-				value = keyStroke.VirtualKey;
+				m_value = keyStroke.VirtualKey;
 
 				if(keyStroke.Flags&XINPUT_KEYSTROKE_REPEAT) {
-					repeats++;
+					m_repeats++;
 				}
 				else {
-					repeats = 0;
+					m_repeats = 0;
 				}
 				
-				SetEvent(dataReadyEvent);
+				SetEvent(m_dataReadyEvent);
 			}
 		}
 		else if(result==ERROR_EMPTY) {
 			Sleep(50);
 		}
 		else if(result==ERROR_DEVICE_NOT_CONNECTED) {
-			Sleep(500);
+			Sleep(1000);
 		}		
 	}
 }
@@ -85,12 +85,12 @@ bool SendReceive::waitTillDataIsReady(int maxUSecs) {
 	int		count;
 	//================
 
-	events[0] = dataReadyEvent;
-	events[1] = threadExitEvent;
+	events[0] = m_dataReadyEvent;
+	events[1] = m_threadExitEvent;
 
 	count = 2;
 
-	if(threadExitEvent==NULL) {
+	if(m_threadExitEvent==NULL) {
 		count = 1;
 	}
 
@@ -100,7 +100,7 @@ bool SendReceive::waitTillDataIsReady(int maxUSecs) {
 		int result;
 		//=========
 
-		ResetEvent(dataReadyEvent);
+		ResetEvent(m_dataReadyEvent);
 
 		if(maxUSecs) {
 			result = WaitForMultipleObjects(count,events,FALSE,(maxUSecs+500)/1000);
@@ -117,38 +117,9 @@ bool SendReceive::waitTillDataIsReady(int maxUSecs) {
 	return true;
 }
 
-void SendReceive::killThread() {
-
-	done = TRUE;
-
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(threadHandle,&result)==0) 
-		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
-}
-
 bool SendReceive::dataReady() {
 
-	if(value==0) return false;
+	if(m_value==0) return false;
 
 	return true;
 }
@@ -159,7 +130,7 @@ int SendReceive::decodeCommand(char *out) {
 	char buttonName[32];
 	//==================
 
-	switch(value) {
+	switch(m_value) {
 
 		case VK_PAD_A:					strcpy_s(buttonName,"A");				break;
 		case VK_PAD_B:					strcpy_s(buttonName,"B");				break;
@@ -202,14 +173,14 @@ int SendReceive::decodeCommand(char *out) {
 
 		default:
 			{
-				value = 0;
+				m_value = 0;
 				return 0;
 			}
 	}
 
-	_snprintf_s(out,PACKET_SIZE+1,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),repeats,buttonName,"Xbox360");
+	_snprintf_s(out,PACKET_SIZE+1,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),m_repeats,buttonName,"Xbox360");
 
-	value = 0;
+	m_value = 0;
 	
 	return 1;
 }

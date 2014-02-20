@@ -29,6 +29,7 @@
 #include "../Common/Hardware.h"
 #include "../Common/Send.h"
 #include "../Common/WLPluginAPI.h"
+#include "../Common/Win32Helpers.h"
 #include "iguanaIR.h"
 #include "SendReceiveData.h"
 
@@ -59,13 +60,9 @@ WL_API void deinit() {
 		sendReceiveData = NULL;
 	}
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	threadExitEvent = NULL;
-
 }
 
 WL_API int hasGui() {

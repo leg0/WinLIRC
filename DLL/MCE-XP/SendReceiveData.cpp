@@ -24,6 +24,7 @@
 #include "Globals.h"
 #include <stdio.h>
 #include "../Common/Send.h"
+#include "../Common/Win32Helpers.h"
 #include <tchar.h>
 
 DWORD WINAPI MCEthread(void *recieveClass) {
@@ -72,19 +73,11 @@ bool SendReceiveData::init() {
 
 void SendReceiveData::deinit() {
 
-	killThread();
-	
-	if(exitEvent) {
-		CloseHandle(exitEvent);
-		exitEvent = NULL;
-	}
+	KillThread(exitEvent,threadHandle);
 
-	if(deviceHandle) {
-		CloseHandle(deviceHandle);
-		deviceHandle = NULL;
-	}
+	SAFE_CLOSE_HANDLE(exitEvent);
+	SAFE_CLOSE_HANDLE(deviceHandle);
 }
-
 
 void SendReceiveData::threadProc() {
 
@@ -166,37 +159,6 @@ overflowExit:
 	}
 
 	//printf("exited thread\n");
-}
-
-void SendReceiveData::killThread() {
-
-	if(exitEvent) {
-		SetEvent(exitEvent);
-	}
-
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(threadHandle,&result)==0) 
-		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
 }
 
 bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {

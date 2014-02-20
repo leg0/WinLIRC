@@ -265,6 +265,10 @@
 					RelativePath="..\Common\Send.h"
 					>
 				</File>
+				<File
+					RelativePath="..\Common\Win32Helpers.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="Source Files"
@@ -283,6 +287,10 @@
 				</File>
 				<File
 					RelativePath="..\Common\Send.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Win32Helpers.cpp"
 					>
 				</File>
 			</Filter>

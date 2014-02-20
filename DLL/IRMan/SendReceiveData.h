@@ -25,7 +25,6 @@
 #include "../Common/LIRCDefines.h"
 #include "Serial.h"
 
-
 class SendReceiveData
 {
 public:
@@ -36,13 +35,9 @@ public:
 
 	int		dataReady();
 	bool	waitTillDataIsReady(int maxUSecs);
-	void	threadProc();
-	int		send(struct ir_remote *remote, struct ir_ncode *code, int repeats);
+	void	receiveLoop();
 	
 private:
-
-	void	killThread();
-	void	receiveLoop();
 
 	//============================
 	HANDLE		m_threadHandle;

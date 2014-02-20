@@ -4,6 +4,7 @@
 #include <initguid.h>
 #include <setupapi.h>
 #include <tchar.h>
+#include "../Common/Win32Helpers.h"
 
 DEFINE_GUID(GUID_CLASS_STREAMZAP, 0x990b264a, 0xf1f1, 0x4619, 0x95, 0xe7, 0x0e, 0xc4, 0x1b, 0xff, 0x9f, 0xf8);
 
@@ -20,36 +21,36 @@ DWORD WINAPI SZThread(void *recieveClass) {
 
 StreamzapAPI::StreamzapAPI() {
 
-	threadHandle	= NULL;
-	threadExitEvent	= NULL;
+	m_threadHandle	= NULL;
+	m_threadExitEvent	= NULL;
 
-	QueryPerformanceFrequency(&frequency);
-	QueryPerformanceCounter(&lastTime);
+	QueryPerformanceFrequency(&m_frequency);
+	QueryPerformanceCounter(&m_lastTime);
 }
 
 BOOL StreamzapAPI::init(HANDLE exit) {
 
-	exitThread		= false;
-	nextByteFull	= false;
+	m_exitThread	= false;
+	m_nextByteFull	= false;
 
-	bufferStart		= 0;
-	bufferEnd		= 0;
-	pulse			= PULSE_BIT;
-	newSignal		= TRUE;
-	deviceName[0]	= '\0';
+	m_bufferStart	= 0;
+	m_bufferEnd		= 0;
+	m_pulse			= PULSE_BIT;
+	m_newSignal		= TRUE;
+	m_deviceName[0]	= '\0';
 
 	findDevice();
 
-	if(!_tcslen(deviceName)) {
+	if(!_tcslen(m_deviceName)) {
 		return FALSE;			// failed to find device name
 	}
 
-	threadExitEvent = exit;
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
-	deviceHandle	= CreateFile(deviceName,GENERIC_READ,0,NULL,OPEN_EXISTING,0, NULL); 
+	m_threadExitEvent	= exit;
+	m_dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	m_deviceHandle		= CreateFile(m_deviceName,GENERIC_READ,0,NULL,OPEN_EXISTING,0, NULL); 
 
-	if(deviceHandle==NULL) {
-		return FALSE;
+	if(m_deviceHandle==NULL) {
+		goto init_fail;
 	}
 
 	//
@@ -61,28 +62,32 @@ BOOL StreamzapAPI::init(HANDLE exit) {
 		DWORD bytesRead;
 		//==============
 
-		if(!ReadFile(deviceHandle,&buffer,1,&bytesRead,NULL)) {
-			return FALSE;
+		if(!ReadFile(m_deviceHandle,&buffer,1,&bytesRead,NULL)) {
+			goto init_fail;
 		}
 	}
 
-	threadHandle = CreateThread(NULL,0,SZThread,(void *)this,0,NULL);
+	m_threadHandle = CreateThread(NULL,0,SZThread,(void *)this,0,NULL);
 
-	if(threadHandle) return TRUE;
+	return TRUE;
+
+init_fail:
+
+	SAFE_CLOSE_HANDLE(m_dataReadyEvent);
+	SAFE_CLOSE_HANDLE(m_deviceHandle);
 
 	return FALSE;
 }
 
 void StreamzapAPI::deinit() {
 
-	killThread();
+	m_exitThread = true;
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	KillThread(NULL,m_threadHandle);
 
-	threadExitEvent = NULL;
+	SAFE_CLOSE_HANDLE(m_dataReadyEvent);
+
+	m_threadExitEvent = NULL;
 }
 
 void StreamzapAPI::threadProc() {
@@ -94,7 +99,7 @@ void StreamzapAPI::threadProc() {
 		DWORD bytesRead;
 		//==============
 
-		ReadFile(deviceHandle,&buffer,1,&bytesRead,NULL);
+		ReadFile(m_deviceHandle,&buffer,1,&bytesRead,NULL);
 		
 		if(bytesRead) {
 			//printf("buffer value %i\n",buffer);
@@ -104,31 +109,26 @@ void StreamzapAPI::threadProc() {
 			Sleep(20);
 		}
 
-		if(exitThread) break;
+		if(m_exitThread) break;
 	}
 
 	//
 	// clean up
 	//
 
-	if(deviceHandle) {
-		CloseHandle(deviceHandle);
-		deviceHandle = NULL;
-	}
-
-	//printf("exited thread\n");
+	SAFE_CLOSE_HANDLE(m_deviceHandle);
 }
 
 bool StreamzapAPI::waitTillDataIsReady(int maxUSecs) {
 
-	HANDLE events[2]={dataReadyEvent,threadExitEvent};
+	HANDLE events[2]={m_dataReadyEvent,m_threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(m_threadExitEvent==NULL) evt=1;
 	else evt=2;
 
 	if(!dataReady())
 	{
-		ResetEvent(dataReadyEvent);
+		ResetEvent(m_dataReadyEvent);
 		int res;
 		if(maxUSecs)
 			res=WaitForMultipleObjects(evt,events,FALSE,(maxUSecs+500)/1000);
@@ -143,38 +143,9 @@ bool StreamzapAPI::waitTillDataIsReady(int maxUSecs) {
 	return true;
 }
 
-void StreamzapAPI::killThread() {
-
-	exitThread = true;
-
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(threadHandle,&result)==0) 
-		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
-}
-
 bool StreamzapAPI::dataReady() {
 
-	if(bufferStart==bufferEnd) return false;
+	if(m_bufferStart==m_bufferEnd) return false;
 	
 	return true;
 }
@@ -182,21 +153,19 @@ bool StreamzapAPI::dataReady() {
 void StreamzapAPI::decode(BYTE data) {
 
 	if(data==STREAMZAP_TIMEOUT) {
-		
-		newSignal = TRUE;
-		nextByteFull = false;
-		pulse = true;
-		QueryPerformanceCounter(&lastTime);
+		m_newSignal		= TRUE;
+		m_nextByteFull	= false;
+		m_pulse			= true;
+		QueryPerformanceCounter(&m_lastTime);
 	}
-
 	else if((data&STREAMZAP_SPACE_MASK)==STREAMZAP_SPACE_MASK) {
 
-		nextByteFull = true;
-		pulse = false;
+		m_nextByteFull	= true;
+		m_pulse			= false;
 
 		if(data&STREAMZAP_PULSE_MASK) {
 			setData((((data&STREAMZAP_PULSE_MASK)>>4)*STREAMZAP_RESOLUTION) + (STREAMZAP_RESOLUTION/2) | PULSE_BIT);
-			SetEvent(dataReadyEvent);
+			SetEvent(m_dataReadyEvent);
 		}
 	}
 	else if((data&STREAMZAP_PULSE_MASK)==STREAMZAP_PULSE_MASK) {
@@ -205,32 +174,31 @@ void StreamzapAPI::decode(BYTE data) {
 		// add pulse check its not zero
 		//
 		if(data&STREAMZAP_PULSE_MASK) {
-
-			nextByteFull = true;
-			pulse = true;
+			m_nextByteFull	= true;
+			m_pulse			= true;
 		}
 	}
 	else {
 
-		if(newSignal) {
+		if(m_newSignal) {
 
 			//==========
 			lirc_t temp;
 			//==========
 
-			QueryPerformanceCounter(&time);
+			QueryPerformanceCounter(&m_time);
 
-			newSignal	= FALSE;
-			temp		= (lirc_t)(((time.QuadPart - lastTime.QuadPart)*1000000) / frequency.QuadPart);
+			m_newSignal	= FALSE;
+			temp		= (lirc_t)(((m_time.QuadPart - m_lastTime.QuadPart)*1000000) / m_frequency.QuadPart);
 			temp	   += 255 * STREAMZAP_RESOLUTION;
-			lastTime	= time;
+			m_lastTime	= m_time;
 
 			if(temp>PULSE_MASK) temp = PULSE_MASK;
 
 			setData(temp);
 		}
 		
-		if(nextByteFull) {
+		if(m_nextByteFull) {
 			
 			//===========
 			lirc_t value;
@@ -238,14 +206,14 @@ void StreamzapAPI::decode(BYTE data) {
 
 			value = (data * STREAMZAP_RESOLUTION) + (STREAMZAP_RESOLUTION/2);
 
-			if(pulse) {
+			if(m_pulse) {
 				value |= PULSE_BIT;
 			}
 
-			nextByteFull = false;
+			m_nextByteFull = false;
 
 			setData(value);
-			SetEvent(dataReadyEvent);
+			SetEvent(m_dataReadyEvent);
 		}
 		else {
 
@@ -260,24 +228,24 @@ void StreamzapAPI::decode(BYTE data) {
 			// add space
 			//
 			setData(((data&STREAMZAP_SPACE_MASK)*STREAMZAP_RESOLUTION) + (STREAMZAP_RESOLUTION/2));
-			SetEvent(dataReadyEvent);
+			SetEvent(m_dataReadyEvent);
 		}
 	}
 }
 
 void StreamzapAPI::setData(lirc_t data) {
 
-	dataBuffer[bufferEnd] = data;
-	bufferEnd++;
+	m_dataBuffer[m_bufferEnd] = data;
+	m_bufferEnd++;
 }
 
 bool StreamzapAPI::getData(lirc_t *out) {
 
 	if(!dataReady()) return false;
 
-	*out = dataBuffer[bufferStart];
+	*out = m_dataBuffer[m_bufferStart];
 
-	bufferStart++;	//yes these will wrap around with only 8 bits, that's what we want
+	m_bufferStart++;	//yes these will wrap around with only 8 bits, that's what we want
 
 	return true;
 }
@@ -337,7 +305,7 @@ void StreamzapAPI::findDevice() {
 
 					//_tprintf(_T("device name: %s\n"),functionClassDeviceData->DevicePath);
 
-					_tcscpy_s(deviceName,_countof(deviceName),functionClassDeviceData->DevicePath);
+					_tcscpy_s(m_deviceName,_countof(m_deviceName),functionClassDeviceData->DevicePath);
 
 					free(functionClassDeviceData);
 

@@ -22,6 +22,7 @@
 #include <Windows.h>
 #include "../Common/LIRCDefines.h"
 #include "../Common/WLPluginAPI.h"
+#include "../Common/Win32Helpers.h"
 #include <stdio.h>
 #include "Globals.h"
 #include <tchar.h>
@@ -49,13 +50,9 @@ WL_API void deinit() {
 		sendReceiveData = NULL;
 	}
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	threadExitEvent = NULL;
-
 }
 
 WL_API int hasGui() {

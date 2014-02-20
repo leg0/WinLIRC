@@ -43,7 +43,6 @@ public:
 private:
 
 	void	setData(lirc_t data);
-	void	killThread();
 	void	receiveLoop();
 	UCHAR	calcPR2(int frequency);
 

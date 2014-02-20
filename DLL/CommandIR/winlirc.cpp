@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include "winlirc.h"
 #include "SendReceiveData.h"
+#include "../Common/Win32Helpers.h"
 
 extern "C" {
 	#include "CommandIRUtils\libcmdir.h"
@@ -71,26 +72,7 @@ void deinit_commandir() {
 		commandir_disconnect(first_commandir_device);
 	}
 
-	if( threadHandle != NULL ) {
-
-		//===============
-		DWORD result = 0;
-		//===============
-
-		if( GetExitCodeThread( threadHandle, &result ) == 0 ) {
-			CloseHandle( threadHandle );
-			threadHandle = NULL;
-			return;
-		}
-
-		if( result==STILL_ACTIVE ) {
-			WaitForSingleObject( threadHandle, INFINITE );
-		}
-
-		CloseHandle( threadHandle );
-		threadHandle = NULL;
-	}
-
+	KillThread(NULL,threadHandle);
 }
 
 

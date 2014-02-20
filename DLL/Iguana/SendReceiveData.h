@@ -49,7 +49,6 @@ public:
 private:
 
 	void	setData(lirc_t data);
-	void	killThread();
 	void	receiveLoop();
 	bool	daemonTransaction(unsigned char code, void *value, size_t size);
 

@@ -1,6 +1,7 @@
 #include "Server.h"
 #include "Globals.h"
 #include <stdio.h>
+#include "../Common/Win32Helpers.h"
 
 DWORD WINAPI ServerThread(void *server) {
 
@@ -67,41 +68,10 @@ int Server::init() {
 
 void Server::deinit() {
 
-	//
-	// kill thread
-	//
+	KillThread(exitThread,threadHandle);
 
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		SetEvent(exitThread);
-
-		if(GetExitCodeThread(threadHandle,&result)==0)  {
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE) {
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
-
-	if(server!=NULL) {
-		closesocket(server);
-		server = NULL;
-	}
-
-	if(exitThread) {
-		CloseHandle(exitThread);
-		exitThread = NULL;
-	}
+	SAFE_CLOSE_SOCKET(server);
+	SAFE_CLOSE_HANDLE(exitThread);
 
 	WSACleanup();
 }

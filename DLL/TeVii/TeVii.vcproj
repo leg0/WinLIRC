@@ -284,14 +284,6 @@
 					RelativePath="..\Common\Linux.cpp"
 					>
 				</File>
-				<File
-					RelativePath="..\Common\Receive.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Common\Send.cpp"
-					>
-				</File>
 			</Filter>
 		</Filter>
 	</Files>

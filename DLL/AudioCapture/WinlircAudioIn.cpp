@@ -25,6 +25,7 @@
 #include "../Common/Receive.h"
 #include "../Common/Hardware.h"
 #include "../Common/WLPluginAPI.h"
+#include "../Common/Win32Helpers.h"
 #include "resource.h"
 #include <tchar.h>
 #include "Globals.h"
@@ -92,10 +93,7 @@ WL_API void deinit() {
 		settings = NULL;
 	}
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	threadExitEvent = NULL;	//this one is created outside the DLL
 }

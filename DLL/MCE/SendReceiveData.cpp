@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include "../Common/Send.h"
 #include "../Common/DebugOutput.h"
+#include "../Common/Win32Helpers.h"
 
 DWORD WINAPI MCEthread(void *recieveClass) {
 
@@ -78,19 +79,11 @@ bool SendReceiveData::init() {
 
 void SendReceiveData::deinit() {
 
-	killThread();
+	KillThread(exitEvent,threadHandle);
 	
-	if(exitEvent) {
-		CloseHandle(exitEvent);
-		exitEvent = NULL;
-	}
-
-	if(deviceHandle) {
-		CloseHandle(deviceHandle);
-		deviceHandle = NULL;
-	}
+	SAFE_CLOSE_HANDLE(exitEvent);
+	SAFE_CLOSE_HANDLE(deviceHandle);
 }
-
 
 void SendReceiveData::threadProc() {
 
@@ -136,37 +129,6 @@ void SendReceiveData::threadProc() {
 	stopReceive();
 
 	DPRINTF("Thread exited.\n");
-}
-
-void SendReceiveData::killThread() {
-
-	if(exitEvent) {
-		SetEvent(exitEvent);
-	}
-
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(threadHandle,&result)==0) 
-		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
 }
 
 bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
@@ -474,7 +436,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		//
 		// stop recieving thread - don't necessarily need this
 		//
-		killThread();
+		KillThread(exitEvent,threadHandle);
 
 		length		= send_buffer.wptr;
 		signals		= send_buffer.data;

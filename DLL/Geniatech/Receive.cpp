@@ -3,6 +3,7 @@
 #include "LWExtDLL.h"
 #include <stdio.h>
 #include <tchar.h>
+#include "../Common/Win32Helpers.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -77,7 +78,7 @@ int Receive::init() {
 }
 
 void Receive::deinit() {
-	killThread();
+	KillThread(exitEvent,threadHandle);
 	LWEXT_Close();
 }
 
@@ -159,41 +160,5 @@ void Receive::threadProc() {
 		Sleep(100);
 	}
 
-	if(exitEvent) {
-		CloseHandle(exitEvent);
-		exitEvent = NULL;
-	}
-}
-
-void Receive::killThread() {
-	//
-	// need to kill thread here
-	//
-	if(exitEvent) {
-		SetEvent(exitEvent);
-	}
-
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(threadHandle,&result)==0) 
-		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
+	SAFE_CLOSE_HANDLE(exitEvent);
 }

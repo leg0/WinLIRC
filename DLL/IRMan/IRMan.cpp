@@ -20,15 +20,15 @@
  */
 
 #include <Windows.h>
+#include <tchar.h>
 #include "../Common/enumSerialPorts.h"
 #include "../Common/LIRCDefines.h"
 #include "../Common/Hardware.h"
 #include "../Common/WLPluginAPI.h"
 #include "../Common/IRRemote.h"
-#include <stdio.h>
+#include "../Common/Win32Helpers.h"
 #include "Globals.h"
 #include "resource.h"
-#include <tchar.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -56,10 +56,7 @@ WL_API void deinit() {
 		sendReceiveData = NULL;
 	}
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	DeleteCriticalSection(&criticalSection);
 

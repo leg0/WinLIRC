@@ -1,5 +1,6 @@
-#include <stdio.h>
+#include <windows.h>
 #include <tchar.h>
+#include "../Common/Win32Helpers.h"
 #include "Receive.h"
 #include "Globals.h"
 
@@ -48,8 +49,7 @@ int Receive::init(int deviceID) {
 		hr = m_pFilter->QueryInterface (IID_IB2C2MPEG2DataCtrl6, (VOID **)&m_pIB2C2MPEG2DataCtrl);
 		if (FAILED (hr))
 		{
-			m_pFilter->Release();
-			m_pFilter = NULL;
+			SAFE_RELEASE(m_pFilter);
 			return FALSE;
 		}
 
@@ -57,25 +57,21 @@ int Receive::init(int deviceID) {
 		hr = m_pFilter->QueryInterface (IID_IB2C2MPEG2TunerCtrl4, (VOID **)&m_pIB2C2MPEG2TunerCtrl);
 		if (FAILED (hr))
 		{
-			m_pFilter->Release();
-			m_pFilter = NULL;
+			SAFE_RELEASE(m_pFilter);
 			return FALSE;
 		}
-
 
 		// Get Filter Audio/Video Control interface.
 		hr = m_pFilter->QueryInterface (IID_IB2C2MPEG2AVCtrl3, (VOID **)&m_pIB2C2MPEG2AvCtrl);
 		if (FAILED (hr))
 		{
-			m_pFilter->Release();
-			m_pFilter = NULL;
+			SAFE_RELEASE(m_pFilter);
 			return FALSE;
 		}
 
 		if ( !m_pIB2C2MPEG2TunerCtrl || !m_pIB2C2MPEG2DataCtrl || !m_pIB2C2MPEG2AvCtrl)
 		{
-			m_pFilter->Release();
-			m_pFilter = NULL;
+			SAFE_RELEASE(m_pFilter);
 			return FALSE;
 		}
 	}
@@ -97,28 +93,14 @@ int Receive::init(int deviceID) {
 }
 
 void Receive::deinit() {
+
 	DevID = -1;
-	killThread();
-	if (m_pIB2C2MPEG2TunerCtrl)
-	{
-		m_pIB2C2MPEG2TunerCtrl->Release();
-		m_pIB2C2MPEG2TunerCtrl = NULL;
-	}
-	if (m_pIB2C2MPEG2DataCtrl)
-	{
-		m_pIB2C2MPEG2DataCtrl->Release();
-		m_pIB2C2MPEG2DataCtrl = NULL;
-	}
-	if (m_pIB2C2MPEG2AvCtrl)
-	{
-		m_pIB2C2MPEG2AvCtrl->Release();
-		m_pIB2C2MPEG2AvCtrl = NULL;
-	}
-	if (m_pFilter)
-	{
-		m_pFilter->Release();
-		m_pFilter = NULL;
-	}
+	KillThread(exitEvent,threadHandle);
+
+	SAFE_RELEASE(m_pIB2C2MPEG2TunerCtrl);
+	SAFE_RELEASE(m_pIB2C2MPEG2DataCtrl);
+	SAFE_RELEASE(m_pIB2C2MPEG2AvCtrl);
+	SAFE_RELEASE(m_pFilter);
 }
 
 void Receive::setData(ir_code data) {
@@ -183,10 +165,8 @@ void Receive::threadProc() {
 		if FAILED(m_pIB2C2MPEG2AvCtrl->GetIRData ((long*)ucIRData, &lIRDataCount))
 			break;
 
-		if (WaitForSingleObject (exitEvent,0) == WAIT_OBJECT_0)
+		if (WaitForSingleObject (exitEvent,100) == WAIT_OBJECT_0)
 			break;
-
-		Sleep(100);
 
 		if (!lIRDataCount || ucIRData[0]==0xcc || ucIRData[1]==0xcc || ucIRData[0]==0xff || ucIRData[1]==0xff)
 			continue;
@@ -204,41 +184,5 @@ void Receive::threadProc() {
 		SetEvent(dataReadyEvent);		
 	}
 
-	if(exitEvent) {
-		CloseHandle(exitEvent);
-		exitEvent = NULL;
-	}
-}
-
-void Receive::killThread() {
-	//
-	// need to kill thread here
-	//
-	if(exitEvent) {
-		SetEvent(exitEvent);
-	}
-
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(threadHandle,&result)==0) 
-		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
+	SAFE_CLOSE_HANDLE(exitEvent);
 }

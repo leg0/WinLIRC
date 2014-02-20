@@ -20,17 +20,15 @@ public:
 
 private:
 
-	void killThread	();
-
-	//==============================
-	XINPUT_STATE	controllerState;
-	HANDLE			threadHandle;
-	HANDLE			threadExitEvent;
-	HANDLE			dataReadyEvent;
-	BOOL			done;
-	int				value;
-	int				repeats;
-	//==============================
+	//================================
+	XINPUT_STATE	m_controllerState;
+	HANDLE			m_threadHandle;
+	HANDLE			m_threadExitEvent;
+	HANDLE			m_dataReadyEvent;
+	BOOL			m_done;
+	int				m_value;
+	int				m_repeats;
+	//================================
 };
 
 #endif

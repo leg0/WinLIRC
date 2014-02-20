@@ -22,6 +22,7 @@
 #include "Globals.h"
 #include "SendReceiveData.h"
 #include "../Common/Linux.h"
+#include "../Common/Win32Helpers.h"
 
 DWORD WINAPI BeholdRC(void *recieveClass)
 {
@@ -86,9 +87,8 @@ BOOL SendReceiveData::init()
 
 void SendReceiveData::deinit()
 {
-   killThread();
+	KillThread(exitEvent,threadHandle);
 }
-
 
 void SendReceiveData::threadProc()
 {
@@ -111,40 +111,7 @@ void SendReceiveData::threadProc()
 		}
 	}
 
-	if( exitEvent ) {
-		CloseHandle( exitEvent );
-		exitEvent = NULL;
-	}
-}
-
-void SendReceiveData::killThread()
-{
-	//
-	// need to kill thread here
-	//
-	if( exitEvent ) {
-		SetEvent( exitEvent );
-	}
-
-	if( threadHandle != NULL )
-   {
-		DWORD result = 0;
-
-		if( GetExitCodeThread( threadHandle, &result ) == 0 ) 
-		{
-			CloseHandle( threadHandle );
-			threadHandle = NULL;
-			return;
-		}
-
-		if( result==STILL_ACTIVE )
-		{
-			WaitForSingleObject( threadHandle, INFINITE );
-		}
-
-		CloseHandle( threadHandle );
-		threadHandle = NULL;
-	}
+	SAFE_CLOSE_HANDLE(exitEvent);
 }
 
 bool SendReceiveData::waitTillDataIsReady( int maxUSecs )

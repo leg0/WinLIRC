@@ -246,7 +246,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Common\Send.h"
+					RelativePath="..\Common\Win32Helpers.h"
 					>
 				</File>
 				<File
@@ -267,6 +267,10 @@
 				</File>
 				<File
 					RelativePath="..\Common\Receive.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Common\Win32Helpers.cpp"
 					>
 				</File>
 			</Filter>

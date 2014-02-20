@@ -18,14 +18,15 @@ public:
 	void	threadProc();
 private:
 	void	setData(ir_code data);
-	void	killThread();
+
+	//======================
 	HANDLE	threadHandle;
 	HANDLE	exitEvent;
-	//===================
+	//======================
 	ir_code	dataBuffer[256];
 	UCHAR	bufferStart;
 	UCHAR	bufferEnd;
-	//===================
+	//======================
 
 };
 

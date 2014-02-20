@@ -53,7 +53,6 @@ public:
 	
 private:
 
-	void	killThread();
 	void	createWindow();
 	void	destroyWindow();
 	BOOL	registerRawDevice();

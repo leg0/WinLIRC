@@ -48,7 +48,6 @@ public:
 	
 private:
 
-	void	killThread();
 	BOOL	setFeatures();
 	void	restoreFeatures();
 

@@ -21,27 +21,27 @@ private:
 
 	void findDevice	();
 	void decode		(BYTE data);
-	void killThread	();
 	void setData	(lirc_t data);
 	
 	//======================
-	bool	exitThread;
-	HANDLE	threadHandle;
-	HANDLE	threadExitEvent;
-	HANDLE	dataReadyEvent;
+	bool	m_exitThread;
+	HANDLE	m_threadHandle;
+	HANDLE	m_threadExitEvent;
+	HANDLE	m_dataReadyEvent;
 
-	lirc_t	dataBuffer[256];
-	UCHAR	bufferStart;
-	UCHAR	bufferEnd;
-	lirc_t	pulse;
-	bool	nextByteFull;
+	lirc_t	m_dataBuffer[256];
+	UCHAR	m_bufferStart;
+	UCHAR	m_bufferEnd;
+	lirc_t	m_pulse;
+	bool	m_nextByteFull;
+	bool	m_newSignal;
 
-	LARGE_INTEGER time;
-	LARGE_INTEGER lastTime;
-	LARGE_INTEGER frequency;
-	bool newSignal;
-	TCHAR deviceName[1024];		// should be enough space
-	HANDLE deviceHandle;
+	LARGE_INTEGER m_time;
+	LARGE_INTEGER m_lastTime;
+	LARGE_INTEGER m_frequency;
+	
+	TCHAR	m_deviceName[1024];		// should be enough space
+	HANDLE	m_deviceHandle;
 	//======================
 };
 

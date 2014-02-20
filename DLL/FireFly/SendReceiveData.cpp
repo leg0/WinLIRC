@@ -31,6 +31,7 @@ There's no thread checking, but oh well. What's the worst that could happen ? :D
 #include "Globals.h"
 #include <stdio.h>
 #include <tchar.h>
+#include "../Common/Win32Helpers.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -109,10 +110,9 @@ BOOL SendReceiveData::init() {
 
 void SendReceiveData::deinit() {
 
-	killThread();
+	KillThread(exitEvent,threadHandle);
 	destroyWindow();
 }
-
 
 void SendReceiveData::threadProc() {
 
@@ -162,50 +162,8 @@ void SendReceiveData::threadProc() {
 
 	CloseHidDevice(&device);
 
-	if(exitEvent) {
-		CloseHandle(exitEvent);
-		exitEvent = NULL;
-	}
-
-	if(overlappedRead.hEvent) {
-		CloseHandle(overlappedRead.hEvent);
-		overlappedRead.hEvent = NULL;
-	}
-
-}
-
-void SendReceiveData::killThread() {
-
-	//
-	// need to kill thread here
-	//
-	if(exitEvent) {
-		SetEvent(exitEvent);
-	}
-
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(threadHandle,&result)==0) 
-		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
+	SAFE_CLOSE_HANDLE(exitEvent);
+	SAFE_CLOSE_HANDLE(overlappedRead.hEvent);
 }
 
 bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {

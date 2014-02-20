@@ -26,6 +26,7 @@
 #include "../Common/Receive.h"
 #include "../Common/WLPluginAPI.h"
 #include "../Common/Send.h"
+#include "../Common/Win32Helpers.h"
 #include "resource.h"
 #include "Globals.h"
 #include "SendReceiveData.h"
@@ -57,13 +58,9 @@ WL_API void deinit() {
 		sendReceiveData = NULL;
 	}
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	threadExitEvent = NULL;
-
 }
 
 WL_API int hasGui() {

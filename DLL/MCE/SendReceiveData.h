@@ -44,7 +44,6 @@ public:
 private:
 
 	void	setData(lirc_t data);
-	void	killThread();
 
 	bool	DeviceIo( DWORD IoCtlCode, void * inBuffer, DWORD inBufferSize, void * outBuffer, DWORD outBufferSize, DWORD & bytesReturned, DWORD timeout );
 	bool	DeviceIo( DWORD IoCtlCode, void * inBuffer, DWORD inBufferSize, void * outBuffer, DWORD outBufferSize, DWORD & bytesReturned, DWORD timeout, bool dontInterrupt, bool & interupted );

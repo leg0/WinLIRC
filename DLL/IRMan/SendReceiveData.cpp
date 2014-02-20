@@ -25,10 +25,11 @@
 #include "Globals.h"
 #include "../Common/DebugOutput.h"
 #include "../Common/Linux.h"
+#include "../Common/Win32Helpers.h"
 
 DWORD WINAPI IRMan(void *recieveClass) {
 
-	((SendReceiveData*)recieveClass)->threadProc();
+	((SendReceiveData*)recieveClass)->receiveLoop();
 	return 0;
 }
 
@@ -107,6 +108,7 @@ bool SendReceiveData::init() {
 
 	if(strncmp(tempBuffer,"OK",2)) {
 		DPRINTF("OK not returned from the device\n");
+		m_serial.Close();
 		return false;
 	}
 
@@ -126,56 +128,10 @@ bool SendReceiveData::init() {
 
 void SendReceiveData::deinit() {
 
-	killThread();
+	KillThread(m_exitEvent,m_threadHandle);
 
-	if(m_exitEvent) {
-		CloseHandle(m_exitEvent);
-		m_exitEvent = NULL;
-	}
-
-	if(m_overlappedEvent) {
-		CloseHandle(m_overlappedEvent);
-		m_overlappedEvent = NULL;
-	}
-}
-
-
-void SendReceiveData::threadProc() {
-
-	receiveLoop();
-}
-
-void SendReceiveData::killThread() {
-
-	//
-	// need to kill thread here
-	//
-
-	SetEvent(m_exitEvent);
-
-	if(m_threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(m_threadHandle,&result)==0) 
-		{
-			CloseHandle(m_threadHandle);
-			m_threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(m_threadHandle,INFINITE);
-		}
-
-		CloseHandle(m_threadHandle);
-		m_threadHandle = NULL;
-	}
+	SAFE_CLOSE_HANDLE(m_exitEvent);
+	SAFE_CLOSE_HANDLE(m_overlappedEvent);
 }
 
 bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
@@ -291,18 +247,5 @@ void SendReceiveData::receiveLoop() {
 	DPRINTF("Thread exited\n");
 
 	m_serial.Close();
-}
-
-//======================================================================================
-// sending stuff below
-//======================================================================================
-
-int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
-
-	//
-	// not supported for now, if we do support this we'll need to halt receiving
-	//
-
-	return 0;
 }
 

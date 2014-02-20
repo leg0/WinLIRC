@@ -9,6 +9,7 @@
 #include "../Common/Linux.h"
 #include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
+#include "../Common/Win32helpers.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
@@ -31,10 +32,7 @@ WL_API void deinit() {
 		receive = NULL;
 	}
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	threadExitEvent = NULL;
 }

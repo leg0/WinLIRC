@@ -27,6 +27,7 @@
 #include "ReceiveData.h"
 #include "../Common/DebugOutput.h"
 #include "../Common/Linux.h"
+#include "../Common/Win32Helpers.h"
 
 #define CLMAKECODE(a, b, c, d) ( (a)<<24 | (b)<<16 | (c)<<8 | (d) )
 #define CLBADCODE	0xFFFFFFFF
@@ -172,25 +173,21 @@ bool ReceiveData::init()
 
 void ReceiveData::deinit()
 {
-	killThreads();
+	for ( int i = 0; i < nDevices; i++ ) {
+		KillThread(exitEvent[i],threadHandle[i]);
+	}
 
-	CloseHandle(dataBufferSemaphore);
+	SAFE_CLOSE_HANDLE(dataBufferSemaphore);
 
 	for ( int i = 0; i < nDevices; i++ ) {
-		if ( exitEvent[i] ) {
-			CloseHandle(exitEvent[i]);
-			exitEvent[i] = NULL;
-		}
 
 		if ( usbHandle[i] ) {
 			WinUsb_Free(usbHandle[i]);
 			usbHandle[i] = NULL;
 		}
 
-		if ( deviceHandle[i] ) {
-			CloseHandle(deviceHandle[i]);
-			deviceHandle[i] = NULL;
-		}
+		SAFE_CLOSE_HANDLE(exitEvent[i]);
+		SAFE_CLOSE_HANDLE(deviceHandle[i]);
 	}
 }
 
@@ -245,37 +242,6 @@ void ReceiveData::threadProc(int threadNumber)
 		} else {
 			CancelIo(deviceHandle[threadNumber]);
 			break;
-		}
-	}
-}
-
-void ReceiveData::killThreads()
-{
-	for ( int i = 0; i < nDevices; i++ ) {
-		if ( exitEvent[i] ) {
-			SetEvent(exitEvent[i]);
-		}
-
-		if ( threadHandle[i] != NULL ) {
-
-			//===========
-			DWORD result;
-			//===========
-
-			result = 0;
-
-			if ( GetExitCodeThread(threadHandle[i], &result) == 0 ) {
-				CloseHandle(threadHandle[i]);
-				threadHandle[i] = NULL;
-				return;
-			}
-
-			if ( result == STILL_ACTIVE ) {
-				WaitForSingleObject(threadHandle[i], INFINITE);
-			}
-
-			CloseHandle(threadHandle[i]);
-			threadHandle[i] = NULL;
 		}
 	}
 }

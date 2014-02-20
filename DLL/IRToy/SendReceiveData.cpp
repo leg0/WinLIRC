@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <tchar.h>
 #include "../Common/Send.h"
+#include "../Common/Win32Helpers.h"
 
 DWORD WINAPI IRToy(void *recieveClass) {
 
@@ -108,61 +109,18 @@ bool SendReceiveData::init() {
 
 void SendReceiveData::deinit() {
 
-	killThread();
+	KillThread(exitEvent,threadHandle);
 
 	serial.Close();
 
-	if(exitEvent) {
-		CloseHandle(exitEvent);
-		exitEvent = NULL;
-	}
-
-	if(overlappedEvent) {
-		CloseHandle(overlappedEvent);
-		overlappedEvent = NULL;
-	}
-
+	SAFE_CLOSE_HANDLE(exitEvent);
+	SAFE_CLOSE_HANDLE(overlappedEvent);
 }
 
 
 void SendReceiveData::threadProc() {
 
 	receiveLoop();
-}
-
-void SendReceiveData::killThread() {
-
-	//
-	// need to kill thread here
-	//
-
-	if(exitEvent) {
-		SetEvent(exitEvent);
-	}
-
-	if(threadHandle!=NULL) {
-
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
-		if(GetExitCodeThread(threadHandle,&result)==0) 
-		{
-			CloseHandle(threadHandle);
-			threadHandle = NULL;
-			return;
-		}
-
-		if(result==STILL_ACTIVE)
-		{
-			WaitForSingleObject(threadHandle,INFINITE);
-		}
-
-		CloseHandle(threadHandle);
-		threadHandle = NULL;
-	}
 }
 
 bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
@@ -369,7 +327,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		//
 		// stop recieving thread - don't necessarily need this
 		//
-		killThread();
+		KillThread(exitEvent,threadHandle);
 
 		serial.SetMask(CSerial::EEventNone);
 		serial.SetupReadTimeouts(CSerial::EReadTimeoutBlocking);

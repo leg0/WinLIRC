@@ -7,6 +7,7 @@
 #include "../Common/WLPluginAPI.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Linux.h"
+#include "../Common/Win32Helpers.h"
 
 #include "Globals.h"
 #include "resource.h"
@@ -34,10 +35,7 @@ WL_API void deinit() {
 		receive = NULL;
 	}
 
-	if(dataReadyEvent) {
-		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
-	}
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
 	threadExitEvent = NULL;
 }
