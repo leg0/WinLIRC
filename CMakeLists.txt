@@ -33,3 +33,5 @@ add_subdirectory(DLL/TeVii)
 add_subdirectory(DLL/Tira)
 add_subdirectory(DLL/UDP)
 add_subdirectory(DLL/Xbox360)
+
+add_subdirectory(IRRecord)

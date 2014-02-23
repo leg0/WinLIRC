@@ -18,7 +18,6 @@ add_library(Technisat SHARED
     ib2c2mpeg2avctrl.h
     ib2c2mpeg2datactrl.h
     ib2c2mpeg2tunerctrl.h
-    LIRCDefines.h
     Receive.h
     resource.h
     Settings.h
