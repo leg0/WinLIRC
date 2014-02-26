@@ -29,7 +29,7 @@ int Receive::init(int devNum, unsigned minRepeat)
 	m_minRepeat = minRepeat;
 	deinit();
 
-	CoInitialize(NULL);
+	CoInitializeEx(NULL,COINIT_MULTITHREADED);
 	int devCount=0;
 
 	// create system device enumerator
@@ -89,6 +89,7 @@ void Receive::deinit()
 {
 	KillThread(exitEvent,threadHandle);
 	m_pKsTunerPropSet.Release();
+	CoUninitialize ();
 }
 
 void Receive::setData(ir_code data) {

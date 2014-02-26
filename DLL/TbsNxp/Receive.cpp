@@ -24,7 +24,7 @@ int Receive::init(int devNum, tmIrDecoderId tDecoderId, unsigned minRepeat)
 	m_minRepeat = minRepeat;
 	deinit();
 
-	CoInitialize(NULL);
+	CoInitializeEx(NULL,COINIT_MULTITHREADED);
 	int devCount=0;
 	CComPtr <IBaseFilter> pFilter = NULL;
 
@@ -123,6 +123,7 @@ void Receive::deinit()
 	}
 
 	m_pIKsControl.Release();
+	CoUninitialize ();
 }
 
 void Receive::setData(ir_code data) {

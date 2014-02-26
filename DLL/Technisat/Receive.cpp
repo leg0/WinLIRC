@@ -21,7 +21,7 @@ Receive::Receive() {
 	bufferStart		= 0;
 	bufferEnd		= 0;
 	// Initialize COM.
-	CoInitialize(NULL);
+	CoInitializeEx(NULL,COINIT_MULTITHREADED);
 }
 
 Receive::~Receive() {
