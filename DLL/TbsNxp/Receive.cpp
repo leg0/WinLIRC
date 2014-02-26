@@ -4,19 +4,23 @@
 #include <tchar.h>
 
 Receive::Receive() {
-	m_pIKsControl = NULL;
-	m_pInterruptLayer = NULL;
-	m_pGpioLayer = NULL;
-	m_pIrDecoder = NULL;
+	m_pIKsControl		= NULL;
+	m_pInterruptLayer	= NULL;
+	m_pGpioLayer		= NULL;
+	m_pIrDecoder		= NULL;
 	m_wImplementationId = 0x7160;
-	m_ucGpio = 4;
-	bufferStart	= 0;
-	bufferEnd = 0;
-	last_key = repeats = 0;	
+	m_ucGpio			= 4;
+	bufferStart			= 0;
+	bufferEnd			= 0;
+	last_key			= 0;
+	repeats				= 0;
+
+	CoInitializeEx(NULL,COINIT_MULTITHREADED);
 }
 
 Receive::~Receive(){
 	deinit();
+	CoUninitialize();
 }
 
 int Receive::init(int devNum, tmIrDecoderId tDecoderId, unsigned minRepeat)
@@ -24,7 +28,6 @@ int Receive::init(int devNum, tmIrDecoderId tDecoderId, unsigned minRepeat)
 	m_minRepeat = minRepeat;
 	deinit();
 
-	CoInitializeEx(NULL,COINIT_MULTITHREADED);
 	int devCount=0;
 	CComPtr <IBaseFilter> pFilter = NULL;
 
@@ -123,7 +126,6 @@ void Receive::deinit()
 	}
 
 	m_pIKsControl.Release();
-	CoUninitialize ();
 }
 
 void Receive::setData(ir_code data) {

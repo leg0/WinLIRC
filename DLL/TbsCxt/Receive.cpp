@@ -13,15 +13,19 @@ DWORD WINAPI IRReader(void *recieveClass) {
 }
 
 Receive::Receive() {
-	threadHandle = NULL;
-	m_pKsVCPropSet = NULL;
-	bufferStart	= 0;
-	bufferEnd = 0;
-	last_key = repeats = 0;	
+	threadHandle	= NULL;
+	m_pKsVCPropSet	= NULL;
+	bufferStart		= 0;
+	bufferEnd		= 0;
+	last_key		= 0;
+	repeats			= 0;
+
+	CoInitializeEx(NULL,COINIT_MULTITHREADED);
 }
 
 Receive::~Receive(){
 	deinit();
+	CoUninitialize ();
 }
 
 int Receive::init(int devNum, unsigned minRepeat)
@@ -29,7 +33,6 @@ int Receive::init(int devNum, unsigned minRepeat)
 	m_minRepeat = minRepeat;
 	deinit();
 
-	CoInitializeEx(NULL,COINIT_MULTITHREADED);;
 	int devCount=0;
 
 	// create system device enumerator
@@ -98,7 +101,6 @@ void Receive::deinit()
 {
 	KillThread(exitEvent,threadHandle);
 	m_pKsVCPropSet.Release();
-	CoUninitialize ();
 }
 
 void Receive::setData(ir_code data) {
@@ -150,6 +152,8 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 }
 
 void Receive::threadProc() {
+
+	CoInitializeEx(NULL,COINIT_MULTITHREADED);
 
 	exitEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
 
@@ -211,4 +215,6 @@ void Receive::threadProc() {
 		&ir_cmd, sizeof(ir_cmd));
 
 	SAFE_CLOSE_HANDLE(exitEvent);
+
+	CoUninitialize ();
 }

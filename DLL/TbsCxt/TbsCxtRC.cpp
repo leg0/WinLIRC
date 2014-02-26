@@ -52,7 +52,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
     switch (message) {
 
 		case WM_INITDIALOG: {
-			CoInitialize(NULL);
+			CoInitializeEx(NULL,COINIT_MULTITHREADED);
 			int numberOfDevices=0;
 			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_RESETCONTENT,0,0);
 
@@ -128,6 +128,8 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_SETCURSEL,settings.getDeviceNumber(),0);
 
 			ShowWindow(hwnd, SW_SHOW);
+
+			CoUninitialize ();
 
 			return TRUE;
 		}

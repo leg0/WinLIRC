@@ -11,13 +11,13 @@ DWORD WINAPI IRReader(void *recieveClass) {
 }
 
 Receive::Receive() {
-	m_pFilter = NULL;
-	m_pIB2C2MPEG2TunerCtrl = NULL;
-	m_pIB2C2MPEG2DataCtrl = NULL;
-	m_pIB2C2MPEG2AvCtrl = NULL;
+	m_pFilter				= NULL;
+	m_pIB2C2MPEG2TunerCtrl	= NULL;
+	m_pIB2C2MPEG2DataCtrl	= NULL;
+	m_pIB2C2MPEG2AvCtrl		= NULL;
 
-	DevID = -1;
-	threadHandle = NULL;
+	DevID			= -1;
+	threadHandle	= NULL;
 	bufferStart		= 0;
 	bufferEnd		= 0;
 	// Initialize COM.
@@ -156,6 +156,8 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 void Receive::threadProc() {
 
+	CoInitializeEx(NULL,COINIT_MULTITHREADED);
+
 	exitEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
 
 	while(TRUE) {		
@@ -185,4 +187,6 @@ void Receive::threadProc() {
 	}
 
 	SAFE_CLOSE_HANDLE(exitEvent);
+
+	CoUninitialize ();
 }
