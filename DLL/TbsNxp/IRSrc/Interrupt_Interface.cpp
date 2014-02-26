@@ -20,6 +20,8 @@
 //////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI InterruptWaitThread( LPVOID pParam ) 
 {
+	CoInitializeEx(NULL,COINIT_MULTITHREADED);
+
 	tmInterruptActivateType	tType;
     CInterrupt_Interface* pIntParam = (CInterrupt_Interface*) pParam;
 
@@ -53,6 +55,8 @@ DWORD WINAPI InterruptWaitThread( LPVOID pParam )
             break;
     }
 
+	CoUninitialize();
+
     return 0;
 }
 
@@ -69,7 +73,6 @@ DWORD WINAPI InterruptWaitThread( LPVOID pParam )
 //////////////////////////////////////////////////////////////////////////////
 CInterrupt_Interface::CInterrupt_Interface(IKsControl* pKsDeviceControl, UInt16 wImplementationID)
 {
-	CoInitialize(NULL);
     // initialize member variables
     m_pKsDeviceControl = pKsDeviceControl;
     m_wImplementationId = wImplementationID;
