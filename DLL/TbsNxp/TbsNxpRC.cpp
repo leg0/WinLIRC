@@ -53,73 +53,78 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 	USES_CONVERSION;	
     switch (message) {
 
-		case WM_INITDIALOG: {
+		case WM_INITDIALOG: 
+		{
 			CoInitializeEx(NULL,COINIT_MULTITHREADED);
-			int numberOfDevices=0;
-			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_RESETCONTENT,0,0);			
-
-			// create system device enumerator
-			CComPtr <ICreateDevEnum>	pSysDevEnum = NULL;	
-			HRESULT hr = pSysDevEnum.CoCreateInstance(CLSID_SystemDeviceEnum);
-			if (hr == S_OK)
 			{
-				// create a class enumerator for the desired category defined by classGuid.
-				CComPtr <IEnumMoniker> pEnumCat = NULL;	//moniker enumerator for filter categories
-				hr = pSysDevEnum->CreateClassEnumerator(CLSID_DeviceControlCategory, &pEnumCat, 0);
+				int numberOfDevices=0;
+				SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_RESETCONTENT,0,0);			
+
+				// create system device enumerator
+				CComPtr <ICreateDevEnum>	pSysDevEnum = NULL;	
+				HRESULT hr = pSysDevEnum.CoCreateInstance(CLSID_SystemDeviceEnum);
 				if (hr == S_OK)
 				{
-
-					// reset the enumeration
-					pEnumCat->Reset();
-
-					// now iterate through enumeration
-					ULONG cFetched = 0;
-					CComPtr <IMoniker> pMoniker = NULL;
-
-					// get a pointer to each moniker
-					while(pEnumCat->Next(1, &pMoniker, &cFetched) == S_OK)
+					// create a class enumerator for the desired category defined by classGuid.
+					CComPtr <IEnumMoniker> pEnumCat = NULL;	//moniker enumerator for filter categories
+					hr = pSysDevEnum->CreateClassEnumerator(CLSID_DeviceControlCategory, &pEnumCat, 0);
+					if (hr == S_OK)
 					{
-						//get a pointer to property bag (which has filter)
-						CComPtr <IPropertyBag> pPropBag = NULL;	
-						if (pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag) != S_OK)
-							break;
 
-						TCHAR szFriendlyName[MAX_PATH];
-						VARIANT varName;
-						// retrieve the friendly name of the filter
-						VariantInit(&varName);
-						hr = pPropBag->Read(L"FriendlyName", &varName, 0);
-						WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, szFriendlyName, sizeof(szFriendlyName), 0, 0);
-						VariantClear(&varName);
+						// reset the enumeration
+						pEnumCat->Reset();
 
-						PCHAR t=strstr(szFriendlyName,"BDA Main Device");
-						if (t) *t=0;
-						if ( strstr(szFriendlyName,"TBS") || strstr(szFriendlyName,"TT-budget") )
+						// now iterate through enumeration
+						ULONG cFetched = 0;
+						CComPtr <IMoniker> pMoniker = NULL;
+
+						// get a pointer to each moniker
+						while(pEnumCat->Next(1, &pMoniker, &cFetched) == S_OK)
 						{
-							SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)szFriendlyName);
-							numberOfDevices++;
+							//get a pointer to property bag (which has filter)
+							CComPtr <IPropertyBag> pPropBag = NULL;	
+							if (pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag) != S_OK)
+								break;
+
+							TCHAR szFriendlyName[MAX_PATH];
+							VARIANT varName;
+							// retrieve the friendly name of the filter
+							VariantInit(&varName);
+							hr = pPropBag->Read(L"FriendlyName", &varName, 0);
+							WideCharToMultiByte(CP_ACP, 0, varName.bstrVal, -1, szFriendlyName, sizeof(szFriendlyName), 0, 0);
+							VariantClear(&varName);
+
+							PCHAR t=strstr(szFriendlyName,"BDA Main Device");
+							if (t) *t=0;
+							if ( strstr(szFriendlyName,"TBS") || strstr(szFriendlyName,"TT-budget") )
+							{
+								SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)szFriendlyName);
+								numberOfDevices++;
+							}
+							pMoniker.Release();
 						}
-						pMoniker.Release();
 					}
 				}
-			}
-			
-			if (settings.getDeviceNumber() >= numberOfDevices)
-				settings.setDeviceNumber(0);
+				
+				if (settings.getDeviceNumber() >= numberOfDevices)
+					settings.setDeviceNumber(0);
 
-			if (numberOfDevices == 0)
-				SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)"NO DEVICE");
+				if (numberOfDevices == 0)
+					SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_ADDSTRING,0,(LPARAM)"NO DEVICE");
 
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_RESETCONTENT,0,0);
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC5");
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC6");
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC32");
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC40");
-			
-			SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_SETCURSEL,settings.getDeviceNumber(),0);
-			SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETCURSEL,settings.getRcType(),0);
+				SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_RESETCONTENT,0,0);
+				SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC5");
+				SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"RC6");
+				SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC32");
+				SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_ADDSTRING,0,(LPARAM)"NEC40");
+				
+				SendDlgItemMessage(hwnd,IDC_COMBO_DEVID,CB_SETCURSEL,settings.getDeviceNumber(),0);
+				SendDlgItemMessage(hwnd,IDC_COMBO_RCTYPE,CB_SETCURSEL,settings.getRcType(),0);
 
-			ShowWindow(hwnd, SW_SHOW);
+				ShowWindow(hwnd, SW_SHOW);
+			}			
+
+			CoUninitialize ();
 
 			return TRUE;
 		}
