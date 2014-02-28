@@ -129,8 +129,6 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 			ShowWindow(hwnd, SW_SHOW);
 
-			CoUninitialize ();
-
 			return TRUE;
 		}
 
