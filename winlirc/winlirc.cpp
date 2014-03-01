@@ -33,7 +33,6 @@ END_MESSAGE_MAP()
 BOOL Cwinlirc::InitInstance() {   
 
 	AfxInitRichEdit();
-
 #ifdef _DEBUG
 	RedirectIOToConsole();
 #endif
@@ -71,40 +70,26 @@ BOOL Cwinlirc::InitInstance() {
 		config.showTrayIcon = FALSE;
 	}
 
-	dlg		= new Cdrvdlg();
-	server	= new Cserver();
+	dlg.reset(new Cdrvdlg());
 
 	if(!CreateMutex(0,FALSE,_T("WinLIRC Multiple Instance Lockout")) || GetLastError()==ERROR_ALREADY_EXISTS) {
 
-		//=======
-		HWND tmp;
-		//=======
+		auto winlircWindow = FindWindow(NULL, _T("WinLIRC"));
 
-		tmp=FindWindow(NULL,_T("WinLIRC"));
-
-		if(!tmp)
+		if (!winlircWindow)
 		{
 			MessageBox(NULL,_T("WinLIRC is already running"),_T("WinLIRC"),MB_OK);
 		}
 		else
 		{
 			// bring it to the top
+			auto last = ::GetLastActivePopup(winlircWindow);
 
-			//===========
-			CWnd winlirc;
-			CWnd *last;
-			//===========
+			if (!::IsWindowVisible(winlircWindow))
+				::ShowWindow(winlircWindow, SW_SHOW);
 
-			winlirc.Attach(tmp);
-
-			last = winlirc.GetLastActivePopup();
-
-			if(!winlirc.IsWindowVisible()) winlirc.ShowWindow(SW_SHOW);
-
-			winlirc.SetForegroundWindow();
-			last->SetForegroundWindow();
-
-			winlirc.Detach();
+			::SetForegroundWindow(winlircWindow);
+			::SetForegroundWindow(last);
 		}
 		return FALSE;
 	}
@@ -118,37 +103,36 @@ BOOL Cwinlirc::InitInstance() {
 		return FALSE;
 	}
 	
-	if(server->startServer()==false) {
-		MessageBox(NULL,_T("Server could not be started. Try checking the port."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
-	}
-
 	WL_DEBUG("Creating main dialog...\n");
 
 	if(!dlg->Create(IDD_DIALOG,NULL)) {
 
 		MessageBox(NULL,_T("Program exiting."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 
-		delete dlg;
-		delete server; 
-
-		dlg		= NULL; 
-		server	= NULL; 
+		dlg.reset();
+		server.reset(); 
 		
 		return FALSE;
 	}
 
-	dlg->ShowWindow(SW_HIDE);	
+	dlg->ShowWindow(SW_HIDE);
 	dlg->UpdateWindow();
-	m_pMainWnd=dlg;
-	
+	m_pMainWnd = dlg.get();
+
+	server = std::make_shared<Cserver>(*dlg);
+	dlg->setNetworkEventHandler(server);
+	if (!server->startServer()) {
+		MessageBox(NULL, _T("Server could not be started. Try checking the port."), _T("WinLIRC"), MB_OK | MB_ICONERROR);
+	}
+
 	return TRUE;
 	
 }
 
 int Cwinlirc::ExitInstance()
 {
-	delete server;
-	delete dlg;
+	server.reset();
+	dlg.reset();
 
 	return CWinApp::ExitInstance();
 }

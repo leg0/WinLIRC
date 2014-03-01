@@ -20,14 +20,7 @@
  * Modifications Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
-#if !defined(AFX_DRVDLG_H__C20B80E0_C848_11D2_8C7F_004005637418__INCLUDED_)
-#define AFX_DRVDLG_H__C20B80E0_C848_11D2_8C7F_004005637418__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// drvdlg.h : header file
-//
 
 #include "globals.h"
 
@@ -36,8 +29,17 @@
 #include "irdriver.h"
 #include "irconfig.h"
 
+#define WM_NETWORKEVENT (WM_USER+1)
+
 class CIRDriver;
 class CIRConfig;
+
+class INetworkEventHandler
+{
+public:
+	virtual ~INetworkEventHandler() { }
+	virtual void onNetworkEvent(SOCKET s, WORD events, WORD error) = 0;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // Cdrvdlg dialog
@@ -55,31 +57,27 @@ public:
 	void GoGreen();
 	void GoBlue();	//turns the tray icon blue to indicate a transmission
 	
-// Dialog Data
-	//{{AFX_DATA(Cdrvdlg)
+	void setNetworkEventHandler(std::shared_ptr<INetworkEventHandler> h)
+	{
+		networkEventHandler_ = h;
+	}
 	enum { IDD = IDD_DIALOG };
 	CComboBox	m_IrCodeEditCombo;
 	CComboBox	m_remote_DropDown;
 	CString	m_ircode_edit;
 	CString	m_remote_edit;
 	int	m_reps_edit;
-	//}}AFX_DATA
 
 	CTrayIcon ti;
 	CIRDriver driver;
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(Cdrvdlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);
 
 // Implementation
 protected:
 
 	// Generated message map functions
-	//{{AFX_MSG(Cdrvdlg)
 	virtual void OnOK();
 	virtual void OnCancel();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -92,15 +90,13 @@ protected:
 	afx_msg void OnSendcode();
 	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
 	afx_msg void OnDropdownIrcodeEdit();
-	//}}AFX_MSG
 	afx_msg LRESULT OnPowerBroadcast(WPARAM uPowerEvent, LPARAM lP);
+	afx_msg LRESULT OnNetworkEvent(WPARAM wParam, LPARAM lParam);
 	void UpdateRemoteComboLists();
 	void UpdateIrCodeComboLists();
 	LRESULT OnTrayNotification(WPARAM uID, LPARAM lEvent);
 	DECLARE_MESSAGE_MAP()
+
+private:
+	std::weak_ptr<INetworkEventHandler> networkEventHandler_;
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_DRVDLG_H__C20B80E0_C848_11D2_8C7F_004005637418__INCLUDED_)

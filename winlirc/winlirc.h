@@ -37,8 +37,8 @@ class Cserver;
 class Cwinlirc : public CWinApp
 {
 public:
-	Cdrvdlg *dlg;
-	Cserver *server;
+	std::unique_ptr<Cdrvdlg> dlg;
+	std::shared_ptr<Cserver> server;
 
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
