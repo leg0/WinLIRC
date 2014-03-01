@@ -98,10 +98,10 @@ std::string Response::toString() const
 	if (!data_.empty())
 	{
 		o << "DATA\n" << data_.size() << "\n";
-		for (auto const& s : data_)
+		std::for_each(data_.begin(), data_.end(), [&](std::string const& s)
 		{
 			o << s << "\n";
-		}
+		});
 	}
 	o << "END\n";
 	return o.str();
@@ -459,8 +459,10 @@ void Cserver::stopServer()
 
 void Cserver::sendToClients(const char *s)
 {
-	for (auto const& client : m_clients)
-		sendData(client.first, s);
+	std::for_each(m_clients.begin(), m_clients.end(), [=](std::pair<SOCKET const, Client>& p)
+	{
+		sendData(p.first, s);
+	});
 }
 
 void Cserver::sendData(SOCKET socket, const char *s) {

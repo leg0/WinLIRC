@@ -28,12 +28,13 @@ class Response;
 
 class Client
 {
+	Client(Client const&);
+	Client& operator=(Client const& src);
+
 public:
 	explicit Client(SOCKET s = INVALID_SOCKET) : socket_(s) { }
 	Client(Client&& src);
 	Client& operator=(Client&& src);
-	Client(Client const&) = delete;
-	Client& operator=(Client const& src) = delete;
 	~Client();
 
 	SOCKET release();
