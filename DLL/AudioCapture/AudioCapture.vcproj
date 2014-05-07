@@ -440,10 +440,6 @@
 					RelativePath="..\Common\Receive.h"
 					>
 				</File>
-				<File
-					RelativePath="..\Common\Send.h"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="Source Files"
@@ -458,10 +454,6 @@
 				</File>
 				<File
 					RelativePath="..\Common\Receive.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Common\Send.cpp"
 					>
 				</File>
 			</Filter>

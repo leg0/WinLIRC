@@ -265,10 +265,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\Common\Send.h"
-					>
-				</File>
-				<File
 					RelativePath="..\Common\WLPluginAPI.h"
 					>
 				</File>
@@ -282,10 +278,6 @@
 				</File>
 				<File
 					RelativePath="..\Common\Linux.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Common\Send.cpp"
 					>
 				</File>
 			</Filter>
