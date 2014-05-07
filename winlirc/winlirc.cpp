@@ -30,15 +30,13 @@ Cwinlirc app;
 BEGIN_MESSAGE_MAP(Cwinlirc,CWinApp)
 END_MESSAGE_MAP()
 
-BOOL Cwinlirc::InitInstance() {   
+BOOL Cwinlirc::InitInstance() {
 
 	AfxInitRichEdit();
+
 #ifdef _DEBUG
 	RedirectIOToConsole();
 #endif
-
-	dlg		= NULL;
-	server	= NULL;
 
 	// set current directory for plugins from exe path
 
@@ -70,26 +68,42 @@ BOOL Cwinlirc::InitInstance() {
 		config.showTrayIcon = FALSE;
 	}
 
-	dlg.reset(new Cdrvdlg());
+	CString mutexName;
+	mutexName.Format(_T("WinLIRC Multiple Instance Lockout_%i"),config.serverPort);
 
-	if(!CreateMutex(0,FALSE,_T("WinLIRC Multiple Instance Lockout")) || GetLastError()==ERROR_ALREADY_EXISTS) {
+	if(!CreateMutex(0,FALSE,mutexName) || GetLastError()==ERROR_ALREADY_EXISTS) {
 
-		auto winlircWindow = FindWindow(NULL, _T("WinLIRC"));
+		//=======
+		HWND tmp;
+		//=======
 
-		if (!winlircWindow)
+		tmp=FindWindow(NULL,_T("WinLIRC"));
+
+		if(!tmp)
 		{
 			MessageBox(NULL,_T("WinLIRC is already running"),_T("WinLIRC"),MB_OK);
 		}
 		else
 		{
 			// bring it to the top
-			auto last = ::GetLastActivePopup(winlircWindow);
 
-			if (!::IsWindowVisible(winlircWindow))
-				::ShowWindow(winlircWindow, SW_SHOW);
+			//===========
+			CWnd winlirc;
+			CWnd *last;
+			//===========
 
-			::SetForegroundWindow(winlircWindow);
-			::SetForegroundWindow(last);
+			winlirc.Attach(tmp);
+
+			last = winlirc.GetLastActivePopup();
+
+			if(!winlirc.IsWindowVisible()) {
+				winlirc.ShowWindow(SW_SHOW);
+			}
+
+			winlirc.SetForegroundWindow();
+			last->SetForegroundWindow();
+
+			winlirc.Detach();
 		}
 		return FALSE;
 	}
@@ -97,42 +111,39 @@ BOOL Cwinlirc::InitInstance() {
 	//
 	//Process initialization and sanity checks
 	//
-	if(SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS)==0 || SetThreadPriority(THREAD_PRIORITY_IDLE)==0)
-	{
+	if(SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS)==0 || SetThreadPriority(THREAD_PRIORITY_IDLE)==0) {
 		MessageBox(NULL,_T("Could not set thread priority."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 		return FALSE;
 	}
 	
+	if(server.startServer()==false) {
+		MessageBox(NULL,_T("Server could not be started. Try checking the port."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
+	}
+
 	WL_DEBUG("Creating main dialog...\n");
 
+	dlg = new Cdrvdlg();
+
 	if(!dlg->Create(IDD_DIALOG,NULL)) {
-
+		delete dlg;
+		dlg = NULL;
 		MessageBox(NULL,_T("Program exiting."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
-
-		dlg.reset();
-		server.reset(); 
-		
 		return FALSE;
 	}
 
-	dlg->ShowWindow(SW_HIDE);
+	dlg->ShowWindow(SW_HIDE);	
 	dlg->UpdateWindow();
-	m_pMainWnd = dlg.get();
-
-	server = std::make_shared<Cserver>(*dlg);
-	dlg->setNetworkEventHandler(server);
-	if (!server->startServer()) {
-		MessageBox(NULL, _T("Server could not be started. Try checking the port."), _T("WinLIRC"), MB_OK | MB_ICONERROR);
-	}
-
-	return TRUE;
+	m_pMainWnd = dlg;
 	
+	return TRUE;
 }
 
 int Cwinlirc::ExitInstance()
 {
-	server.reset();
-	dlg.reset();
+	if(dlg) {
+		delete dlg;
+		dlg = NULL;
+	}
 
 	return CWinApp::ExitInstance();
 }

@@ -27,6 +27,7 @@
 #include "config.h"
 #include "drvdlg.h"
 #include "server.h"
+#include "winlirc.h"
 
 unsigned int DaemonThread(void* drv) {
     static_cast<CIRDriver*>(drv)->DaemonThreadProc();
@@ -232,7 +233,7 @@ void CIRDriver::DaemonThreadProc(void) const {
 			}
 
 			app.dlg->GoGreen();
-			app.server->sendToClients(message);
+			app.server.sendToClients(message);
 		}
 
 	}

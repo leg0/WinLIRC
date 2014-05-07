@@ -304,7 +304,7 @@ void InputPlugin::OnBnClickedOk() {
 			//===========
 
 			config.serverPort = tempPort;
-			success = app.server->restartServer();
+			success = app.server.restartServer();
 
 			if(!success) {
 				MessageBox(_T("Server could not be started. Try checking the port."),_T("WinLIRC"),MB_OK|MB_ICONERROR);

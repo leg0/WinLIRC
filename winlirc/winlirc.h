@@ -22,23 +22,19 @@
 #ifndef WINLIRC_H
 #define WINLIRC_H
 
-#include "globals.h"
-
-#include "stdafx.h"
+#include "server.h"
+#include "drvdlg.h"
 #include "resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
-class Cdrvdlg;
-class Cserver;
-
 class Cwinlirc : public CWinApp
 {
 public:
-	std::unique_ptr<Cdrvdlg> dlg;
-	std::shared_ptr<Cserver> server;
+	Cdrvdlg *dlg;
+	Cserver server;
 
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();

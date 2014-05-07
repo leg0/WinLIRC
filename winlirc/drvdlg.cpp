@@ -76,7 +76,6 @@ BEGIN_MESSAGE_MAP(Cdrvdlg, CDialog)
 	ON_MESSAGE(WM_TRAY, OnTrayNotification)
 	//}}AFX_MSG_MAP
 	ON_MESSAGE(WM_POWERBROADCAST, OnPowerBroadcast)
-	ON_MESSAGE(WM_NETWORKEVENT, OnNetworkEvent)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -110,7 +109,7 @@ int Cdrvdlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;	
 }
 
-LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
+afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 {
 	LRESULT retval = TRUE;
 
@@ -175,19 +174,6 @@ LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 
 		return retval;
 	}
-
-LRESULT Cdrvdlg::OnNetworkEvent(WPARAM wParam, LPARAM lParam)
-{
-	auto handler = networkEventHandler_.lock();
-	if (handler)
-	{
-		handler->onNetworkEvent(
-			static_cast<SOCKET>(wParam),
-			WSAGETSELECTEVENT(lParam),
-			WSAGETSELECTERROR(lParam));
-	}
-	return 0;
-}
 
 LRESULT Cdrvdlg::OnTrayNotification(WPARAM uID, LPARAM lEvent)
 {
@@ -319,9 +305,7 @@ bool Cdrvdlg::InitializeDaemon() {
 		return false;
 	}
 	
-	if (app.server)
-		app.server->sendToClients("BEGIN\nSIGHUP\nEND\n");
-
+	app.server.sendToClients("BEGIN\nSIGHUP\nEND\n");
 	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),_T("WinLIRC / Ready"));
 	return true;
 }
@@ -431,32 +415,15 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 // remotename	ircodename	reps
 // where reps is an optional parameter indicating the number of times to repeat the code (default=0)
 {
-	char* context;
-	auto remoteName = strtok_s(static_cast<char*>(pCopyDataStruct->lpData), " \t", &context);
-	auto keyName = strtok_s(nullptr, " \t", &context);
-	auto reps = strtok_s(nullptr, " \t", &context);
+	//================
+	CStringA string;
+	CStringA response;
+	//================
+
+	string  = "SEND_ONCE ";
+	string += (LPCSTR) (pCopyDataStruct->lpData);
 	
-	CSingleLock lock(&CS_global_remotes, true);
-	auto const remote = get_remote_by_name(global_remotes, remoteName);
-	if (!remote)
-		return 0;
-
-	auto const code = get_code_by_name(remote->codes, keyName);
-	if (code == nullptr || code->name == nullptr)
-		return 0;
-
-	auto repeats = std::max(atoi(reps), remote->min_repeat);
-	repeats = std::min(repeats, 10);
-	if (has_toggle_mask(remote))
-		remote->toggle_mask_state = 0;
-
-	if (has_toggle_bit_mask(remote))
-		remote->toggle_bit_mask_state = (remote->toggle_bit_mask_state ^ remote->toggle_bit_mask);
-
-	if (driver.sendIR(remote, code, repeats))
-		GoBlue();
-
-	return 0;
+	return app.server.parseSendString(string,response);
 }
 
 void Cdrvdlg::UpdateRemoteComboLists()

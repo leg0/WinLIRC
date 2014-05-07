@@ -22,62 +22,35 @@
 #ifndef SERVER__H
 #define SERVER__H
 
-#include "drvdlg.h" // INetwrokEventHandler
+#define MAX_CLIENTS 8
 
-class Response;
-
-class Client
-{
-	Client(Client const&);
-	Client& operator=(Client const& src);
-
-public:
-	explicit Client(SOCKET s = INVALID_SOCKET) : socket_(s) { }
-	Client(Client&& src);
-	Client& operator=(Client&& src);
-	~Client();
-
-	SOCKET release();
-	bool handleInput();
-
-private:
-	void close();
-
-	bool handleSendOnce(Response& response) const;
-	bool handleList(Response& response) const;
-	bool handleVersion(Response& response) const;
-	bool handleSetTransmitters(Response& response) const;
-
-private:
-	SOCKET socket_;
-	std::string data_;
-};
-
-class Cserver
-	: public INetworkEventHandler
-	, public std::enable_shared_from_this<Cserver>
-{
+class Cserver {
 public:
 
-	explicit Cserver(HWND hwndEventSource);
+	Cserver();
 	~Cserver();
 
 	bool startServer		(void);
 	void stopServer			(void);
 	bool restartServer		(void);
 	void sendToClients		(const char *s);
+	BOOL parseSendString	(const char *string, CStringA &response);
+	BOOL parseListString	(const char *string, CStringA &response);
+	BOOL parseVersion		(const char *string, CStringA &response);
+	BOOL parseTransmitters	(const char *string, CStringA &response);
 
-	virtual void onNetworkEvent(SOCKET s, WORD ev, WORD er) override;
+	void ThreadProc(void);
 
 private:
 	void sendData			(SOCKET socket, const char *s);
 	void reply				(const char *command,int client,bool success,const char *data);
 
 	SOCKET		m_server;
-	std::unordered_map<SOCKET, Client>	m_clients;
+	SOCKET		m_clients[MAX_CLIENTS];
 	int			m_tcp_port;				//tcp port for server
+	CWinThread* m_serverThreadHandle;
+	CEvent		m_serverThreadEvent;
 	int			m_winsockStart;
-	HWND hwndEventSource_;
 };
 
 #endif
