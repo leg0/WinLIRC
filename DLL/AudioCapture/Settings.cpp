@@ -132,6 +132,6 @@ void Settings::loadSettings() {
 
 	m_audioFormat	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("AudioFormat"),1,currentDirectory);
 	m_leftChannel	= (GetPrivateProfileInt(_T("AudioInputPlugin"),_T("LeftChannel"),1,currentDirectory)!=0);	//to shut the compiler up
-	m_polarity		= (SP)GetPrivateProfileInt(_T("AudioInputPlugin"),_T("Polarity"),(UINT)SP_AUTOMATIC,currentDirectory);	//to shut the compiler up
+	m_polarity		= (SP)GetPrivateProfileInt(_T("AudioInputPlugin"),_T("Polarity"),(INT)SP_AUTOMATIC,currentDirectory);	//to shut the compiler up
 	m_noiseValue	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("NoiseValue"),16,currentDirectory);	//to shut the compiler up
 }
