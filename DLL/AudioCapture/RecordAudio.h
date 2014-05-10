@@ -23,6 +23,7 @@
 #define RECORDAUDIO_H
 
 #include <Windows.h>
+#include "Settings.h"
 
 class RecordAudio {
 
@@ -30,14 +31,14 @@ public:
 	RecordAudio();
    ~RecordAudio();
 
-	bool startRecording		(int deviceID, int frequency, int numberOfChannels, bool leftChannel);		//device ID and format .. eventually
+	bool startRecording		(int deviceID, int frequency, int numberOfChannels, bool leftChannel, SP sp);		//device ID and format .. eventually
 	void stopRecording		();
 
 	void processHeader		(WAVEHDR *waveHeader);
 
 private:
 
-	void openAudioDevice	(int deviceID, int frequency, int numberOfChannels, bool leftChannel);
+	void openAudioDevice	(int deviceID, int frequency, int numberOfChannels, bool leftChannel, SP sp);
 	void closeAudioDevice	();
 	void prepareBuffers		(int bufferSize);
 	void unPrepareBuffers	();

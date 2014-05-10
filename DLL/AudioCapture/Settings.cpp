@@ -31,52 +31,52 @@ Settings::Settings() {
 
 void Settings::setAudioDeviceName(TCHAR *name) {
 
-	_tcscpy_s(deviceName,32,name);
+	_tcscpy_s(m_deviceName,32,name);
 }
 
 void Settings::getAudioDeviceName(TCHAR *out) {
 
-	_tcscpy_s(out,32,deviceName);
+	_tcscpy_s(out,32,m_deviceName);
 }
 
 void Settings::setAudioFormat(int format) {
 
-	audioFormat = format;
+	m_audioFormat = format;
 }
 
 int Settings::getAudioFormat() {
 	
-	return audioFormat;
+	return m_audioFormat;
 }
 
 void Settings::setChannel(bool left) {
 
-	leftChannel = left;
+	m_leftChannel = left;
 }
 
 bool Settings::getChannel() {
 	
-	return leftChannel;
+	return m_leftChannel;
 }
 
-bool Settings::getInverted() {
+void Settings::setPolarity(SP p) {
 
-	return inverted;
+	m_polarity = p;
 }
 
-void Settings::setInverted(bool i) {
+SP Settings::getPolarity() {
 
-	inverted = i;
+	return m_polarity;
 }
 
 int Settings::getNoiseValue() {
 
-	return noiseValue;
+	return m_noiseValue;
 }
 
 void Settings::setNoiseValue(int n) {
 
-	noiseValue = n;
+	m_noiseValue = n;
 }
 
 void Settings::saveSettings() {
@@ -103,18 +103,18 @@ void Settings::saveSettings() {
 		fclose(file);
 	}
 
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"), deviceName, currentDirectory);
+	WritePrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"), m_deviceName, currentDirectory);
 
-	_sntprintf(temp, _countof(temp), _T("%i"), audioFormat);
+	_sntprintf(temp, _countof(temp), _T("%i"), m_audioFormat);
 	WritePrivateProfileString(_T("AudioInputPlugin"),_T("AudioFormat"),	temp, currentDirectory);
 	
-	_sntprintf(temp, _countof(temp), _T("%i"), leftChannel);
+	_sntprintf(temp, _countof(temp), _T("%i"), m_leftChannel);
 	WritePrivateProfileString(_T("AudioInputPlugin"),_T("LeftChannel"),	temp, currentDirectory);
 
-	_sntprintf(temp, _countof(temp), _T("%i"), inverted);
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("Inverted"),	temp, currentDirectory);
+	_sntprintf(temp, _countof(temp), _T("%i"), m_polarity);
+	WritePrivateProfileString(_T("AudioInputPlugin"),_T("Polarity"),	temp, currentDirectory);
 
-	_sntprintf(temp, _countof(temp), _T("%i"), noiseValue);
+	_sntprintf(temp, _countof(temp), _T("%i"), m_noiseValue);
 	WritePrivateProfileString(_T("AudioInputPlugin"),_T("NoiseValue"),	temp, currentDirectory);
 }
 
@@ -128,10 +128,10 @@ void Settings::loadSettings() {
 
 	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
 
-	GetPrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"),NULL,deviceName,32,currentDirectory);
+	GetPrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"),NULL,m_deviceName,32,currentDirectory);
 
-	audioFormat	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("AudioFormat"),1,currentDirectory);
-	leftChannel	= (GetPrivateProfileInt(_T("AudioInputPlugin"),_T("LeftChannel"),1,currentDirectory)!=0);	//to shut the compiler up
-	inverted = (GetPrivateProfileInt(_T("AudioInputPlugin"),_T("Inverted"),0,currentDirectory)!=0);	//to shut the compiler up
-	noiseValue = GetPrivateProfileInt(_T("AudioInputPlugin"),_T("NoiseValue"),16,currentDirectory);	//to shut the compiler up
+	m_audioFormat	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("AudioFormat"),1,currentDirectory);
+	m_leftChannel	= (GetPrivateProfileInt(_T("AudioInputPlugin"),_T("LeftChannel"),1,currentDirectory)!=0);	//to shut the compiler up
+	m_polarity		= (SP)GetPrivateProfileInt(_T("AudioInputPlugin"),_T("Polarity"),(UINT)SP_AUTOMATIC,currentDirectory);	//to shut the compiler up
+	m_noiseValue	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("NoiseValue"),16,currentDirectory);	//to shut the compiler up
 }

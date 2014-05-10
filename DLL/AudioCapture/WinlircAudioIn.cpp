@@ -71,11 +71,11 @@ WL_API int init(HANDLE exitEvent) {
 
 	deviceID = AudioFormats::getAudioIndex(deviceName);
 
-	if(deviceID==-1) {
+	if(deviceID<0) {
 		return 0;
 	}
 	else {
-		recordAudio->startRecording(deviceID,frequency,stereo+1,left);
+		recordAudio->startRecording(deviceID,frequency,stereo+1,left,settings->getPolarity());
 		return 1; //success
 	}
 }
@@ -236,6 +236,11 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 			SendDlgItemMessage(hwnd,IDC_COMBO3,CB_ADDSTRING,0,(LPARAM)_T("Right Channel"));
 			SendDlgItemMessage(hwnd,IDC_COMBO3,CB_SETCURSEL,0,0);
 
+			SendDlgItemMessage(hwnd,IDC_COMBO4,CB_ADDSTRING,0,(LPARAM)_T("Positive"));
+			SendDlgItemMessage(hwnd,IDC_COMBO4,CB_ADDSTRING,0,(LPARAM)_T("Negative"));
+			SendDlgItemMessage(hwnd,IDC_COMBO4,CB_ADDSTRING,0,(LPARAM)_T("Auto Detect"));
+			SendDlgItemMessage(hwnd,IDC_COMBO4,CB_SETCURSEL,guiSettings->getPolarity(),0);
+			
 			addAudioDeviceList(hwnd,IDC_COMBO1);
 			addAudioFormats(hwnd,IDC_COMBO2);
 
@@ -398,6 +403,21 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 						else {
 							guiSettings->setChannel(false);
 						}
+					}
+					
+				}
+
+				case IDC_COMBO4: {
+
+					if(HIWORD(wParam)==CBN_SELCHANGE) {
+
+						//============
+						LRESULT index;
+						//============
+						
+						index = SendDlgItemMessage(hwnd,IDC_COMBO4,CB_GETCURSEL,0,0);
+
+						guiSettings->setPolarity((SP)index);
 					}
 					
 				}

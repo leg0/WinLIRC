@@ -24,6 +24,12 @@
 
 #include <tchar.h>
 
+enum SP {
+	SP_POSITIVE		= 0,
+	SP_NEGATIVE		= 1,
+	SP_AUTOMATIC	= 2,
+};
+
 class Settings 
 {
 
@@ -39,8 +45,8 @@ public:
 	void	setChannel(bool left);
 	bool	getChannel();			//left is true
 
-	bool	getInverted();
-	void	setInverted(bool i);
+	void	setPolarity(SP p);
+	SP		getPolarity();
 
 	int 	getNoiseValue();
 	void	setNoiseValue(int n);
@@ -51,11 +57,11 @@ public:
 private:
 
 	//========================
-	TCHAR	deviceName[32];			// 32 is max length
-	int		audioFormat;
-	bool	leftChannel;			// if mono ignore
-	bool	inverted;
-	int		noiseValue;
+	TCHAR	m_deviceName[32];			// 32 is max length
+	int		m_audioFormat;
+	bool	m_leftChannel;			// if mono ignore
+	int		m_noiseValue;
+	SP		m_polarity;
 	//========================
 };
 

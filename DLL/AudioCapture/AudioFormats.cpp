@@ -105,9 +105,6 @@ int AudioFormats::getAudioIndex(TCHAR *audioDeviceName) {
 		waveInGetDevCaps(i,&caps,sizeof(caps));
 		removeTrailingWhiteSpace(caps.szPname);
 
-		//_tprintf(_T("getAudio caps %s z\n"),caps.szPname);
-		//_tprintf(_T("getAudio %s z\n"),audioDeviceName);
-
 		if(! _tcscmp(caps.szPname,audioDeviceName) ) return i;
 	}
 

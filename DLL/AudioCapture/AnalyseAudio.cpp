@@ -21,7 +21,6 @@
 
 #include "AnalyseAudio.h"
 #include <Math.h>
-#include <stdio.h>
 #include "Globals.h"
 #include "../Common/LIRCDefines.h"
 
@@ -31,7 +30,7 @@
 // A simple algorithm for decoding audio
 //
 
-AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, int noiseValue) {
+AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, int noiseValue, SP signalPolarity) {
 
 	m_multiplyConstant	= 1000000 / (double)frequency;
 	m_maxCount			= (~0) / (DWORD)m_multiplyConstant;
@@ -50,10 +49,20 @@ AnalyseAudio::AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel
 
 	m_bufferStart	= 0;
 	m_bufferEnd		= 0;
+	m_pulse			= false;
 
-	m_pulse		= false;
-	m_inverted	= false;
-	m_detected	= false;
+	if(signalPolarity==SP_POSITIVE) {
+		m_inverted	= false;
+		m_detected	= true;	
+	}
+	else if(signalPolarity==SP_NEGATIVE) {
+		m_inverted	= true;
+		m_detected	= true;	
+	}
+	else {
+		m_inverted	= false;
+		m_detected	= false;
+	}
 }
 
 // Some audio hardware will give inverted signals.

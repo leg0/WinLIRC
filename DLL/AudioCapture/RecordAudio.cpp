@@ -67,13 +67,13 @@ int RecordAudio::calcBufferSize(int frequency, int numberOfChannels) {
 	return 4096;
 }
 
-bool RecordAudio::startRecording(int deviceID, int frequency, int numberOfChannels, bool leftChannel) {
+bool RecordAudio::startRecording(int deviceID, int frequency, int numberOfChannels, bool leftChannel, SP sp) {
 
 	//==============
 	MMRESULT result;
 	//==============
 
-	openAudioDevice(deviceID,frequency,numberOfChannels,leftChannel);
+	openAudioDevice(deviceID,frequency,numberOfChannels,leftChannel,sp);
 	prepareBuffers(calcBufferSize(frequency,numberOfChannels));
 
 	m_stop = FALSE;
@@ -96,7 +96,7 @@ void RecordAudio::stopRecording() {
 	closeAudioDevice();
 }
 
-void RecordAudio::openAudioDevice(int deviceID, int frequency, int numberOfChannels, bool leftChannel) {
+void RecordAudio::openAudioDevice(int deviceID, int frequency, int numberOfChannels, bool leftChannel, SP sp) {
 
 	//======================
 	WAVEFORMATEX waveFormat;
@@ -117,7 +117,7 @@ void RecordAudio::openAudioDevice(int deviceID, int frequency, int numberOfChann
 	MMRESULT result = waveInOpen(&m_hWaveIn,deviceID,&waveFormat,(DWORD_PTR)waveInProc,(DWORD_PTR)this,CALLBACK_FUNCTION);
 	DPRINTF("waveInOpen result %i\n",result);
 
-	analyseAudio = new AnalyseAudio(frequency,waveFormat.nChannels,leftChannel,settings->getNoiseValue());
+	analyseAudio = new AnalyseAudio(frequency,waveFormat.nChannels,leftChannel,settings->getNoiseValue(),sp);
 }
 
 void RecordAudio::closeAudioDevice() {
@@ -204,7 +204,6 @@ void RecordAudio::processHeader(WAVEHDR *waveHeader) {
 
 void CALLBACK waveInProc(HWAVEIN hwi,UINT uMsg,DWORD dwInstance,DWORD dwParam1,DWORD dwParam2)
 {
-	//printf("call back function %i\n",uMsg);
 	switch(uMsg)
 	{
 		case WIM_CLOSE:
@@ -212,7 +211,6 @@ void CALLBACK waveInProc(HWAVEIN hwi,UINT uMsg,DWORD dwInstance,DWORD dwParam1,D
 
 		case WIM_DATA:
 			{
-				//printf("data received\n");
 				RecordAudio *recordAudio=(RecordAudio*)dwInstance;
 				recordAudio->processHeader((WAVEHDR *)dwParam1);
 			}

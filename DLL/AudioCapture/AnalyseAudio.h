@@ -23,6 +23,7 @@
 #define ANALYSEAUDIO_H
 
 #include <Windows.h>
+#include "Settings.h"
 
 //
 // only accept 8bit mono/stere audio for now. Sampling frequency can change
@@ -31,7 +32,7 @@
 class AnalyseAudio {
 
 public:
-	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, int noiseValue);
+	AnalyseAudio(int frequency, int numberOfChannels, bool leftChannel, int noiseValue, SP signalPolarity);
 
 	void decodeData(UCHAR *data, int bytesRecorded);
 	bool getData(UINT *out);
