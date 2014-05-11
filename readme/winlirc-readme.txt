@@ -1,3 +1,13 @@
+WinLIRC 0.9.0i
+==============
+
+- Added automatic signal polarity detection to the audio receiver plugin.
+- Removed the lowest sampling frequency from the audio receiver plugin, since it was too low.
+- Improved compatability of the IRMan plugin with various hardware.
+- Changed the process priorty to just high, instead of realtime.
+- Fixed COM leaking in various plugins that use it.
+- Added a new plugin for IR-tiny receivers. https://sourceforge.net/p/winlirc/wiki/IR-tiny%20plugin/
+
 WinLIRC 0.9.0h
 ==============
 

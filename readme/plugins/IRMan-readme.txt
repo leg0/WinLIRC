@@ -1,5 +1,10 @@
+IRMan 1.2
+=========
+
+- Improved hardware compatability.
+
 IRMan 1.1
-========
+=========
 
 - Real IRMan devices require power on the RTS and DTS pins to work. This was previously missing.
 

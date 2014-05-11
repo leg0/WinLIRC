@@ -1,3 +1,9 @@
+AudioInPlugin 1.7
+=================
+
+- Added automatic signal polarity detection.
+- Removed the lowest sampling frequency.
+
 AudioInPlugin 1.6
 =================
 
