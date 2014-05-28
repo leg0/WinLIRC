@@ -435,6 +435,10 @@ int defineRemote(char * key, char * val, char *val2, struct ir_remote *rem)
 		rem->toggle_bit=s_strtoi(val);
 		return(1);
 	}
+	else if (strcasecmp("suppress_repeat",key)==0){
+		//rem->suppress_repeat=s_strtoi(val);	//TODO support this per remote
+		return(1);
+	}
 	else if (strcasecmp("min_repeat",key)==0){
 		rem->min_repeat=s_strtoi(val);
 		return(1);
