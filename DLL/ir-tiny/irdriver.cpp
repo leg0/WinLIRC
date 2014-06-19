@@ -21,12 +21,10 @@ bool irtiny::CIRDriver::initPort()
 {
     buffer_.clear();
 
-    if (serialPort_)
+    if (thread_.joinable())
     {
-        // Stop any waiting on the port.
-        SetCommMask(serialPort_.get(), 0);
-        Sleep(100);
-        serialPort_.reset();
+        finishEvent_.setEvent();
+        thread_.join();
     }
 
     Settings settings;
@@ -36,28 +34,29 @@ bool irtiny::CIRDriver::initPort()
     if (!serialPort)
         return false;
 
-    DCB dcb;
-    if (!GetCommState(serialPort.get(), &dcb))
-        return false;
+    DCB dcb = { 0 };
 
     // The device is powered by RTS
-    dcb.fRtsControl = RTS_CONTROL_ENABLE;
-
     // and running at fixed baud rate.
-    dcb.BaudRate = 115200;
+
+    dcb.DCBlength = sizeof(dcb);
+    dcb.BaudRate = CBR_115200;
+    dcb.fBinary = TRUE;
+    dcb.fRtsControl = RTS_CONTROL_ENABLE;
+    dcb.ByteSize = 8;
+    dcb.Parity = NOPARITY;
+    dcb.StopBits = ONESTOPBIT;
 
     if (!SetCommState(serialPort.get(), &dcb))
         return false;
 
-    thread_ = std::thread([=]() { this->threadProc(); });
+    PurgeComm(serialPort.get(), PURGE_RXABORT | PURGE_RXCLEAR);
+    ClearCommError(serialPort.get(), nullptr, nullptr);
 
     serialPort_ = std::move(serialPort);
-    return true;
-}
+    thread_ = std::thread([=]() { threadProc(); });
 
-void irtiny::CIRDriver::resetPort()
-{
-    serialPort_.reset();
+    return true;
 }
 
 void irtiny::CIRDriver::threadProc()
@@ -67,11 +66,11 @@ void irtiny::CIRDriver::threadProc()
     ov.hEvent = overlappedEvent.get();
 
     HANDLE const events[2] = { ov.hEvent, finishEvent_.get() };
+
+    // Send a byte to force RTS
+    ::WriteFile(serialPort_.get(), "x", 1, nullptr, &ov);
+
     ::Sleep(100);
-    COMMTIMEOUTS commTimeouts = { 0 };
-    commTimeouts.ReadIntervalTimeout = ~0;
-    ::SetCommTimeouts(serialPort_.get(), &commTimeouts);
-    ::PurgeComm(serialPort_.get(), PURGE_RXABORT | PURGE_RXCLEAR);
 
     for (;;)
     {
@@ -113,6 +112,8 @@ void irtiny::CIRDriver::threadProc()
                 }
                 else
                 {
+                    ::ClearCommError(serialPort_.get(), nullptr, nullptr);
+                    ::PurgeComm(serialPort_.get(), PURGE_RXABORT | PURGE_RXCLEAR);
                     break;
                 }
             }
