@@ -36,3 +36,4 @@ add_subdirectory(DLL/UDP)
 add_subdirectory(DLL/Xbox360)
 
 add_subdirectory(IRRecord)
+add_subdirectory(Tools)

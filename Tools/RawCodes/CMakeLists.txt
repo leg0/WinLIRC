@@ -1,0 +1,24 @@
+cmake_minimum_required (VERSION 2.8)
+
+project(RawCodes)
+
+# Don't use MFC
+#set(CMAKE_MFC_FLAG 0)
+
+add_executable(RawCodes WIN32
+	hardware.h
+	irdriver.cpp
+	irdriver.h
+	LIRCDefines.h
+	main.cpp
+	Settings.cpp
+	Settings.h
+	)
+
+add_definitions(
+	-DUNICODE
+	-D_UNICODE
+	)
+
+set_target_properties(RawCodes PROPERTIES FOLDER "Tools")
+set_target_properties(RawCodes PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")

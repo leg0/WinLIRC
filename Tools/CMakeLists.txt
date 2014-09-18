@@ -1,0 +1,5 @@
+add_subdirectory(Graph)
+add_subdirectory(RawCodes)
+add_subdirectory(RawMessages)
+add_subdirectory(Transmit)
+add_subdirectory(XBMC_Keymap)
