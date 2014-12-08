@@ -29,4 +29,4 @@ target_link_libraries(IRMan
 	Common
 	)
 
-set_target_properties(IRMan PROPERTIES FOLDER "DLL")
+configure_plugin(IRMan)

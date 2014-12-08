@@ -30,4 +30,4 @@ target_link_libraries(CommandIR
 	${CMAKE_CURRENT_SOURCE_DIR}/libusb.lib
 	)
 
-set_target_properties(CommandIR PROPERTIES FOLDER "DLL")
+configure_plugin(CommandIR)

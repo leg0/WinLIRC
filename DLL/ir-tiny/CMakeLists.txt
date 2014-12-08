@@ -41,4 +41,4 @@ target_link_libraries(ir-tiny
     Common
     )
 
-set_target_properties(ir-tiny PROPERTIES FOLDER "DLL")
+configure_plugin(ir-tiny)

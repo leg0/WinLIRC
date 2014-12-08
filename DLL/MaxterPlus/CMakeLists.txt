@@ -28,4 +28,4 @@ target_link_libraries(MaxterPlus
     hid.lib
 	)
 
-set_target_properties(MaxterPlus PROPERTIES FOLDER "DLL")
+configure_plugin(MaxterPlus)

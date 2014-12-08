@@ -23,4 +23,4 @@ target_link_libraries(UDP
 	ws2_32.lib
 	)
 
-set_target_properties(UDP PROPERTIES FOLDER "DLL")
+configure_plugin(UDP)

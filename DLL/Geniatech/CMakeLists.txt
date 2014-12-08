@@ -22,4 +22,4 @@ target_link_libraries(Geniatech
     setupapi.lib
 	)
 
-set_target_properties(Geniatech PROPERTIES FOLDER "DLL")
+configure_plugin(Geniatech)

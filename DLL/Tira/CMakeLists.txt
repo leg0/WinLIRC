@@ -27,4 +27,4 @@ target_link_libraries(Tira
 	Common
 	)
 
-set_target_properties(Tira PROPERTIES FOLDER "DLL")
+configure_plugin(Tira)

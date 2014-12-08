@@ -33,4 +33,4 @@ target_link_libraries(Technisat
 	strmiids.lib
 	)
 
-set_target_properties(Technisat PROPERTIES FOLDER "DLL")
+configure_plugin(Technisat)

@@ -34,4 +34,4 @@ target_link_libraries(Serial
 	Common
 	)
 
-set_target_properties(Serial PROPERTIES FOLDER "DLL")
+configure_plugin(Serial)

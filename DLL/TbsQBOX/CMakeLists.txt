@@ -31,4 +31,4 @@ target_link_libraries(TbsQBOX
 	ksproxy.lib
 	)
 
-set_target_properties(TbsQBOX PROPERTIES FOLDER "DLL")
+configure_plugin(TbsQBOX)

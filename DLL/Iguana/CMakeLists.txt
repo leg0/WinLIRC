@@ -30,4 +30,4 @@ target_link_libraries(Iguana
 	wsock32.lib
 	)
 
-set_target_properties(Iguana PROPERTIES FOLDER "DLL")
+configure_plugin(Iguana)

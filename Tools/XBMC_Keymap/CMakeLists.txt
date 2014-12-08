@@ -29,4 +29,4 @@ add_definitions(
 	-D_UNICODE
 	)
 
-set_target_properties(XBMC_Keymap PROPERTIES  FOLDER "Tools")
+configure_tool(XBMC_Keymap "Tools")

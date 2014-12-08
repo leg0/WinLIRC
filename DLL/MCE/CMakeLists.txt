@@ -34,4 +34,4 @@ target_link_libraries(MCE
 	hid.lib
 	)
 
-set_target_properties(MCE PROPERTIES FOLDER "DLL")
+configure_plugin(MCE)

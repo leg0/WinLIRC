@@ -29,4 +29,4 @@ target_link_libraries(TeVii
 	${CMAKE_CURRENT_SOURCE_DIR}/TeVii.lib
 	)
 
-set_target_properties(TeVii PROPERTIES FOLDER "DLL")
+configure_plugin(TeVii)

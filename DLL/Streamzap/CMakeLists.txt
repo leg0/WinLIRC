@@ -20,4 +20,4 @@ target_link_libraries(Streamzap
 	setupapi.lib
 	)
 
-set_target_properties(Streamzap PROPERTIES FOLDER "DLL")
+configure_plugin(Streamzap)

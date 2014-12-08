@@ -31,4 +31,4 @@ target_link_libraries (AudioCapture
 	Common
 	)
 
-set_target_properties(AudioCapture PROPERTIES  FOLDER "DLL")
+configure_plugin(AudioCapture)

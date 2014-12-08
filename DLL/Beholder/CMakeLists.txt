@@ -17,4 +17,4 @@ target_link_libraries(Beholder
 	Common
 	)
 
-set_target_properties(Beholder PROPERTIES FOLDER "DLL")
+configure_plugin(Beholder)

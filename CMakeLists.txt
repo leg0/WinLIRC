@@ -2,38 +2,40 @@ cmake_minimum_required(VERSION 2.8)
 
 project(WinLIRC)
 
+enable_testing()
+# http://www.cmake.org/cmake/help/v3.0/module/FindGTest.html
+find_package(GTest)
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON) 
-set(LIBRARY_OUTPUT_PATH "${PROJECT_BINARY_DIR}/plugins")
+
+
+macro(configure_plugin plugin_name)
+  set_target_properties(${plugin_name} PROPERTIES  FOLDER "DLL")
+
+  foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    set (CFG ${OUTPUTCONFIG})
+    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+
+    set_target_properties( ${plugin_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${CFG}/plugins )
+  endforeach()
+endmacro()
+
+
+macro(configure_tool tool_name)
+  set_target_properties(${tool_name} PROPERTIES  FOLDER "Tools")
+
+  foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    set (CFG ${OUTPUTCONFIG})
+    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+
+    set_target_properties( ${tool_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${CFG} )
+  endforeach()
+endmacro()
+
 
 add_subdirectory(winlirc)
 
-add_subdirectory(DLL/AudioCapture)
-add_subdirectory(DLL/Beholder)
-add_subdirectory(DLL/Chinavision)
-add_subdirectory(DLL/CommandIR)
-add_subdirectory(DLL/Common)
-add_subdirectory(DLL/FireFly)
-add_subdirectory(DLL/Geniatech)
-add_subdirectory(DLL/hauppauge)
-add_subdirectory(DLL/Iguana)
-add_subdirectory(DLL/IRMan)
-add_subdirectory(DLL/ir-tiny)
-add_subdirectory(DLL/IRToy)
-add_subdirectory(DLL/MaxterPlus)
-add_subdirectory(DLL/MCE)
-add_subdirectory(DLL/MCE-XP)
-add_subdirectory(DLL/Serial)
-add_subdirectory(DLL/Streamzap)
-add_subdirectory(DLL/TbsCxt)
-#add_subdirectory(DLL/TbsNxp)
-add_subdirectory(DLL/TbsQBOX)
-add_subdirectory(DLL/Technisat)
-add_subdirectory(DLL/Technotrend)
-#add_subdirectory(DLL/Technotrend-BDA)
-add_subdirectory(DLL/TeVii)
-add_subdirectory(DLL/Tira)
-add_subdirectory(DLL/UDP)
-add_subdirectory(DLL/Xbox360)
+add_subdirectory(DLL)
 
 add_subdirectory(IRRecord)
 add_subdirectory(Tools)

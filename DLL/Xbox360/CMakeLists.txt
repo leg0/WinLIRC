@@ -21,4 +21,4 @@ target_link_libraries(Xbox360
 	${CMAKE_CURRENT_SOURCE_DIR}/XInput.lib
 	)
 
-set_target_properties(Xbox360 PROPERTIES FOLDER "DLL")
+configure_plugin(Xbox360)

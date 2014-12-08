@@ -29,4 +29,4 @@ target_link_libraries(Technotrend
 	${CMAKE_CURRENT_SOURCE_DIR}/TTUSBIR.lib
 	)
 
-set_target_properties(Technotrend PROPERTIES FOLDER "DLL")
+configure_plugin(Technotrend)

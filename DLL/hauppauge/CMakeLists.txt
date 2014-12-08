@@ -19,4 +19,4 @@ target_link_libraries(Hauppauge
 	Common
 	)
 
-set_target_properties(Hauppauge PROPERTIES FOLDER "DLL")
+configure_plugin(Hauppauge)

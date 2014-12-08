@@ -24,7 +24,6 @@ add_definitions(
 	-D_UNICODE
 	)
 
-set_target_properties(Graph PROPERTIES  FOLDER "Tools")
-
-
 target_link_libraries(Graph opengl32.lib)
+
+configure_tool(Graph "Tools")

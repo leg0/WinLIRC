@@ -17,5 +17,5 @@ add_definitions(
 	-D_UNICODE
 	)
 
-set_target_properties(RawMessages PROPERTIES FOLDER "Tools")
+configure_tool(RawMessages "Tools")
 set_target_properties(RawMessages PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")

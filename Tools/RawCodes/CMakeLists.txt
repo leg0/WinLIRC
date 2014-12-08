@@ -20,5 +20,5 @@ add_definitions(
 	-D_UNICODE
 	)
 
-set_target_properties(RawCodes PROPERTIES FOLDER "Tools")
+configure_tool(RawCodes "Tools")
 set_target_properties(RawCodes PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")

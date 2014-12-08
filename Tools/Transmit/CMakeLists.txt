@@ -15,4 +15,4 @@ add_definitions(
 	-D_UNICODE
 	)
 
-set_target_properties(transmit PROPERTIES  FOLDER "Tools")
+configure_tool(transmit "Tools")

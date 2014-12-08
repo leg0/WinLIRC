@@ -35,4 +35,4 @@ target_link_libraries(MCE-XP
 	hid.lib
 	)
 
-set_target_properties(MCE-XP PROPERTIES FOLDER "DLL")
+configure_plugin(MCE-XP)

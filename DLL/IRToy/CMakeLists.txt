@@ -30,4 +30,4 @@ target_link_libraries(IRToy
 #	${CMAKE_CURRENT_SOURCE_DIR}/libusb.lib
 	)
 
-set_target_properties(IRToy PROPERTIES FOLDER "DLL")
+configure_plugin(IRToy)

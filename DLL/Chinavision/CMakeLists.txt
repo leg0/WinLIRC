@@ -22,4 +22,4 @@ target_link_libraries(Chinavision
     winusb.lib
     )
 
-set_target_properties(Chinavision PROPERTIES FOLDER "DLL")
+configure_plugin(Chinavision)

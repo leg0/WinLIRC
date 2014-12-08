@@ -21,4 +21,4 @@ target_link_libraries(FireFly
     hid.lib
 	)
 
-set_target_properties(FireFly PROPERTIES FOLDER "DLL")
+configure_plugin(FireFly)

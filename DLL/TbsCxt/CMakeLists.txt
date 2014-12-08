@@ -31,4 +31,4 @@ target_link_libraries(TbsCxt
     ksproxy.lib
 	)
 
-set_target_properties(TbsCxt PROPERTIES FOLDER "DLL")
+configure_plugin(TbsCxt)

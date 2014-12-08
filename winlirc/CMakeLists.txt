@@ -5,6 +5,11 @@ project(WinLIRC)
 # Use MFC in a shared DLL.
 set(CMAKE_MFC_FLAG 2)
 
+add_definitions(
+	-DUNICODE
+	-D_UNICODE
+	)
+
 add_executable(winlirc WIN32
 	config.cpp
 	drvdlg.cpp
@@ -36,7 +41,12 @@ add_executable(winlirc WIN32
     winlirc.h
 	)
 
-add_definitions(
-	-DUNICODE
-	-D_UNICODE
-	)
+# TODO: add unit tests
+# add_subdirectory(tests)
+
+foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+    set (CFG ${OUTPUTCONFIG})
+    string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+
+    set_target_properties( winlirc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${CFG} )
+endforeach()
