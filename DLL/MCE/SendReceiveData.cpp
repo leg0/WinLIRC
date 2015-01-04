@@ -219,16 +219,16 @@ bool SendReceiveData::DeviceIo( DWORD IoCtlCode, void * inBuffer, DWORD inBuffer
 	switch ( r )
 	{
 	case WAIT_TIMEOUT:
-		//m_Logger->log( ILogger::L_ERROR, "DeviceIo timed out.");
+		DPRINTF("DeviceIo timed out\n");
 		CancelIo(deviceHandle);
 		return false;
 	case WAIT_FAILED:
-		//m_Logger->log( ILogger::L_ERROR, "DeviceIo wait failed", GetLastError());
+		DPRINTF("DeviceIo wait failed %i",GetLastError());
 		CancelIo(deviceHandle);
 		return false;
 	case WAIT_OBJECT_0 + 1: // the event object!
 		CancelIo(deviceHandle);
-		//m_Logger->log( ILogger::L_INFO, "DeviceIo m_Event was set", GetLastError());
+		DPRINTF("DeviceIo m_Event was set %i", GetLastError());
 		ResetEvent(exitEvent);
 		interupted = true;
 		return false;
@@ -236,7 +236,7 @@ bool SendReceiveData::DeviceIo( DWORD IoCtlCode, void * inBuffer, DWORD inBuffer
 
 	if (GetOverlappedResult(deviceHandle, (LPOVERLAPPED)&overlapped, &bytesReturned, FALSE) == FALSE )
 	{
-		//m_Logger->log( ILogger::L_ERROR, "DeviceIo OverlappedResult Error", GetLastError());
+		DPRINTF("DeviceIo OverlappedResult Error %i", GetLastError());
 		return false;
 	}
 
