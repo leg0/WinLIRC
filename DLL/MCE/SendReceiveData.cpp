@@ -22,7 +22,6 @@
 #include <windows.h>
 #include "SendReceiveData.h"
 #include "Globals.h"
-#include <stdio.h>
 #include "../Common/Send.h"
 #include "../Common/DebugOutput.h"
 #include "../Common/Win32Helpers.h"
@@ -225,12 +224,12 @@ bool SendReceiveData::DeviceIo( DWORD IoCtlCode, void * inBuffer, DWORD inBuffer
 		CancelIo(deviceHandle);
 		return false;
 	case WAIT_FAILED:
-		DPRINTF("DeviceIo wait failed %i",GetLastError());
+		DPRINTF("DeviceIo wait failed %i\n",GetLastError());
 		CancelIo(deviceHandle);
 		return false;
 	case WAIT_OBJECT_0 + 1: // the event object!
 		CancelIo(deviceHandle);
-		DPRINTF("DeviceIo m_Event was set %i", GetLastError());
+		DPRINTF("DeviceIo exit event was set\n");
 		ResetEvent(exitEvent);
 		interupted = true;
 		return false;
@@ -238,7 +237,7 @@ bool SendReceiveData::DeviceIo( DWORD IoCtlCode, void * inBuffer, DWORD inBuffer
 
 	if (GetOverlappedResult(deviceHandle, (LPOVERLAPPED)&overlapped, &bytesReturned, FALSE) == FALSE )
 	{
-		DPRINTF("DeviceIo OverlappedResult Error %i", GetLastError());
+		DPRINTF("DeviceIo OverlappedResult error %i\n", GetLastError());
 		return false;
 	}
 
