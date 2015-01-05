@@ -95,7 +95,7 @@ void SendReceiveData::threadProc() {
 	INT				receiveParamsSize;
 	//================================
 
-	if(!startReceive((int)receivePort,30)) {
+	if(!startReceive((int)receivePort,300)) {
 		DPRINTF("Start failed.\n");
 		return;
 	}
@@ -117,8 +117,10 @@ void SendReceiveData::threadProc() {
 			sendToDecoder((lirc_t *)((PUCHAR)receiveParams + sizeof(ReceiveParams)), (bytesRead - sizeof(ReceiveParams)) / 4);
 		}
 		else {
-
+			resetHardware();
+			startReceive((int)receivePort,300);
 		}
+
 		if(interupted) {
 			break;
 		}
