@@ -3,14 +3,9 @@
 #include <atlbase.h> // CComPtr
 #include <dinput.h>
 
-#include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <iterator>
 #include <utility>
-
-#pragma comment(lib, "dinput8.lib")
-#pragma comment(lib, "dxguid.lib")
 
 struct Window
 {
@@ -51,18 +46,18 @@ private:
     HWND hWnd;
 };
 
-
 CComPtr<IDirectInput8> g_di;
 CComPtr<IDirectInputDevice8> g_diJoystick;
 Window g_window;
 HANDLE g_exitEvent = INVALID_HANDLE_VALUE;
+bool g_initialized = false;
 
-DWORD g_initThreadId = 0;
 extern "C" int init(HANDLE exitEvent)
 {
-    assert(exitEvent != INVALID_HANDLE_VALUE);
-    assert(g_initThreadId == 0);
-    g_initThreadId = ::GetCurrentThreadId();
+    if (g_initialized || exitEvent == INVALID_HANDLE_VALUE)
+        return 0;
+
+    g_initialized = true;
 
     auto hr = ::CoInitializeEx(nullptr, COINIT_MULTITHREADED);
     if (FAILED(hr))
@@ -124,12 +119,12 @@ extern "C" int init(HANDLE exitEvent)
 
 extern "C" void deinit()
 {
-    if (g_initThreadId != 0)
+    if (g_initialized)
     {
         g_diJoystick.Release();
         g_window.close();
         g_di.Release();
-        g_initThreadId = 0;
+        g_initialized = false;
         ::CoUninitialize();
     }
 }
@@ -142,7 +137,9 @@ extern "C" int sendIR(struct ir_remote*, struct ir_ncode*, int) { return 0; }
 
 extern "C" int decodeIR(struct ir_remote*, char *out)
 {
-    //assert(::GetCurrentThreadId() == g_initThreadId);
+    if (!g_initialized)
+        return 0;
+
     assert(g_di);
     assert(g_diJoystick);
     assert(g_exitEvent != INVALID_HANDLE_VALUE);
@@ -198,11 +195,6 @@ extern "C" int decodeIR(struct ir_remote*, char *out)
             }
         }
     }
-}
-
-extern "C" struct hardware* getHardware()
-{
-    return nullptr;
 }
 
 BOOL WINAPI DllMain(

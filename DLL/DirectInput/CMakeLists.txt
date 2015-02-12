@@ -18,6 +18,6 @@ add_definitions(
     -D_UNICODE
     )
 
-# TODO: create a cmake module to find wtl.
+target_link_libraries(DirectInput dinput8.lib dxguid.lib)
 
 configure_plugin(DirectInput)
