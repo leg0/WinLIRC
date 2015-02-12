@@ -1,5 +1,8 @@
 #define DIRECTINPUT_VERSION 0x0800
 
+#include "../Common/LIRCDefines.h"
+#include "../Common/UniqueHandle.h"
+
 #include <atlbase.h> // CComPtr
 #include <dinput.h>
 
@@ -7,44 +10,14 @@
 #include <cstdint>
 #include <utility>
 
-struct Window
+struct HwndTraits
 {
-    explicit Window(HWND h = nullptr) :hWnd(h) { }
-    Window(Window const&) = delete;
-    void operator=(Window const&) = delete;
-    Window(Window&& src) : hWnd(src.release()) { }
-    Window& operator=(Window&& src)
-    {
-        if (this != &src)
-        {
-            close();
-            hWnd = src.release();
-        }
-        return *this;
-    }
-    ~Window() { close(); }
-
-    HWND release()
-    {
-        auto const res = hWnd;
-        hWnd = nullptr;
-        return res;
-    }
-
-    void close()
-    {
-        if (hWnd)
-        {
-            ::DestroyWindow(hWnd);
-            hWnd = nullptr;
-        }
-    }
-
-    HWND get() const { return hWnd; }
-
-private:
-    HWND hWnd;
+    typedef HWND HandleType;
+    static HandleType invalidValue() { return nullptr; }
+    static void close(HandleType h) { ::DestroyWindow(h); }
 };
+
+using Window = winlirc::UniqueHandle<HwndTraits>;
 
 CComPtr<IDirectInput8> g_di;
 CComPtr<IDirectInputDevice8> g_diJoystick;
@@ -93,7 +66,7 @@ extern "C" int init(HANDLE exitEvent)
     wcx.lpszClassName = L"MainWClass";
     RegisterClassEx(&wcx);
     Window wnd{ ::CreateWindow(
-        L"MainWClass", L"Sample", WS_OVERLAPPEDWINDOW,
+        L"MainWClass", L"DirectInputMessages", WS_OVERLAPPEDWINDOW,
         0, 0, 100, 100,
         HWND_MESSAGE, nullptr,
         GetModuleHandle(nullptr),
@@ -122,7 +95,7 @@ extern "C" void deinit()
     if (g_initialized)
     {
         g_diJoystick.Release();
-        g_window.close();
+        g_window.reset();
         g_di.Release();
         g_initialized = false;
         ::CoUninitialize();
@@ -161,7 +134,6 @@ extern "C" int decodeIR(struct ir_remote*, char *out)
         else
         {
             bool foundButton = false;
-            size_t const PACKET_SIZE = 256;
             char buttonName[PACKET_SIZE-40];
             char* btn = buttonName;
             auto bytesLeft = sizeof(buttonName) - 1;
