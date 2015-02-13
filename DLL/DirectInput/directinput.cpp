@@ -1,7 +1,9 @@
 #define DIRECTINPUT_VERSION 0x0800
 
+#include <Windows.h>
 #include "../Common/LIRCDefines.h"
 #include "../Common/UniqueHandle.h"
+#include "../Common/WLPluginAPI.h"
 
 #include <atlbase.h> // CComPtr
 #include <dinput.h>
@@ -9,6 +11,9 @@
 #include <cassert>
 #include <cstdint>
 #include <utility>
+
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
 
 struct HwndTraits
 {
@@ -25,7 +30,7 @@ Window g_window;
 HANDLE g_exitEvent = INVALID_HANDLE_VALUE;
 bool g_initialized = false;
 
-extern "C" int init(HANDLE exitEvent)
+WL_API int init(HANDLE exitEvent)
 {
     if (g_initialized || exitEvent == INVALID_HANDLE_VALUE)
         return 0;
@@ -90,7 +95,7 @@ extern "C" int init(HANDLE exitEvent)
     return 1;
 }
 
-extern "C" void deinit()
+WL_API void deinit()
 {
     if (g_initialized)
     {
@@ -102,13 +107,13 @@ extern "C" void deinit()
     }
 }
 
-extern "C" int hasGui() { return 0; }
+WL_API int hasGui() { return 0; }
 
-extern "C" void loadSetupGui() { }
+WL_API void loadSetupGui() { }
 
-extern "C" int sendIR(struct ir_remote*, struct ir_ncode*, int) { return 0; }
+WL_API int sendIR(struct ir_remote*, struct ir_ncode*, int) { return 0; }
 
-extern "C" int decodeIR(struct ir_remote*, char *out)
+WL_API int decodeIR(struct ir_remote*, char *out)
 {
     if (!g_initialized)
         return 0;
@@ -136,7 +141,7 @@ extern "C" int decodeIR(struct ir_remote*, char *out)
             bool foundButton = false;
             char buttonName[PACKET_SIZE-40];
             char* btn = buttonName;
-            auto bytesLeft = sizeof(buttonName) - 1;
+            int bytesLeft = sizeof(buttonName) - 1;
             for (size_t i = 0; i < sizeof(state.rgbButtons); ++i)
             {
                 if (state.rgbButtons[i] & 0x80)
