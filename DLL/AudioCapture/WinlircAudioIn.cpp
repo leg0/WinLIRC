@@ -32,6 +32,7 @@
 #include "AudioFormats.h"
 #include "StringFunctions.h"
 #include <Commctrl.h>
+#include <cstdio>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 

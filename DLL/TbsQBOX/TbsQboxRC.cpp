@@ -83,7 +83,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 							if (pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void **)&pPropBag) != S_OK)
 								break;
 
-							TCHAR szFriendlyName[MAX_PATH];
+							char szFriendlyName[MAX_PATH];
 
 							CComPtr <IBaseFilter> pFilter = NULL;
 							// create an instance of the filter

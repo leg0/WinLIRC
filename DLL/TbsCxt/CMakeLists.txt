@@ -19,10 +19,10 @@ add_library(TbsCxt SHARED
     stdafx.h
 	)
 
-#add_definitions(
-#	-DUNICODE
-#	-D_UNICODE
-#	)
+add_definitions(
+	-DUNICODE
+	-D_UNICODE
+	)
 
 target_link_libraries(TbsCxt
 	Common

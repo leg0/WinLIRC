@@ -3,10 +3,11 @@ cmake_minimum_required (VERSION 2.8)
 project (Common)
 
 add_library(Common
-	IRRemote.cpp
-	Linux.cpp
-	Receive.cpp
-	Send.cpp
+    IRRemote.cpp
+    Linux.cpp
+    Receive.cpp
+    Send.cpp
+    Win32Helpers.cpp
 
     DebugOutput.h
     enumSerialPorts.h
@@ -16,5 +17,6 @@ add_library(Common
     LIRCDefines.h
     Receive.h
     Send.h
+    Win32Helpers.h
     WLPluginAPI.h
-	)
+    )

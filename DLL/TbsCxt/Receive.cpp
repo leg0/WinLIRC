@@ -198,7 +198,7 @@ void Receive::threadProc() {
 #ifdef _DEBUG
 		char code_str[128];
 		sprintf_s(code_str,"TBS CXT RC: 0x%04X\n",(DWORD)code);
-		OutputDebugString(code_str);
+		OutputDebugStringA(code_str);
 #endif//RCCODE_DEBUGOUT
 		
 		setData(code);	// no conversion needed (hopefully)
