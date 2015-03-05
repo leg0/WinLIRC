@@ -31,9 +31,10 @@ add_definitions(
     -D_UNICODE
     )
 
-# TODO: create a cmake module to find wtl.
+find_package(WTL REQUIRED)
+include_directories(${WTL_INCLUDE_DIRS})
+
 include_directories(
-    ${CMAKE_SOURCE_DIR}/wtl/include
     ${CMAKE_SOURCE_DIR}/DLL
     )
 

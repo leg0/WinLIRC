@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project(WinLIRC)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
+
 enable_testing()
 # http://www.cmake.org/cmake/help/v3.0/module/FindGTest.html
 find_package(GTest)
