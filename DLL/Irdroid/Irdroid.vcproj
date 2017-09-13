@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="Irdroid"
-	ProjectGUID="{BF937972-CF61-4202-B142-C398E6F0336C}"
+	ProjectGUID="{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}"
 	RootNamespace="Irdroid"
 	TargetFrameworkVersion="196613"
 	>
