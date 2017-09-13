@@ -66,7 +66,7 @@ void Settings::saveSettings() {
 	}
 	
 	_sntprintf(temp, _countof(temp), _T("%i"), comPort);
-	WritePrivateProfileString(_T("IRToyPlugin"),_T("ComPort"),temp, currentDirectory);
+	WritePrivateProfileString(_T("IrdroidPlugin"),_T("ComPort"),temp, currentDirectory);
 }
 
 void Settings::loadSettings() {
@@ -79,7 +79,7 @@ void Settings::loadSettings() {
 
 	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
 
-	comPort = GetPrivateProfileInt(_T("IRToyPlugin"),_T("ComPort"),1,currentDirectory);
+	comPort = GetPrivateProfileInt(_T("IrdroidPlugin"),_T("ComPort"),1,currentDirectory);
 
 	// make sure that comPort is in range 0..255
 	if (comPort < 0 || 255 < comPort) {

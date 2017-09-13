@@ -73,5 +73,5 @@ void initHardwareStruct() {
 	hw.resolution	= 0;
 
 	strcpy(hw.device,"hw");
-	strcpy(hw.name,"IRToy");
+	strcpy(hw.name,"Irdroid");
 }

@@ -27,7 +27,7 @@
 #include "../Common/Send.h"
 #include "../Common/Win32Helpers.h"
 
-DWORD WINAPI IRToy(void *recieveClass) {
+DWORD WINAPI Irdroid(void *recieveClass) {
 
 	((SendReceiveData*)recieveClass)->threadProc();
 	return 0;
@@ -98,7 +98,7 @@ bool SendReceiveData::init() {
 	exitEvent			= CreateEvent(NULL,FALSE,FALSE,NULL);
 	overlappedEvent		= CreateEvent(NULL,FALSE,FALSE,NULL);
 	overlapped.hEvent	= overlappedEvent;
-	threadHandle		= CreateThread(NULL,0,IRToy,(void *)this,0,NULL);
+	threadHandle		= CreateThread(NULL,0,Irdroid,(void *)this,0,NULL);
 
 	if(threadHandle) {
 		return true;
@@ -317,7 +317,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		//====================
 		int		length;
 		lirc_t	*signals;
-		USHORT	*irToySignals;
+		USHORT	*irDroidSignals;
 		UCHAR	temp[3];
 		BOOL	success;
 		//====================
@@ -354,20 +354,20 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		length		= send_buffer.wptr+1;
 		signals		= send_buffer.data;
 		temp[0]		= 0x03;	// transmit mode
-		irToySignals= (USHORT*)malloc(sizeof(USHORT) * (length)); // add 1 for 0xFFFF terminator
+		irDroidSignals= (USHORT*)malloc(sizeof(USHORT) * (length)); // add 1 for 0xFFFF terminator
 		
 		serial.Write(temp,1);	// set transmit mode
 
 		for(int i=0; i<length-1; i++) {
 
-			irToySignals[i] = (USHORT)((signals[i] & PULSE_MASK) / 21.33);
+			irDroidSignals[i] = (USHORT)((signals[i] & PULSE_MASK) / 21.33);
 
 			//
 			// swap bytes
 			//
-			temp[0]			= ((irToySignals[i]>>8) & 0x00FF);
-			irToySignals[i]	= (irToySignals[i]<<8) & 0xFF00;
-			irToySignals[i] = irToySignals[i] + temp[0];
+			temp[0]			= ((irDroidSignals[i]>>8) & 0x00FF);
+			irDroidSignals[i]	= (irDroidSignals[i]<<8) & 0xFF00;
+			irDroidSignals[i] = irDroidSignals[i] + temp[0];
 		}
 
 		//
@@ -377,7 +377,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			length--;
 		}
 
-		irToySignals[length-1] = 0xFFFF;	//terminate sending !
+		irDroidSignals[length-1] = 0xFFFF;	//terminate sending !
 
 		//
 		// split data up into packets for IR Toy, so as to not cause an overflow
@@ -387,10 +387,10 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			//=====================
 			UCHAR	packetLength;
 			DWORD	bytesRead;
-			USHORT	*irToySignalsP;
+			USHORT	*irDroidSignalsP;
 			//=====================
 
-			irToySignalsP = irToySignals;
+			irDroidSignalsP = irDroidSignals;
 
 			for(int i=0; i<length; ) {
 
@@ -400,8 +400,8 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 					packetLength = (length-i)*2;	// in bytes
 				}
 
-				serial.Write(irToySignalsP,packetLength);
-				irToySignalsP += packetLength/2;
+				serial.Write(irDroidSignalsP,packetLength);
+				irDroidSignalsP += packetLength/2;
 				i += packetLength/2;
 			}
 
@@ -434,7 +434,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			}
 		}
 
-		free(irToySignals);
+		free(irDroidSignals);
 
 		//
 		// restore non blocking mode
@@ -444,7 +444,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		//
 		// Start receiving again
 		//
-		threadHandle = CreateThread(NULL,0,IRToy,(void *)this,0,NULL);
+		threadHandle = CreateThread(NULL,0,Irdroid,(void *)this,0,NULL);
 
 		return success;
 	}

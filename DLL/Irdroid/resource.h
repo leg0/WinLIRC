@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by IRToy.rc
+// Used by Irdroid.rc
 //
 #define IDD_DIALOG1                     101
 #define IDB_BITMAP1                     103

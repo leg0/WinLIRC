@@ -54,7 +54,7 @@ END
 
 IDD_DIALOG1 DIALOGEX 0, 0, 341, 299
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "IRToy Setup"
+CAPTION "Irdroid Setup"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,116,278,50,14
@@ -90,7 +90,7 @@ END
 // Bitmap
 //
 
-IDB_BITMAP1             BITMAP                  "Irtoy-cover.bmp"
+IDB_BITMAP1             BITMAP                  "Irdroid-cover.bmp"
 #endif    // English (U.K.) resources
 /////////////////////////////////////////////////////////////////////////////
 
