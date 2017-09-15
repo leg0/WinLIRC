@@ -1,0 +1,13 @@
+*.exp
+*.ilk
+*.ncb
+*.pdb
+*.suo
+*.sdf
+*.opensdf
+*.vcproj.*.user
+*.vcxproj.*.user
+*.vcxproj.user
+*.obj
+*.idb
+*.idb
