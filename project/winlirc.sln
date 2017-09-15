@@ -71,6 +71,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TbsCxt", "..\DLL\TbsCxt\Tbs
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Cyberlink", "..\DLL\Cyberlink\Cyberlink.vcproj", "{5627010B-BE36-4E29-98DE-ACCD1A5E2AC7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Irdroid", "..\DLL\Irdroid\Irdroid.vcproj", "{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		64bit Release|Win32 = 64bit Release|Win32
@@ -375,6 +377,15 @@ Global
 		{5627010B-BE36-4E29-98DE-ACCD1A5E2AC7}.Release|Win32.Build.0 = Release|Win32
 		{5627010B-BE36-4E29-98DE-ACCD1A5E2AC7}.Release|x64.ActiveCfg = Release|x64
 		{5627010B-BE36-4E29-98DE-ACCD1A5E2AC7}.Release|x64.Build.0 = Release|x64
+		{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}.64bit Release|Win32.ActiveCfg = Release|Win32
+		{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}.64bit Release|Win32.Build.0 = Release|Win32
+		{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}.64bit Release|x64.ActiveCfg = Release|Win32
+		{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}.Debug|Win32.Build.0 = Debug|Win32
+		{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}.Debug|x64.ActiveCfg = Debug|Win32
+		{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}.Release|Win32.ActiveCfg = Release|Win32
+		{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}.Release|Win32.Build.0 = Release|Win32
+		{8F657EA3-34CC-489D-8B89-A006E3E3F7DD}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
