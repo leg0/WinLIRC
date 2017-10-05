@@ -12,9 +12,6 @@
 #include <cstdint>
 #include <utility>
 
-#pragma comment(lib,"dinput8.lib")
-#pragma comment(lib,"dxguid.lib")
-
 struct HwndTraits
 {
     typedef HWND HandleType;

@@ -16,6 +16,8 @@ endif()
 add_definitions(
     -DUNICODE
     -D_UNICODE
+    -DDIRECTINPUT_EXPORTS
+    -DWIN32
     )
 
 target_link_libraries(DirectInput dinput8.lib dxguid.lib)
