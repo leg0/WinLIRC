@@ -1,6 +1,6 @@
 #pragma once
 
-#define WINVER 0x0501
+#define WINVER 0x0600
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 
 #pragma warning(push)
