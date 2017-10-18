@@ -31,6 +31,9 @@
 #include "../Common/WLPluginAPI.h"
 #include "Transmit.h"
 
+void initHardwareStruct();
+extern hardware hw;
+
 WL_API int init(HANDLE exitEvent) {
 
 	threadExitEvent	= exitEvent;
@@ -79,9 +82,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 		}
 	}
 
-	clear_rec_buffer();
+	clear_rec_buffer(&hw);
 
-	if(decodeCommand(remotes, out)) {
+	if(decodeCommand(&hw, remotes, out)) {
 		return 1;
 	}
 	

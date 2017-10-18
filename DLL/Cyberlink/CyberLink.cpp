@@ -29,6 +29,9 @@
 #include "Globals.h"
 #include "ReceiveData.h"
 
+void initHardwareStruct();
+extern hardware hw;
+
 WL_API int init(HANDLE exitEvent)
 {
 	initHardwareStruct();
@@ -82,7 +85,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out)
 
 		receiveData->getData((lirc_t*)&irCode);
 
-		if ( decodeCommand(remotes, out) ) {
+		if ( decodeCommand(&hw,remotes, out) ) {
 			return 1;
 		}
 	}

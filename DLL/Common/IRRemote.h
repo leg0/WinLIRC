@@ -14,6 +14,6 @@ void map_gap(struct ir_remote *remote,
 	     lirc_t *min_remaining_gapp,
 	     lirc_t *max_remaining_gapp);
 
-bool decodeCommand(struct ir_remote *remotes, char *out);
+bool decodeCommand(struct hardware const* hw, struct ir_remote *remotes, char *out);
 
 #endif

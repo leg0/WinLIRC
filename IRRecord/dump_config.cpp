@@ -31,6 +31,7 @@
 #include "hardware.h"
 
 #define VERSION "0.9.0"
+extern hardware hw;
 
 void fprint_comment(FILE *f,struct ir_remote *rem)
 {

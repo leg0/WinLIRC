@@ -14,6 +14,8 @@
 #include "../Common/Win32Helpers.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+void initHardwareStruct();
+extern hardware hw;
 
 WL_API int init(HANDLE exitEvent) {
 	initHardwareStruct();
@@ -209,7 +211,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 		receive->getData(&irCode);
 		gettimeofday(&end,NULL);
 
-		if(decodeCommand(remotes,out)) {
+		if(decodeCommand(&hw,remotes,out)) {
 			ResetEvent(dataReadyEvent);
 			return 1;
 		}

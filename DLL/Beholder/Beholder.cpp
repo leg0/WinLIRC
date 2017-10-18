@@ -28,6 +28,9 @@
 #include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
 
+void initHardwareStruct();
+extern hardware hw;
+
 WL_API int init( HANDLE exitEvent )
 {
 	initHardwareStruct();
@@ -87,7 +90,7 @@ WL_API int decodeIR( struct ir_remote *remotes, char *out )
 			return 0;
 		}
 	   	
-		if(decodeCommand(remotes,out)) {
+		if(decodeCommand(&hw,remotes,out)) {
 			ResetEvent(dataReadyEvent);
 			return 1;
 		}

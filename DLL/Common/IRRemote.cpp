@@ -397,8 +397,9 @@ int write_message(char *buffer, size_t size, const char *remote_name,
 	return len;
 }
 
-bool decodeCommand(struct ir_remote *remotes, char *out)
+bool decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *out)
 {
+    auto& hw = *phw;
 	struct ir_remote *remote;
 	ir_code pre,code,post;
 	struct ir_ncode *ncode;
@@ -414,7 +415,7 @@ bool decodeCommand(struct ir_remote *remotes, char *out)
 	{
 		//LOGPRINTF(1,"trying \"%s\" remote",remote->name);
 		
-		if(hw.decode_func(remote,&pre,&code,&post,&repeat_flag,
+		if(hw.decode_func(&hw,remote,&pre,&code,&post,&repeat_flag,
 				  &min_remaining_gap, &max_remaining_gap) &&
 		   (ncode=get_code(remote,pre,code,post,&toggle_bit_mask_state)))
 		{

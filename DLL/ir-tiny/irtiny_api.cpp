@@ -9,47 +9,6 @@
 
 static std::unique_ptr<irtiny::CIRDriver> irDriver;
 
-extern "C" int init(HANDLE exitEvent)
-{
-    init_rec_buffer();
-    irDriver.reset(new irtiny::CIRDriver(exitEvent));
-    return irDriver->initPort();
-}
-
-extern "C" void deinit()
-{
-    irDriver.reset();
-}
-
-extern "C" int hasGui()
-{
-    return TRUE;
-}
-
-extern "C" void loadSetupGui()
-{
-    irtiny::ConfigDialog dlg;
-    dlg.DoModal();
-}
-
-extern "C" int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
-{
-    return 0;
-}
-
-extern "C" int decodeIR(struct ir_remote *remotes, char *out)
-{
-    if (!irDriver || !irDriver->waitTillDataIsReady(0))
-        return 0;
-
-    clear_rec_buffer();
-    return decodeCommand(remotes, out);
-}
-
-#include "../Common/LIRCDefines.h"
-#include "../Common/hardware.h"
-#include "../Common/Receive.h"
-
 static lirc_t irtiny_readData(lirc_t timeout)
 {
     if (irDriver)
@@ -85,6 +44,43 @@ hardware hw /*irtiny_hardware*/ =
     &irtiny_dataReady, // data_ready
     nullptr // get_ir_code 
 };
+
+extern "C" int init(HANDLE exitEvent)
+{
+    init_rec_buffer();
+    irDriver.reset(new irtiny::CIRDriver(exitEvent));
+    return irDriver->initPort();
+}
+
+extern "C" void deinit()
+{
+    irDriver.reset();
+}
+
+extern "C" int hasGui()
+{
+    return TRUE;
+}
+
+extern "C" void loadSetupGui()
+{
+    irtiny::ConfigDialog dlg;
+    dlg.DoModal();
+}
+
+extern "C" int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
+{
+    return 0;
+}
+
+extern "C" int decodeIR(struct ir_remote *remotes, char *out)
+{
+    if (!irDriver || !irDriver->waitTillDataIsReady(0))
+        return 0;
+
+    clear_rec_buffer(&hw);
+    return decodeCommand(&hw,remotes, out);
+}
 
 extern "C" hardware* getHardware()
 {

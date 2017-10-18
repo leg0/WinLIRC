@@ -29,7 +29,7 @@
 
 struct hardware hw;
 
-int receive_decode (struct ir_remote *remote, ir_code *prep, ir_code *codep,
+static int cyberlink_receive_decode (struct hardware const*,struct ir_remote *remote, ir_code *prep, ir_code *codep,
 		 ir_code *postp, int *repeat_flagp,
 		 lirc_t *min_remaining_gapp,
 		 lirc_t *max_remaining_gapp)
@@ -76,7 +76,7 @@ int data_ready() {
 
 void initHardwareStruct() {
 
-	hw.decode_func	= &receive_decode;
+	hw.decode_func	= &cyberlink_receive_decode;
 	hw.readdata		= NULL;
 	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;

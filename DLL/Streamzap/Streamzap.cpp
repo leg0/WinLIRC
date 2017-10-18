@@ -28,6 +28,9 @@
 #include <stdio.h>
 #include "Globals.h"
 
+void initHardwareStruct();
+extern hardware hw;
+
 WL_API int init(HANDLE exitEvent) {
 
 	init_rec_buffer();
@@ -69,9 +72,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 			return 0;
 		}
 
-		clear_rec_buffer();
+		clear_rec_buffer(&hw);
 		
-		if(decodeCommand(remotes,out)) {
+		if(decodeCommand(&hw,remotes,out)) {
 			return 1;
 		}
 	}

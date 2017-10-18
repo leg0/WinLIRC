@@ -9,7 +9,7 @@
 #pragma warning(disable: 4018)	// disable signed/unsigned mismatch
 
 extern char *progname;
-
+extern hardware hw;
 struct rbuf rec_buffer;
 
 struct ir_remote *decoding		= NULL;

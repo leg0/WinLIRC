@@ -50,7 +50,7 @@ inline void set_pending_space(lirc_t deltas)
 	rec_buffer.pendings=deltas;
 }
 
-static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
+static lirc_t get_next_rec_buffer_internal(hardware const& hw, lirc_t maxusec)
 {
 	if(rec_buffer.rptr<rec_buffer.wptr)
 	{
@@ -89,9 +89,9 @@ static lirc_t get_next_rec_buffer_internal(lirc_t maxusec)
 	return(0);
 }
 
-lirc_t get_next_rec_buffer(lirc_t maxusec)
+static lirc_t get_next_rec_buffer(hardware const& hw, lirc_t maxusec)
 {
-	return get_next_rec_buffer_internal(maxusec);
+	return get_next_rec_buffer_internal(hw, maxusec);
 }
 
 void init_rec_buffer(void)
@@ -99,7 +99,7 @@ void init_rec_buffer(void)
 	memset(&rec_buffer,0,sizeof(rec_buffer));
 }
 
-void rewind_rec_buffer(void)
+static void rewind_rec_buffer()
 {
 	rec_buffer.rptr=0;
 	rec_buffer.too_long=0;
@@ -108,8 +108,9 @@ void rewind_rec_buffer(void)
 	rec_buffer.sum=0;
 }
 
-int clear_rec_buffer(void)
+int clear_rec_buffer(hardware const* phw)
 {
+    auto& hw = *phw;
 	int move;
 
 	if(hw.rec_mode==LIRC_MODE_LIRCCODE)
@@ -144,7 +145,7 @@ int clear_rec_buffer(void)
 	return(1);
 }
 
-inline void unget_rec_buffer(int count)
+static inline void unget_rec_buffer(int count)
 {
 	if(count==1 || count==2)
 	{
@@ -164,11 +165,11 @@ inline void unget_rec_buffer_delta(lirc_t delta)
 	rec_buffer.data[rec_buffer.rptr]=delta;
 }
 
-inline lirc_t get_next_pulse(lirc_t maxusec)
+static inline lirc_t get_next_pulse(hardware const& hw, lirc_t maxusec)
 {
 	lirc_t data;
 
-	data=get_next_rec_buffer(maxusec);
+	data=get_next_rec_buffer(hw, maxusec);
 	if(data==0) return(0);
 	if(!is_pulse(data))
 	{
@@ -177,11 +178,9 @@ inline lirc_t get_next_pulse(lirc_t maxusec)
 	return(data&(PULSE_MASK));
 }
 
-inline lirc_t get_next_space(lirc_t maxusec)
+static inline lirc_t get_next_space(hardware const& hw, lirc_t maxusec)
 {
-	lirc_t data;
-
-	data=get_next_rec_buffer(maxusec);
+	auto data=get_next_rec_buffer(hw, maxusec);
 	if(data==0) return(0);
 	if(!is_space(data))
 	{
@@ -190,13 +189,13 @@ inline lirc_t get_next_space(lirc_t maxusec)
 	return(data);
 }
 
-inline int sync_pending_pulse(struct ir_remote *remote)
+static inline int sync_pending_pulse(hardware const& hw, struct ir_remote *remote)
 {
 	if(rec_buffer.pendingp>0)
 	{
 		lirc_t deltap;
 		
-		deltap=get_next_pulse(rec_buffer.pendingp);
+		deltap=get_next_pulse(hw,rec_buffer.pendingp);
 		if(deltap==0) return 0;
 		if(!expect(remote,deltap,rec_buffer.pendingp)) return 0;
 		set_pending_pulse(0);
@@ -204,13 +203,11 @@ inline int sync_pending_pulse(struct ir_remote *remote)
 	return 1;
 }
 
-inline int sync_pending_space(struct ir_remote *remote)
+static int sync_pending_space(hardware const& hw, struct ir_remote *remote)
 {
 	if(rec_buffer.pendings>0)
 	{
-		lirc_t deltas;
-		
-		deltas=get_next_space(rec_buffer.pendings);
+		auto deltas=get_next_space(hw, rec_buffer.pendings);
 		if(deltas==0) return 0;
 		if(!expect(remote,deltas,rec_buffer.pendings)) return 0;
 		set_pending_space(0);
@@ -218,14 +215,14 @@ inline int sync_pending_space(struct ir_remote *remote)
 	return 1;
 }
 
-int expectpulse(struct ir_remote *remote,int exdelta)
+static int expectpulse(hardware const& hw, struct ir_remote *remote,int exdelta)
 {
 	lirc_t deltap;
 	int retval;
 	
-	if(!sync_pending_space(remote)) return 0;
+	if(!sync_pending_space(hw, remote)) return 0;
 	
-	deltap=get_next_pulse(rec_buffer.pendingp+exdelta);
+	deltap=get_next_pulse(hw,rec_buffer.pendingp+exdelta);
 	if(deltap==0) return(0);
 	if(rec_buffer.pendingp>0)
 	{
@@ -241,14 +238,14 @@ int expectpulse(struct ir_remote *remote,int exdelta)
 	return(retval);
 }
 
-int expectspace(struct ir_remote *remote,int exdelta)
+static int expectspace(hardware const& hw, struct ir_remote *remote,int exdelta)
 {
 	lirc_t deltas;
 	int retval;
 
-	if(!sync_pending_pulse(remote)) return 0;
+	if(!sync_pending_pulse(hw, remote)) return 0;
 	
-	deltas=get_next_space(rec_buffer.pendings+exdelta);
+	deltas=get_next_space(hw,rec_buffer.pendings+exdelta);
 	if(deltas==0) return(0);
 	if(rec_buffer.pendings>0)
 	{
@@ -264,7 +261,7 @@ int expectspace(struct ir_remote *remote,int exdelta)
 	return(retval);
 }
 
-inline int expectone(struct ir_remote *remote,int bit)
+static int expectone(hardware const& hw, struct ir_remote *remote,int bit)
 {
 	if(is_biphase(remote))
 	{
@@ -275,7 +272,7 @@ inline int expectone(struct ir_remote *remote,int bit)
 		if(mask&remote->rc6_mask)
 		{
 			if(remote->sone>0 &&
-			   !expectspace(remote,2*remote->sone))
+			   !expectspace(hw,remote,2*remote->sone))
 			{
 				unget_rec_buffer(1);
 				return(0);
@@ -284,7 +281,7 @@ inline int expectone(struct ir_remote *remote,int bit)
 		}
 		else
 		{
-			if(remote->sone>0 && !expectspace(remote,remote->sone))
+			if(remote->sone>0 && !expectspace(hw,remote,remote->sone))
 			{
 				unget_rec_buffer(1);
 				return(0);
@@ -294,12 +291,12 @@ inline int expectone(struct ir_remote *remote,int bit)
 	}
 	else if(is_space_first(remote))
 	{
-		if(remote->sone>0 && !expectspace(remote,remote->sone))
+		if(remote->sone>0 && !expectspace(hw,remote,remote->sone))
 		{
 			unget_rec_buffer(1);
 			return(0);
 		}
-		if(remote->pone>0 && !expectpulse(remote,remote->pone))
+		if(remote->pone>0 && !expectpulse(hw,remote,remote->pone))
 		{
 			unget_rec_buffer(2);
 			return(0);
@@ -307,7 +304,7 @@ inline int expectone(struct ir_remote *remote,int bit)
 	}
 	else
 	{
-		if(remote->pone>0 && !expectpulse(remote,remote->pone))
+		if(remote->pone>0 && !expectpulse(hw,remote,remote->pone))
 		{
 			unget_rec_buffer(1);
 			return(0);
@@ -315,7 +312,7 @@ inline int expectone(struct ir_remote *remote,int bit)
 		if(remote->ptrail>0)
 		{
 			if(remote->sone>0 &&
-			   !expectspace(remote,remote->sone))
+			   !expectspace(hw,remote,remote->sone))
 			{
 				unget_rec_buffer(2);
 				return(0);
@@ -329,7 +326,7 @@ inline int expectone(struct ir_remote *remote,int bit)
 	return(1);
 }
 
-inline int expectzero(struct ir_remote *remote,int bit)
+static int expectzero(hardware const& hw, struct ir_remote *remote,int bit)
 {
 	if(is_biphase(remote))
 	{
@@ -339,7 +336,7 @@ inline int expectzero(struct ir_remote *remote,int bit)
 		mask=((ir_code) 1)<<(all_bits-1-bit);
 		if(mask&remote->rc6_mask)
 		{
-			if(!expectpulse(remote,2*remote->pzero))
+			if(!expectpulse(hw,remote,2*remote->pzero))
 			{
 				unget_rec_buffer(1);
 				return(0);
@@ -348,7 +345,7 @@ inline int expectzero(struct ir_remote *remote,int bit)
 		}
 		else
 		{
-			if(!expectpulse(remote,remote->pzero))
+			if(!expectpulse(hw,remote,remote->pzero))
 			{
 				unget_rec_buffer(1);
 				return(0);
@@ -358,12 +355,12 @@ inline int expectzero(struct ir_remote *remote,int bit)
 	}
 	else if(is_space_first(remote))
 	{
-		if(remote->szero>0 && !expectspace(remote,remote->szero))
+		if(remote->szero>0 && !expectspace(hw,remote,remote->szero))
 		{
 			unget_rec_buffer(1);
 			return(0);
 		}
-		if(remote->pzero>0 && !expectpulse(remote,remote->pzero))
+		if(remote->pzero>0 && !expectpulse(hw,remote,remote->pzero))
 		{
 			unget_rec_buffer(2);
 			return(0);
@@ -371,14 +368,14 @@ inline int expectzero(struct ir_remote *remote,int bit)
 	}
 	else
 	{
-		if(!expectpulse(remote,remote->pzero))
+		if(!expectpulse(hw,remote,remote->pzero))
 		{
 			unget_rec_buffer(1);
 			return(0);
 		}
 		if(remote->ptrail>0)
 		{
-			if(!expectspace(remote,remote->szero))
+			if(!expectspace(hw,remote,remote->szero))
 			{
 				unget_rec_buffer(2);
 				return(0);
@@ -392,13 +389,12 @@ inline int expectzero(struct ir_remote *remote,int bit)
 	return(1);
 }
 
-inline lirc_t sync_rec_buffer(struct ir_remote *remote)
+static lirc_t sync_rec_buffer(hardware const& hw, struct ir_remote *remote)
 {
-	int count;
-	lirc_t deltas,deltap;
+	lirc_t deltap;
 	
-	count=0;
-	deltas=get_next_space(1000000);
+	auto count=0;
+	auto deltas=get_next_space(hw,1000000);
 	if(deltas==0) return(0);
 	
 	if(last_remote!=NULL && !is_rcmm(remote))
@@ -406,9 +402,9 @@ inline lirc_t sync_rec_buffer(struct ir_remote *remote)
 		while(!expect_at_least(last_remote, deltas,
 				       last_remote->min_remaining_gap))
 		{
-			deltap=get_next_pulse(1000000);
+			deltap=get_next_pulse(hw,1000000);
 			if(deltap==0) return(0);
-			deltas=get_next_space(1000000);
+			deltas=get_next_space(hw,1000000);
 			if(deltas==0) return(0);
 			count++;
 			if(count>REC_SYNC) /* no sync found, 
@@ -432,25 +428,23 @@ inline lirc_t sync_rec_buffer(struct ir_remote *remote)
 	return(deltas);
 }
 
-inline int get_header(struct ir_remote *remote)
+static int get_header(hardware const& hw, struct ir_remote *remote)
 {
 	if(is_rcmm(remote))
 	{
-		lirc_t deltap,deltas,sum;
-		
-		deltap=get_next_pulse(remote->phead);
+		auto deltap=get_next_pulse(hw,remote->phead);
 		if(deltap==0)
 		{
 			unget_rec_buffer(1);
 			return(0);
 		}
-		deltas=get_next_space(remote->shead);
+		auto deltas=get_next_space(hw, remote->shead);
 		if(deltas==0)
 		{
 			unget_rec_buffer(2);
 			return(0);
 		}
-		sum=deltap+deltas;
+		auto sum=deltap+deltas;
 		if(expect(remote,sum,remote->phead+remote->shead))
 		{
 			return(1);
@@ -460,12 +454,12 @@ inline int get_header(struct ir_remote *remote)
 	}
 	else if(is_bo(remote))
 	{
-		if(expectpulse(remote, remote->pone) &&
-		   expectspace(remote, remote->sone) &&
-		   expectpulse(remote, remote->pone) &&
-		   expectspace(remote, remote->sone) &&
-		   expectpulse(remote, remote->phead) &&
-		   expectspace(remote, remote->shead))
+		if(expectpulse(hw, remote, remote->pone) &&
+		   expectspace(hw, remote, remote->sone) &&
+		   expectpulse(hw, remote, remote->pone) &&
+		   expectspace(hw, remote, remote->sone) &&
+		   expectpulse(hw, remote, remote->phead) &&
+		   expectspace(hw, remote, remote->shead))
 		{
 			return 1;
 		}
@@ -473,11 +467,11 @@ inline int get_header(struct ir_remote *remote)
 	}
 	if(remote->shead==0)
 	{
-		if(!sync_pending_space(remote)) return 0;
+		if(!sync_pending_space(hw,remote)) return 0;
 		set_pending_pulse(remote->phead);
 		return 1;
 	}
-	if(!expectpulse(remote,remote->phead))
+	if(!expectpulse(hw,remote,remote->phead))
 	{
 		unget_rec_buffer(1);
 		return(0);
@@ -488,7 +482,7 @@ inline int get_header(struct ir_remote *remote)
 	{
 		lirc_t deltas;
 		
-		deltas=get_next_space(remote->shead);
+		deltas=get_next_space(hw,remote->shead);
 		if(deltas!=0)
 		{
 			if(expect(remote,remote->shead,deltas))
@@ -504,39 +498,39 @@ inline int get_header(struct ir_remote *remote)
 	return(1);
 }
 
-inline int get_foot(struct ir_remote *remote)
+static int get_foot(hardware const& hw, struct ir_remote *remote)
 {
-	if(!expectspace(remote,remote->sfoot)) return(0);
-	if(!expectpulse(remote,remote->pfoot)) return(0);
+	if(!expectspace(hw,remote,remote->sfoot)) return(0);
+	if(!expectpulse(hw,remote,remote->pfoot)) return(0);
 	return(1);
 }
 
-inline int get_lead(struct ir_remote *remote)
+static int get_lead(hardware const& hw, struct ir_remote *remote)
 {
 	if(remote->plead==0) return 1;
-	if(!sync_pending_space(remote)) return 0;
+	if(!sync_pending_space(hw,remote)) return 0;
 	set_pending_pulse(remote->plead);
 	return 1;
 }
 
-inline int get_trail(struct ir_remote *remote)
+static int get_trail(hardware const& hw, struct ir_remote *remote)
 {
 	if(remote->ptrail!=0)
 	{
-		if(!expectpulse(remote,remote->ptrail)) return(0);
+		if(!expectpulse(hw,remote,remote->ptrail)) return(0);
 	}
 	if(rec_buffer.pendingp>0)
 	{
-		if(!sync_pending_pulse(remote)) return(0);
+		if(!sync_pending_pulse(hw,remote)) return(0);
 	}
 	return(1);
 }
 
-inline int get_gap(struct ir_remote *remote,lirc_t gap)
+static int get_gap(hardware const& hw, struct ir_remote *remote,lirc_t gap)
 {
 	lirc_t data;
 	
-	data=get_next_rec_buffer(gap-gap*remote->eps/100);
+	data=get_next_rec_buffer(hw,gap-gap*remote->eps/100);
 	if(data==0) return(1);
 	if(!is_space(data))
 	{
@@ -550,21 +544,21 @@ inline int get_gap(struct ir_remote *remote,lirc_t gap)
 	return(1);	
 }
 
-inline int get_repeat(struct ir_remote *remote)
+static int get_repeat(hardware const& hw, struct ir_remote *remote)
 {
-	if(!get_lead(remote)) return(0);
+	if(!get_lead(hw,remote)) return(0);
 	if(is_biphase(remote))
 	{
-		if(!expectspace(remote,remote->srepeat)) return(0);
-		if(!expectpulse(remote,remote->prepeat)) return(0);
+		if(!expectspace(hw,remote,remote->srepeat)) return(0);
+		if(!expectpulse(hw,remote,remote->prepeat)) return(0);
 	}
 	else
 	{
-		if(!expectpulse(remote,remote->prepeat)) return(0);
+		if(!expectpulse(hw,remote,remote->prepeat)) return(0);
 		set_pending_space(remote->srepeat);
 	}
-	if(!get_trail(remote)) return(0);
-	if(!get_gap(remote,
+	if(!get_trail(hw,remote)) return(0);
+	if(!get_gap(hw,remote,
 		    is_const(remote) ? 
 		    (min_gap(remote)>rec_buffer.sum ? min_gap(remote)-rec_buffer.sum:0):
 		    (has_repeat_gap(remote) ? remote->repeat_gap:min_gap(remote))
@@ -572,12 +566,11 @@ inline int get_repeat(struct ir_remote *remote)
 	return(1);
 }
 
-ir_code get_data(struct ir_remote *remote,int bits,int done)
+static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,int done)
 {
-	ir_code code;
 	int i;
 	
-	code=0;
+	ir_code code=0;
 	
 	if(is_rcmm(remote))
 	{
@@ -587,13 +580,13 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 		{
 			return((ir_code) -1);
 		}
-		if(!sync_pending_space(remote)) return 0;
+		if(!sync_pending_space(hw,remote)) return 0;
 		for(i=0;i<bits;i+=2)
 		{
 			code<<=2;
-			deltap=get_next_pulse(remote->pzero+remote->pone+
+			deltap=get_next_pulse(hw,remote->pzero+remote->pone+
 					      remote->ptwo+remote->pthree);
-			deltas=get_next_space(remote->szero+remote->sone+
+			deltas=get_next_space(hw,remote->szero+remote->sone+
 					      remote->stwo+remote->sthree);
 			if(deltap==0 || deltas==0) 
 			{
@@ -633,12 +626,12 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 		{
 			return((ir_code) -1);
 		}
-		if(!sync_pending_pulse(remote)) return ((ir_code) -1);
+		if(!sync_pending_pulse(hw,remote)) return ((ir_code) -1);
 		for(laststate=state=-1,i=0;i<bits;)
 		{
-			deltas=get_next_space(remote->szero+remote->sone+
+			deltas=get_next_space(hw,remote->szero+remote->sone+
 					      remote->stwo+remote->sthree);
-			deltap=get_next_pulse(remote->pzero+remote->pone+
+			deltap=get_next_pulse(hw,remote->pzero+remote->pone+
 					      remote->ptwo+remote->pthree);
 			if(deltas==0 || deltap==0) 
 			{
@@ -737,8 +730,8 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 			if(delta==0)
 			{
 				delta=space ?
-					get_next_space(max_space):
-					get_next_pulse(max_pulse);
+					get_next_space(hw,max_space):
+					get_next_pulse(hw,max_pulse);
 				if(delta==0 && space &&
 				   received+remote->bits_in_byte+parity_bit>=bits)
 				{
@@ -850,9 +843,9 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 		for(i=0; i<bits; i++)
 		{
 			code<<=1;
-			deltap=get_next_pulse(remote->pzero+remote->pone+
+			deltap=get_next_pulse(hw,remote->pzero+remote->pone+
 					      remote->ptwo+remote->pthree);
-			deltas=get_next_space(remote->szero+remote->sone+
+			deltas=get_next_space(hw,remote->szero+remote->sone+
 					      remote->stwo+remote->sthree);
 			if(deltap==0 || deltas==0) 
 			{
@@ -906,12 +899,12 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 		{
 			return((ir_code) -1);
 		}
-		if(!sync_pending_space(remote)) return 0;
+		if(!sync_pending_space(hw,remote)) return 0;
 		for(i=0;i<bits;i+=4)
 		{
 			code<<=4;
-			deltap=get_next_pulse(remote->pzero);
-			deltas=get_next_space(remote->szero+16*remote->sone);
+			deltap=get_next_pulse(hw,remote->pzero);
+			deltas=get_next_space(hw,remote->szero+16*remote->sone);
 			if(deltap==0 || deltas==0) 
 			{
 				return((ir_code) -1);
@@ -948,11 +941,11 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 			}
 		}
 		
-		if(expectone(remote,done+i))
+		if(expectone(hw,remote,done+i))
 		{
 			code|=1;
 		}
-		else if(expectzero(remote,done+i))
+		else if(expectzero(hw,remote,done+i))
 		{			
 			code|=0;
 		}
@@ -964,11 +957,11 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 	return(code);
 }
 
-ir_code get_pre(struct ir_remote *remote)
+static ir_code get_pre(hardware const& hw, struct ir_remote *remote)
 {
 	ir_code pre;
 
-	pre=get_data(remote,remote->pre_data_bits,0);
+	pre=get_data(hw,remote,remote->pre_data_bits,0);
 
 	if(pre==(ir_code) -1)
 	{		
@@ -976,25 +969,25 @@ ir_code get_pre(struct ir_remote *remote)
 	}
 	if(remote->pre_p>0 && remote->pre_s>0)
 	{
-		if(!expectpulse(remote,remote->pre_p))
+		if(!expectpulse(hw,remote,remote->pre_p))
 			return((ir_code) -1);
 		set_pending_space(remote->pre_s);
 	}
 	return(pre);
 }
 
-ir_code get_post(struct ir_remote *remote)
+static ir_code get_post(hardware const& hw, struct ir_remote *remote)
 {
 	ir_code post;
 
 	if(remote->post_p>0 && remote->post_s>0)
 	{
-		if(!expectpulse(remote,remote->post_p))
+		if(!expectpulse(hw,remote,remote->post_p))
 			return((ir_code) -1);
 		set_pending_space(remote->post_s);
 	}
 
-	post=get_data(remote,remote->post_data_bits,remote->pre_data_bits+
+	post=get_data(hw,remote,remote->post_data_bits,remote->pre_data_bits+
 		      remote->bits);
 
 	if(post==(ir_code) -1)
@@ -1004,11 +997,12 @@ ir_code get_post(struct ir_remote *remote)
 	return(post);
 }
 
-int receive_decode(struct ir_remote *remote,
+int receive_decode(hardware const* phw, struct ir_remote *remote,
 		   ir_code *prep,ir_code *codep,ir_code *postp,
 		   int *repeat_flagp,
 		   lirc_t *min_remaining_gapp, lirc_t *max_remaining_gapp)
 {
+    auto& hw = *phw;
 	ir_code pre,code,post;
 	lirc_t sync;
 	int header;
@@ -1026,7 +1020,7 @@ int receive_decode(struct ir_remote *remote,
 		rec_buffer.is_biphase=is_biphase(remote) ? 1:0;
 		
 		/* we should get a long space first */
-		if(!(sync=sync_rec_buffer(remote)))
+		if(!(sync=sync_rec_buffer(hw,remote)))
 		{	
 			return(0);
 		}
@@ -1035,13 +1029,13 @@ int receive_decode(struct ir_remote *remote,
 		{
 			if(remote->flags&REPEAT_HEADER && has_header(remote))
 			{
-				if(!get_header(remote))
+				if(!get_header(hw,remote))
 				{
 					return(0);
 				}
 				
 			}
-			if(get_repeat(remote))
+			if(get_repeat(hw,remote))
 			{
 				if(remote->last_code==NULL)
 				{
@@ -1070,7 +1064,7 @@ int receive_decode(struct ir_remote *remote,
 			else
 			{
 				rewind_rec_buffer();
-				sync_rec_buffer(remote);
+				sync_rec_buffer(hw,remote);
 			}
 
 		}
@@ -1078,7 +1072,7 @@ int receive_decode(struct ir_remote *remote,
 		if(has_header(remote))
 		{
 			header=1;
-			if(!get_header(remote))
+			if(!get_header(hw,remote))
 			{
 				header=0;
 				if(!(remote->flags&NO_HEAD_REP && 
@@ -1106,26 +1100,26 @@ int receive_decode(struct ir_remote *remote,
 			found=codes;
 			for(i=0;i<codes->length;)
 			{
-				if(!expectpulse(remote,codes->signals[i++]))
+				if(!expectpulse(hw,remote,codes->signals[i++]))
 				{
 					found=NULL;
 					rewind_rec_buffer();
-					sync_rec_buffer(remote);
+					sync_rec_buffer(hw,remote);
 					break;
 				}
 				if(i<codes->length &&
-				   !expectspace(remote,codes->signals[i++]))
+				   !expectspace(hw,remote,codes->signals[i++]))
 				{
 					found=NULL;
 					rewind_rec_buffer();
-					sync_rec_buffer(remote);
+					sync_rec_buffer(hw,remote);
 					break;
 				}
 			}
 			codes++;
 			if(found!=NULL)
 			{
-				if(!get_gap(remote,
+				if(!get_gap(hw,remote,
 					    is_const(remote) ? 
 					    min_gap(remote)-rec_buffer.sum:
 					    min_gap(remote))) 
@@ -1170,21 +1164,21 @@ int receive_decode(struct ir_remote *remote,
 		}
 		else
 		{
-			if(!get_lead(remote))
+			if(!get_lead(hw,remote))
 			{
 				return(0);
 			}
 			
 			if(has_pre(remote))
 			{
-				pre=get_pre(remote);
+				pre=get_pre(hw,remote);
 				if(pre==(ir_code) -1)
 				{
 					return(0);
 				}
 			}
 			
-			code=get_data(remote,remote->bits,
+			code=get_data(hw,remote,remote->bits,
 				      remote->pre_data_bits);
 			if(code==(ir_code) -1)
 			{
@@ -1193,20 +1187,20 @@ int receive_decode(struct ir_remote *remote,
 
 			if(has_post(remote))
 			{
-				post=get_post(remote);
+				post=get_post(hw,remote);
 				if(post==(ir_code) -1)
 				{
 					return(0);
 				}
 
 			}
-			if(!get_trail(remote))
+			if(!get_trail(hw,remote))
 			{
 				return(0);
 			}
 			if(has_foot(remote))
 			{
-				if(!get_foot(remote))
+				if(!get_foot(hw,remote))
 				{
 					return(0);
 				}
@@ -1218,19 +1212,19 @@ int receive_decode(struct ir_remote *remote,
 			}
 			if(is_rcmm(remote))
 			{
-				if(!get_gap(remote,1000))
+				if(!get_gap(hw,remote,1000))
 					return(0);
 			}
 			else if(is_const(remote))
 			{
-				if(!get_gap(remote,
+				if(!get_gap(hw,remote,
 					    min_gap(remote)>rec_buffer.sum ?
 					    min_gap(remote)-rec_buffer.sum:0))
 					return(0);
 			}
 			else
 			{
-				if(!get_gap(remote, min_gap(remote)))
+				if(!get_gap(hw,remote, min_gap(remote)))
 					return(0);
 			}
 		} /* end of mode specific code */

@@ -13,6 +13,8 @@
 #include "../Common/Linux.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
+void initHardwareStruct();
+extern hardware hw;
 
 //===================
 TiraDLL		tiraDLL;
@@ -185,13 +187,13 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	gettimeofday		(&start,NULL);
 
-	if(!waitForData) {
+	if(!waitForData(0)) {
 		return 0;
 	}
 
 	gettimeofday		(&end,NULL);
 
-	if(decodeCommand(remotes,out)) {
+	if(decodeCommand(&hw,remotes,out)) {
 		ResetEvent(dataReadyEvent);
 		return 1;
 	}

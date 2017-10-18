@@ -19,10 +19,9 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef HARDWARE_H
-#define HARDWARE_H
+#pragma once
 
-void initHardwareStruct();
+#include "LIRCDefines.h"
 
 //
 // this hardware struct differs somewhat from the LIRC project
@@ -41,7 +40,7 @@ struct hardware
 	unsigned long code_length;
 	unsigned int resolution;
 
-	int (*decode_func)(struct ir_remote *remote,
+	int (*decode_func)(struct hardware const* hw, struct ir_remote *remote,
 		ir_code *prep,ir_code *codep,ir_code *postp,
 		int *repeat_flag,
 		lirc_t *min_remaining_gapp,
@@ -52,9 +51,3 @@ struct hardware
 	int		(*data_ready)	(void);
 	ir_code (*get_ir_code)	(void);
 };
-
-extern struct hardware hw;
-
-#endif
-
-

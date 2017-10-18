@@ -56,7 +56,7 @@ char* gnt_ids[] = {
 
 int Receive::init() {
 	//if (LWEXT_Open(0x8696)!=DLL_OK) return 0;
-
+    auto x = &fscanf; // msvc fails to link without this. says it can't find fscanf.
 	int rc=DLL_ERROR;
 	for (int i=0; i < _countof(gnt_ids); i++)
 	{
