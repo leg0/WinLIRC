@@ -17,7 +17,7 @@ add_library(Xbox360 SHARED
 #	)
 
 target_link_libraries(Xbox360
-	Common
+	winlirc
 	${CMAKE_CURRENT_SOURCE_DIR}/XInput.lib
 	)
 

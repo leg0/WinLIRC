@@ -26,7 +26,7 @@ add_definitions(
 	)
 
 target_link_libraries(IRMan
-	Common
+	winlirc
 	)
 
 configure_plugin(IRMan)

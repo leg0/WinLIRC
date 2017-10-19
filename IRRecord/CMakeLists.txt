@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8)
 
 add_executable(IRRecord
 	../winlirc/config.cpp
-	../DLL/Common/linux.cpp
 	config.h
 	dump_config.cpp
 	dump_config.h

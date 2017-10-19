@@ -10,6 +10,29 @@ add_definitions(
 	-D_UNICODE
 	)
 
+set(COMMON_SOURCES
+	../DLL/Common/DebugOutput.h
+	../DLL/Common/enumSerialPorts.h
+	../DLL/Common/fifo.h
+	../DLL/Common/Hardware.h
+	../DLL/Common/IRRemote.cpp
+	../DLL/Common/IRRemote.h
+	../DLL/Common/Linux.cpp
+	../DLL/Common/Linux.h
+	../DLL/Common/LIRCDefines.h
+	../DLL/Common/Receive.cpp
+	../DLL/Common/Receive.h
+	../DLL/Common/SafeBool.h
+	../DLL/Common/Send.cpp
+	../DLL/Common/Send.h
+	../DLL/Common/settings.cpp
+	../DLL/Common/settings.h
+	../DLL/Common/UniqueHandle.h
+	../DLL/Common/Win32Helpers.cpp
+	../DLL/Common/Win32Helpers.h
+	../DLL/Common/winlirc_api.h
+	../DLL/Common/WLPluginAPI.h)
+
 add_executable(winlirc WIN32
 	config.cpp
 	drvdlg.cpp
@@ -39,10 +62,14 @@ add_executable(winlirc WIN32
     trayicon.h
     version.h
     winlirc.h
+	${COMMON_SOURCES}
 	)
 
 # TODO: add unit tests
 # add_subdirectory(tests)
+
+source_group(Common FILES ${COMMON_SOURCES})
+set_target_properties(winlirc PROPERTIES ENABLE_EXPORTS on)
 
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set (CFG ${OUTPUTCONFIG})

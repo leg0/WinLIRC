@@ -25,7 +25,7 @@ add_definitions(
 	)
 
 target_link_libraries(TbsQBOX
-	Common
+	winlirc
 	winmm.lib
 	strmiids.lib
 	ksproxy.lib

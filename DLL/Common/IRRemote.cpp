@@ -19,6 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
+#include "IRRemote.h"
 #include <stdio.h>
 #include <sys/timeb.h>
 #include <string.h>
@@ -32,7 +33,7 @@ struct ir_remote *last_remote	= NULL;
 struct ir_remote *repeat_remote	= NULL;
 struct ir_ncode *repeat_code	= NULL;
 
-int map_code(struct ir_remote *remote,
+WINLIRC_API int map_code(struct ir_remote *remote,
 	     ir_code *prep,ir_code *codep,ir_code *postp,
 	     int pre_bits,ir_code pre,
 	     int bits,ir_code code,
@@ -60,7 +61,7 @@ int map_code(struct ir_remote *remote,
 	return(1);
 }
 
-void map_gap(struct ir_remote *remote,
+WINLIRC_API void map_gap(struct ir_remote *remote,
 	     struct mytimeval *start, struct mytimeval *last,
 	     lirc_t signal_length,
 	     int *repeat_flagp,

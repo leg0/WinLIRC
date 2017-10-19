@@ -33,7 +33,7 @@ endif()
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/USB/libs/${ARCH})
 
 target_link_libraries(Cyberlink
-	Common
+	winlirc
 	setupapi
 	winusb
 	)

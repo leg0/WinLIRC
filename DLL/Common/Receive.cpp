@@ -19,6 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
+#include "Receive.h"
 #include <stdio.h>
 #include <string.h>
 #include "LIRCDefines.h"
@@ -94,7 +95,7 @@ static lirc_t get_next_rec_buffer(hardware const& hw, lirc_t maxusec)
 	return get_next_rec_buffer_internal(hw, maxusec);
 }
 
-void init_rec_buffer(void)
+WINLIRC_API void init_rec_buffer()
 {
 	memset(&rec_buffer,0,sizeof(rec_buffer));
 }
@@ -108,7 +109,7 @@ static void rewind_rec_buffer()
 	rec_buffer.sum=0;
 }
 
-int clear_rec_buffer(hardware const* phw)
+WINLIRC_API int clear_rec_buffer(hardware const* phw)
 {
     auto& hw = *phw;
 	int move;
@@ -997,18 +998,17 @@ static ir_code get_post(hardware const& hw, struct ir_remote *remote)
 	return(post);
 }
 
-int receive_decode(hardware const* phw, struct ir_remote *remote,
+WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 		   ir_code *prep,ir_code *codep,ir_code *postp,
 		   int *repeat_flagp,
 		   lirc_t *min_remaining_gapp, lirc_t *max_remaining_gapp)
 {
     auto& hw = *phw;
 	ir_code pre,code,post;
-	lirc_t sync;
 	int header;
 	struct mytimeval current;
 
-	sync=0; /* make compiler happy */
+	lirc_t sync=0;
 	code=pre=post=0;
 	header=0;
 

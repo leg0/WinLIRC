@@ -2343,6 +2343,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 	return(0);
 }
 
+void gettimeofday(struct mytimeval *a);
 int get_gap_length(struct ir_remote *remote)
 {
 	struct lengths *gaps=NULL;
@@ -2368,12 +2369,12 @@ int get_gap_length(struct ir_remote *remote)
 			free_lengths(&gaps);
 			return(0);
 		}
-		gettimeofday(&start,NULL);
+		gettimeofday(&start);
 		while(availabledata())
 		{
 			irDriver.decodeIR(NULL,NULL);
 		}
-		gettimeofday(&end,NULL);
+		gettimeofday(&end);
 		if(flag)
 		{
 			gap=time_elapsed(&last,&start);

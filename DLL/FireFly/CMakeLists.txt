@@ -16,7 +16,7 @@ add_library(FireFly SHARED
 	)
 
 target_link_libraries(FireFly
-	Common
+	winlirc
     setupapi.lib
     hid.lib
 	)

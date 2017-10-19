@@ -25,6 +25,16 @@ struct ir_ncode *current_code = NULL;
 int current_index = 0;
 int current_rep = 0;
 
+void gettimeofday(struct mytimeval *a)
+/* only accurate to milliseconds, instead of microseconds */
+{
+    struct _timeb tstruct;
+    _ftime_s(&tstruct);
+
+    a->tv_sec = tstruct.time;
+    a->tv_usec = tstruct.millitm * 1000;
+}
+
 lirc_t emulation_readdata(lirc_t timeout)
 {
 	static lirc_t sum = 0;
@@ -1273,7 +1283,7 @@ int receive_decode(struct ir_remote *remote,
 			code = decoded & gen_mask(remote->bits);
 			pre = decoded >> remote->bits;
 			
-			gettimeofday(&current,NULL);
+			gettimeofday(&current);
 			sum=remote->phead+remote->shead+
 				lirc_t_max(remote->pone+remote->sone,
 					   remote->pzero+remote->szero)*

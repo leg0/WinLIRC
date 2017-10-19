@@ -16,7 +16,7 @@ add_definitions(
 	)
 
 target_link_libraries(Streamzap
-	Common
+	winlirc
 	setupapi.lib
 	)
 

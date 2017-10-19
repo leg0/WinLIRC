@@ -29,7 +29,7 @@ add_library(Technisat SHARED
 #	)
 
 target_link_libraries(Technisat
-	Common
+	winlirc
 	strmiids.lib
 	)
 

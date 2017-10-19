@@ -24,7 +24,7 @@ add_library(Tira SHARED
 #	)
 
 target_link_libraries(Tira
-	Common
+	winlirc
 	)
 
 configure_plugin(Tira)

@@ -318,14 +318,12 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 	if (init_send(remote, code,repeats))
 	{
 		//==================
-		int		length;
 		int		x;
-		lirc_t	*signals;
 		UINT	*igsignals;
 		//==================
 
-		length		= send_buffer.wptr;
-		signals		= send_buffer.data;
+		auto const length		= get_send_buffer_length();
+		auto const signals		= get_send_buffer_data();
 		igsignals	= (UINT*)malloc(sizeof(UINT) * length);
 
 		if (igsignals != NULL)

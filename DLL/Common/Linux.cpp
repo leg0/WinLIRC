@@ -2,10 +2,11 @@
 #define NULL 0
 #endif
 
+#include "Linux.h"
 #include "LIRCDefines.h"
 #include <sys/timeb.h>
 
-int gettimeofday(struct mytimeval *a, void *)
+WINLIRC_API int gettimeofday(struct mytimeval *a, void *)
 /* only accurate to milliseconds, instead of microseconds */
 {
 	struct _timeb tstruct;

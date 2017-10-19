@@ -315,8 +315,6 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 	if (init_send(remote, code, repeats)) {
 
 		//====================
-		int		length;
-		lirc_t	*signals;
 		USHORT	*irToySignals;
 		UCHAR	temp[3];
 		BOOL	success;
@@ -351,8 +349,8 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			}
 		}
 
-		length		= send_buffer.wptr+1;
-		signals		= send_buffer.data;
+		auto length		= get_send_buffer_length()+1;
+		auto const signals		= get_send_buffer_data();
 		temp[0]		= 0x03;	// transmit mode
 		irToySignals= (USHORT*)malloc(sizeof(USHORT) * (length)); // add 1 for 0xFFFF terminator
 		

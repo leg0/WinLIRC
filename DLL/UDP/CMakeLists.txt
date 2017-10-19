@@ -19,7 +19,7 @@ add_library(UDP SHARED
 #	)
 
 target_link_libraries(UDP
-	Common
+	winlirc
 	ws2_32.lib
 	)
 

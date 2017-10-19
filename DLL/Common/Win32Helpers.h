@@ -1,18 +1,47 @@
-#ifndef _WIN32_HELPERS_H_
-#define _WIN32_HELPERS_H_
+#pragma once
 
-#ifndef SAFE_CLOSE_HANDLE
-#define SAFE_CLOSE_HANDLE(a) if(a!=NULL) { CloseHandle(a); a = NULL; }
-#endif
+inline void SAFE_CLOSE_HANDLE(HANDLE& a)
+{
+    if (a != NULL)
+    {
+        CloseHandle(a);
+        a = NULL;
+    }
+}
 
-#ifndef SAFE_RELEASE
-#define SAFE_RELEASE(a) if(a!=NULL) { a->Release(); a = NULL; }
-#endif
+template <typename T>
+inline void SAFE_RELEASE(T*& a)
+{
+    if (a != NULL) 
+    {
+        a->Release();
+        a = NULL;
+    }
+}
 
-#ifndef SAFE_CLOSE_SOCKET
-#define SAFE_CLOSE_SOCKET(a) if(a!=INVALID_SOCKET) { closesocket(a); a = INVALID_SOCKET; }
-#endif
+template <typename S>
+inline void SAFE_CLOSE_SOCKET(S& a)
+{
+    if (a != INVALID_SOCKET)
+    {
+        closesocket(a);
+        a = INVALID_SOCKET;
+    }
+}
 
-void KillThread(HANDLE exitEvent, HANDLE &threadHandle);
+inline void KillThread(HANDLE exitEvent, HANDLE &threadHandle)
+{
+    if (exitEvent)
+        SetEvent(exitEvent);
 
-#endif
+    if (threadHandle != nullptr)
+    {
+        DWORD result = 0;
+        if (GetExitCodeThread(threadHandle, &result) != 0
+            && result == STILL_ACTIVE)
+        {
+            WaitForSingleObject(threadHandle, INFINITE);
+        }
+        SAFE_CLOSE_HANDLE(threadHandle);
+    }
+}

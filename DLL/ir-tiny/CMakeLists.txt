@@ -39,7 +39,7 @@ include_directories(
     )
 
 target_link_libraries(ir-tiny
-    Common
+    winlirc
     )
 
 configure_plugin(ir-tiny)

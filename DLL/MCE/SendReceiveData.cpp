@@ -425,8 +425,6 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 	if (init_send(remote, code, repeats)) {
 
 		//====================
-		int		length;
-		lirc_t	*signals;
 		int		*mceData;
 		bool	space;
 		BOOL	success;
@@ -439,8 +437,8 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		//
 		KillThread(exitEvent,threadHandle);
 
-		length		= send_buffer.wptr;
-		signals		= send_buffer.data;
+		auto const length		= get_send_buffer_length();
+		auto const signals		= get_send_buffer_data();
 
 		mceData		= new int[length];
 

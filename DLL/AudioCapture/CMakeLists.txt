@@ -28,7 +28,7 @@ add_library(AudioCapture SHARED
 	)
 
 target_link_libraries (AudioCapture
-	Common
+	winlirc
 	)
 
 configure_plugin(AudioCapture)

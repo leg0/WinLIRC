@@ -25,7 +25,7 @@ add_definitions(
 	)
 
 target_link_libraries(TbsCxt
-	Common
+	winlirc
     winmm.lib
     strmiids.lib
     ksproxy.lib

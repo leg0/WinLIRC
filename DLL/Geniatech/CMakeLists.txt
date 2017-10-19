@@ -17,7 +17,7 @@ add_library(Geniatech SHARED
 	)
 
 target_link_libraries(Geniatech
-	Common
+	winlirc
 	${CMAKE_CURRENT_SOURCE_DIR}/LwExtLib.lib
     setupapi.lib
 	)

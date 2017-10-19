@@ -14,7 +14,7 @@ add_library(Beholder SHARED
 	)
 
 target_link_libraries(Beholder
-	Common
+	winlirc
 	)
 
 configure_plugin(Beholder)

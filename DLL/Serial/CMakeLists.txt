@@ -31,7 +31,7 @@ add_definitions(
 	)
 
 target_link_libraries(Serial
-	Common
+	winlirc
 	)
 
 configure_plugin(Serial)

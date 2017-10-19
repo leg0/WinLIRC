@@ -25,7 +25,7 @@ add_library(Technotrend SHARED
 #	)
 
 target_link_libraries(Technotrend
-	Common
+	winlirc
 	${CMAKE_CURRENT_SOURCE_DIR}/TTUSBIR.lib
 	)
 

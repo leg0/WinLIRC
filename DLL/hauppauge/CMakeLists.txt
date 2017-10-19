@@ -16,7 +16,7 @@ add_definitions(
     )
 
 target_link_libraries(Hauppauge
-	Common
+	winlirc
 	)
 
 configure_plugin(Hauppauge)

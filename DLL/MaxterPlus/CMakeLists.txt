@@ -23,7 +23,7 @@ add_library(MaxterPlus SHARED
 	)
 
 target_link_libraries(MaxterPlus
-	Common
+	winlirc
     setupapi.lib
     hid.lib
 	)

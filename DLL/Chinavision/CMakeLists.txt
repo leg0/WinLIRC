@@ -14,7 +14,7 @@ add_library(Chinavision SHARED
     )
 
 target_link_libraries(Chinavision
-    Common
+    winlirc
     setupapi.lib
     winusb.lib
     )

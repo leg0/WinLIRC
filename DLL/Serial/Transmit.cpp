@@ -248,13 +248,8 @@ int Transmit(ir_ncode *data,struct ir_remote *rem, int repeats)
 
 	if (init_send(rem, data, repeats)) {
 
-		//===============
-		int		length;
-		lirc_t	*signals;
-		//===============
-
-		length	= send_buffer.wptr;
-		signals	= send_buffer.data;
+		auto const length	= get_send_buffer_length();
+		auto const signals	= get_send_buffer_data();
 
 		for(int i=0; i<length; i++) {
 			if(i%2==0)	send_pulse(signals[i]);

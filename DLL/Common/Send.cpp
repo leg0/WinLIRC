@@ -1,11 +1,22 @@
+#include "Send.h"
 #include <Windows.h>
 #include "LIRCDefines.h"
 
 #define LIRCD_EXACT_GAP_THRESHOLD 10000
 
-struct sbuf send_buffer;
+static struct sbuf send_buffer;
 
-void init_send_buffer(void)
+WINLIRC_API int get_send_buffer_length(void)
+{
+    return send_buffer.wptr;
+}
+
+WINLIRC_API lirc_t const* get_send_buffer_data(void)
+{
+    return send_buffer.data;
+}
+
+WINLIRC_API void init_send_buffer(void)
 {
 	memset(&send_buffer,0,sizeof(send_buffer));
 }
@@ -368,7 +379,7 @@ void send_signals(lirc_t *signals, int n)
 	}
 }
 
-int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
+WINLIRC_API int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 {
 	int repeat=0;
 	

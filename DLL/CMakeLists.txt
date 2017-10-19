@@ -34,5 +34,3 @@ add_plugin(TeVii)
 add_plugin(Tira)
 add_plugin(UDP)
 add_plugin(Xbox360)
-
-add_subdirectory(Common)

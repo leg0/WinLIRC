@@ -29,7 +29,7 @@ add_definitions(
 	)
 
 target_link_libraries(MCE
-	Common
+	winlirc
 	setupapi.lib
 	hid.lib
 	)

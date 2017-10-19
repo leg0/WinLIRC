@@ -25,7 +25,7 @@ add_library(Iguana SHARED
 #    )
 
 target_link_libraries(Iguana
-	Common
+	winlirc
 	${CMAKE_CURRENT_SOURCE_DIR}/iguanaIR.lib
 	wsock32.lib
 	)

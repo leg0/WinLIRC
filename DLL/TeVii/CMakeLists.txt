@@ -25,7 +25,7 @@ add_library(TeVii SHARED
 #	)
 
 target_link_libraries(TeVii
-	Common
+	winlirc
 	${CMAKE_CURRENT_SOURCE_DIR}/TeVii.lib
 	)
 

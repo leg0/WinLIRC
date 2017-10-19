@@ -26,7 +26,7 @@ add_definitions(
 	)
 
 target_link_libraries(IRToy
-	Common
+	winlirc
 #	${CMAKE_CURRENT_SOURCE_DIR}/libusb.lib
 	)
 
