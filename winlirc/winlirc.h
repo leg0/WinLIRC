@@ -44,4 +44,7 @@ protected:
 
 extern Cwinlirc app;
 
+void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent);
+void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent);
+
 #endif

@@ -16,7 +16,6 @@ add_library(MCE-XP SHARED
 
     Globals.h
     IrDeviceList.h
-    LIRCDefines.h
     MCEDefines.h
     Registry.h
     resource.h

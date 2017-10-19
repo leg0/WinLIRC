@@ -1,7 +1,7 @@
 #include "ChinavisionAPI.h"
 #include <stdio.h>
-#include "Globals.h"
-#include "LIRCDefines.h"
+#include "../Common/Linux.h"
+#include "../Common/LIRCDefines.h"
 #include <initguid.h>
 #include <setupapi.h>
 #include <tchar.h>

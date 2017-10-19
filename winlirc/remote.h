@@ -30,7 +30,6 @@
 #include <sys/types.h>
 #include <string.h>
 #include <math.h>
-#include "irdriver.h"
 
 #define strcasecmp _stricmp
 

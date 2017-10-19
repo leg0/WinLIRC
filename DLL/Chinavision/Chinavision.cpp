@@ -21,9 +21,10 @@
 
 #include <Windows.h>
 #include "Chinavision.h"
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
 #include <stdio.h>
-#include "Globals.h"
+#include "../Common/Linux.h"
+#include "ChinavisionAPI.h"
 
 ChinavisionAPI *chinavisionAPI = NULL;
 

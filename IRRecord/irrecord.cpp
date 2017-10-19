@@ -37,14 +37,14 @@
 #include <limits.h>
 #include <signal.h>
 
-#include "LIRCDefines.h"
+#include "../DLL/Common/LIRCDefines.h"
 #include "hardware.h"
 #include "config.h"
 #include "dump_config.h"
 #include "irdriver.h"
 #include "emulation.h"
 #include "atlstr.h"
-#include "Globals.h"
+#include "../DLL/Common/Linux.h"
 
 void flushhw(void);
 int resethw(void);

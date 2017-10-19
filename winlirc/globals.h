@@ -188,16 +188,4 @@ struct ir_remote
 	struct ir_remote *next;
 };
 
-
-
-/* externs */
-extern struct ir_remote *global_remotes;
-
-/* Change this stuff */
-extern class CCriticalSection CS_global_remotes;
-extern class CIRConfig config;
-
-void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent);
-void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent);
-
 #endif

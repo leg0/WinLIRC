@@ -10,8 +10,7 @@
  *
  */
 
-#include "stdafx.h"
-
+#include <ctype.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -21,7 +20,6 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-#include "winlirc.h"
 #include "remote.h"
 #include "config.h"
 #include "globals.h"

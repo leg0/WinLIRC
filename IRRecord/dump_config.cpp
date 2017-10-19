@@ -25,7 +25,7 @@
 # endif
 #endif
 
-#include "LIRCDefines.h"
+#include "../DLL/Common/LIRCDefines.h"
 #include "dump_config.h"
 #include "config.h"
 #include "hardware.h"

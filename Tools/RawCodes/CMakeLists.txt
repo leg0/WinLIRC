@@ -9,7 +9,6 @@ add_executable(RawCodes WIN32
 	hardware.h
 	irdriver.cpp
 	irdriver.h
-	LIRCDefines.h
 	main.cpp
 	Settings.cpp
 	Settings.h

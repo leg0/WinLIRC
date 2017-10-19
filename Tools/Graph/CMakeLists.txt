@@ -11,7 +11,6 @@ add_executable(Graph WIN32
 	hardware.h
 	irdriver.cpp
 	irdriver.h
-	LIRCDefines.h
 	main.cpp
 	Opengl.cpp
 	Opengl.h

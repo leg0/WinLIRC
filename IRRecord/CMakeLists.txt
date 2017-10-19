@@ -1,19 +1,17 @@
 cmake_minimum_required(VERSION 2.8)
 
 add_executable(IRRecord
-	config.cpp
+	../winlirc/config.cpp
+	../DLL/Common/linux.cpp
 	config.h
 	dump_config.cpp
 	dump_config.h
 	emulation.cpp
 	emulation.h
-	Globals.cpp
-	Globals.h
 	hardware.h
 	irdriver.cpp
 	irdriver.h
 	irrecord.cpp
-	LIRCDefines.h
 	)
 
 # target_link_libraries (IRRecord

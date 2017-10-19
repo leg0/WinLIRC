@@ -2,7 +2,7 @@
 #define ChinavisionAPI_H
 
 #include <Windows.h>
-#include "LIRCDefines.h"
+#include "../Common/LIRCDefines.h"
 #include "winusb.h"
 
 class ChinavisionAPI {

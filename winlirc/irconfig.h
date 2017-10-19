@@ -53,4 +53,9 @@ private:
 	
 };
 
+/* Change this stuff */
+extern struct ir_remote *global_remotes;
+extern class CCriticalSection CS_global_remotes;
+extern class CIRConfig config;
+
 #endif

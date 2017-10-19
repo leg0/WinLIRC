@@ -1,6 +1,6 @@
 #include "Opengl.h"
 #include <stdio.h>
-#include "LIRCDefines.h"
+#include "../../DLL/Common/LIRCDefines.h"
 
 Opengl::Opengl() {
 

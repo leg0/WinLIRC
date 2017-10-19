@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <sys/timeb.h>
 #include <string.h>
-#include "LIRCDefines.h"
+#include "../Dll/Common/LIRCDefines.h"
 #include "hardware.h"
 #include <limits.h>
-#include "Globals.h"
+#include "../DLL/Common/Linux.h"
 
 #pragma warning(disable: 4018)	// disable signed/unsigned mismatch
 

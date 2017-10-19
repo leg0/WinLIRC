@@ -3,12 +3,9 @@ cmake_minimum_required(VERSION 2.8)
 add_library(Chinavision SHARED
     Chinavision.cpp
     ChinavisionAPI.cpp
-    Globals.cpp
 
     Chinavision.h
     ChinavisionAPI.h
-    Globals.h
-    LIRCDefines.h
     usb.h
     usb100.h
     usb200.h
