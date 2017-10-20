@@ -22,11 +22,8 @@ set(COMMON_SOURCES
 	../DLL/Common/LIRCDefines.h
 	../DLL/Common/Receive.cpp
 	../DLL/Common/Receive.h
-	../DLL/Common/SafeBool.h
 	../DLL/Common/Send.cpp
 	../DLL/Common/Send.h
-	../DLL/Common/settings.cpp
-	../DLL/Common/settings.h
 	../DLL/Common/UniqueHandle.h
 	../DLL/Common/Win32Helpers.cpp
 	../DLL/Common/Win32Helpers.h

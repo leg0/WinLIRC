@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.9)
 
 project(WinLIRC)
 
@@ -34,6 +34,12 @@ macro(configure_tool tool_name)
   endforeach()
 endmacro()
 
+
+if (MSVC)
+  add_compile_options("/std:c++latest")
+else()
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
 add_subdirectory(winlirc)
 

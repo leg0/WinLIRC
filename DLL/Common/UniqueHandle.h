@@ -1,7 +1,5 @@
 #pragma once
 
-#include "SafeBool.h"
-
 namespace winlirc
 {
     /// UniqueHandle is wrapper around a handle value and manages the
@@ -47,11 +45,9 @@ namespace winlirc
 
         HandleType get() const { return handle_; }
 
-        operator SafeBool() const
+        explicit operator bool() const
         {
-            return handle_ == Traits::invalidValue()
-                ? safeFalse()
-                : safeTrue();
+            return handle_ != Traits::invalidValue();
         }
 
         /// Give up ownership of the handle.

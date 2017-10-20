@@ -4,15 +4,6 @@
 
 namespace irtiny
 {
-    struct SafeBoolStruct
-    {
-        int x;
-    };
-
-    typedef int SafeBoolStruct::*SafeBool;
-    inline SafeBool safeTrue() { return &SafeBoolStruct::x; }
-    inline SafeBool safeFalse() { return nullptr; }
-
     class SerialPort
     {
         SerialPort(SerialPort const&);
@@ -52,11 +43,9 @@ namespace irtiny
             return *this;
         }
 
-        operator SafeBool() const
+        explicit operator bool() const
         {
-            return handle_ == INVALID_HANDLE_VALUE
-                ? safeFalse()
-                : safeTrue();
+            return handle_ != INVALID_HANDLE_VALUE;
         }
 
         HANDLE release()
@@ -124,11 +113,9 @@ namespace irtiny
             return *this;
         }
 
-        operator SafeBool() const
+        explicit operator bool() const
         {
-            return handle_ == nullptr
-                ? safeFalse()
-                : safeTrue();
+            return handle_ != nullptr;
         }
 
         HANDLE release()
