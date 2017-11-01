@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include "../Common/LircDefines.h"
 
-HANDLE	threadExitEvent	= NULL;
-HANDLE	dataReadyEvent	= NULL;
+HANDLE	threadExitEvent	= nullptr;
+HANDLE	dataReadyEvent	= nullptr;
 
 CRITICAL_SECTION criticalSection;
 

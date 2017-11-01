@@ -83,7 +83,7 @@ struct hardware hw;
 void initHardwareStruct() {
 
 	hw.decode_func	= &irman_decode;
-	hw.readdata		= NULL;
+	hw.readdata		= nullptr;
 	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;
 	hw.get_ir_code	= &get_ir_code;

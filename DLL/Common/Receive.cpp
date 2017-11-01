@@ -398,7 +398,7 @@ static lirc_t sync_rec_buffer(hardware const& hw, struct ir_remote *remote)
 	auto deltas=get_next_space(hw,1000000);
 	if(deltas==0) return(0);
 	
-	if(last_remote!=NULL && !is_rcmm(remote))
+	if(last_remote!=nullptr && !is_rcmm(remote))
 	{
 		while(!expect_at_least(last_remote, deltas,
 				       last_remote->min_remaining_gap))
@@ -420,7 +420,7 @@ static lirc_t sync_rec_buffer(hardware const& hw, struct ir_remote *remote)
 					   last_remote->max_remaining_gap))
 			{
 				remote->toggle_mask_state=0;
-				remote->toggle_code=NULL;
+				remote->toggle_code=nullptr;
 			}
 			
 		}
@@ -1037,7 +1037,7 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 			}
 			if(get_repeat(hw,remote))
 			{
-				if(remote->last_code==NULL)
+				if(remote->last_code==nullptr)
 				{
 					return(0);
 				}
@@ -1094,15 +1094,15 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 			return(0);
 
 		codes=remote->codes;
-		found=NULL;
-		while(codes->name!=NULL && found==NULL)
+		found=nullptr;
+		while(codes->name!=nullptr && found==nullptr)
 		{
 			found=codes;
 			for(i=0;i<codes->length;)
 			{
 				if(!expectpulse(hw,remote,codes->signals[i++]))
 				{
-					found=NULL;
+					found=nullptr;
 					rewind_rec_buffer();
 					sync_rec_buffer(hw,remote);
 					break;
@@ -1110,23 +1110,23 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 				if(i<codes->length &&
 				   !expectspace(hw,remote,codes->signals[i++]))
 				{
-					found=NULL;
+					found=nullptr;
 					rewind_rec_buffer();
 					sync_rec_buffer(hw,remote);
 					break;
 				}
 			}
 			codes++;
-			if(found!=NULL)
+			if(found!=nullptr)
 			{
 				if(!get_gap(hw,remote,
 					    is_const(remote) ? 
 					    min_gap(remote)-rec_buffer.sum:
 					    min_gap(remote))) 
-					found=NULL;
+					found=nullptr;
 			}
 		}
-		if(found==NULL) return(0);
+		if(found==nullptr) return(0);
 		code=found->code;
 	}
 	else
@@ -1147,7 +1147,7 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 			code = decoded & gen_mask(remote->bits);
 			pre = decoded >> remote->bits;
 			
-			gettimeofday(&current,NULL);
+			gettimeofday(&current,nullptr);
 			sum=remote->phead+remote->shead+
 				lirc_t_max(remote->pone+remote->sone,
 					   remote->pzero+remote->szero)*

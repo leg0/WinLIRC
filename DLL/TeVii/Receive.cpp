@@ -17,7 +17,7 @@ Receive::~Receive() {
 
 void __stdcall callBackFunc(void* pContext, DWORD key) {
 
-	if(pContext != NULL) {
+	if(pContext != nullptr) {
 		((Receive*)pContext)->callBackFunction(key);
 	}
 }
@@ -25,7 +25,7 @@ void __stdcall callBackFunc(void* pContext, DWORD key) {
 int Receive::init(int deviceID) {
 	if (DevID!=-1) return 0;
 	if ( deviceID > (FindDevices()-1) ) return 0;
-	if (!OpenDevice(deviceID, NULL, NULL)) return 0;
+	if (!OpenDevice(deviceID, nullptr, nullptr)) return 0;
 
 	if (!SetRemoteControl(deviceID,&callBackFunc,this))
 	{
@@ -77,7 +77,7 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())

@@ -23,7 +23,7 @@
 #include "Globals.h"
 #include <stdio.h>
 
-HANDLE	threadExitEvent	= NULL;
-HANDLE	dataReadyEvent	= NULL;
+HANDLE	threadExitEvent	= nullptr;
+HANDLE	dataReadyEvent	= nullptr;
 
-SendReceiveData *sendReceiveData = NULL;
+SendReceiveData *sendReceiveData = nullptr;

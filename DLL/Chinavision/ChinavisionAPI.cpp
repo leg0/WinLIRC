@@ -16,12 +16,12 @@ DWORD WINAPI SZThread(void *recieveClass) {
 
 ChinavisionAPI::ChinavisionAPI() {
 
-	m_threadHandle		= NULL;
-	m_usbHandle			= NULL;
-	m_deviceHandle		= NULL;
-	m_exitEvent			= NULL;
-	m_dataReadyEvent	= NULL;
-	m_threadExitEvent	= NULL;
+	m_threadHandle		= nullptr;
+	m_usbHandle			= nullptr;
+	m_deviceHandle		= nullptr;
+	m_exitEvent			= nullptr;
+	m_dataReadyEvent	= nullptr;
+	m_threadExitEvent	= nullptr;
 
 	QueryPerformanceFrequency(&m_frequency);
 	QueryPerformanceCounter(&m_lastTime);
@@ -34,11 +34,11 @@ BOOL ChinavisionAPI::init(HANDLE threadExit) {
 	WINUSB_PIPE_INFORMATION		pipeInfo;
 	//==========================================
 		
-	m_usbHandle			= NULL;
-	m_deviceHandle		= NULL;
+	m_usbHandle			= nullptr;
+	m_deviceHandle		= nullptr;
 	m_inPipeId			= 0;
 	m_irCode			= 0;
-	m_dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	m_dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 	m_threadExitEvent	= threadExit;
 
 	findDevice();
@@ -47,9 +47,9 @@ BOOL ChinavisionAPI::init(HANDLE threadExit) {
 		return FALSE;			// failed to find device name
 	}
 
-	m_deviceHandle = CreateFile(m_deviceName,GENERIC_WRITE | GENERIC_READ, FILE_SHARE_WRITE | FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
+	m_deviceHandle = CreateFile(m_deviceName,GENERIC_WRITE | GENERIC_READ, FILE_SHARE_WRITE | FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, nullptr);
 
-	if(m_deviceHandle==NULL) {
+	if(m_deviceHandle==nullptr) {
 		return FALSE;
 	}
 
@@ -80,7 +80,7 @@ BOOL ChinavisionAPI::init(HANDLE threadExit) {
 		return FALSE;
 	}
 
-	m_threadHandle = CreateThread(NULL,0,SZThread,(void *)this,0,NULL);
+	m_threadHandle = CreateThread(nullptr,0,SZThread,(void *)this,0,nullptr);
 
 	if(m_threadHandle) return TRUE;
 
@@ -93,12 +93,12 @@ void ChinavisionAPI::deinit() {
 
 	if(m_dataReadyEvent) {
 		CloseHandle(m_dataReadyEvent);
-		m_dataReadyEvent = NULL;
+		m_dataReadyEvent = nullptr;
 	}
 
 	if(m_exitEvent) {
 		CloseHandle(m_exitEvent);
-		m_exitEvent = NULL;
+		m_exitEvent = nullptr;
 	}
 }
 
@@ -114,8 +114,8 @@ void ChinavisionAPI::threadProc() {
 
 	memset(&overlappedRead,0,sizeof(OVERLAPPED));
 
-	overlappedRead.hEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
-	m_exitEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+	overlappedRead.hEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
+	m_exitEvent = CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	events[0] = overlappedRead.hEvent;
 	events[1] = m_exitEvent;
@@ -158,12 +158,12 @@ void ChinavisionAPI::threadProc() {
 
 	if(m_exitEvent) {
 		CloseHandle(m_exitEvent);
-		m_exitEvent = NULL;
+		m_exitEvent = nullptr;
 	}
 
 	if(overlappedRead.hEvent) {
 		CloseHandle(overlappedRead.hEvent);
-		overlappedRead.hEvent = NULL;
+		overlappedRead.hEvent = nullptr;
 	}
 
 	cleanUp();
@@ -173,7 +173,7 @@ void ChinavisionAPI::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={m_dataReadyEvent,m_threadExitEvent};
 	int evt;
-	if(m_threadExitEvent==NULL) evt=1;
+	if(m_threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(m_irCode==0)
@@ -198,7 +198,7 @@ void ChinavisionAPI::killThread() {
 		SetEvent(m_exitEvent);
 	}
 
-	if(m_threadHandle!=NULL) {
+	if(m_threadHandle!=nullptr) {
 
 		//===========
 		DWORD result;
@@ -209,7 +209,7 @@ void ChinavisionAPI::killThread() {
 		if(GetExitCodeThread(m_threadHandle,&result)==0) 
 		{
 			CloseHandle(m_threadHandle);
-			m_threadHandle = NULL;
+			m_threadHandle = nullptr;
 			return;
 		}
 
@@ -219,7 +219,7 @@ void ChinavisionAPI::killThread() {
 		}
 
 		CloseHandle(m_threadHandle);
-		m_threadHandle = NULL;
+		m_threadHandle = nullptr;
 	}
 }
 
@@ -232,7 +232,7 @@ int ChinavisionAPI::decodeCommand(char *out) {
 	int		repeats = 0;
 	//=====================
 
-	buttonName[0] = NULL;
+	buttonName[0] = '\0';
 
 	tempCode = m_irCode >> 8;		// remove report ID value
 	reportID = m_irCode & 0xFF;
@@ -468,7 +468,7 @@ void ChinavisionAPI::findDevice() {
 
 	m_deviceName[0] = '\0';
 
-	hardwareDeviceInfo = SetupDiGetClassDevs(&GUID_CLASS_STREAMZAP,NULL,NULL,(DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
+	hardwareDeviceInfo = SetupDiGetClassDevs(&GUID_CLASS_STREAMZAP,nullptr,nullptr,(DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
 
 	printf("got here\n");
 
@@ -504,13 +504,13 @@ void ChinavisionAPI::findDevice() {
 					PSP_DEVICE_INTERFACE_DETAIL_DATA functionClassDeviceData;
 					//=======================================================
 
-					SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, NULL, 0, &requiredSize, NULL);
+					SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, nullptr, 0, &requiredSize, nullptr);
 
 					functionClassDeviceData = (PSP_DEVICE_INTERFACE_DETAIL_DATA) malloc (requiredSize);
 					memset(functionClassDeviceData, 0, requiredSize);
 					functionClassDeviceData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
-					if (! SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,functionClassDeviceData,requiredSize,NULL,NULL)) {
+					if (! SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,functionClassDeviceData,requiredSize,nullptr,nullptr)) {
 						free(functionClassDeviceData);
 						printf("failed here ..");
 						break;
@@ -550,12 +550,12 @@ void ChinavisionAPI::cleanUp() {
 
 	if(m_deviceHandle) {
 		CloseHandle(m_deviceHandle);
-		m_deviceHandle = NULL;
+		m_deviceHandle = nullptr;
 	}
 
 	if (m_usbHandle) {
 		WinUsb_Free(m_usbHandle);
-		m_usbHandle = NULL;
+		m_usbHandle = nullptr;
 	}
 }
 

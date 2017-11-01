@@ -9,7 +9,7 @@ class InputPlugin : public CDialog
 	DECLARE_DYNAMIC(InputPlugin)
 
 public:
-	InputPlugin(CWnd* pParent = NULL);   // standard constructor
+	InputPlugin(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~InputPlugin();
 
 	enum { IDD = IDD_DIALOG1 };

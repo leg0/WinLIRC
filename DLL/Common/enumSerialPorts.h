@@ -18,7 +18,7 @@ inline void enumSerialPorts(HWND hwnd, int idcCombo)
     std::vector<TCHAR> devices(1024, 0);
     while (devices.size() < 1024 * 1024) // guard against allocating too much memory
     {
-        DWORD size = ::QueryDosDevice(NULL, &devices[0], devices.size());
+        DWORD size = ::QueryDosDevice(nullptr, &devices[0], devices.size());
         if (size == 0 && ::GetLastError() == ERROR_INSUFFICIENT_BUFFER)
             devices.resize(devices.size() * 2);
         else

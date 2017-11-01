@@ -40,13 +40,13 @@
 //
 static inline ir_code get_ir_code(struct ir_ncode *ncode, struct ir_code_node *node)
 {
-	if(ncode->next && node != NULL) return node->code;
+	if(ncode->next && node != nullptr) return node->code;
 	return ncode->code;
 }
 
 static inline struct ir_code_node *get_next_ir_code_node(struct ir_ncode *ncode, struct ir_code_node *node)
 {
-	if(node == NULL) return ncode->next;
+	if(node == nullptr) return ncode->next;
 	return node->next;
 }
 
@@ -337,7 +337,7 @@ static inline int expect_at_most(struct ir_remote *remote,
 
 static inline struct ir_remote* get_remote_by_name(struct ir_remote* remotes, const char *name)
 {
-	while (remotes!=NULL && _stricmp(name,remotes->name)) {
+	while (remotes!=nullptr&& _stricmp(name,remotes->name)) {
 		remotes = remotes->next;
 	}
 
@@ -346,7 +346,7 @@ static inline struct ir_remote* get_remote_by_name(struct ir_remote* remotes, co
 
 static inline struct ir_ncode* get_code_by_name(struct ir_ncode *codes, const char *name)
 {
-	while (codes->name!=NULL && _stricmp(name,codes->name)) {
+	while (codes->name!=nullptr&& _stricmp(name,codes->name)) {
 		codes++;	// linked list would have been easier .. 
 	}
 

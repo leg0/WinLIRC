@@ -35,9 +35,9 @@ DWORD WINAPI IRMan(void *recieveClass) {
 
 SendReceiveData::SendReceiveData() {
 
-	m_threadHandle		= NULL;
-	m_exitEvent			= NULL;
-	m_overlappedEvent	= NULL;
+	m_threadHandle		= nullptr;
+	m_exitEvent			= nullptr;
+	m_overlappedEvent	= nullptr;
 
 	memset(&m_overlapped,0,sizeof(OVERLAPPED));
 }
@@ -52,7 +52,7 @@ bool SendReceiveData::init() {
 	m_count	= 0;
 	irCode	= 0;
 
-	gettimeofday(&end,NULL);	// initialise
+	gettimeofday(&end,nullptr);	// initialise
 
 	_sntprintf(comPortName,_countof(comPortName),_T("\\\\.\\COM%i"),settings.getComPort());
 
@@ -114,10 +114,10 @@ bool SendReceiveData::init() {
 
 	m_serial.SetMask(CSerial::EEventRecv);
 	
-	m_exitEvent			= CreateEvent(NULL,FALSE,FALSE,NULL);
-	m_overlappedEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
+	m_exitEvent			= CreateEvent(nullptr,FALSE,FALSE,nullptr);
+	m_overlappedEvent	= CreateEvent(nullptr,FALSE,FALSE,nullptr);
 	m_overlapped.hEvent	= m_overlappedEvent;
-	m_threadHandle		= CreateThread(NULL,0,IRMan,(void *)this,0,NULL);
+	m_threadHandle		= CreateThread(nullptr,0,IRMan,(void *)this,0,nullptr);
 
 	if(m_threadHandle) {
 		return true;
@@ -138,7 +138,7 @@ bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())
@@ -206,7 +206,7 @@ void SendReceiveData::receiveLoop() {
 			if (!(eEvent & CSerial::EEventRecv)) { DPRINTF("wrong event\n"); continue; }
 
 			if(m_count==0) {
-				gettimeofday(&start,NULL);
+				gettimeofday(&start,nullptr);
 			}
 
 			if(m_serial.Read(buffer+m_count,sizeof(buffer)-m_count,&dwBytesRead)!=ERROR_SUCCESS) {
@@ -231,7 +231,7 @@ void SendReceiveData::receiveLoop() {
 
 				LeaveCriticalSection(&criticalSection);
 
-				gettimeofday(&end,NULL);
+				gettimeofday(&end,nullptr);
 
 				SetEvent(dataReadyEvent);
 			}

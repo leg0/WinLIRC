@@ -35,7 +35,7 @@ There's no thread checking, but oh well. What's the worst that could happen ? :D
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-SendReceiveData *sendRec = NULL;	// this wont work if we have multiple instances, but we don't so no worries
+SendReceiveData *sendRec = nullptr;	// this wont work if we have multiple instances, but we don't so no worries
 
 DWORD WINAPI FireFly(void *recieveClass) {
 
@@ -45,10 +45,10 @@ DWORD WINAPI FireFly(void *recieveClass) {
 
 SendReceiveData::SendReceiveData() {
 
-	threadHandle	= NULL;
-	exitEvent		= NULL;
-	windowHandle	= NULL;
-	rawInputDevice	= NULL;
+	threadHandle	= nullptr;
+	exitEvent		= nullptr;
+	windowHandle	= nullptr;
+	rawInputDevice	= nullptr;
 
 	sendRec			= this;
 }
@@ -67,7 +67,7 @@ BOOL SendReceiveData::init() {
 	irCode			= 0;
 	irLastCode		= 0;
 	repeats			= 0;
-	rawInputDevice	= NULL;
+	rawInputDevice	= nullptr;
 
 	if(FindKnownHidDevices(&devices,&numberOfDevices)) {
 
@@ -92,7 +92,7 @@ BOOL SendReceiveData::init() {
 
 		if(OpenHidDevice(deviceName,TRUE,TRUE,TRUE,FALSE,&device)) {
 
-			threadHandle = CreateThread(NULL,0,FireFly,(void *)this,0,NULL);
+			threadHandle = CreateThread(nullptr,0,FireFly,(void *)this,0,nullptr);
 
 			if(threadHandle) {
 
@@ -124,8 +124,8 @@ void SendReceiveData::threadProc() {
 
 	memset(&overlappedRead,0,sizeof(OVERLAPPED));
 
-	overlappedRead.hEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
-	exitEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+	overlappedRead.hEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
+	exitEvent = CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	events[0] = overlappedRead.hEvent;
 	events[1] = exitEvent;
@@ -170,7 +170,7 @@ bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(irCode==0)
@@ -275,9 +275,9 @@ LRESULT CALLBACK WndProc(	HWND	hWnd,			// Handle For This Window
 			//====================
 
 			size	= 0;
-			data	= NULL;
+			data	= nullptr;
 
-			result = GetRawInputData((HRAWINPUT)lParam,RID_INPUT,NULL,&size,sizeof(RAWINPUTHEADER));
+			result = GetRawInputData((HRAWINPUT)lParam,RID_INPUT,nullptr,&size,sizeof(RAWINPUTHEADER));
 
 			if(result<0) return 0;	// failed somehow
 
@@ -343,16 +343,16 @@ void SendReceiveData::createWindow() {
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= (HINSTANCE)(&__ImageBase);
-	wcex.hIcon			= NULL;
-	wcex.hCursor		= NULL;
-	wcex.hbrBackground	= NULL;
-	wcex.lpszMenuName	= NULL;
+	wcex.hIcon			= nullptr;
+	wcex.hCursor		= nullptr;
+	wcex.hbrBackground	= nullptr;
+	wcex.lpszMenuName	= nullptr;
 	wcex.lpszClassName	= _T("FireFlyReceiveWindow");
-	wcex.hIconSm		= NULL;
+	wcex.hIconSm		= nullptr;
 
 	RegisterClassEx(&wcex);
 
-	windowHandle = CreateWindowEx(0,_T("FireFlyReceiveWindow"),_T("FireFly"),WS_POPUP,0,0,1,1,NULL,NULL,(HINSTANCE)(&__ImageBase),NULL);
+	windowHandle = CreateWindowEx(0,_T("FireFlyReceiveWindow"),_T("FireFly"),WS_POPUP,0,0,1,1,nullptr,nullptr,(HINSTANCE)(&__ImageBase),nullptr);
 }
 
 void SendReceiveData::destroyWindow() {
@@ -360,7 +360,7 @@ void SendReceiveData::destroyWindow() {
 	DestroyWindow	(windowHandle);
 	UnregisterClass	("FireFlyReceiveWindow",(HINSTANCE)(&__ImageBase));
 
-	windowHandle = NULL;
+	windowHandle = nullptr;
 }
 
 BOOL SendReceiveData::registerRawDevice() {
@@ -373,10 +373,10 @@ BOOL SendReceiveData::registerRawDevice() {
 	//=============================
 
 	numberOfDevices = 0;
-	deviceList		= NULL;
+	deviceList		= nullptr;
 	deviceFound		= false;
 
-	result = GetRawInputDeviceList(NULL,&numberOfDevices,sizeof(RAWINPUTDEVICELIST));
+	result = GetRawInputDeviceList(nullptr,&numberOfDevices,sizeof(RAWINPUTDEVICELIST));
 
 	if(result<0) return false;	//error
 
@@ -397,10 +397,10 @@ BOOL SendReceiveData::registerRawDevice() {
 		//===============
 
 		size		= 0;
-		deviceName	= NULL;
+		deviceName	= nullptr;
 		result		= 0;
 
-		result = GetRawInputDeviceInfo(deviceList[i].hDevice,RIDI_DEVICENAME,NULL,&size);
+		result = GetRawInputDeviceInfo(deviceList[i].hDevice,RIDI_DEVICENAME,nullptr,&size);
 
 		if(result<0) continue;
 

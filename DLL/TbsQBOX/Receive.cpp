@@ -13,14 +13,14 @@ DWORD WINAPI IRReader(void *recieveClass) {
 }
 
 Receive::Receive() {
-	threadHandle		= NULL;
-	m_pKsTunerPropSet	= NULL;
+	threadHandle		= nullptr;
+	m_pKsTunerPropSet	= nullptr;
 	bufferStart			= 0;
 	bufferEnd			= 0;
 	last_key			= 0;
 	repeats				= 0;
 
-	CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	CoInitializeEx(nullptr,COINIT_MULTITHREADED);
 }
 
 Receive::~Receive(){
@@ -36,12 +36,12 @@ int Receive::init(int devNum, unsigned minRepeat)
 	int devCount=0;
 
 	// create system device enumerator
-	CComPtr <ICreateDevEnum>	pSysDevEnum = NULL;	
+	CComPtr <ICreateDevEnum>	pSysDevEnum = nullptr;	
 	HRESULT hr = pSysDevEnum.CoCreateInstance(CLSID_SystemDeviceEnum);
 	if (hr == S_OK)
 	{
 		// create a class enumerator for the desired category defined by classGuid.
-		CComPtr <IEnumMoniker> pEnumCat = NULL;	//moniker enumerator for filter categories
+		CComPtr <IEnumMoniker> pEnumCat = nullptr;	//moniker enumerator for filter categories
 		hr = pSysDevEnum->CreateClassEnumerator(KSCATEGORY_BDA_NETWORK_TUNER, &pEnumCat, 0);
 		if (hr == S_OK)
 		{
@@ -50,17 +50,17 @@ int Receive::init(int devNum, unsigned minRepeat)
 
 			// now iterate through enumeration
 			ULONG cFetched = 0;
-			CComPtr <IMoniker> pMoniker = NULL;
+			CComPtr <IMoniker> pMoniker = nullptr;
 
 			// get a pointer to each moniker
 			while(pEnumCat->Next(1, &pMoniker, &cFetched) == S_OK)
 			{
-				CComPtr <IBaseFilter> pFilter = NULL;
+				CComPtr <IBaseFilter> pFilter = nullptr;
 				// create an instance of the filter
 				hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pFilter);
 				if (hr == S_OK)
 				{							
-					m_pKsTunerPropSet = NULL;
+					m_pKsTunerPropSet = nullptr;
 					// query for interface
 					hr = pFilter->QueryInterface(IID_IKsPropertySet, (void **)&m_pKsTunerPropSet);
 					if (m_pKsTunerPropSet)
@@ -84,8 +84,8 @@ int Receive::init(int devNum, unsigned minRepeat)
 
 	if FAILED(hr) return 0;
 
-	threadHandle = CreateThread(NULL,0,IRReader,(void *)this,0,NULL);
-	return threadHandle!=NULL;
+	threadHandle = CreateThread(nullptr,0,IRReader,(void *)this,0,nullptr);
+	return threadHandle!=nullptr;
 }
 
 void Receive::deinit()
@@ -122,7 +122,7 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())
@@ -144,9 +144,9 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 void Receive::threadProc() {
 
-	CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	CoInitializeEx(nullptr,COINIT_MULTITHREADED);
 
-	exitEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+	exitEvent = CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	while(TRUE) {
 		Sleep(100);
@@ -156,7 +156,7 @@ void Receive::threadProc() {
 		// make call into driver
 		HRESULT hr = m_pKsTunerPropSet->Get(KSPROPERTYSET_QBOXControl,
 			KSPROPERTY_CTRL_IR,
-			NULL, 0,
+			nullptr, 0,
 			&ir_data, sizeof(ir_data),
 			&bytesReturned);
 

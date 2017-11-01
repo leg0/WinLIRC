@@ -46,7 +46,7 @@ void RedirectIOToConsole() {
 
 	*stdout = *fp;
 
-	setvbuf( stdout, NULL, _IONBF, 0 );
+	setvbuf( stdout, nullptr, _IONBF, 0 );
 
 	// redirect unbuffered STDIN to the console
 
@@ -58,7 +58,7 @@ void RedirectIOToConsole() {
 
 	*stdin = *fp;
 
-	setvbuf( stdin, NULL, _IONBF, 0 );
+	setvbuf( stdin, nullptr, _IONBF, 0 );
 
 	// redirect unbuffered STDERR to the console
 
@@ -70,7 +70,7 @@ void RedirectIOToConsole() {
 
 	*stderr = *fp;
 
-	setvbuf( stderr, NULL, _IONBF, 0 );
+	setvbuf( stderr, nullptr, _IONBF, 0 );
 
 	
 	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog 

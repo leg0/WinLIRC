@@ -25,7 +25,7 @@ WL_API int init(HANDLE exitEvent) {
 	initHardwareStruct();
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	receive = new Receive();
 	return receive->init(settings.getDeviceNumber(),settings.getBusyLED(),settings.getPowerLED());
@@ -36,12 +36,12 @@ WL_API void deinit() {
 	if(receive) {
 		receive->deinit();
 		delete receive;
-		receive = NULL;
+		receive = nullptr;
 	}
 
 	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
-	threadExitEvent = NULL;
+	threadExitEvent = nullptr;
 }
 
 WL_API int hasGui() {
@@ -144,7 +144,7 @@ WL_API void	loadSetupGui() {
     INT		status;
 	//==============
 
-	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),NULL,dialogProc);
+	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),nullptr,dialogProc);
 
     while ((status = GetMessage (& msg, 0, 0, 0)) != 0) {
 

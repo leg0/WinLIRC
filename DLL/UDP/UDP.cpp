@@ -43,7 +43,7 @@ WL_API int init(HANDLE exitEvent) {
 	initHardwareStruct();
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	server = new Server();
 	success = server->init();
@@ -56,12 +56,12 @@ WL_API void deinit() {
 	if(server) {
 		server->deinit();
 		delete server;
-		server = NULL;
+		server = nullptr;
 	}
 
 	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
-	threadExitEvent = NULL;
+	threadExitEvent = nullptr;
 }
 
 WL_API int hasGui() {

@@ -13,14 +13,14 @@ DWORD WINAPI IRReader(void *recieveClass) {
 }
 
 Receive::Receive() {
-	threadHandle	= NULL;
-	m_pKsVCPropSet	= NULL;
+	threadHandle	= nullptr;
+	m_pKsVCPropSet	= nullptr;
 	bufferStart		= 0;
 	bufferEnd		= 0;
 	last_key		= 0;
 	repeats			= 0;
 
-	CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	CoInitializeEx(nullptr,COINIT_MULTITHREADED);
 }
 
 Receive::~Receive(){
@@ -36,12 +36,12 @@ int Receive::init(int devNum, unsigned minRepeat)
 	int devCount=0;
 
 	// create system device enumerator
-	CComPtr <ICreateDevEnum>	pSysDevEnum = NULL;	
+	CComPtr <ICreateDevEnum>	pSysDevEnum = nullptr;	
 	HRESULT hr = pSysDevEnum.CoCreateInstance(CLSID_SystemDeviceEnum);
 	if (hr == S_OK)
 	{
 		// create a class enumerator for the desired category defined by classGuid.
-		CComPtr <IEnumMoniker> pEnumCat = NULL;	//moniker enumerator for filter categories
+		CComPtr <IEnumMoniker> pEnumCat = nullptr;	//moniker enumerator for filter categories
 		hr = pSysDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnumCat, 0);
 		if (hr == S_OK)
 		{
@@ -50,17 +50,17 @@ int Receive::init(int devNum, unsigned minRepeat)
 
 			// now iterate through enumeration
 			ULONG cFetched = 0;
-			CComPtr <IMoniker> pMoniker = NULL;
+			CComPtr <IMoniker> pMoniker = nullptr;
 
 			// get a pointer to each moniker
 			while(pEnumCat->Next(1, &pMoniker, &cFetched) == S_OK)
 			{
-				CComPtr <IBaseFilter> pFilter = NULL;
+				CComPtr <IBaseFilter> pFilter = nullptr;
 				// create an instance of the filter
 				hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pFilter);
 				if (hr == S_OK)
 				{							
-					m_pKsVCPropSet = NULL;
+					m_pKsVCPropSet = nullptr;
 					// query for interface
 					hr = pFilter->QueryInterface(IID_IKsPropertySet, (void **)&m_pKsVCPropSet);
 					if (m_pKsVCPropSet)
@@ -93,8 +93,8 @@ int Receive::init(int devNum, unsigned minRepeat)
 
 	if FAILED(hr) return 0;
 
-	threadHandle = CreateThread(NULL,0,IRReader,(void *)this,0,NULL);
-	return threadHandle!=NULL;
+	threadHandle = CreateThread(nullptr,0,IRReader,(void *)this,0,nullptr);
+	return threadHandle!=nullptr;
 }
 
 void Receive::deinit()
@@ -131,7 +131,7 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())
@@ -153,9 +153,9 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 void Receive::threadProc() {
 
-	CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	CoInitializeEx(nullptr,COINIT_MULTITHREADED);
 
-	exitEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+	exitEvent = CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	BYTE addr=0, cmd=0, count=0;
 

@@ -40,9 +40,9 @@ unsigned int IRThread(void *drv) {
 
 CIRDriver::CIRDriver()
 {
-	hPort			= NULL;
-	IRThreadHandle	= NULL;
-	hDataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	hPort			= nullptr;
+	IRThreadHandle	= nullptr;
+	hDataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 	
 	bufferStart		= 0;
 	bufferEnd		= 0;
@@ -70,7 +70,7 @@ bool CIRDriver::InitPort()
 		SetEvent(ov.hEvent);	// singal it
 		Sleep(100);				// wait a tiny bit
 		CloseHandle(ov.hEvent);	// and close it
-		ov.hEvent=NULL;
+		ov.hEvent=nullptr;
 	}
 
 	if(hPort)
@@ -78,14 +78,14 @@ bool CIRDriver::InitPort()
 		SetCommMask(hPort,0);	// stop any waiting on the port
 		Sleep(100);				// wait a tiny bit
 		CloseHandle(hPort);		// and close it
-		hPort=NULL;
+		hPort=nullptr;
 	}
 
 	if((hPort=CreateFile(
 		settings.port,GENERIC_READ | GENERIC_WRITE,
 		0,0,OPEN_EXISTING,FILE_FLAG_OVERLAPPED,0))==INVALID_HANDLE_VALUE)
 	{
-		hPort=NULL;
+		hPort=nullptr;
 		return false;
 	}
 
@@ -93,7 +93,7 @@ bool CIRDriver::InitPort()
 	if(!GetCommState(hPort,&dcb))
 	{
 		CloseHandle(hPort);
-		hPort=NULL;
+		hPort=nullptr;
 		return false;
 	}
 	if (settings.animax) dcb.fDtrControl=DTR_CONTROL_ENABLE; //set DTR high, the animax receiver needs this for power
@@ -108,7 +108,7 @@ bool CIRDriver::InitPort()
 	if(!SetCommState(hPort,&dcb))
 	{
 		CloseHandle(hPort);
-		hPort=NULL;
+		hPort=nullptr;
 		//DEBUG("SetCommState failed.\n");
 		return false;
 	}
@@ -123,7 +123,7 @@ bool CIRDriver::InitPort()
 		if(!GetCommModemStatus(hPort,&state))
 		{
 			CloseHandle(hPort);
-			hPort=NULL;
+			hPort=nullptr;
 			return false;
 		}
 		sense=(state & MS_RLSD_ON) ? 1 : 0;
@@ -132,10 +132,10 @@ bool CIRDriver::InitPort()
 	else
 		sense = settings.sense;
 
-	if((ov.hEvent=CreateEvent(NULL,TRUE,FALSE,NULL))==NULL)
+	if((ov.hEvent=CreateEvent(nullptr,TRUE,FALSE,nullptr))==nullptr)
 	{
 		CloseHandle(hPort);
-		hPort=NULL;
+		hPort=nullptr;
 		return false;
 	}
 
@@ -143,11 +143,11 @@ bool CIRDriver::InitPort()
 	/* THREAD_PRIORITY_TIME_CRITICAL combined with the REALTIME_PRIORITY_CLASS */
 	/* of this program results in the highest priority (26 out of 31) */
 	if((IRThreadHandle=
-		AfxBeginThread(IRThread,(void *)this,THREAD_PRIORITY_TIME_CRITICAL))==NULL)
+		AfxBeginThread(IRThread,(void *)this,THREAD_PRIORITY_TIME_CRITICAL))==nullptr)
 	{
 		CloseHandle(hPort);
 		CloseHandle(ov.hEvent);
-		hPort=ov.hEvent=NULL;
+		hPort=ov.hEvent=nullptr;
 		return false;
 	}
 
@@ -164,11 +164,11 @@ void CIRDriver::ResetPort(void)
 	
 	if(ov.hEvent) {
 		CloseHandle(ov.hEvent);
-		ov.hEvent=NULL;
+		ov.hEvent=nullptr;
 	}
 	if(hPort) {
 		CloseHandle(hPort);
-		hPort=NULL;
+		hPort=nullptr;
 	}
 }
 
@@ -328,7 +328,7 @@ bool CIRDriver::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={hDataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())

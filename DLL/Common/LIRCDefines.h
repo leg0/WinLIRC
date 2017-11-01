@@ -246,13 +246,13 @@ struct ir_remote
 //
 static inline ir_code get_ir_code(struct ir_ncode *ncode, struct ir_code_node *node)
 {
-	if(ncode->next && node != NULL) return node->code;
+	if(ncode->next && node != nullptr) return node->code;
 	return ncode->code;
 }
 
 static inline struct ir_code_node *get_next_ir_code_node(struct ir_ncode *ncode, struct ir_code_node *node)
 {
-	if(node == NULL) return ncode->next;
+	if(node == nullptr) return ncode->next;
 	return node->next;
 }
 

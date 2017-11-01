@@ -23,7 +23,7 @@
 #include "SendReceive.h"
 #include "../Common/WLPluginAPI.h"
 
-SendReceive *sendReceive = NULL;
+SendReceive *sendReceive = nullptr;
 
 WL_API int init(HANDLE exitEvent) {
 
@@ -37,7 +37,7 @@ WL_API void deinit() {
 	if(sendReceive) {
 		sendReceive->deinit();
 		delete sendReceive;
-		sendReceive = NULL;
+		sendReceive = nullptr;
 	}
 }
 

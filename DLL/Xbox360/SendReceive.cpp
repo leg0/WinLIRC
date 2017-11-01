@@ -11,16 +11,16 @@ DWORD WINAPI XBThread(void *recieveClass) {
 
 SendReceive::SendReceive() {
 
-	m_threadHandle		= NULL;
-	m_dataReadyEvent	= NULL;
-	m_threadExitEvent	= NULL;
+	m_threadHandle		= nullptr;
+	m_dataReadyEvent	= nullptr;
+	m_threadExitEvent	= nullptr;
 }
 
 BOOL SendReceive::init(HANDLE exit) {
 
 	m_threadExitEvent	= exit;
-	m_dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
-	m_threadHandle		= CreateThread(NULL,0,XBThread,(void *)this,0,NULL);
+	m_dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
+	m_threadHandle		= CreateThread(nullptr,0,XBThread,(void *)this,0,nullptr);
 	
 	if(m_threadHandle && m_dataReadyEvent) {
 		return TRUE;
@@ -33,7 +33,7 @@ void SendReceive::deinit() {
 
 	m_done = TRUE;
 
-	KillThread(NULL,m_threadHandle);
+	KillThread(nullptr,m_threadHandle);
 
 	SAFE_CLOSE_HANDLE(m_dataReadyEvent);
 }
@@ -90,7 +90,7 @@ bool SendReceive::waitTillDataIsReady(int maxUSecs) {
 
 	count = 2;
 
-	if(m_threadExitEvent==NULL) {
+	if(m_threadExitEvent==nullptr) {
 		count = 1;
 	}
 

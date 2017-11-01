@@ -23,7 +23,7 @@ WL_API int init(HANDLE exitEvent) {
 	initHardwareStruct();
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(nullptr,FALSE,FALSE,nullptr);
 
 	receive = new Receive();
 	return receive->init(settings.getDeviceNumber());
@@ -35,12 +35,12 @@ WL_API void deinit() {
 	if(receive) {
 		receive->deinit();
 		delete receive;
-		receive = NULL;
+		receive = nullptr;
 	}
 
 	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
-	threadExitEvent = NULL;
+	threadExitEvent = nullptr;
 }
 
 WL_API int hasGui() {
@@ -123,7 +123,7 @@ WL_API void	loadSetupGui() {
     INT		status;
 	//==============
 
-	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG_CFG),NULL,dialogProc);
+	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG_CFG),nullptr,dialogProc);
 
     while ((status = GetMessage (& msg, 0, 0, 0)) != 0) {
 
@@ -154,9 +154,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 		}
 
 		last = end;
-		gettimeofday(&start,NULL);
+		gettimeofday(&start,nullptr);
 		receive->getData(&irCode);
-		gettimeofday(&end,NULL);
+		gettimeofday(&end,nullptr);
 
 		if(decodeCommand(&hw,remotes,out)) {
 			ResetEvent(dataReadyEvent);

@@ -29,11 +29,11 @@ WL_API int init(HANDLE exitEvent) {
 		return 0;
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	InitializeCriticalSection(&criticalSection);
 
-	gettimeofday(&end,NULL); // initialise to something meaninful
+	gettimeofday(&end,nullptr); // initialise to something meaninful
 
 	if(tiraDLL.tira_start(settings.getComPort())!=TIRA_TRUE) 
 		return 0;
@@ -51,10 +51,10 @@ WL_API void deinit() {
 
 	if(dataReadyEvent) {
 		CloseHandle(dataReadyEvent);
-		dataReadyEvent = NULL;
+		dataReadyEvent = nullptr;
 	}
 
-	threadExitEvent = NULL;
+	threadExitEvent = nullptr;
 
 	DeleteCriticalSection(&criticalSection);
 }
@@ -75,7 +75,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 
 			//=========================
 			HWND dialogItem;
-			const char* version = NULL;
+			const char* version = nullptr;
 			//=========================
 
 			tiraDLL.tira_init();
@@ -110,7 +110,7 @@ BOOL CALLBACK dialogProc (HWND hwnd,
 					int temp;
 					//=======
 
-					temp = GetDlgItemInt(hwnd,IDC_EDIT1,NULL,FALSE);
+					temp = GetDlgItemInt(hwnd,IDC_EDIT1,nullptr,FALSE);
 					temp = temp - 1;
 
 					if(temp<0) temp = 0;
@@ -155,7 +155,7 @@ WL_API void	loadSetupGui() {
     INT		status;
 	//==============
 
-	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),NULL,dialogProc);
+	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),nullptr,dialogProc);
 
     while ((status = GetMessage (& msg, 0, 0, 0)) != 0) {
 
@@ -185,13 +185,13 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	last = end;
 
-	gettimeofday		(&start,NULL);
+	gettimeofday		(&start,nullptr);
 
 	if(!waitForData(0)) {
 		return 0;
 	}
 
-	gettimeofday		(&end,NULL);
+	gettimeofday		(&end,nullptr);
 
 	if(decodeCommand(&hw,remotes,out)) {
 		ResetEvent(dataReadyEvent);

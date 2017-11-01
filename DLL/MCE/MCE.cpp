@@ -36,13 +36,13 @@
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();
 extern hardware hw;
-HANDLE hMutexLockout = NULL;
+HANDLE hMutexLockout = nullptr;
 
 WL_API int init(HANDLE exitEvent) {
 
 	hMutexLockout = CreateMutex(0,FALSE,_T("WinLIRC_MCE_Plugin_Lock_Out"));
 
-	if(hMutexLockout==NULL || GetLastError()==ERROR_ALREADY_EXISTS) {
+	if(hMutexLockout==nullptr || GetLastError()==ERROR_ALREADY_EXISTS) {
 		return 0;
 	}
 
@@ -50,7 +50,7 @@ WL_API int init(HANDLE exitEvent) {
 	initHardwareStruct();
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	sendReceiveData = new SendReceiveData();
 
@@ -66,13 +66,13 @@ WL_API void deinit() {
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
 		delete sendReceiveData;
-		sendReceiveData = NULL;
+		sendReceiveData = nullptr;
 	}
 
 	SAFE_CLOSE_HANDLE(dataReadyEvent);
 	SAFE_CLOSE_HANDLE(hMutexLockout);
 
-	threadExitEvent = NULL;
+	threadExitEvent = nullptr;
 }
 
 WL_API int hasGui() {
@@ -183,7 +183,7 @@ WL_API void	loadSetupGui() {
     INT		status;
 	//==============
 
-	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),NULL,dialogProc);
+	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),nullptr,dialogProc);
 
     while ((status = GetMessage (& msg, 0, 0, 0)) != 0) {
 

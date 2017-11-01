@@ -40,7 +40,7 @@ bool waitTillDataIsReady(int maxUSecs) {
 	events[0] = dataReadyEvent;
 	events[1] = threadExitEvent;
 
-	if( threadExitEvent==NULL ) {
+	if( threadExitEvent==nullptr ) {
 		evt = 1;
 	}
 	else {
@@ -132,7 +132,7 @@ int send(ir_remote *remote, ir_ncode *code, int repeats) {
 		// send to your device for sending
 		//
 
-		if (length <= 0 || signals == NULL) {
+		if (length <= 0 || signals == nullptr) {
 			return 0;
 		}
 

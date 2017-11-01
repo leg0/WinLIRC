@@ -35,8 +35,8 @@ DWORD WINAPI MCEthread(void *recieveClass) {
 
 SendReceiveData::SendReceiveData() {
 
-	deviceHandle	= NULL;
-	exitEvent		= NULL;
+	deviceHandle	= nullptr;
+	exitEvent		= nullptr;
 
 	QueryPerformanceFrequency(&frequency);
 }
@@ -55,14 +55,14 @@ bool SendReceiveData::init() {
 
 	pipeName = irDeviceList.get().begin()->c_str();
 
-	deviceHandle = CreateFile(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+	deviceHandle = CreateFile(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE,0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
 
 	if(deviceHandle==INVALID_HANDLE_VALUE) {
 		//printf("invalid device handle\n");
 		return false;
 	}
 
-	threadHandle = CreateThread(NULL,0,MCEthread,(void *)this,0,NULL);
+	threadHandle = CreateThread(nullptr,0,MCEthread,(void *)this,0,nullptr);
 
 	if(!threadHandle) {
 		return false;
@@ -92,8 +92,8 @@ void SendReceiveData::threadProc() {
 
 	memset(&overlappedRead,0,sizeof(OVERLAPPED));
 
-	overlappedRead.hEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
-	exitEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
+	overlappedRead.hEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
+	exitEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
 
 	events[0] = overlappedRead.hEvent;
 	events[1] = exitEvent;
@@ -165,7 +165,7 @@ bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())

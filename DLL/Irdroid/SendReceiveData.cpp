@@ -37,9 +37,9 @@ SendReceiveData::SendReceiveData() {
 
 	bufferStart		= 0;
 	bufferEnd		= 0;
-	threadHandle	= NULL;
-	exitEvent		= NULL;
-	overlappedEvent	= NULL;
+	threadHandle	= nullptr;
+	exitEvent		= nullptr;
+	overlappedEvent	= nullptr;
 
 	memset(&overlapped,0,sizeof(OVERLAPPED));
 }
@@ -95,10 +95,10 @@ bool SendReceiveData::init() {
 
 	if(serial.SetupHandshaking(CSerial::EHandshakeHardware)!=ERROR_SUCCESS) return false;
 
-	exitEvent			= CreateEvent(NULL,FALSE,FALSE,NULL);
-	overlappedEvent		= CreateEvent(NULL,FALSE,FALSE,NULL);
+	exitEvent			= CreateEvent(nullptr,FALSE,FALSE,nullptr);
+	overlappedEvent		= CreateEvent(nullptr,FALSE,FALSE,nullptr);
 	overlapped.hEvent	= overlappedEvent;
-	threadHandle		= CreateThread(NULL,0,Irdroid,(void *)this,0,NULL);
+	threadHandle		= CreateThread(nullptr,0,Irdroid,(void *)this,0,nullptr);
 
 	if(threadHandle) {
 		return true;
@@ -127,7 +127,7 @@ bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())
@@ -442,7 +442,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		//
 		// Start receiving again
 		//
-		threadHandle = CreateThread(NULL,0,Irdroid,(void *)this,0,NULL);
+		threadHandle = CreateThread(nullptr,0,Irdroid,(void *)this,0,nullptr);
 
 		return success;
 	}

@@ -19,28 +19,28 @@ BOOL RegistrySettings::hidEnabled() {
 
 	size = sizeof(DWORD);
 
-	result = RegQueryValueEx(key,_T("CodeSetNum0"),NULL,NULL,NULL,NULL);
+	result = RegQueryValueEx(key,_T("CodeSetNum0"),nullptr,nullptr,nullptr,nullptr);
 
 	if(result!=ERROR_SUCCESS) {
 		RegCloseKey(key);
 		return FALSE;
 	}
 
-	result = RegQueryValueEx(key,_T("CodeSetNum0"),NULL,NULL,NULL,NULL);
+	result = RegQueryValueEx(key,_T("CodeSetNum0"),nullptr,nullptr,nullptr,nullptr);
 
 	if(result!=ERROR_SUCCESS) {
 		RegCloseKey(key);
 		return FALSE;
 	}
 
-	result = RegQueryValueEx(key,_T("CodeSetNum0"),NULL,NULL,NULL,NULL);
+	result = RegQueryValueEx(key,_T("CodeSetNum0"),nullptr,nullptr,nullptr,nullptr);
 
 	if(result!=ERROR_SUCCESS) {
 		RegCloseKey(key);
 		return FALSE;
 	}
 
-	result = RegQueryValueEx(key,_T("CodeSetNum0"),NULL,NULL,NULL,NULL);
+	result = RegQueryValueEx(key,_T("CodeSetNum0"),nullptr,nullptr,nullptr,nullptr);
 
 	if(result!=ERROR_SUCCESS) {
 		RegCloseKey(key);
@@ -72,13 +72,13 @@ BOOL RegistrySettings::setHIDState(BOOL enabled) {
 		//=========
 
 		value = 1;
-		RegSetValueEx(key, _T("CodeSetNum0"),NULL,REG_DWORD,(BYTE*)&value,sizeof(value));
+		RegSetValueEx(key, _T("CodeSetNum0"),0,REG_DWORD,(BYTE*)&value,sizeof(value));
 		value = 2;
-		RegSetValueEx(key, _T("CodeSetNum1"),NULL,REG_DWORD,(BYTE*)&value,sizeof(value));
+		RegSetValueEx(key, _T("CodeSetNum1"),0,REG_DWORD,(BYTE*)&value,sizeof(value));
 		value = 3;
-		RegSetValueEx(key, _T("CodeSetNum2"),NULL,REG_DWORD,(BYTE*)&value,sizeof(value));
+		RegSetValueEx(key, _T("CodeSetNum2"),0,REG_DWORD,(BYTE*)&value,sizeof(value));
 		value = 4;
-		RegSetValueEx(key, _T("CodeSetNum3"),NULL,REG_DWORD,(BYTE*)&value,sizeof(value));
+		RegSetValueEx(key, _T("CodeSetNum3"),0,REG_DWORD,(BYTE*)&value,sizeof(value));
 
 	}
 	else {

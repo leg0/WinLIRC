@@ -50,7 +50,7 @@ WL_API int init(HANDLE exitEvent) {
 	initHardwareStruct	();
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	success = init_commandir();
 
@@ -63,7 +63,7 @@ WL_API void deinit() {
 
 	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
-	threadExitEvent = NULL;
+	threadExitEvent = nullptr;
 }
 
 WL_API int hasGui() {

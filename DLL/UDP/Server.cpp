@@ -12,7 +12,7 @@ DWORD WINAPI ServerThread(void *server) {
 Server::Server() {
 
 	server			= INVALID_SOCKET;
-	threadHandle	= NULL;
+	threadHandle	= nullptr;
 	wEvent			= WSA_INVALID_EVENT;
 	bufferStart		= 0;
 	bufferEnd		= 0;
@@ -55,10 +55,10 @@ int Server::init() {
 	wEvent = WSACreateEvent();
 	WSAEventSelect(server, wEvent, FD_READ);
 
-	exitThread		= CreateEvent(NULL,FALSE,FALSE,NULL);
-	threadHandle	= CreateThread(NULL,0,ServerThread,(void *)this,0,NULL);
+	exitThread		= CreateEvent(nullptr,FALSE,FALSE,nullptr);
+	threadHandle	= CreateThread(nullptr,0,ServerThread,(void *)this,0,nullptr);
 
-	if(threadHandle==NULL) {
+	if(threadHandle==nullptr) {
 		//printf("failed thread\n");
 		return 0;		//thread creation failure
 	}
@@ -178,7 +178,7 @@ bool Server::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())

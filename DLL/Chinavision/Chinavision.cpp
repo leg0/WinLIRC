@@ -26,7 +26,7 @@
 #include "../Common/Linux.h"
 #include "ChinavisionAPI.h"
 
-ChinavisionAPI *chinavisionAPI = NULL;
+ChinavisionAPI *chinavisionAPI = nullptr;
 
 IG_API int init(HANDLE exitEvent) {
 
@@ -39,7 +39,7 @@ IG_API void deinit() {
 	if(chinavisionAPI) {
 		chinavisionAPI->deinit();
 		delete chinavisionAPI;
-		chinavisionAPI = NULL;
+		chinavisionAPI = nullptr;
 	}
 }
 

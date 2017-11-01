@@ -410,7 +410,7 @@ WINLIRC_API int init_send(struct ir_remote *remote,struct ir_ncode *code, int re
 		{	
 			ir_code next_code;
 			
-			if(code->transmit_state == NULL)
+			if(code->transmit_state == nullptr)
 			{
 				next_code = code->code;
 			}
@@ -432,7 +432,7 @@ WINLIRC_API int init_send(struct ir_remote *remote,struct ir_ncode *code, int re
 		}
 		else
 		{
-			if(code->signals==NULL)
+			if(code->signals==nullptr)
 			{
 				return 0;
 			}
@@ -471,16 +471,16 @@ WINLIRC_API int init_send(struct ir_remote *remote,struct ir_ncode *code, int re
 	}
 
 	// only used for two part codes
-	if(code->next != NULL)
+	if(code->next != nullptr)
 	{
-		if(code->transmit_state == NULL)
+		if(code->transmit_state == nullptr)
 		{
 			code->transmit_state = code->next;
 		}
 		else
 		{
 			code->transmit_state = code->transmit_state->next;
-			if(is_xmp(remote) && code->transmit_state == NULL)
+			if(is_xmp(remote) && code->transmit_state == nullptr)
 			{
 				code->transmit_state = code->next;
 			}
@@ -490,9 +490,9 @@ WINLIRC_API int init_send(struct ir_remote *remote,struct ir_ncode *code, int re
 	send_space(remote->min_remaining_gap);
 	flush_send_buffer();
 
-	if(remote->repeat_countdown>0 || code->transmit_state != NULL )
+	if(remote->repeat_countdown>0 || code->transmit_state != nullptr )
 	{
-		if(code->next == NULL || code->transmit_state == NULL)
+		if(code->next == nullptr || code->transmit_state == nullptr)
 		{
 			remote->repeat_countdown--;
 			repeat = 1;

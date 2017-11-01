@@ -47,7 +47,7 @@ extern "C" {
 
     #include <windows.h>
     #define PIPE_PTR HANDLE
-    #define INVALID_PIPE NULL
+    #define INVALID_PIPE nullptr
     #define IGSOCK_NAME "\\\\.\\pipe\\iguanaIR-"
 #else
     /* hate including headers from headers, but we need a bool */

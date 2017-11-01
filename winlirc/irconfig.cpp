@@ -33,7 +33,7 @@ CIRConfig::CIRConfig() {
 
 	CSingleLock lock(&CS_global_remotes,TRUE);
 	
-	global_remotes=NULL;
+	global_remotes=nullptr;
 	exitOnError = FALSE;
 }
 
@@ -43,9 +43,9 @@ CIRConfig::~CIRConfig()
 		
 	CSingleLock lock(&CS_global_remotes,TRUE);
 
-	if(global_remotes!=NULL) {
+	if(global_remotes!=nullptr) {
 		free_config(global_remotes);
-		global_remotes = NULL;
+		global_remotes = nullptr;
 	}
 	
 	WL_DEBUG("~CIRConfig done\n");
@@ -58,12 +58,12 @@ bool CIRConfig::readConfig() {
 	FILE *file;
 	//========================================
 
-	if(remoteConfig=="" || (file=_tfopen(remoteConfig,_T("r")))==NULL)	
+	if(remoteConfig=="" || (file=_tfopen(remoteConfig,_T("r")))==nullptr)	
 		return false;
 
-	if(global_remotes!=NULL) {
+	if(global_remotes!=nullptr) {
 		free_config(global_remotes);
-		global_remotes = NULL;
+		global_remotes = nullptr;
 	}
 	
 	USES_CONVERSION;
@@ -73,7 +73,7 @@ bool CIRConfig::readConfig() {
 
 	if(global_remotes==(struct ir_remote *)-1)
 	{
-		global_remotes=NULL;
+		global_remotes=nullptr;
 		WL_DEBUG("read_config returned -1\n");
 		return false;
 	}
@@ -81,19 +81,19 @@ bool CIRConfig::readConfig() {
 	/* ??? bad input causes codes to be null, but no */
 	/* error is returned from read_config. */
 	struct ir_remote *sr;
-	for(sr=global_remotes;sr!=NULL;sr=sr->next)
+	for(sr=global_remotes;sr!=nullptr;sr=sr->next)
 	{
-		if(sr->codes==NULL)
+		if(sr->codes==nullptr)
 		{
 			WL_DEBUG("read_config returned remote with null codes\n");
 			free_config(global_remotes);
-			global_remotes = NULL;
+			global_remotes = nullptr;
 
 			return false;
 		}
 	}
 
-	if(global_remotes==NULL)
+	if(global_remotes==nullptr)
 	{
 		WL_DEBUG("read_config returned null\n");
 		return false;
@@ -150,8 +150,8 @@ bool CIRConfig::readINIFile() {
 	tempPath += path;
 	tempPath += _T("\\WinLIRC.ini");
 
-	GetPrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),NULL,remoteConfigName,_countof(remoteConfigName),tempPath);
-	GetPrivateProfileString(_T("WinLIRC"),_T("Plugin"),NULL,pluginName,_countof(pluginName),tempPath);
+	GetPrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),nullptr,remoteConfigName,_countof(remoteConfigName),tempPath);
+	GetPrivateProfileString(_T("WinLIRC"),_T("Plugin"),nullptr,pluginName,_countof(pluginName),tempPath);
 
 	disableRepeats			= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableKeyRepeats"),FALSE,tempPath);
 	disableFirstKeyRepeats	= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),FALSE,tempPath);

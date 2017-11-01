@@ -21,8 +21,8 @@ DWORD WINAPI SZThread(void *recieveClass) {
 
 StreamzapAPI::StreamzapAPI() {
 
-	m_threadHandle	= NULL;
-	m_threadExitEvent	= NULL;
+	m_threadHandle	= nullptr;
+	m_threadExitEvent	= nullptr;
 
 	QueryPerformanceFrequency(&m_frequency);
 	QueryPerformanceCounter(&m_lastTime);
@@ -46,10 +46,10 @@ BOOL StreamzapAPI::init(HANDLE exit) {
 	}
 
 	m_threadExitEvent	= exit;
-	m_dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
-	m_deviceHandle		= CreateFile(m_deviceName,GENERIC_READ,0,NULL,OPEN_EXISTING,0, NULL); 
+	m_dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
+	m_deviceHandle		= CreateFile(m_deviceName,GENERIC_READ,0,nullptr,OPEN_EXISTING,0, nullptr); 
 
-	if(m_deviceHandle==NULL) {
+	if(m_deviceHandle==nullptr) {
 		goto init_fail;
 	}
 
@@ -62,12 +62,12 @@ BOOL StreamzapAPI::init(HANDLE exit) {
 		DWORD bytesRead;
 		//==============
 
-		if(!ReadFile(m_deviceHandle,&buffer,1,&bytesRead,NULL)) {
+		if(!ReadFile(m_deviceHandle,&buffer,1,&bytesRead,nullptr)) {
 			goto init_fail;
 		}
 	}
 
-	m_threadHandle = CreateThread(NULL,0,SZThread,(void *)this,0,NULL);
+	m_threadHandle = CreateThread(nullptr,0,SZThread,(void *)this,0,nullptr);
 
 	return TRUE;
 
@@ -83,11 +83,11 @@ void StreamzapAPI::deinit() {
 
 	m_exitThread = true;
 
-	KillThread(NULL,m_threadHandle);
+	KillThread(nullptr,m_threadHandle);
 
 	SAFE_CLOSE_HANDLE(m_dataReadyEvent);
 
-	m_threadExitEvent = NULL;
+	m_threadExitEvent = nullptr;
 }
 
 void StreamzapAPI::threadProc() {
@@ -99,7 +99,7 @@ void StreamzapAPI::threadProc() {
 		DWORD bytesRead;
 		//==============
 
-		ReadFile(m_deviceHandle,&buffer,1,&bytesRead,NULL);
+		ReadFile(m_deviceHandle,&buffer,1,&bytesRead,nullptr);
 		
 		if(bytesRead) {
 			//printf("buffer value %i\n",buffer);
@@ -123,7 +123,7 @@ bool StreamzapAPI::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={m_dataReadyEvent,m_threadExitEvent};
 	int evt;
-	if(m_threadExitEvent==NULL) evt=1;
+	if(m_threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())
@@ -257,7 +257,7 @@ void StreamzapAPI::findDevice() {
 	SP_DEVINFO_DATA deviceInfoData;
 	//=================================
 
-	hardwareDeviceInfo = SetupDiGetClassDevs(&GUID_CLASS_STREAMZAP,NULL,NULL,(DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
+	hardwareDeviceInfo = SetupDiGetClassDevs(&GUID_CLASS_STREAMZAP,nullptr,nullptr,(DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
 
 	if (hardwareDeviceInfo == INVALID_HANDLE_VALUE) {
 		//printf("Could not find any devices.\n");
@@ -291,13 +291,13 @@ void StreamzapAPI::findDevice() {
 					PSP_DEVICE_INTERFACE_DETAIL_DATA functionClassDeviceData;
 					//=======================================================
 
-					SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, NULL, 0, &requiredSize, NULL);
+					SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, nullptr, 0, &requiredSize, nullptr);
 
 					functionClassDeviceData = (PSP_DEVICE_INTERFACE_DETAIL_DATA) malloc (requiredSize);
 					memset(functionClassDeviceData, 0, requiredSize);
 					functionClassDeviceData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
-					if (! SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,functionClassDeviceData,requiredSize,NULL,NULL)) {
+					if (! SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,functionClassDeviceData,requiredSize,nullptr,nullptr)) {
 						free(functionClassDeviceData);
 						//printf("failed here ..");
 						break;

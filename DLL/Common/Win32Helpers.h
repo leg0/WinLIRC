@@ -2,20 +2,20 @@
 
 inline void SAFE_CLOSE_HANDLE(HANDLE& a)
 {
-    if (a != NULL)
+    if (a != nullptr)
     {
         CloseHandle(a);
-        a = NULL;
+        a = nullptr;
     }
 }
 
 template <typename T>
 inline void SAFE_RELEASE(T*& a)
 {
-    if (a != NULL) 
+    if (a != nullptr) 
     {
         a->Release();
-        a = NULL;
+        a = nullptr;
     }
 }
 

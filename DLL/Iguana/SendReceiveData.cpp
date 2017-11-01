@@ -42,7 +42,7 @@ SendReceiveData::SendReceiveData() {
 	recvDone		= 0;
 	connection		= INVALID_PIPE;
 	sendConnection	= INVALID_PIPE;
-	threadHandle	= NULL;
+	threadHandle	= nullptr;
 	currentCarrier	= -1;
 }
 
@@ -64,7 +64,7 @@ bool SendReceiveData::init() {
 
 	recvDone = 0;
 
-	threadHandle = CreateThread(NULL,0,IGThread,(void *)this,0,NULL);
+	threadHandle = CreateThread(nullptr,0,IGThread,(void *)this,0,nullptr);
 
 	if(threadHandle) {
 		return true;
@@ -76,7 +76,7 @@ bool SendReceiveData::init() {
 void SendReceiveData::deinit() {
 
 	recvDone = 1;
-	KillThread(NULL,threadHandle);
+	KillThread(nullptr,threadHandle);
 
 	if(connection!=INVALID_PIPE) {
 		iguanaClose(connection);
@@ -98,7 +98,7 @@ bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())
@@ -149,7 +149,7 @@ void SendReceiveData::receiveLoop() {
 		iguanaPacket request, response;
 		lirc_t prevCode = -1;
 
-		request = iguanaCreateRequest(IG_DEV_RECVON, 0, NULL);
+		request = iguanaCreateRequest(IG_DEV_RECVON, 0, nullptr);
 		if (iguanaWriteRequest(request, connection))
 			while(! recvDone)
 			{
@@ -159,7 +159,7 @@ void SendReceiveData::receiveLoop() {
 					response = iguanaReadResponse(connection, 1000);
 				}
 				while (!recvDone &&
-					((response == NULL)
+					((response == nullptr)
 					|| (iguanaResponseIsError(response))));
 
 				if (iguanaResponseIsError(response))
@@ -249,15 +249,15 @@ bool SendReceiveData::daemonTransaction(unsigned char code, void *value, size_t 
 
 	data = (UCHAR*)malloc(size);
 
-	if (data != NULL)
+	if (data != nullptr)
 	{
 		//====================
 		iguanaPacket request;
 		iguanaPacket response;
 		//====================
 
-		request		= NULL;
-		response	= NULL;
+		request		= nullptr;
+		response	= nullptr;
 
 		memcpy(data, value, size);
 
@@ -326,9 +326,9 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		auto const signals		= get_send_buffer_data();
 		igsignals	= (UINT*)malloc(sizeof(UINT) * length);
 
-		if (igsignals != NULL)
+		if (igsignals != nullptr)
 		{
-			iguanaPacket request, response = NULL;
+			iguanaPacket request, response = nullptr;
 
 			/* must pack the data into a unit32_t array */
 			for(x = 0; x < length; x++)

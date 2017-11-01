@@ -46,7 +46,7 @@ BOOL Cwinlirc::InitInstance() {
 		int		indexOfLastSep;
 		//=====================
 
-		GetModuleFileName(NULL, fullPath.GetBufferSetLength(MAX_PATH+1), MAX_PATH);
+		GetModuleFileName(nullptr, fullPath.GetBufferSetLength(MAX_PATH+1), MAX_PATH);
 		indexOfLastSep = fullPath.ReverseFind(_T('\\'));
 		
 		if(!SetCurrentDirectory(fullPath.Left(indexOfLastSep) + _T("\\plugins\\"))) {
@@ -77,11 +77,11 @@ BOOL Cwinlirc::InitInstance() {
 		HWND tmp;
 		//=======
 
-		tmp=FindWindow(NULL,_T("WinLIRC"));
+		tmp=FindWindow(nullptr,_T("WinLIRC"));
 
 		if(!tmp)
 		{
-			MessageBox(NULL,_T("WinLIRC is already running"),_T("WinLIRC"),MB_OK);
+			MessageBox(nullptr,_T("WinLIRC is already running"),_T("WinLIRC"),MB_OK);
 		}
 		else
 		{
@@ -112,22 +112,22 @@ BOOL Cwinlirc::InitInstance() {
 	//Process initialization and sanity checks
 	//
 	if(SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS)==0 || SetThreadPriority(THREAD_PRIORITY_IDLE)==0) {
-		MessageBox(NULL,_T("Could not set thread priority."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
+		MessageBox(nullptr,_T("Could not set thread priority."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 		return FALSE;
 	}
 	
 	if(server.startServer()==false) {
-		MessageBox(NULL,_T("Server could not be started. Try checking the port."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
+		MessageBox(nullptr,_T("Server could not be started. Try checking the port."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 	}
 
 	WL_DEBUG("Creating main dialog...\n");
 
 	dlg = new Cdrvdlg();
 
-	if(!dlg->Create(IDD_DIALOG,NULL)) {
+	if(!dlg->Create(IDD_DIALOG,nullptr)) {
 		delete dlg;
-		dlg = NULL;
-		MessageBox(NULL,_T("Program exiting."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
+		dlg = nullptr;
+		MessageBox(nullptr,_T("Program exiting."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
 		return FALSE;
 	}
 
@@ -142,7 +142,7 @@ int Cwinlirc::ExitInstance()
 {
 	if(dlg) {
 		delete dlg;
-		dlg = NULL;
+		dlg = nullptr;
 	}
 
 	return CWinApp::ExitInstance();

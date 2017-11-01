@@ -22,4 +22,4 @@
 #include <Windows.h>
 #include "Globals.h"
 
-StreamzapAPI *streamzapAPI = NULL;
+StreamzapAPI *streamzapAPI = nullptr;

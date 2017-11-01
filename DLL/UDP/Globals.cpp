@@ -21,7 +21,7 @@
 
 #include "Globals.h"
 
-HANDLE	threadExitEvent	= NULL;
-HANDLE	dataReadyEvent	= NULL;
+HANDLE	threadExitEvent	= nullptr;
+HANDLE	dataReadyEvent	= nullptr;
 
-Server *server = NULL;
+Server *server = nullptr;

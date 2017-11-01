@@ -42,7 +42,7 @@ extern hardware hw;
 //==============================
 int			formatArray[50];
 int			indexNumber = 0;
-Settings	*guiSettings = NULL;
+Settings	*guiSettings = nullptr;
 //==============================
 
 WL_API int init(HANDLE exitEvent) {
@@ -58,7 +58,7 @@ WL_API int init(HANDLE exitEvent) {
 
 	settings		= new Settings();
 	recordAudio		= new RecordAudio();
-	dataReadyEvent	= CreateEvent(NULL,TRUE,FALSE,NULL);
+	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 	threadExitEvent	= exitEvent;
 
 	initHardwareStruct();
@@ -88,17 +88,17 @@ WL_API void deinit() {
 	if(recordAudio) {
 		recordAudio->stopRecording();
 		delete recordAudio;
-		recordAudio = NULL;
+		recordAudio = nullptr;
 	}
 
 	if(settings) {
 		delete settings;
-		settings = NULL;
+		settings = nullptr;
 	}
 
 	SAFE_CLOSE_HANDLE(dataReadyEvent);
 
-	threadExitEvent = NULL;	//this one is created outside the DLL
+	threadExitEvent = nullptr;	//this one is created outside the DLL
 }
 
 WL_API int hasGui() {
@@ -450,7 +450,7 @@ WL_API void loadSetupGui() {
 
 	guiSettings = new Settings();
 
-	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),NULL,dialogProc);
+	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),nullptr,dialogProc);
 
     while ((status = GetMessage (& msg, 0, 0, 0)) != 0) {
 

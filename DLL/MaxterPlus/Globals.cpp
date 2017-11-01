@@ -22,9 +22,9 @@
 #include <Windows.h>
 #include "Globals.h"
 
-HANDLE	threadExitEvent	= NULL;
-HANDLE	dataReadyEvent	= NULL;
+HANDLE	threadExitEvent	= nullptr;
+HANDLE	dataReadyEvent	= nullptr;
 
-SendReceiveData *sendReceiveData = NULL;
+SendReceiveData *sendReceiveData = nullptr;
 
 Settings settings;

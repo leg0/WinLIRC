@@ -13,12 +13,12 @@
 
 IMPLEMENT_DYNAMIC(InputPlugin, CDialog)
 
-InputPlugin::InputPlugin(CWnd* pParent /*=NULL*/)
+InputPlugin::InputPlugin(CWnd* pParent /*=nullptr*/)
 	: CDialog(InputPlugin::IDD, pParent)
 {
-	m_hasGuiFunction		= NULL;
-	m_loadSetupGuiFunction	= NULL;
-	m_dllFile				= NULL;
+	m_hasGuiFunction		= nullptr;
+	m_loadSetupGuiFunction	= nullptr;
+	m_dllFile				= nullptr;
 }
 
 InputPlugin::~InputPlugin()
@@ -158,12 +158,12 @@ void InputPlugin::unloadDll() {
 	//
 	// make sure we have cleaned up
 	//
-	m_hasGuiFunction		= NULL;
-	m_loadSetupGuiFunction	= NULL;
+	m_hasGuiFunction		= nullptr;
+	m_loadSetupGuiFunction	= nullptr;
 
 	FreeLibrary(m_dllFile);
 
-	m_dllFile				= NULL;
+	m_dllFile				= nullptr;
 }
 
 
@@ -243,7 +243,7 @@ void InputPlugin::OnBnClickedOk() {
 
 		tmp = _tfopen(confPath,_T("r"));
 
-		if(tmp==NULL) {
+		if(tmp==nullptr) {
 			MessageBox(	_T("The configuration filename is invalid.\n")
 				_T("Please try again."),_T("Configuration Error"));
 			return;
@@ -322,7 +322,7 @@ void InputPlugin::OnBnClickedOk() {
 
 void InputPlugin::OnBnClickedBrowse() {
 
-	CFileDialog fileDlg(TRUE,NULL,NULL,OFN_PATHMUSTEXIST|OFN_NOCHANGEDIR|OFN_ENABLESIZING,NULL,this,0,TRUE);
+	CFileDialog fileDlg(TRUE,nullptr,nullptr,OFN_PATHMUSTEXIST|OFN_NOCHANGEDIR|OFN_ENABLESIZING,nullptr,this,0,TRUE);
 
 	if( fileDlg.DoModal ()==IDOK ) {
 		m_configPath.SetWindowText(fileDlg.GetPathName());
@@ -435,14 +435,14 @@ void InputPlugin::OnBnClickedCreateConfig() {
 
 	commandLine = _T("..\\IRRecord -d ") + pluginName + _T(" \"") + confPath + _T("\"");
 
-	processCreated = CreateProcess( NULL,	// No module name (use command line)
+	processCreated = CreateProcess( nullptr,	// No module name (use command line)
 		commandLine.GetBuffer(0),			// Command line
-		NULL,								// Process handle not inheritable
-		NULL,								// Thread handle not inheritable
+		nullptr,								// Process handle not inheritable
+		nullptr,								// Thread handle not inheritable
 		FALSE,								// Set handle inheritance to FALSE
 		0,									// No creation flags
-		NULL,								// Use parent's environment block
-		NULL,								// Use parent's starting directory 
+		nullptr,								// Use parent's environment block
+		nullptr,								// Use parent's starting directory 
 		&si,								// Pointer to STARTUPINFO structure
 		&pi );								// Pointer to PROCESS_INFORMATION structure
 
@@ -493,7 +493,7 @@ void InputPlugin::setStartup(bool start) {
 			TCHAR modulePath[MAX_PATH];
 			//=========================
 
-			GetModuleFileName(NULL,modulePath,_countof(modulePath));
+			GetModuleFileName(nullptr,modulePath,_countof(modulePath));
 
 			key.SetStringValue(_T("WinLIRC"),modulePath);
 		}

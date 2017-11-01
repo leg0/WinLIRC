@@ -24,5 +24,5 @@
 
 Settings settings;
 
-HANDLE	threadExitEvent	= NULL;
-HANDLE	dataReadyEvent	= NULL;
+HANDLE	threadExitEvent	= nullptr;
+HANDLE	dataReadyEvent	= nullptr;

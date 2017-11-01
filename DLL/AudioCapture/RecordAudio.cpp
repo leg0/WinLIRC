@@ -35,7 +35,7 @@ void CALLBACK waveInProc(HWAVEIN hwi,UINT uMsg,DWORD dwInstance,DWORD dwParam1,D
 
 RecordAudio::RecordAudio() {
 
-	m_hWaveIn	= NULL;
+	m_hWaveIn	= nullptr;
 	m_stop		= FALSE;
 	m_skipFirst	= TRUE;
 }
@@ -45,7 +45,7 @@ RecordAudio::~RecordAudio() {
 	closeAudioDevice();
 
 	delete analyseAudio;
-	analyseAudio = NULL;
+	analyseAudio = nullptr;
 }
 
 int RecordAudio::calcBufferSize(int frequency, int numberOfChannels) {
@@ -127,7 +127,7 @@ void RecordAudio::closeAudioDevice() {
 		unPrepareBuffers();
 		waveInClose(m_hWaveIn);
 
-		m_hWaveIn = NULL;
+		m_hWaveIn = nullptr;
 	}
 }
 

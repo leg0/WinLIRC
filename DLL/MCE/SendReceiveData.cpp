@@ -34,8 +34,8 @@ DWORD WINAPI MCEthread(void *recieveClass) {
 
 SendReceiveData::SendReceiveData() {
 
-	deviceHandle		= NULL;
-	exitEvent			= NULL;
+	deviceHandle		= nullptr;
+	exitEvent			= nullptr;
 
 	QueryPerformanceFrequency(&frequency);
 }
@@ -49,7 +49,7 @@ bool SendReceiveData::init() {
 		return false;	//no hardware
 	}
 
-	deviceHandle = CreateFile(irDeviceList.get().begin()->c_str(), GENERIC_READ | GENERIC_WRITE,0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+	deviceHandle = CreateFile(irDeviceList.get().begin()->c_str(), GENERIC_READ | GENERIC_WRITE,0, nullptr, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, nullptr);
 
 	if(deviceHandle==INVALID_HANDLE_VALUE) {
 		DPRINTF("invalid device handle.\n");
@@ -65,9 +65,9 @@ bool SendReceiveData::init() {
 		return false;
 	}
 
-	exitEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
+	exitEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
 
-	threadHandle = CreateThread(NULL,0,MCEthread,(void *)this,0,NULL);
+	threadHandle = CreateThread(nullptr,0,MCEthread,(void *)this,0,nullptr);
 
 	if(!threadHandle) {
 		return false;
@@ -106,7 +106,7 @@ void SendReceiveData::threadProc() {
 	while(true) {
 
 		interupted	= false;
-        result		= DeviceIo(IoCtrl_Receive, NULL, 0, receiveParams, receiveParamsSize, bytesRead, INFINITE, false, interupted);
+        result		= DeviceIo(IoCtrl_Receive, nullptr, 0, receiveParams, receiveParamsSize, bytesRead, INFINITE, false, interupted);
 
 		if (result) {
 			if ( bytesRead <= sizeof(ReceiveParams)) {
@@ -136,7 +136,7 @@ bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())
@@ -250,7 +250,7 @@ bool SendReceiveData::getCapabilities() {
 	DWORD bytesReturned;
 	//==================
 
-	if (!DeviceIo(IoCtrl_GetDetails, NULL, 0, &mceDeviceCapabilities, sizeof(MCEDeviceCapabilities), bytesReturned, 5000)) {
+	if (!DeviceIo(IoCtrl_GetDetails, nullptr, 0, &mceDeviceCapabilities, sizeof(MCEDeviceCapabilities), bytesReturned, 5000)) {
 		return false;
     }
 	
@@ -276,7 +276,7 @@ bool SendReceiveData::resetHardware() {
 	DWORD bytesRead;
 	//==============
 
-    if (!DeviceIo(IoCtrl_Reset, NULL, NULL, NULL, 0, bytesRead, 5000)) {
+    if (!DeviceIo(IoCtrl_Reset, nullptr, 0, nullptr, 0, bytesRead, 5000)) {
 		return false;
     }
 
@@ -293,7 +293,7 @@ bool SendReceiveData::startReceive(int portToUse, int timeout)
     parms.Receiver	= portToUse;
     parms.Timeout	= timeout;
         
-    if (!DeviceIo(IoCtrl_StartReceive, &parms, sizeof(parms), NULL, 0, bytesRead, 5000)) {
+    if (!DeviceIo(IoCtrl_StartReceive, &parms, sizeof(parms), nullptr, 0, bytesRead, 5000)) {
 		return false;
     }
 	
@@ -306,7 +306,7 @@ bool SendReceiveData::stopReceive() {
     DWORD bytesRead;
 	//==============
         
-    if (!DeviceIo(IoCtrl_StopReceive, NULL, 0, NULL, 0, bytesRead, 5000)) {
+    if (!DeviceIo(IoCtrl_StopReceive, nullptr, 0, nullptr, 0, bytesRead, 5000)) {
 		return false;
     }
     
@@ -391,7 +391,7 @@ bool SendReceiveData::getAvailableBlasters() {
 	DWORD bytesReturned;
 	//===================
 
-	if ( ! DeviceIo(IoCtrl_GetBlasters, NULL, 0, &availableBlasters, sizeof(AvailableBlasters),bytesReturned, 5000) ) {
+	if ( ! DeviceIo(IoCtrl_GetBlasters, nullptr, 0, &availableBlasters, sizeof(AvailableBlasters),bytesReturned, 5000) ) {
 		availableBlasters.Blasters = 0;
 		return false;
 	}
@@ -461,7 +461,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		//
 		// Start receiving again
 		//
-		threadHandle = CreateThread(NULL,0,MCEthread,(void *)this,0,NULL);
+		threadHandle = CreateThread(nullptr,0,MCEthread,(void *)this,0,nullptr);
 
 		return success;
 	}

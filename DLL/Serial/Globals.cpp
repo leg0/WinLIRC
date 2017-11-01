@@ -25,13 +25,13 @@
 
 Settings settings;
 App app;
-CIRDriver *irDriver = NULL;
+CIRDriver *irDriver = nullptr;
 
-HANDLE	threadExitEvent	= NULL;
+HANDLE	threadExitEvent	= nullptr;
 
 void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 {
-	while(*ThreadHandle!=NULL)
+	while(*ThreadHandle!=nullptr)
 	{
 		DWORD result=0;
 		if(GetExitCodeThread((*ThreadHandle)->m_hThread,&result)==0) 
@@ -45,7 +45,7 @@ void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 			ThreadEvent->SetEvent();
 			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,250/*INFINITE*/)) break; //maybe we just need to give it some time to quit
 			ThreadEvent->ResetEvent();
-			*ThreadHandle=NULL;
+			*ThreadHandle=nullptr;
 		}
 	}
 }

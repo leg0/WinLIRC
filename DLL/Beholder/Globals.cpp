@@ -23,10 +23,10 @@
 #include "Globals.h"
 #include "../Common/LircDefines.h"
 
-HANDLE threadExitEvent = NULL;
-HANDLE dataReadyEvent  = NULL;
+HANDLE threadExitEvent = nullptr;
+HANDLE dataReadyEvent  = nullptr;
 
-SendReceiveData *sendReceiveData = NULL;
+SendReceiveData *sendReceiveData = nullptr;
 
 CRITICAL_SECTION criticalSection;
 

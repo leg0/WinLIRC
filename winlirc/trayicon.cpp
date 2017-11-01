@@ -44,7 +44,7 @@ CTrayIcon::~CTrayIcon()
 
 void CTrayIcon::SetNotificationWnd(CWnd *notifywnd, UINT message)
 {
-	if(notifywnd==NULL || !::IsWindow(notifywnd->GetSafeHwnd()))
+	if(notifywnd==nullptr || !::IsWindow(notifywnd->GetSafeHwnd()))
 	{
 		WL_DEBUG("Invalid window\n");
 		return;
@@ -66,7 +66,7 @@ bool CTrayIcon::SetIcon(UINT uID) {
 	HICON icon;
 	//=========
 
-	icon = NULL;
+	icon = nullptr;
 
 	if(uID) {
 
@@ -74,7 +74,7 @@ bool CTrayIcon::SetIcon(UINT uID) {
 		icon=AfxGetApp()->LoadIcon(uID);
 	}
 
-	return SetIcon(icon,NULL);
+	return SetIcon(icon,nullptr);
 }
 
 bool CTrayIcon::SetIcon(HICON icon, LPCTSTR tip) {
@@ -96,7 +96,7 @@ bool CTrayIcon::SetIcon(HICON icon, LPCTSTR tip) {
 	}
 	else {
 
-		if(icondata.hIcon==NULL) {
+		if(icondata.hIcon==nullptr) {
 			return true;
 		}
 
@@ -117,7 +117,7 @@ bool CTrayIcon::SetIcon(HICON icon, LPCTSTR tip) {
 
 	ret = Shell_NotifyIcon(msg,&icondata);
 
-	if(msg==NIM_DELETE || !ret)	icondata.hIcon=NULL;
+	if(msg==NIM_DELETE || !ret)	icondata.hIcon=nullptr;
 
 	return (ret==TRUE);
 }
@@ -140,7 +140,7 @@ LRESULT CTrayIcon::OnTrayNotification(WPARAM id, LPARAM event)
 		CPoint mouse;
 		GetCursorPos(&mouse);
 		::SetForegroundWindow(icondata.hWnd);	
-		::TrackPopupMenu(submenu->m_hMenu,0,mouse.x,mouse.y,0,icondata.hWnd,NULL);
+		::TrackPopupMenu(submenu->m_hMenu,0,mouse.x,mouse.y,0,icondata.hWnd,nullptr);
 	}
 	else
 	{
@@ -152,15 +152,15 @@ LRESULT CTrayIcon::OnTrayNotification(WPARAM id, LPARAM event)
 
 bool CTrayIcon::SetStandardIcon(LPCTSTR iconname, LPCTSTR tip)
 {
-	return SetIcon(::LoadIcon(NULL,iconname),tip);
+	return SetIcon(::LoadIcon(nullptr,iconname),tip);
 }
 
 bool CTrayIcon::SetIcon(LPCTSTR resname, LPCTSTR tip)
 {
-	return SetIcon(resname?AfxGetApp()->LoadIcon(resname):NULL,tip);
+	return SetIcon(resname?AfxGetApp()->LoadIcon(resname):nullptr,tip);
 }
 
 void CTrayIcon::DisableTrayIcon() {
 
-	SetIcon((HICON)NULL,NULL);
+	SetIcon((HICON)nullptr,nullptr);
 }

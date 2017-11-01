@@ -43,7 +43,7 @@ Cserver::Cserver()
 	}
 
 	m_server = INVALID_SOCKET;
-	m_serverThreadHandle = NULL;
+	m_serverThreadHandle = nullptr;
 
 	m_winsockStart = WSAStartup(MAKEWORD(2,0),&data);
 }
@@ -67,7 +67,7 @@ bool Cserver::startServer()
 	//===========================
 
 	if(m_winsockStart!=0) { 
-		MessageBox(NULL,_T("Could not initialize Windows Sockets.\n")
+		MessageBox(nullptr,_T("Could not initialize Windows Sockets.\n")
 			_T("Note that this program requires WinSock 2.0 or higher."),_T("WinLIRC"),MB_OK);
 		return false;
 	}
@@ -101,7 +101,7 @@ bool Cserver::startServer()
 
 	// THREAD_PRIORITY_IDLE combined with the HIGH_PRIORITY_CLASS
 	// of this program still results in a really high priority. (16 out of 31)
-	if((m_serverThreadHandle = AfxBeginThread(ServerThread,(void *)this,THREAD_PRIORITY_IDLE))==NULL) {
+	if((m_serverThreadHandle = AfxBeginThread(ServerThread,(void *)this,THREAD_PRIORITY_IDLE))==nullptr) {
 		WL_DEBUG("AfxBeginThread failed\n");
 		return false;
 	}
@@ -189,7 +189,7 @@ void Cserver::ThreadProc(void)
 	WSAEventSelect(m_server,serverEvent,FD_ACCEPT);
 
 	for(i=0;i<MAX_CLIENTS;i++) {
-		clientData[i][0] = NULL;
+		clientData[i][0] = '\0';
 	}
 	
 	for(;;)
@@ -225,7 +225,7 @@ void Cserver::ThreadProc(void)
 				//================
 
 				errorMsg	= "Sorry the server is full.\n";
-				tempSocket	= accept(m_server,NULL,NULL);
+				tempSocket	= accept(m_server,nullptr,nullptr);
 				
 				::send(tempSocket,errorMsg,errorMsg.GetLength(),0);
 				closesocket(tempSocket);
@@ -233,7 +233,7 @@ void Cserver::ThreadProc(void)
 				continue;
 			}
 			
-			m_clients[i] = accept(m_server,NULL,NULL);
+			m_clients[i] = accept(m_server,nullptr,nullptr);
 
 			if(m_clients[i]==INVALID_SOCKET)
 			{
@@ -271,7 +271,7 @@ void Cserver::ThreadProc(void)
 							char *cur=clientData[i];
 							for(;;) {
 								char *nl=strchr(cur,'\n');
-								if(nl==NULL) {
+								if(nl==nullptr) {
 									if(cur!=clientData[i]) 
 										memmove(clientData[i],cur,strlen(cur)+1);
 									break;
@@ -356,14 +356,14 @@ BOOL Cserver::parseSendString(const char *string, CStringA &response) {
 
 	sender = get_remote_by_name(global_remotes,remoteName);
 
-	if(sender==NULL) {
+	if(sender==nullptr) {
 		response.Format("DATA\n1\nremote not found\n");
 		return FALSE;	
 	}
 
 	codes = get_code_by_name(sender->codes,keyName);
 
-	if(codes->name==NULL) {
+	if(codes->name==nullptr) {
 		response.Format("DATA\n1\ncode not found\n");
 		return FALSE;
 	}
@@ -404,8 +404,8 @@ BOOL Cserver::parseListString(const char *string, CStringA &response) {
 
 	CSingleLock lock(&CS_global_remotes,TRUE);
 
-	remoteName	= strtok(NULL," \t\r");
-	codeName	= strtok(NULL," \t\r");
+	remoteName	= strtok(nullptr," \t\r");
+	codeName	= strtok(nullptr," \t\r");
 	n			= 0;
 	all			= global_remotes;
 
@@ -500,7 +500,7 @@ BOOL Cserver::parseVersion(const char *string, CStringA &response) {
 	BOOL success;
 	//===========
 
-	if (strtok(NULL," \t\r")==NULL) {
+	if (strtok(nullptr," \t\r")==nullptr) {
 		success = TRUE;
 		USES_CONVERSION;
 		response.Format("DATA\n1\n%s\n",T2A(id));
@@ -522,11 +522,11 @@ BOOL Cserver::parseTransmitters(const char *string, CStringA &response) {
 	BOOL	success;
 	//=========================
 
-	transmitterNumber	= NULL;
+	transmitterNumber	= nullptr;
 	transmitterMask		= 0;
 	success				= TRUE;
 
-	while(transmitterNumber = strtok(NULL," \t\r")) {
+	while(transmitterNumber = strtok(nullptr," \t\r")) {
 
 		transNumber = atoi(transmitterNumber);
 

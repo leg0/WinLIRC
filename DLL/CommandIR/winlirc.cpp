@@ -12,7 +12,7 @@ extern "C" {
 //
 unsigned int	currentTransmitterMask	= 0x0f;
 int				doneReceiving			= 0;
-HANDLE			threadHandle			= NULL;
+HANDLE			threadHandle			= nullptr;
 
 DWORD WINAPI receiveLoop(void *x) {
 
@@ -51,7 +51,7 @@ int init_commandir()
 	hardware_setorder_by_pdata_order();
 	check_commandir_add_remove		();
 
-	threadHandle = CreateThread( NULL, 0, receiveLoop, NULL, 0, NULL );
+	threadHandle = CreateThread( nullptr, 0, receiveLoop, nullptr, 0, nullptr );
 
 	if(first_commandir_device) {
 		return 1;
@@ -72,7 +72,7 @@ void deinit_commandir() {
 		commandir_disconnect(first_commandir_device);
 	}
 
-	KillThread(NULL,threadHandle);
+	KillThread(nullptr,threadHandle);
 }
 
 
@@ -82,7 +82,7 @@ void send_lirc_buffer(unsigned char *buffer, int bytes, unsigned int frequency)
 	 * buffer is a LIRC_T packet for CommandIR
 	 * For winlirc: drop tx_signal, use sendir (the CommandIR Utils version)
 	 */
-	// struct tx_signal *new_tx_signal = NULL;
+	// struct tx_signal *new_tx_signal = nullptr;
 #define TX_BUFFER_SIZE 64
 
 	int send_status;
@@ -145,8 +145,8 @@ struct sendir * convert_lircbuffer_to_sendir(unsigned char *buffer, int bytes, u
 	/* *buffer points to a buffer that will be OVERWRITTEN; malloc our copy.
 	 * buffer is a LIRC_T packet for CommandIR
 	 */
-	struct tx_signal *new_tx_signal = NULL;		//	sendir->buffer = new_tx_signal
-	struct sendir * return_sendir = NULL;
+	struct tx_signal *new_tx_signal = nullptr;		//	sendir->buffer = new_tx_signal
+	struct sendir * return_sendir = nullptr;
 	lirc_t *oldsignal, *newsignal;
 	int x, pulse_now = 1;
 	int projected_signal_length;
@@ -166,7 +166,7 @@ struct sendir * convert_lircbuffer_to_sendir(unsigned char *buffer, int bytes, u
 	new_tx_signal->raw_signal = (char *)malloc(bytes);
 	new_tx_signal->raw_signal_len = bytes;
 	new_tx_signal->raw_signal_frequency = frequency;
-	new_tx_signal->next = NULL;
+	new_tx_signal->next = nullptr;
 
 	afPCAFOM = (float)(6000000.0 / ((frequency > 0) ? frequency : DEFAULT_FREQ));
 	aPCAFOM = (short)afPCAFOM;
@@ -231,9 +231,9 @@ int check_commandir_rec()
   int totalRec = 0;
   int thisDevNum, flagged_disconnect = 0;
   
-  if(first_commandir_device == NULL)  return 0;
+  if(first_commandir_device == nullptr)  return 0;
   
-  for(pcd = first_commandir_device; pcd != NULL; pcd = pcd->next_commandir_device) 
+  for(pcd = first_commandir_device; pcd != nullptr; pcd = pcd->next_commandir_device) 
   {
     thisDevNum = commandir_rec(pcd->cmdir_udev);
     if(thisDevNum < 0) {
@@ -257,7 +257,7 @@ void add_to_tx_pipeline(unsigned char *buffer, int bytes, unsigned int frequency
 	/* *buffer points to a buffer that will be OVERWRITTEN; malloc our copy.
 	 * buffer is a LIRC_T packet for CommandIR
 	 */
-	struct tx_signal *new_tx_signal = NULL;
+	struct tx_signal *new_tx_signal = nullptr;
 //	lirc_t *oldsignal, *newsignal;
 	int *oldsignal, *newsignal;
 	int x, pulse_now = 1;
@@ -273,7 +273,7 @@ void add_to_tx_pipeline(unsigned char *buffer, int bytes, unsigned int frequency
 	new_tx_signal->raw_signal = (char *)malloc(bytes);
 	new_tx_signal->raw_signal_len = bytes;
 	new_tx_signal->raw_signal_frequency = frequency;
-	new_tx_signal->next = NULL;
+	new_tx_signal->next = nullptr;
 
 	afPCAFOM = (float)(6000000.0 / ((frequency > 0) ? frequency : DEFAULT_FREQ));
 	aPCAFOM = (short)afPCAFOM;
@@ -321,7 +321,7 @@ void add_to_tx_pipeline(unsigned char *buffer, int bytes, unsigned int frequency
 			copy_new_signal->num_bitmask_emitters_list = pcd->num_next_enabled_emitters;
 			copy_new_signal->raw_signal_tx_bitmask = 0xff; // get_hardware_tx_bitmask(pcd);		TEMPORARILY REMOVED
 
-			copy_new_signal->next = NULL;
+			copy_new_signal->next = nullptr;
 //			set_new_signal_bitmasks(pcd, copy_new_signal);			TEMPORARILY REMOVED
 
 			// Add to units' TX tree:

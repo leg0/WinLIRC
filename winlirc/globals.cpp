@@ -49,7 +49,7 @@ void winlirc_debug(const char *file, int line, char *format, ...)
 
 /* End of Debugging stuff */
 
-struct ir_remote *global_remotes=NULL;
+struct ir_remote *global_remotes=nullptr;
 
 CCriticalSection CS_global_remotes;
 
@@ -57,7 +57,7 @@ CIRConfig config;
 
 void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 {
-	while(*ThreadHandle!=NULL)
+	while(*ThreadHandle!=nullptr)
 	{
 		DWORD result=0;
 		if(GetExitCodeThread((*ThreadHandle)->m_hThread,&result)==0) 
@@ -72,14 +72,14 @@ void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 			ThreadEvent->SetEvent();
 			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,250)) break; //maybe we just need to give it some time to quit
 			ThreadEvent->ResetEvent();
-			*ThreadHandle=NULL;
+			*ThreadHandle=nullptr;
 		}
 	}
 }
 
 void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent)
 {
-	while(*ThreadHandle!=NULL)
+	while(*ThreadHandle!=nullptr)
 	{
 		DWORD result=0;
 		if(GetExitCodeThread((*ThreadHandle)->m_hThread,&result)==0) 
@@ -97,7 +97,7 @@ void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent)
 				TerminateThread((*ThreadHandle)->m_hThread, 999);
 			}
 			ResetEvent(ThreadEvent);
-			*ThreadHandle=NULL;
+			*ThreadHandle=nullptr;
 		}
 	}
 }

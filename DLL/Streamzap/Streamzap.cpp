@@ -46,7 +46,7 @@ WL_API void deinit() {
 	if(streamzapAPI) {
 		streamzapAPI->deinit();
 		delete streamzapAPI;
-		streamzapAPI = NULL;
+		streamzapAPI = nullptr;
 	}
 }
 

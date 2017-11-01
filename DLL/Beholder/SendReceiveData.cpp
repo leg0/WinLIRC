@@ -32,8 +32,8 @@ DWORD WINAPI BeholdRC(void *recieveClass)
 
 SendReceiveData::SendReceiveData()
 {
-	threadHandle = NULL;
-	exitEvent = NULL;
+	threadHandle = nullptr;
+	exitEvent = nullptr;
 }
 
 
@@ -45,10 +45,10 @@ SendReceiveData::~SendReceiveData()
 BOOL SendReceiveData::init()
 {
 	
-	threadHandle = NULL;
-	exitEvent = NULL;
+	threadHandle = nullptr;
+	exitEvent = nullptr;
 
-	gettimeofday(&end,NULL);	// initialise
+	gettimeofday(&end,nullptr);	// initialise
 
 	if( !BTV_GetIStatus() ) {
 		MessageBox( 0, _T( "Library not found" ), _T( "Beholder" ), MB_OK | MB_ICONERROR );
@@ -75,7 +75,7 @@ BOOL SendReceiveData::init()
    */
 
    if( BTV_SelectCard() ) {
-      threadHandle = CreateThread( NULL, 0, BeholdRC, (void *)this, 0, NULL );
+      threadHandle = CreateThread( nullptr, 0, BeholdRC, (void *)this, 0, nullptr );
       if( threadHandle ) {
          return true;
       }
@@ -92,7 +92,7 @@ void SendReceiveData::deinit()
 
 void SendReceiveData::threadProc()
 {
-	exitEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+	exitEvent = CreateEvent( nullptr, TRUE, FALSE, nullptr );
 
 	if( !exitEvent )
 		return;
@@ -118,7 +118,7 @@ bool SendReceiveData::waitTillDataIsReady( int maxUSecs )
 {
 	HANDLE events[2] = { dataReadyEvent, threadExitEvent };
 	int evt;
-	if( threadExitEvent == NULL )
+	if( threadExitEvent == nullptr )
       evt = 1;
 	else
       evt = 2;
@@ -155,12 +155,12 @@ void SendReceiveData::getCode()
 	// 99% of the time it will just return zero
 	//
 
-	gettimeofday(&tempStart,NULL);
+	gettimeofday(&tempStart,nullptr);
 	tempLast = end;
 
 	tempCode = BTV_GetRCCodeEx();
 
-	gettimeofday(&tempEnd,NULL);
+	gettimeofday(&tempEnd,nullptr);
 
 	if(tempCode) {
 

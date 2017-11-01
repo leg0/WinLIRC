@@ -24,10 +24,10 @@
 #include "../Common/LircDefines.h"
 #include "Globals.h"
 
-HANDLE	threadExitEvent	= NULL;
-HANDLE	dataReadyEvent	= NULL;
+HANDLE	threadExitEvent	= nullptr;
+HANDLE	dataReadyEvent	= nullptr;
 
-ReceiveData *receiveData = NULL;
+ReceiveData *receiveData = nullptr;
 
 ir_code irCode = 0;
 

@@ -128,7 +128,7 @@ void Settings::loadSettings() {
 
 	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
 
-	GetPrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"),NULL,m_deviceName,32,currentDirectory);
+	GetPrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"),nullptr,m_deviceName,32,currentDirectory);
 
 	m_audioFormat	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("AudioFormat"),1,currentDirectory);
 	m_leftChannel	= (GetPrivateProfileInt(_T("AudioInputPlugin"),_T("LeftChannel"),1,currentDirectory)!=0);	//to shut the compiler up

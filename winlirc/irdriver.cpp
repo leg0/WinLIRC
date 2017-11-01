@@ -36,18 +36,18 @@ unsigned int DaemonThread(void* drv) {
 	
 CIRDriver::CIRDriver()
 {
-	m_dll.initFunction				= NULL;
-	m_dll.deinitFunction			= NULL;
-	m_dll.hasGuiFunction			= NULL;
-	m_dll.loadSetupGuiFunction		= NULL;
-	m_dll.sendFunction				= NULL;
-	m_dll.decodeFunction			= NULL;
-	m_dll.setTransmittersFunction	= NULL;
+	m_dll.initFunction				= nullptr;
+	m_dll.deinitFunction			= nullptr;
+	m_dll.hasGuiFunction			= nullptr;
+	m_dll.loadSetupGuiFunction		= nullptr;
+	m_dll.sendFunction				= nullptr;
+	m_dll.decodeFunction			= nullptr;
+	m_dll.setTransmittersFunction	= nullptr;
 
-	m_dll.dllFile					= NULL;
+	m_dll.dllFile					= nullptr;
 
-	m_daemonThreadHandle			= NULL;
-	m_daemonThreadEvent				= CreateEvent(NULL,TRUE,FALSE,NULL);
+	m_daemonThreadHandle			= nullptr;
+	m_daemonThreadEvent				= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 }
 
 CIRDriver::~CIRDriver()
@@ -56,11 +56,11 @@ CIRDriver::~CIRDriver()
 
 	if(m_daemonThreadEvent) {
 		CloseHandle(m_daemonThreadEvent);
-		m_daemonThreadEvent = NULL;
+		m_daemonThreadEvent = nullptr;
 	}
 
 	if(m_daemonThreadHandle) {
-		m_daemonThreadHandle = NULL;
+		m_daemonThreadHandle = nullptr;
 	}
 }
 
@@ -101,21 +101,21 @@ void CIRDriver::unloadPlugin() {
 	deinit();
 
 	// daemon thread should not be dead now.
-	ASSERT(m_daemonThreadHandle == NULL);
+	ASSERT(m_daemonThreadHandle == nullptr);
 
-	m_dll.initFunction				= NULL;
-	m_dll.deinitFunction			= NULL;
-	m_dll.hasGuiFunction			= NULL;
-	m_dll.loadSetupGuiFunction		= NULL;
-	m_dll.sendFunction				= NULL;
-	m_dll.decodeFunction			= NULL;
-	m_dll.setTransmittersFunction	= NULL;
+	m_dll.initFunction				= nullptr;
+	m_dll.deinitFunction			= nullptr;
+	m_dll.hasGuiFunction			= nullptr;
+	m_dll.loadSetupGuiFunction		= nullptr;
+	m_dll.sendFunction				= nullptr;
+	m_dll.decodeFunction			= nullptr;
+	m_dll.setTransmittersFunction	= nullptr;
 
 	if(m_dll.dllFile) {
 		FreeLibrary(m_dll.dllFile);
 	}
 
-	m_dll.dllFile					= NULL;
+	m_dll.dllFile					= nullptr;
 }
 
 BOOL CIRDriver::init() {
@@ -126,7 +126,7 @@ BOOL CIRDriver::init() {
 	deinit();
 
 	// daemon thread should be dead now.
-	ASSERT(m_daemonThreadHandle == NULL);
+	ASSERT(m_daemonThreadHandle == nullptr);
 
 	if(m_dll.initFunction) {
 		if(m_dll.initFunction(m_daemonThreadEvent)) {
@@ -149,7 +149,7 @@ void CIRDriver::deinit() {
 
 	KillThread2(&m_daemonThreadHandle,m_daemonThreadEvent);
 	// daemon thread should be dead now.
-	ASSERT(m_daemonThreadHandle == NULL);
+	ASSERT(m_daemonThreadHandle == nullptr);
 
 	if(m_dll.deinitFunction) {
 		m_dll.deinitFunction();
@@ -200,7 +200,7 @@ void CIRDriver::DaemonThreadProc(void) const {
 	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {
 
 		CSingleLock l(&m_dllLock);
-		ASSERT(m_dll.decodeFunction != NULL);
+		ASSERT(m_dll.decodeFunction != nullptr);
 		if(m_dll.decodeFunction(global_remotes,message)) {
 			l.Unlock();
 

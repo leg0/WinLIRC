@@ -1,7 +1,7 @@
 #include "Globals.h"
 
-HANDLE	threadExitEvent	= NULL;
-HANDLE	dataReadyEvent	= NULL;
+HANDLE	threadExitEvent	= nullptr;
+HANDLE	dataReadyEvent	= nullptr;
 
-Receive *receive = NULL;
+Receive *receive = nullptr;
 Settings settings;

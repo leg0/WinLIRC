@@ -45,16 +45,16 @@ ReceiveData::ReceiveData()
 {
 	bufferStart				= 0;
 	bufferEnd				= 0;
-	dataBufferSemaphore		= NULL;
+	dataBufferSemaphore		= nullptr;
 
 	nDevices				= 0;
 
 	for ( int i = 0; i < 2; i++ ) {
-		deviceHandle[i]		= NULL;
+		deviceHandle[i]		= nullptr;
 		usbHandle[i]		= INVALID_HANDLE_VALUE;
 		inPipeId[i]			= 0;
 		inMaxPacketSize[i]	= 0;
-		exitEvent[i]		= NULL;
+		exitEvent[i]		= nullptr;
 	}
 }
 
@@ -66,7 +66,7 @@ void ReceiveData::findCyberLinkDevicePaths(LPGUID  pGuid )
 	SP_DEVICE_INTERFACE_DATA		deviceInterfaceData;
 	//==========================================================
 
-    hardwareDeviceInfo = SetupDiGetClassDevs(pGuid, NULL, NULL, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
+    hardwareDeviceInfo = SetupDiGetClassDevs(pGuid, nullptr, nullptr, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
 
     if (hardwareDeviceInfo == INVALID_HANDLE_VALUE) {
 		DPRINTF("Could not find any CyberLink remote controller.");
@@ -78,19 +78,19 @@ void ReceiveData::findCyberLinkDevicePaths(LPGUID  pGuid )
 
 	for ( int i = 0; ; i++)
 	{
-		if(SetupDiEnumDeviceInterfaces (hardwareDeviceInfo, NULL, pGuid, i, &deviceInterfaceData)) {
+		if(SetupDiEnumDeviceInterfaces (hardwareDeviceInfo, nullptr, pGuid, i, &deviceInterfaceData)) {
 
 			//================================================================
 			DWORD requiredLength;
-			PSP_DEVICE_INTERFACE_DETAIL_DATA deviceInterfaceDetailData = NULL;
+			PSP_DEVICE_INTERFACE_DETAIL_DATA deviceInterfaceDetailData = nullptr;
 			//================================================================
 
-			SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, NULL, 0, &requiredLength, NULL);
+			SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, nullptr, 0, &requiredLength, nullptr);
 
 			deviceInterfaceDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA) new UCHAR[requiredLength];
 			deviceInterfaceDetailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 			
-			if(SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,deviceInterfaceDetailData,requiredLength,NULL,NULL)) {
+			if(SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,deviceInterfaceDetailData,requiredLength,nullptr,nullptr)) {
 				CyberLinkDevicePaths.push_back(deviceInterfaceDetailData->DevicePath);
 			}
 
@@ -115,7 +115,7 @@ bool ReceiveData::init()
 	WINUSB_PIPE_INFORMATION pipeInfo;
 	//====================
 
-	gettimeofday(&end,NULL);	// initialise
+	gettimeofday(&end,nullptr);	// initialise
 
 	findCyberLinkDevicePaths((LPGUID)&CYBERLINK_RC_DEVICE); 
 
@@ -124,12 +124,12 @@ bool ReceiveData::init()
 	nDevices = (int)CyberLinkDevicePaths.size();
 	if ( nDevices != 2 ) return false;	// strange, something must be wrong
 
-	dataBufferSemaphore = CreateSemaphore(NULL, 1, 1, NULL);
+	dataBufferSemaphore = CreateSemaphore(nullptr, 1, 1, nullptr);
 
 	for (int i = 0; i < nDevices; i++) {
 		pipeName = CyberLinkDevicePaths[i].c_str();
 
-		deviceHandle[i] = CreateFile(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
+		deviceHandle[i] = CreateFile(pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, nullptr);
 
 		if ( deviceHandle[i] == INVALID_HANDLE_VALUE ) {
 			DPRINTF("Invalid device handle\n");
@@ -161,7 +161,7 @@ bool ReceiveData::init()
 		if (inPipeId[i] == 0)
 			return false;
 
-		threadHandle[i] = CreateThread(NULL, 0, CyberLinkReaderThread, (void *)i, 0, NULL);
+		threadHandle[i] = CreateThread(nullptr, 0, CyberLinkReaderThread, (void *)i, 0, nullptr);
 
 		if( !threadHandle[i] ) {
 			return false;
@@ -183,7 +183,7 @@ void ReceiveData::deinit()
 
 		if ( usbHandle[i] ) {
 			WinUsb_Free(usbHandle[i]);
-			usbHandle[i] = NULL;
+			usbHandle[i] = nullptr;
 		}
 
 		SAFE_CLOSE_HANDLE(exitEvent[i]);
@@ -204,8 +204,8 @@ void ReceiveData::threadProc(int threadNumber)
 
 	memset(&overlappedRead, 0 ,sizeof(OVERLAPPED));
 
-	overlappedRead.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	exitEvent[threadNumber] = CreateEvent(NULL, FALSE, FALSE, NULL);
+	overlappedRead.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	exitEvent[threadNumber] = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
 	events[0] = overlappedRead.hEvent;
 	events[1] = exitEvent[threadNumber];
@@ -218,7 +218,7 @@ void ReceiveData::threadProc(int threadNumber)
 
 		if ( result == WAIT_OBJECT_0 ) {
 
-			gettimeofday(&start,NULL);
+			gettimeofday(&start,nullptr);
 
 			WinUsb_GetOverlappedResult(usbHandle[threadNumber], &overlappedRead, &bytesRead, FALSE);
 
@@ -236,7 +236,7 @@ void ReceiveData::threadProc(int threadNumber)
 
 			last = end;
 
-			gettimeofday(&end,NULL);
+			gettimeofday(&end,nullptr);
 
 			setData(code);
 		} else {
@@ -251,7 +251,7 @@ bool ReceiveData::waitTillDataIsReady(int maxUSecs)
 	HANDLE events[2] = { dataReadyEvent, threadExitEvent };
 	int evt;
 
-	if ( threadExitEvent == NULL)
+	if ( threadExitEvent == nullptr)
 		evt = 1;
 	else
 		evt = 2;
@@ -282,7 +282,7 @@ void ReceiveData::setData(lirc_t data)
 	} else {
 		// an error
 	}
-	ReleaseSemaphore(dataBufferSemaphore, 1, NULL);
+	ReleaseSemaphore(dataBufferSemaphore, 1, nullptr);
 	SetEvent(dataReadyEvent);
 }
 
@@ -299,7 +299,7 @@ bool ReceiveData::dataReady()
 	} else {
 		// an error
 	}
-	ReleaseSemaphore(dataBufferSemaphore, 1, NULL);
+	ReleaseSemaphore(dataBufferSemaphore, 1, nullptr);
 
 	return retval;
 }
@@ -318,7 +318,7 @@ bool ReceiveData::getData(lirc_t *out)
 	} else {
 		// an error
 	}
-	ReleaseSemaphore(dataBufferSemaphore, 1, NULL);
+	ReleaseSemaphore(dataBufferSemaphore, 1, nullptr);
 
 	return true;
 }

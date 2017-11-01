@@ -26,8 +26,8 @@
 
 Settings settings;
 
-HANDLE	threadExitEvent	= NULL;
-HANDLE	dataReadyEvent	= NULL;
+HANDLE	threadExitEvent	= nullptr;
+HANDLE	dataReadyEvent	= nullptr;
 
 CRITICAL_SECTION criticalSection;
 
@@ -35,4 +35,4 @@ struct mytimeval start,end,last;
 
 ir_code irCode = 0;
 
-SendReceiveData *sendReceiveData = NULL;
+SendReceiveData *sendReceiveData = nullptr;

@@ -31,7 +31,7 @@ class SerialDialog : public CDialog
 	DECLARE_DYNAMIC(SerialDialog)
 
 public:
-	SerialDialog(CWnd* pParent = NULL);   // standard constructor
+	SerialDialog(CWnd* pParent = nullptr);   // standard constructor
 	virtual ~SerialDialog();
 
 // Dialog Data

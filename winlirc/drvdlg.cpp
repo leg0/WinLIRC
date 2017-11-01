@@ -210,7 +210,7 @@ void Cdrvdlg::GoGreen()
 		return;
 	}
 
-	if(SetTimer(1,250,NULL)) {
+	if(SetTimer(1,250,nullptr)) {
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_RECV),_T("WinLIRC / Received Signal"));
 	}
 }
@@ -220,7 +220,7 @@ void Cdrvdlg::GoBlue()
 		return;
 	}
 
-	if(SetTimer(1,250,NULL)) {
+	if(SetTimer(1,250,nullptr)) {
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_SEND),_T("WinLIRC / Sent Signal"));
 	}
 }
@@ -367,14 +367,14 @@ void Cdrvdlg::OnSendcode()
 
 	sender = get_remote_by_name(global_remotes, remoteName);
 
-	if (sender==NULL) {
+	if (sender==nullptr) {
 		MessageBox(_T("No match found for remote!"));
 	}
 	else {
 
 		codes = get_code_by_name(sender->codes,codeName);
 
-		if (codes==NULL || codes->name==NULL) {
+		if (codes==nullptr || codes->name==nullptr) {
 			MessageBox(_T("No match found for ircode!"));
 		}
 		else {
@@ -434,7 +434,7 @@ void Cdrvdlg::UpdateRemoteComboLists()
 
 	//Fill remote combo box
 	struct ir_remote* sender=global_remotes;
-	while (sender!=NULL)
+	while (sender!=nullptr)
 	{
 		m_remote_DropDown.AddString(A2T(sender->name));
 		sender=sender->next;
@@ -463,7 +463,7 @@ void Cdrvdlg::UpdateIrCodeComboLists()
 	if (selected_remote)
 	{
 		ir_ncode* codes = selected_remote->codes;
-		while (codes && codes->name!=NULL)
+		while (codes && codes->name!=nullptr)
 		{
 			m_IrCodeEditCombo.AddString(A2T(codes->name));
 			codes++;

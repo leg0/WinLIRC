@@ -63,7 +63,7 @@ BeholdRC::BeholdRC() :
     // GetRemoteCodeEx may be absent in library. Don't check for it.
     if( !pGetCardCount || !pGetCardName || !pOpenCard || !pGetRemoteCode || !pUnInit ) {
       FreeLibrary( hLib );
-      hLib = NULL;
+      hLib = nullptr;
     }
   }
 }
@@ -82,7 +82,7 @@ BeholdRC::~BeholdRC()
 
 int BTV_GetIStatus( void )
 {
-  if( rc.hLib == NULL )
+  if( rc.hLib == nullptr )
      return 0;	// Library not found.
   if( !rc.init )
      return 1;	// WDM device not selected.

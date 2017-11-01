@@ -28,10 +28,10 @@
 #include <limits.h>
 #include "Linux.h"
 
-struct ir_remote *decoding		= NULL;
-struct ir_remote *last_remote	= NULL;
-struct ir_remote *repeat_remote	= NULL;
-struct ir_ncode *repeat_code	= NULL;
+struct ir_remote *decoding		= nullptr;
+struct ir_remote *last_remote	= nullptr;
+struct ir_remote *repeat_remote	= nullptr;
+struct ir_ncode *repeat_code	= nullptr;
 
 WINLIRC_API int map_code(struct ir_remote *remote,
 	     ir_code *prep,ir_code *codep,ir_code *postp,
@@ -188,13 +188,13 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 
 	toggle_bit_mask_state = all&remote->toggle_bit_mask;
 
-	found=NULL;
+	found=nullptr;
 	found_code=0;
 	have_code=0;
 	codes=remote->codes;
-	if(codes!=NULL)
+	if(codes!=nullptr)
 	{
-		while(codes->name!=NULL)
+		while(codes->name!=nullptr)
 		{
 			ir_code next_all;
 
@@ -204,9 +204,9 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 			if(match_ir_code(remote, next_all, all))
 			{
 				found_code=1;
-				if(codes->next!=NULL)
+				if(codes->next!=nullptr)
 				{
-					if(codes->current==NULL)
+					if(codes->current==nullptr)
 					{
 						codes->current=codes->next;
 					}
@@ -219,7 +219,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 				if(!have_code)
 				{
 					found=codes;
-					if(codes->current==NULL)
+					if(codes->current==nullptr)
 					{
 						have_code=1;
 					}
@@ -231,10 +231,10 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 				struct ir_code_node *search;
 				
 				search = codes->next;
-				if(search == NULL ||
-					(codes->next != NULL && codes->current == NULL))
+				if(search == nullptr ||
+					(codes->next != nullptr && codes->current == nullptr))
 				{
-					codes->current=NULL;
+					codes->current=nullptr;
 				}
 				else
 				{
@@ -245,7 +245,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 						struct ir_code_node *prev, *next;
 						int flag = 1;
 						
-						prev = NULL; /* means codes->code */
+						prev = nullptr; /* means codes->code */
 						next = search;
 						while(next != codes->current)
 						{
@@ -276,14 +276,14 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 						}
 						search = search->next;
 					}
-					if(!sequence_match) codes->current = NULL;
+					if(!sequence_match) codes->current = nullptr;
 				}
 			}
 			codes++;
 		}
 	}
 
-	if(found_code && found!=NULL && has_toggle_mask(remote))
+	if(found_code && found!=nullptr && has_toggle_mask(remote))
 	{
 		if(!(remote->toggle_mask_state%2))
 		{
@@ -293,10 +293,10 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 		{
 			if(found!=remote->toggle_code)
 			{
-				remote->toggle_code=NULL;
-				return(NULL);
+				remote->toggle_code=nullptr;
+				return(nullptr);
 			}
-			remote->toggle_code=NULL;
+			remote->toggle_code=nullptr;
 		}
 	}
 	*toggle_bit_mask_statep=toggle_bit_mask_state;
@@ -309,12 +309,12 @@ unsigned long long set_code(struct ir_remote *remote,struct ir_ncode *found,
 {
 	unsigned long long code;
 	struct mytimeval current;
-	static struct ir_remote *last_decoded = NULL;
+	static struct ir_remote *last_decoded = nullptr;
 
-	gettimeofday(&current,NULL);
+	gettimeofday(&current,nullptr);
 
 	if(remote==last_decoded &&
-	   (found==remote->last_code || (found->next!=NULL && found->current!=NULL)) &&
+	   (found==remote->last_code || (found->next!=nullptr && found->current!=nullptr)) &&
 	   repeat_flag &&
 	   time_elapsed(&remote->last_send,&current)<1000000 &&
 	   (!has_toggle_bit_mask(remote) || toggle_bit_mask_state==remote->toggle_bit_mask_state))
@@ -328,14 +328,14 @@ unsigned long long set_code(struct ir_remote *remote,struct ir_ncode *found,
 				remote->toggle_mask_state=2;
 			}
 		}
-		else if(found->current==NULL)
+		else if(found->current==nullptr)
 		{
 			remote->reps++;
 		}
 	}
 	else
 	{
-		if(found->next!=NULL && found->current==NULL)
+		if(found->next!=nullptr && found->current==nullptr)
 		{
 			remote->reps=1;
 		}
@@ -355,7 +355,7 @@ unsigned long long set_code(struct ir_remote *remote,struct ir_ncode *found,
 	}
 	last_remote=remote;
 	last_decoded=remote;
-	if(found->current==NULL) remote->last_code=found;
+	if(found->current==nullptr) remote->last_code=found;
 	remote->last_send=current;
 	remote->min_remaining_gap=min_remaining_gap;
 	remote->max_remaining_gap=max_remaining_gap;
@@ -428,17 +428,17 @@ bool decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *
 				      max_remaining_gap);
 			if((has_toggle_mask(remote) &&
 			    remote->toggle_mask_state%2) ||
-			   ncode->current!=NULL)
+			   ncode->current!=nullptr)
 			{
-				decoding=NULL;
-				return(NULL);
+				decoding=nullptr;
+				return(nullptr);
 			}
 
-			for(scan = decoding; scan != NULL; scan = scan->next)
+			for(scan = decoding; scan != nullptr; scan = scan->next)
 			{
-				for( scan_ncode = scan->codes; scan_ncode->name != NULL; scan_ncode++)
+				for( scan_ncode = scan->codes; scan_ncode->name != nullptr; scan_ncode++)
 				{
-					scan_ncode->current = NULL;
+					scan_ncode->current = nullptr;
 				}
 			}
 			if(is_xmp(remote))
@@ -450,7 +450,7 @@ bool decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *
 					    remote->name,
 					    remote->last_code->name, "", code,
 					    remote->reps-(ncode->next ? 1:0));
-			decoding=NULL;
+			decoding=nullptr;
 			if(len>=PACKET_SIZE+1)
 			{
 				return false;
@@ -467,8 +467,8 @@ bool decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *
 		remote->toggle_mask_state=0;
 		remote=remote->next;
 	}
-	decoding=NULL;
-	last_remote=NULL;
+	decoding=nullptr;
+	last_remote=nullptr;
 
 	return false;
 }

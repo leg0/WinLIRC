@@ -11,17 +11,17 @@ DWORD WINAPI IRReader(void *recieveClass) {
 }
 
 Receive::Receive() {
-	m_pFilter				= NULL;
-	m_pIB2C2MPEG2TunerCtrl	= NULL;
-	m_pIB2C2MPEG2DataCtrl	= NULL;
-	m_pIB2C2MPEG2AvCtrl		= NULL;
+	m_pFilter				= nullptr;
+	m_pIB2C2MPEG2TunerCtrl	= nullptr;
+	m_pIB2C2MPEG2DataCtrl	= nullptr;
+	m_pIB2C2MPEG2AvCtrl		= nullptr;
 
 	DevID			= -1;
-	threadHandle	= NULL;
+	threadHandle	= nullptr;
 	bufferStart		= 0;
 	bufferEnd		= 0;
 	// Initialize COM.
-	CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	CoInitializeEx(nullptr,COINIT_MULTITHREADED);
 }
 
 Receive::~Receive() {
@@ -38,7 +38,7 @@ int Receive::init(int deviceID) {
 	{
 		// Create B2C2 Filter, which is the upstream source filter.
 		hr = CoCreateInstance (CLSID_B2C2MPEG2Filter,
-										NULL,
+										nullptr,
 										CLSCTX_INPROC,
 										IID_IBaseFilter,
 										(void **)&m_pFilter);
@@ -87,9 +87,9 @@ int Receive::init(int deviceID) {
 	if (FAILED (hr)) return FALSE;
 
 	DevID = deviceID;
-	threadHandle = CreateThread(NULL,0,IRReader,(void *)this,0,NULL);
+	threadHandle = CreateThread(nullptr,0,IRReader,(void *)this,0,nullptr);
 
-	return threadHandle!=NULL;
+	return threadHandle!=nullptr;
 }
 
 void Receive::deinit() {
@@ -131,7 +131,7 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())
@@ -156,9 +156,9 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 void Receive::threadProc() {
 
-	CoInitializeEx(NULL,COINIT_MULTITHREADED);
+	CoInitializeEx(nullptr,COINIT_MULTITHREADED);
 
-	exitEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+	exitEvent = CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	while(TRUE) {		
 		BYTE ucIRData[MAX_IR_DATA * 2]; 

@@ -13,7 +13,7 @@ void IrDeviceList::MceIrOpenUsbDevice(LPGUID  pGuid ) {
 	SP_DEVICE_INTERFACE_DATA		deviceInterfaceData;
 	//==========================================================
 
-    hardwareDeviceInfo = SetupDiGetClassDevs(pGuid,NULL,NULL, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
+    hardwareDeviceInfo = SetupDiGetClassDevs(pGuid,nullptr,nullptr, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
 
     if (hardwareDeviceInfo == INVALID_HANDLE_VALUE) {
 		printf("Could not find any Mce Ir devices.");
@@ -25,19 +25,19 @@ void IrDeviceList::MceIrOpenUsbDevice(LPGUID  pGuid ) {
 
 	for ( int i = 0; ; i++)
 	{
-		if(SetupDiEnumDeviceInterfaces (hardwareDeviceInfo, NULL, pGuid, i, &deviceInterfaceData)) {
+		if(SetupDiEnumDeviceInterfaces (hardwareDeviceInfo, nullptr, pGuid, i, &deviceInterfaceData)) {
 
 			//================================================================
 			DWORD requiredLength;
-			PSP_DEVICE_INTERFACE_DETAIL_DATA deviceInterfaceDetailData = NULL;
+			PSP_DEVICE_INTERFACE_DETAIL_DATA deviceInterfaceDetailData = nullptr;
 			//================================================================
 
-			SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, NULL, 0, &requiredLength, NULL);
+			SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, nullptr, 0, &requiredLength, nullptr);
 
 			deviceInterfaceDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA) new UCHAR[requiredLength];
 			deviceInterfaceDetailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 			
-			if(SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,deviceInterfaceDetailData,requiredLength,NULL,NULL)) {
+			if(SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,deviceInterfaceDetailData,requiredLength,nullptr,nullptr)) {
 				m_List.push_back(deviceInterfaceDetailData->DevicePath);
 			}
 

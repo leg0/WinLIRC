@@ -42,7 +42,7 @@ void **init_void_array(struct void_array *ar,size_t chunk_size, size_t item_size
 	if(!(ar->ptr=calloc(chunk_size, ar->item_size))){
 
 		parse_error=1;
-		return(NULL);
+		return(nullptr);
 	}
 	return((void **)(ar->ptr));
 }
@@ -75,9 +75,9 @@ inline void *get_void_array(struct void_array *ar)
 void *s_malloc(size_t size)
 {
 	void *ptr;
-	if((ptr=malloc(size))==NULL){
+	if((ptr=malloc(size))==nullptr){
 		parse_error=1;
-		return(NULL);
+		return(nullptr);
 	}
 	memset(ptr, 0, size);
 	return (ptr);
@@ -88,7 +88,7 @@ inline char *s_strdup(char * string)
 	char *ptr;
 	if(!(ptr=_strdup(string))){
 		parse_error=1;
-		return(NULL);
+		return(nullptr);
 	}
 	return (ptr);
 }
@@ -274,12 +274,12 @@ struct ir_code_node *defineNode(struct ir_ncode *code, const char *val)
 	struct ir_code_node *node;
 
 	node=(ir_code_node*)s_malloc(sizeof(*node));
-	if(node==NULL) return NULL;
+	if(node==nullptr) return nullptr;
 
 	node->code=s_strtocode(val);
-	node->next=NULL;
+	node->next=nullptr;
 
-	if(code->current==NULL)
+	if(code->current==nullptr)
 	{
 		code->next=node;
 		code->current=node;
@@ -299,7 +299,7 @@ int parseFlags(char *val)
 	char *flag,*help;
 
 	flag=help=val;
-	while(flag!=NULL)
+	while(flag!=nullptr)
 	{
 		while(*help!='|' && *help!=0) help++;
 		if(*help=='|')
@@ -308,11 +308,11 @@ int parseFlags(char *val)
 		}
 		else
 		{
-			help=NULL;
+			help=nullptr;
 		}
 
 		flaglptr=all_flags;
-		while(flaglptr->name!=NULL){
+		while(flaglptr->name!=nullptr){
 			if(strcasecmp(flaglptr->name,flag)==0){
 				if(flaglptr->flag&IR_PROTOCOL_MASK &&
 					flags&IR_PROTOCOL_MASK)
@@ -326,7 +326,7 @@ int parseFlags(char *val)
 			}
 			flaglptr++;
 		}
-		if(flaglptr->name==NULL)
+		if(flaglptr->name==nullptr)
 		{
 			parse_error=1;
 			return(0);
@@ -340,14 +340,14 @@ int parseFlags(char *val)
 int defineRemote(char * key, char * val, char *val2, struct ir_remote *rem)
 {
 	if ((strcasecmp("name",key))==0){
-		if(rem->name!=NULL) free(rem->name);
+		if(rem->name!=nullptr) free(rem->name);
 		rem->name=s_strdup(val);
 	
 		return(1);
 	}
 #ifdef DYNCODES
 	if ((strcasecmp("dyncodes_name",key))==0){
-		if(rem->dyncodes_name!=NULL)
+		if(rem->dyncodes_name!=nullptr)
 		{
 			free(rem->dyncodes_name);
 		}
@@ -396,12 +396,12 @@ int defineRemote(char * key, char * val, char *val2, struct ir_remote *rem)
 		return(1);
 	}
 	else if (strcasecmp("gap",key)==0){
-		if(val2 != NULL)
+		if(val2 != nullptr)
 		{
 			rem->gap2=s_strtoul(val2);
 		}
 		rem->gap=s_strtoul(val);
-		return(val2 != NULL ? 2:1);
+		return(val2 != nullptr ? 2:1);
 	}
 	else if (strcasecmp("repeat_gap",key)==0){
 		rem->repeat_gap=s_strtoul(val);
@@ -489,7 +489,7 @@ int defineRemote(char * key, char * val, char *val2, struct ir_remote *rem)
 		}
 		return(1);
 	}
-	else if (val2!=NULL)
+	else if (val2!=nullptr)
 	{
 		if (strcasecmp("header",key)==0){
 			rem->phead=s_strtolirc_t(val);
@@ -574,13 +574,13 @@ static int sanityChecks(struct ir_remote *rem)
 	{
 		rem->post_data &= gen_mask(rem->post_data_bits);
 	}
-	for(codes = rem->codes; codes->name != NULL; codes++)
+	for(codes = rem->codes; codes->name != nullptr; codes++)
 	{
 		if((codes->code&gen_mask(rem->bits)) != codes->code)
 		{
 			codes->code &= gen_mask(rem->bits);
 		}
-		for(node = codes->next; node != NULL; node = node->next)
+		for(node = codes->next; node != nullptr; node = node->next)
 		{
 			if((node->code&gen_mask(rem->bits)) != node->code)
 			{
@@ -597,13 +597,13 @@ struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
 	struct ir_remote *top, *rem, *next, *prev, *scan;
 
 	rem = remotes;
-	top = NULL;
-	while(rem!=NULL)
+	top = nullptr;
+	while(rem!=nullptr)
 	{
 		next = rem->next;
 
 		scan = top;
-		prev = NULL;
+		prev = nullptr;
 		while(scan && bit_count(scan)<=bit_count(rem))
 		{
 			prev = scan;
@@ -623,7 +623,7 @@ struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
 		}
 		else
 		{
-			rem->next = NULL;
+			rem->next = nullptr;
 		}
 
 		rem = next;
@@ -640,28 +640,28 @@ static const char *lirc_parse_include(char *s)
 	len=strlen(s);
 	if(len<2)
 	{
-		return NULL;
+		return nullptr;
 	}
 	last = s+len-1;
-	while(last >  s && strchr(whitespace, *last) != NULL)
+	while(last >  s && strchr(whitespace, *last) != nullptr)
 	{
 		last--;
 	}
 	if(last <= s)
 	{
-		return NULL;
+		return nullptr;
 	}
 	if(*s!='"' && *s!='<')
 	{
-		return NULL;
+		return nullptr;
 	}
 	if(*s=='"' && *last!='"')
 	{
-		return NULL;
+		return nullptr;
 	}
 	else if(*s=='<' && *last!='>')
 	{
-		return NULL;
+		return nullptr;
 	}
 	*last = 0;
 	memmove(s, s+1, len-2+1); /* terminating 0 is copied, and
@@ -723,7 +723,7 @@ static const char *lirc_parse_relative(char *dst, size_t dst_size,
 
 	if(strlen(current) >= dst_size)
 	{
-		return NULL;
+		return nullptr;
 	}
 	strcpy(dst, current);
 	dir = dirname(dst);
@@ -735,7 +735,7 @@ static const char *lirc_parse_relative(char *dst, size_t dst_size,
 
 	if(dirlen + 1 + strlen(child) + 1 > dst_size)
 	{
-		return NULL;
+		return nullptr;
 	}
 	strcat(dst, "/");
 	strcat(dst, child);
@@ -752,17 +752,17 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 {
 	char buf[LINE_LEN+1], *key, *val, *val2;
 	int len,argc;
-	struct ir_remote *top_rem=NULL,*rem=NULL;
+	struct ir_remote *top_rem=nullptr,*rem=nullptr;
 	struct void_array codes_list,raw_codes,signals;
-	struct ir_ncode raw_code={NULL,0,0,NULL};
-	struct ir_ncode name_code={NULL,0,0,NULL};
+	struct ir_ncode raw_code={nullptr,0,0,nullptr};
+	struct ir_ncode name_code={nullptr,0,0,nullptr};
 	struct ir_ncode *code;
 	int mode=ID_none;
 
 	line=0;
 	parse_error=0;
 
-	while(fgets(buf,LINE_LEN,f)!=NULL)
+	while(fgets(buf,LINE_LEN,f)!=nullptr)
 	{
 		line++;
 		len=strlen(buf);
@@ -788,10 +788,10 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 		}
 		key=strtok(buf, whitespace);
 		/* ignore empty lines */
-		if(key==NULL) continue;
-		val=strtok(NULL, whitespace);
-		if(val!=NULL){
-			val2=strtok(NULL, whitespace);
+		if(key==nullptr) continue;
+		val=strtok(nullptr, whitespace);
+		if(val!=nullptr){
+			val2=strtok(nullptr, whitespace);
 
 			if (strcasecmp("include",key)==0){
 				FILE* childFile;
@@ -818,7 +818,7 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 				}
 
 				childFile = fopen(fullPath, "r");
-				if (childFile == NULL){
+				if (childFile == nullptr){
 	
 				}
 				else{
@@ -827,19 +827,19 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 					if (!top_rem){
 						/* create first remote */
 						rem = read_config_recursive(childFile, fullPath, depth + 1);
-						if(rem != (void *) -1 && rem != NULL) {
+						if(rem != (void *) -1 && rem != nullptr) {
 							top_rem = rem;
 						} else {
-							rem = NULL;
+							rem = nullptr;
 						}
 					}else{
 						/* create new remote */
 
 						rem->next=read_config_recursive(childFile, fullPath, depth + 1);
-						if(rem->next != (void *) -1 && rem->next != NULL) {
+						if(rem->next != (void *) -1 && rem->next != nullptr) {
 							rem=rem->next;
 						} else {
-							rem->next = NULL;
+							rem->next = nullptr;
 						}
 					}
 					fclose(childFile);
@@ -890,20 +890,20 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 					}
 				}else if(mode==ID_codes){
 					code=defineCode(key, val, &name_code);
-					while(!parse_error && val2!=NULL)
+					while(!parse_error && val2!=nullptr)
 					{
 						struct ir_code_node *node;
 
 						if(val2[0]=='#') break; /* comment */
 						node=defineNode(code, val2);
-						val2=strtok(NULL, whitespace);
+						val2=strtok(nullptr, whitespace);
 					}
-					code->current=NULL;
+					code->current=nullptr;
 					add_void_array(&codes_list, code);
 				}else{
 					parse_error=1;
 				}
-				if(!parse_error && val2!=NULL)
+				if(!parse_error && val2!=nullptr)
 				{
 				}
 			}else if (strcasecmp("end",key)==0){
@@ -945,7 +945,7 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 					}
 
 #                                       ifdef DYNCODES
-					if(rem->dyncodes_name==NULL)
+					if(rem->dyncodes_name==nullptr)
 					{
 						rem->dyncodes_name=s_strdup("unknown");
 					}
@@ -954,25 +954,25 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 #                                       endif
 					/* not really necessary because we
 					clear the alloced memory */
-					rem->next=NULL;
-					rem->last_code=NULL;
+					rem->next=nullptr;
+					rem->last_code=nullptr;
 					mode=ID_none;     /* switch back */
 				}else if(mode==ID_codes){
 					code=defineCode(key, val, &name_code);
-					while(!parse_error && val2!=NULL)
+					while(!parse_error && val2!=nullptr)
 					{
 						struct ir_code_node *node;
 
 						if(val2[0]=='#') break; /* comment */
 						node=defineNode(code, val2);
-						val2=strtok(NULL, whitespace);
+						val2=strtok(nullptr, whitespace);
 					}
-					code->current=NULL;
+					code->current=nullptr;
 					add_void_array(&codes_list, code);
 				}else{
 					parse_error=1;
 				}
-				if(!parse_error && val2!=NULL)
+				if(!parse_error && val2!=nullptr)
 				{
 
 				}
@@ -980,22 +980,22 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 				switch (mode){
 	case ID_remote:
 		argc=defineRemote(key, val, val2, rem);
-		if(!parse_error && ((argc==1 && val2!=NULL) || 
-			(argc==2 && val2!=NULL && strtok(NULL, whitespace)!=NULL)))
+		if(!parse_error && ((argc==1 && val2!=nullptr) || 
+			(argc==2 && val2!=nullptr && strtok(nullptr, whitespace)!=nullptr)))
 		{
 		}
 		break;
 	case ID_codes:
 		code=defineCode(key, val, &name_code);
-		while(!parse_error && val2!=NULL)
+		while(!parse_error && val2!=nullptr)
 		{
 			struct ir_code_node *node;
 
 			if(val2[0]=='#') break; /* comment */
 			node=defineNode(code, val2);
-			val2=strtok(NULL, whitespace);
+			val2=strtok(nullptr, whitespace);
 		}
-		code->current=NULL;
+		code->current=nullptr;
 		add_void_array(&codes_list, code);
 		break;
 	case ID_raw_codes:
@@ -1018,7 +1018,7 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 			raw_code.code++;
 			init_void_array(&signals,50,sizeof(lirc_t));
 			mode=ID_raw_name;
-			if(!parse_error && val2!=NULL)
+			if(!parse_error && val2!=nullptr)
 			{
 			}
 		}else{
@@ -1034,7 +1034,7 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 					break;
 				}
 			}
-			while ((val=strtok(NULL, whitespace))){
+			while ((val=strtok(nullptr, whitespace))){
 				if (!addSignal(&signals, val)) break;
 			}
 		}
@@ -1058,10 +1058,10 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 		switch(mode)
 		{
 		case ID_raw_name:
-			if(raw_code.name!=NULL)
+			if(raw_code.name!=nullptr)
 			{
 				free(raw_code.name);
-				if(get_void_array(&signals)!=NULL)
+				if(get_void_array(&signals)!=nullptr)
 					free(get_void_array(&signals));
 			}
 		case ID_raw_codes:
@@ -1084,13 +1084,13 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 		}
 		free_config(top_rem);
 		if(depth == 0) print_error = 1;
-		return(NULL);
+		return(nullptr);
 	}
 	/* kick reverse flag */
 	/* handle RC6 flag to be backwards compatible: previous RC-6
 	config files did not set rc6_mask */
 	rem=top_rem;
-	while(rem!=NULL)
+	while(rem!=nullptr)
 	{
 		if((!is_raw(rem)) && rem->flags&REVERSE)
 		{
@@ -1107,7 +1107,7 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 					rem->post_data_bits);
 			}
 			codes=rem->codes;
-			while(codes->name!=NULL)
+			while(codes->name!=nullptr)
 			{
 				codes->code=reverse(codes->code,rem->bits);
 				codes++;
@@ -1193,23 +1193,23 @@ void free_config(struct ir_remote *remotes)
 	struct ir_remote *next;
 	struct ir_ncode *codes;
 
-	while(remotes!=NULL)
+	while(remotes!=nullptr)
 	{
 		next=remotes->next;
 
 #               ifdef DYNCODES
-		if(remotes->dyncodes_name!=NULL) free(remotes->dyncodes_name);
+		if(remotes->dyncodes_name!=nullptr) free(remotes->dyncodes_name);
 #               endif
-		if(remotes->name!=NULL) free(remotes->name);
-		if(remotes->codes!=NULL)
+		if(remotes->name!=nullptr) free(remotes->name);
+		if(remotes->codes!=nullptr)
 		{
 			codes=remotes->codes;
-			while(codes->name!=NULL)
+			while(codes->name!=nullptr)
 			{
 				struct ir_code_node *node,*next_node;
 
 				free(codes->name);
-				if(codes->signals!=NULL)
+				if(codes->signals!=nullptr)
 					free(codes->signals);
 				node=codes->next;
 				while(node)

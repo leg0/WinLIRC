@@ -38,7 +38,7 @@ WL_API int init( HANDLE exitEvent )
 	InitializeCriticalSection(&criticalSection);
 
 	threadExitEvent = exitEvent;
-	dataReadyEvent	= CreateEvent( NULL, TRUE, FALSE, NULL );
+	dataReadyEvent	= CreateEvent( nullptr, TRUE, FALSE, nullptr );
 
 	sendReceiveData = new SendReceiveData();
 
@@ -54,17 +54,17 @@ WL_API void deinit()
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
 		delete sendReceiveData;
-		sendReceiveData = NULL;
+		sendReceiveData = nullptr;
 	}
 
 	if(dataReadyEvent) {
 		CloseHandle( dataReadyEvent );
-		dataReadyEvent = NULL;
+		dataReadyEvent = nullptr;
 	}
 
 	DeleteCriticalSection(&criticalSection);
 
-	threadExitEvent = NULL;
+	threadExitEvent = nullptr;
 }
 
 WL_API int hasGui()

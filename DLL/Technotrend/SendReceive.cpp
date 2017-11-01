@@ -15,7 +15,7 @@ Receive::~Receive() {
 
 void callBackFunc(PVOID Context, PVOID Buf, ULONG len, USBIR_MODES IRMode, HANDLE hOpen, BYTE DevIdx) {
 
-	if(Context != NULL) {
+	if(Context != nullptr) {
 		((Receive*)Context)->callBackFunction(Buf, len, IRMode, hOpen, DevIdx);
 	}
 }
@@ -98,7 +98,7 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(!dataReady())

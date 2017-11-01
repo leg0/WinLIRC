@@ -40,7 +40,7 @@ static struct flaglist all_flags[]=
     {"NO_FOOT_REP",     NO_FOOT_REP},
 	{"CONST_LENGTH",    CONST_LENGTH}, /* remember to adapt warning message when changing this */
     {"REPEAT_HEADER",   REPEAT_HEADER},
-	{NULL,0},
+	{nullptr,0},
 };
 
 /*

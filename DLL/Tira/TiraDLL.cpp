@@ -13,7 +13,7 @@
 
 TiraDLL::TiraDLL() {
 
-	dllHandle = NULL;
+	dllHandle = nullptr;
 	loadDLL();
 }
 
@@ -49,21 +49,21 @@ void TiraDLL::unloadDLL() {
 
 	FreeLibrary(dllHandle);
 
-	dllHandle = NULL;
+	dllHandle = nullptr;
 
-	t_tira_init               p_tira_init				= NULL;
-	t_tira_cleanup            p_tira_cleanup			= NULL;
-	t_tira_set_handler        p_tira_set_handler		= NULL;
-	t_tira_start              p_tira_start				= NULL;
-	t_tira_stop               p_tira_stop				= NULL;
-	t_tira_start_capture      p_tira_start_capture		= NULL;
-	t_tira_cancel_capture     p_tira_cancel_capture		= NULL;
-	t_tira_get_captured_data  p_tira_get_captured_data	= NULL;
-	t_tira_transmit           p_tira_transmit			= NULL;
-	t_tira_delete             p_tira_delete				= NULL;
-	t_tira_set_dword          p_tira_set_dword			= NULL;
-	t_tira_get_version        p_tira_get_version		= NULL;
-	t_tira_access_feature     p_tira_access_feature		= NULL;
+	t_tira_init               p_tira_init				= nullptr;
+	t_tira_cleanup            p_tira_cleanup			= nullptr;
+	t_tira_set_handler        p_tira_set_handler		= nullptr;
+	t_tira_start              p_tira_start				= nullptr;
+	t_tira_stop               p_tira_stop				= nullptr;
+	t_tira_start_capture      p_tira_start_capture		= nullptr;
+	t_tira_cancel_capture     p_tira_cancel_capture		= nullptr;
+	t_tira_get_captured_data  p_tira_get_captured_data	= nullptr;
+	t_tira_transmit           p_tira_transmit			= nullptr;
+	t_tira_delete             p_tira_delete				= nullptr;
+	t_tira_set_dword          p_tira_set_dword			= nullptr;
+	t_tira_get_version        p_tira_get_version		= nullptr;
+	t_tira_access_feature     p_tira_access_feature		= nullptr;
 }
 
 int TiraDLL::tira_init() {
@@ -147,7 +147,7 @@ const char* TiraDLL::tira_get_version(int component) {
 
 	if(p_tira_get_version) return p_tira_get_version(component);
 
-	return NULL;
+	return nullptr;
 }
 
 int TiraDLL::tira_access_feature(unsigned int FeatureID, bool Write, unsigned int *Value, unsigned int Mask) {

@@ -22,11 +22,11 @@
 #include "Globals.h"
 #include <Windows.h>
 
-RecordAudio		*recordAudio	= NULL;
-AnalyseAudio	*analyseAudio	= NULL;
-Settings		*settings		= NULL;
-HANDLE			dataReadyEvent	= NULL;
-HANDLE			threadExitEvent	= NULL;
+RecordAudio		*recordAudio	= nullptr;
+AnalyseAudio	*analyseAudio	= nullptr;
+Settings		*settings		= nullptr;
+HANDLE			dataReadyEvent	= nullptr;
+HANDLE			threadExitEvent	= nullptr;
 
 bool waitTillDataIsReady(int maxUSecs) {
 

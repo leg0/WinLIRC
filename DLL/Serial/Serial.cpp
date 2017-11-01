@@ -49,11 +49,11 @@ WL_API int init(HANDLE exitEvent) {
 
 WL_API void deinit() {
 
-	threadExitEvent = NULL;	//this one is created outside the DLL
+	threadExitEvent = nullptr;	//this one is created outside the DLL
 
 	if(irDriver) {
 		delete irDriver;
-		irDriver = NULL;
+		irDriver = nullptr;
 	}
 }
 

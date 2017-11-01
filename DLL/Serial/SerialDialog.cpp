@@ -31,7 +31,7 @@
 
 IMPLEMENT_DYNAMIC(SerialDialog, CDialog)
 
-SerialDialog::SerialDialog(CWnd* pParent /*=NULL*/)
+SerialDialog::SerialDialog(CWnd* pParent /*=nullptr*/)
 	: CDialog(SerialDialog::IDD, pParent)
 {
 	animax			= FALSE;

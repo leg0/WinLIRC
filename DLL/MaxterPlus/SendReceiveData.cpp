@@ -36,8 +36,8 @@ DWORD WINAPI MaxterPlus(void *recieveClass) {
 
 SendReceiveData::SendReceiveData() {
 
-	threadHandle	= NULL;
-	exitEvent		= NULL;
+	threadHandle	= nullptr;
+	exitEvent		= nullptr;
 }
 
 bool SendReceiveData::init() {
@@ -78,7 +78,7 @@ bool SendReceiveData::init() {
 
 		if(OpenHidDevice(deviceName,TRUE,TRUE,TRUE,FALSE,&device)) {
 
-			threadHandle = CreateThread(NULL,0,MaxterPlus,(void *)this,0,NULL);
+			threadHandle = CreateThread(nullptr,0,MaxterPlus,(void *)this,0,nullptr);
 
 			if(threadHandle) {
 				return true;
@@ -104,8 +104,8 @@ void SendReceiveData::threadProc() {
 
 	memset(&overlappedRead,0,sizeof(OVERLAPPED));
 
-	overlappedRead.hEvent = CreateEvent(NULL,FALSE,FALSE,NULL);
-	exitEvent = CreateEvent(NULL,TRUE,FALSE,NULL);
+	overlappedRead.hEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
+	exitEvent = CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	events[0] = overlappedRead.hEvent;
 	events[1] = exitEvent;
@@ -160,7 +160,7 @@ bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
-	if(threadExitEvent==NULL) evt=1;
+	if(threadExitEvent==nullptr) evt=1;
 	else evt=2;
 
 	if(irCode==0)

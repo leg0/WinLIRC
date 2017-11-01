@@ -43,7 +43,7 @@ class Cdrvdlg : public CDialog
 {
 // Construction
 public:
-	Cdrvdlg(CWnd* pParent = NULL);   // standard constructor
+	Cdrvdlg(CWnd* pParent = nullptr);   // standard constructor
 	
 	bool initialized;
 	bool AllowTrayNotification;

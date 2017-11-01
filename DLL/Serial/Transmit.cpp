@@ -5,7 +5,7 @@
 
 #include "Transmit.h"
 
-HANDLE	tPort = NULL;
+HANDLE	tPort = nullptr;
 INT64	freq;		//the frequency used by PerformanceCounter
 INT64	lasttime;	//last time counter was queried
 unsigned long pulse_width = 13; /* pulse/space ratio of 50/50 */
@@ -106,8 +106,8 @@ int send_pulse_tx_soft (unsigned long usecs)
 	DWORD dwToWrite=usecs/pulse_byte_length;
 
 	// Create this writes OVERLAPPED structure hEvent.
-	osWrite.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	if (osWrite.hEvent == NULL)
+	osWrite.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+	if (osWrite.hEvent == nullptr)
 		// Error creating overlapped event handle.
 		return FALSE;
 
@@ -193,7 +193,7 @@ bool config_transmitter(struct ir_remote *rem) //configures the transmitter for 
 		if(!GetCommState(tPort,&dcb))
 		{
 			CloseHandle(tPort);
-			tPort=NULL;
+			tPort=nullptr;
 			return false;
 		}
 		dcb.BaudRate=CBR_115200;
@@ -213,7 +213,7 @@ bool config_transmitter(struct ir_remote *rem) //configures the transmitter for 
 		if(!SetCommState(tPort,&dcb))
 		{
 			CloseHandle(tPort);
-			tPort=NULL;
+			tPort=nullptr;
 			//DEBUG("SetCommState failed.\n");
 			return false;
 		}
