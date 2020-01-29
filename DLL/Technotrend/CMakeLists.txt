@@ -1,32 +1,28 @@
 cmake_minimum_required(VERSION 2.8)
 
-# Use MFC in a shared DLL.
-#set(CMAKE_MFC_FLAG 2)
+if (WL_PLATFORM MATCHES "[Xx]64")
+	message("Technotrend is only available in 32 bit")
+else()
+	add_library(Technotrend SHARED
+		Globals.cpp
+		hardware.cpp
+		SendReceive.cpp
+		Settings.cpp
+		Technotrend.cpp
 
-add_library(Technotrend SHARED
-	Globals.cpp
-	hardware.cpp
-	SendReceive.cpp
-	Settings.cpp
-	Technotrend.cpp
+		Technotrend.rc
 
-	Technotrend.rc
+		Globals.h
+		resource.h
+		SendReceive.h
+		Settings.h
+		ttusbirapiexp.h
+		)
 
-    Globals.h
-    resource.h
-    SendReceive.h
-    Settings.h
-    ttusbirapiexp.h
-	)
+	target_link_libraries(Technotrend
+		winlirc
+		${CMAKE_CURRENT_SOURCE_DIR}/TTUSBIR.lib
+		)
 
-#add_definitions(
-#	-DUNICODE
-#	-D_UNICODE
-#	)
-
-target_link_libraries(Technotrend
-	winlirc
-	${CMAKE_CURRENT_SOURCE_DIR}/TTUSBIR.lib
-	)
-
-configure_plugin(Technotrend)
+	configure_plugin(Technotrend)
+endif()

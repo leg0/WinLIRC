@@ -4,6 +4,12 @@ project(WinLIRC)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
+if (MSVC)
+	set (WL_PLATFORM ${CMAKE_VS_PLATFORM_NAME})
+else()
+	set (WL_PLATFORM ${CMAKE_GENERATOR_PLATFORM})
+endif()
+
 enable_testing()
 # http://www.cmake.org/cmake/help/v3.0/module/FindGTest.html
 find_package(GTest)
