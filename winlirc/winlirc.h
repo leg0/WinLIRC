@@ -19,8 +19,7 @@
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
  */
 
-#ifndef WINLIRC_H
-#define WINLIRC_H
+#pragma once
 
 #include "server.h"
 #include "drvdlg.h"
@@ -36,8 +35,8 @@ public:
 	Cdrvdlg *dlg;
 	Cserver server;
 
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance() override;
+	virtual int ExitInstance() override;
 protected:
 	DECLARE_MESSAGE_MAP()
 };
@@ -46,5 +45,3 @@ extern Cwinlirc app;
 
 void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent);
 void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent);
-
-#endif

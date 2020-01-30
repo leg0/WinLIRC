@@ -19,13 +19,16 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef _WL_API_H_
-#define _WL_API_H_
+#pragma once
 
 //
 // API
 //
 #define WL_API __declspec(dllexport)
+
+typedef struct ir_remote ir_remote;
+typedef struct ir_ncode ir_ncode;
+typedef struct hardware hardware;
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,14 +38,12 @@ WL_API int	init			(HANDLE exitEvent);
 WL_API void	deinit			();
 WL_API int	hasGui			();
 WL_API void	loadSetupGui	();
-WL_API int	sendIR			(struct ir_remote *remote, struct ir_ncode *code, int repeats);
-WL_API int	decodeIR		(struct ir_remote *remotes, char *out);
+WL_API int	sendIR			(ir_remote *remote, ir_ncode *code, int repeats);
+WL_API int	decodeIR		(ir_remote *remotes, char *out);
 WL_API int	setTransmitters	(unsigned int transmitterMask);
 
 WL_API struct hardware* getHardware();							// optional API for IRRecord
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

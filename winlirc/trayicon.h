@@ -20,8 +20,7 @@
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
  */
 
-#ifndef _TRAYICON_H
-#define _TRAYICON_H
+#pragma once
 
 class CTrayIcon : public CCmdTarget {
 
@@ -31,7 +30,7 @@ protected:
 
 public:
 	CTrayIcon(UINT uID);
-   ~CTrayIcon();
+	~CTrayIcon();
 
 	bool SetIcon			(UINT uID);
 	bool SetIcon			(HICON hicon, LPCTSTR tip);
@@ -40,9 +39,5 @@ public:
 	void SetNotificationWnd	(CWnd *notifywnd, UINT message);
 	void DisableTrayIcon	();
 
-	virtual LRESULT OnTrayNotification(WPARAM id, LPARAM event);
-
-private:
+	LRESULT OnTrayNotification(WPARAM id, LPARAM event);
 };
-
-#endif

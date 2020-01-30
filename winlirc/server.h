@@ -19,27 +19,27 @@
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
  */
 
-#ifndef SERVER__H
-#define SERVER__H
+#pragma once
 
-#define MAX_CLIENTS 8
+static constexpr size_t MAX_CLIENTS = 8;
 
-class Cserver {
+class Cserver
+{
 public:
 
 	Cserver();
 	~Cserver();
 
-	bool startServer		(void);
-	void stopServer			(void);
-	bool restartServer		(void);
-	void sendToClients		(const char *s);
-	BOOL parseSendString	(const char *string, CStringA &response);
-	BOOL parseListString	(const char *string, CStringA &response);
-	BOOL parseVersion		(const char *string, CStringA &response);
-	BOOL parseTransmitters	(const char *string, CStringA &response);
+	bool startServer		();
+	void stopServer			();
+	bool restartServer		();
+	void sendToClients		(const char* s);
+	BOOL parseSendString	(const char* string, CStringA& response);
+	BOOL parseListString	(const char* string, CStringA& response);
+	BOOL parseVersion		(const char* string, CStringA& response);
+	BOOL parseTransmitters	(const char* string, CStringA& response);
 
-	void ThreadProc(void);
+	void ThreadProc();
 
 private:
 	void sendData			(SOCKET socket, const char *s);
@@ -52,5 +52,3 @@ private:
 	CEvent		m_serverThreadEvent;
 	int			m_winsockStart;
 };
-
-#endif

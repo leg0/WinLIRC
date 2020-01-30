@@ -1,7 +1,3 @@
-#ifndef GUICON_H
-#define GUICON_H
+#pragma once
 
 void RedirectIOToConsole();
-
-#endif
-

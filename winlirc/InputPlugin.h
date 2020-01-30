@@ -1,15 +1,13 @@
 #pragma once
+
 #include "afxwin.h"
-
-
-// InputPlugin dialog
 
 class InputPlugin : public CDialog
 {
 	DECLARE_DYNAMIC(InputPlugin)
 
 public:
-	InputPlugin(CWnd* pParent = nullptr);   // standard constructor
+	InputPlugin(CWnd* pParent = nullptr);
 	virtual ~InputPlugin();
 
 	enum { IDD = IDD_DIALOG1 };
@@ -24,8 +22,8 @@ private:
 	bool	getStartup		();
 	void	setStartup		(bool start);
 
-	typedef int  (*HasGuiFunction)			();
-	typedef void (*LoadSetupGuiFunction)	();
+	using HasGuiFunction = int(*)();
+	using LoadSetupGuiFunction = void(*)();
 
 	HasGuiFunction			m_hasGuiFunction;
 	LoadSetupGuiFunction	m_loadSetupGuiFunction;
@@ -33,8 +31,8 @@ private:
 	HMODULE					m_dllFile;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	virtual BOOL OnInitDialog();
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	virtual BOOL OnInitDialog() override;
 
 	DECLARE_MESSAGE_MAP()
 

@@ -19,9 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef LIRCDEFINES_H
-#define LIRCDEFINES_H
-
+#pragma once
 #include <Math.h>
 
 //
@@ -175,7 +173,7 @@ struct mytimeval {
 	__int64 tv_usec;
 };
 
-struct ir_remote 
+struct ir_remote
 {
 	char *name;                 /* name of remote control */
 	struct ir_ncode *codes;
@@ -238,7 +236,7 @@ struct ir_remote
 	struct mytimeval last_send;   /* time last_code was received or sent */
 	lirc_t min_remaining_gap;   /* remember gap for CONST_LENGTH remotes */
 	lirc_t max_remaining_gap;   /* gap range */
-	struct ir_remote *next;
+	ir_remote*next;
 };
 
 //
@@ -256,7 +254,7 @@ static inline struct ir_code_node *get_next_ir_code_node(struct ir_ncode *ncode,
 	return node->next;
 }
 
-static inline int bit_count(struct ir_remote *remote)
+static inline int bit_count(ir_remote const* remote)
 {
 	return remote->pre_data_bits +
 		remote->bits +
@@ -298,146 +296,146 @@ static inline int is_space(lirc_t data)
 	return(!is_pulse(data));
 }
 
-static inline int has_repeat(struct ir_remote *remote)
+static inline int has_repeat(ir_remote const* remote)
 {
 	if(remote->prepeat>0 && remote->srepeat>0) return(1);
 	else return(0);
 }
 
-static inline void set_protocol(struct ir_remote *remote, int protocol)
+static inline void set_protocol(ir_remote* remote, int protocol)
 {
 	remote->flags&=~(IR_PROTOCOL_MASK);
 	remote->flags|=protocol;
 }
 
-static inline int is_raw(struct ir_remote *remote)
+static inline int is_raw(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == RAW_CODES) return(1);
 	else return(0);
 }
 
-static inline int is_space_enc(struct ir_remote *remote)
+static inline int is_space_enc(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == SPACE_ENC) return(1);
 	else return(0);
 }
 
-static inline int is_space_first(struct ir_remote *remote)
+static inline int is_space_first(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == SPACE_FIRST) return(1);
 	else return(0);
 }
 
-static inline int is_rc5(struct ir_remote *remote)
+static inline int is_rc5(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == RC5) return(1);
 	else return(0);
 }
 
-static inline int is_rc6(struct ir_remote *remote)
+static inline int is_rc6(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == RC6 ||
 	   remote->rc6_mask) return(1);
 	else return(0);
 }
 
-static inline int is_biphase(struct ir_remote *remote)
+static inline int is_biphase(ir_remote const* remote)
 {
 	if(is_rc5(remote) || is_rc6(remote)) return(1);
 	else return(0);
 }
 
-static inline int is_rcmm(struct ir_remote *remote)
+static inline int is_rcmm(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == RCMM) return(1);
 	else return(0);
 }
 
-static inline int is_goldstar(struct ir_remote *remote)
+static inline int is_goldstar(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == GOLDSTAR) return(1);
 	else return(0);
 }
 
-static inline int is_grundig(struct ir_remote *remote)
+static inline int is_grundig(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == GRUNDIG) return(1);
 	else return(0);
 }
 
-static inline int is_bo(struct ir_remote *remote)
+static inline int is_bo(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == BO) return(1);
 	else return(0);
 }
 
-static inline int is_serial(struct ir_remote *remote)
+static inline int is_serial(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == SERIAL) return(1);
 	else return(0);
 }
 
-static inline int is_xmp(struct ir_remote *remote)
+static inline int is_xmp(ir_remote const* remote)
 {
 	if((remote->flags&IR_PROTOCOL_MASK) == XMP) return(1);
 	else return(0);
 }
 
-static inline int is_const(struct ir_remote *remote)
+static inline int is_const(ir_remote const* remote)
 {
 	if(remote->flags&CONST_LENGTH) return(1);
 	else return(0);
 }
 
-static inline int has_repeat_gap(struct ir_remote *remote)
+static inline int has_repeat_gap(ir_remote const* remote)
 {
 	if(remote->repeat_gap>0) return(1);
 	else return(0);
 }
 
-static inline int has_pre(struct ir_remote *remote)
+static inline int has_pre(ir_remote const* remote)
 {
 	if(remote->pre_data_bits>0) return(1);
 	else return(0);
 }
 
-static inline int has_post(struct ir_remote *remote)
+static inline int has_post(ir_remote const* remote)
 {
 	if(remote->post_data_bits>0) return(1);
 	else return(0);
 }
 
-static inline int has_header(struct ir_remote *remote)
+static inline int has_header(ir_remote const* remote)
 {
 	if(remote->phead>0 && remote->shead>0) return(1);
 	else return(0);
 }
 
-static inline int has_foot(struct ir_remote *remote)
+static inline int has_foot(ir_remote const* remote)
 {
 	if(remote->pfoot>0 && remote->sfoot>0) return(1);
 	else return(0);
 }
 
-static inline int has_toggle_bit_mask(struct ir_remote *remote)
+static inline int has_toggle_bit_mask(ir_remote const* remote)
 {
 	if(remote->toggle_bit_mask>0) return(1);
 	else return(0);
 }
 
-static inline int has_ignore_mask(struct ir_remote *remote)
+static inline int has_ignore_mask(ir_remote const* remote)
 {
 	if(remote->ignore_mask>0) return(1);
 	else return(0);
 }
 
-static inline int has_toggle_mask(struct ir_remote *remote)
+static inline int has_toggle_mask(ir_remote const* remote)
 {
 	if(remote->toggle_mask>0) return(1);
 	else return(0);
 }
 
-static inline lirc_t min_gap(struct ir_remote *remote)
+static inline lirc_t min_gap(ir_remote const* remote)
 {
 	if(remote->gap2 != 0 && remote->gap2 < remote->gap)
 	{
@@ -449,7 +447,7 @@ static inline lirc_t min_gap(struct ir_remote *remote)
 	}
 }
 
-static inline lirc_t max_gap(struct ir_remote *remote)
+static inline lirc_t max_gap(ir_remote const* remote)
 {
 	if(remote->gap2 > remote->gap)
 	{
@@ -461,8 +459,8 @@ static inline lirc_t max_gap(struct ir_remote *remote)
 	}
 }
 
-static inline unsigned long time_elapsed(struct mytimeval *last,
-					 struct mytimeval *current)
+static inline unsigned long time_elapsed(mytimeval *last,
+					 mytimeval *current)
 {
 	__int64 secs,diff;
 	
@@ -487,7 +485,7 @@ static inline ir_code gen_mask(int bits)
 	return(mask);
 }
 
-static inline ir_code gen_ir_code(struct ir_remote *remote, ir_code pre, ir_code code, ir_code post)
+static inline ir_code gen_ir_code(ir_remote const* remote, ir_code pre, ir_code code, ir_code post)
 {
 	ir_code all;
 	
@@ -500,12 +498,12 @@ static inline ir_code gen_ir_code(struct ir_remote *remote, ir_code pre, ir_code
 	return all;
 }
 
-static int match_ir_code(struct ir_remote *remote, ir_code a, ir_code b)
+static int match_ir_code(ir_remote const* remote, ir_code a, ir_code b)
 {
 	return ((remote->ignore_mask|a) == (remote->ignore_mask|b) || (remote->ignore_mask|a) == (remote->ignore_mask|(b^remote->toggle_bit_mask)));
 }
 
-static inline int expect(struct ir_remote *remote,lirc_t delta,lirc_t exdelta)
+static inline int expect(ir_remote const* remote,lirc_t delta,lirc_t exdelta)
 {
 	int aeps = remote->aeps;
 	
@@ -515,7 +513,7 @@ static inline int expect(struct ir_remote *remote,lirc_t delta,lirc_t exdelta)
 	return 0;
 }
 
-static inline int expect_at_least(struct ir_remote *remote,
+static inline int expect_at_least(ir_remote const* remote,
 				  lirc_t delta, lirc_t exdelta)
 {
 	int aeps = remote->aeps;
@@ -528,7 +526,7 @@ static inline int expect_at_least(struct ir_remote *remote,
 	return 0;
 }
 
-static inline int expect_at_most(struct ir_remote *remote,
+static inline int expect_at_most(ir_remote const* remote,
 				 lirc_t delta, lirc_t exdelta)
 {
 	int aeps = remote->aeps;
@@ -540,6 +538,3 @@ static inline int expect_at_most(struct ir_remote *remote,
 	}
 	return 0;
 }
-
-
-#endif

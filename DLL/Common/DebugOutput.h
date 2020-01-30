@@ -1,5 +1,4 @@
-#ifndef DEBUG_OUTPUT_H
-#define DEBUG_OUTPUT_H
+#pragma once
 
 #if defined(_DEBUG) || defined (DEBUG)
 
@@ -18,6 +17,4 @@
 	#define DPRINTF(a, ...)
 	#define DWPRINTF(a, ...)
 	#define TPRINTF(a, ...)
-#endif
-
 #endif

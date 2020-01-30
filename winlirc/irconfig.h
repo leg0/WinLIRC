@@ -20,17 +20,16 @@
  * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
-#ifndef IRCONFIG_H
-#define IRCONFIG_H
+#pragma once
 
 #include "globals.h"
 
 #include "stdafx.h"
 #include "irdriver.h"
 
-class CIRConfig {
+class CIRConfig
+{
 public:
-
 	CIRConfig();
 	~CIRConfig();
 
@@ -48,14 +47,9 @@ public:
 	BOOL	showTrayIcon;
 	BOOL	exitOnError;
 	//=============================
-
-private:
-	
 };
 
 /* Change this stuff */
-extern struct ir_remote *global_remotes;
+extern ir_remote* global_remotes;
 extern class CCriticalSection CS_global_remotes;
 extern class CIRConfig config;
-
-#endif

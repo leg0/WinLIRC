@@ -20,8 +20,7 @@
  * Modifications based on LIRC 0.6.1 Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -187,5 +186,3 @@ struct ir_remote
 	lirc_t max_remaining_gap;   /* gap range */
 	struct ir_remote *next;
 };
-
-#endif

@@ -21,40 +21,43 @@
  * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
-#ifndef IRDRIVER_H
-#define IRDRIVER_H
+#pragma once
 
-class CIRDriver {
+struct ir_remote;
+struct ir_ncode;
 
+class CIRDriver
+{
 public:
 	CIRDriver();
-   ~CIRDriver();
+	~CIRDriver();
 
 	BOOL	loadPlugin		(CString plugin);
 	void	unloadPlugin	();
 	BOOL	init			();
 	void	deinit			();
-	int		sendIR			(struct ir_remote *remote,struct ir_ncode *code, int repeats);
-	int		decodeIR		(struct ir_remote *remote, char *out);
+	int		sendIR			(ir_remote* remote, ir_ncode* code, int repeats);
+	int		decodeIR		(ir_remote* remote, char* out);
 	int		setTransmitters	(unsigned int transmitterMask);
 
 	void	DaemonThreadProc() const;
 
 private:
 
-	typedef int	 (*InitFunction)			(HANDLE);
-	typedef void (*DeinitFunction)			(void);
-	typedef int  (*HasGuiFunction)			(void);
-	typedef void (*LoadSetupGuiFunction)	(void);
-	typedef int	 (*SendFunction)			(struct ir_remote *remote,struct ir_ncode *code, int repeats);
-	typedef int  (*DecodeFunction)			(struct ir_remote *remote, char *out);
-	typedef int  (*SetTransmittersFunction)	(unsigned int transmitterMask);
+	using InitFunction            = int(*)(HANDLE);
+	using DeinitFunction          = void(*)();
+	using HasGuiFunction          = int(*)();
+	using LoadSetupGuiFunction    = void(*)();
+	using SendFunction            = int(*)(ir_remote *remote, ir_ncode *code, int repeats);
+	using DecodeFunction          = int(*)(ir_remote *remote, char *out);
+	using SetTransmittersFunction = int(*)(unsigned int transmitterMask);
 
 	/// Protects access to the functions imported from plug-in dll, and the
 	/// DLL handle.
 	/// TODO: move all the load/unload logic and related stuff to Dll class.
 	mutable CCriticalSection	m_dllLock;
-	struct Dll {
+	struct Dll
+	{
 		InitFunction			initFunction;
 		DeinitFunction			deinitFunction;
 		HasGuiFunction			hasGuiFunction;
@@ -72,5 +75,3 @@ private:
 	CWinThread*	m_daemonThreadHandle;
 	//===============================
 };
-
-#endif

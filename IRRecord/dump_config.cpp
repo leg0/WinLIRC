@@ -33,10 +33,10 @@
 #define VERSION "0.9.0"
 extern hardware hw;
 
-void fprint_comment(FILE *f,struct ir_remote *rem)
+void fprint_comment(FILE* f, ir_remote const* rem)
 {
 	time_t timet;
-	struct tm *tmp;
+	tm *tmp;
 
 	timet=time(NULL);
 	tmp=localtime(&timet);
@@ -54,7 +54,7 @@ void fprint_comment(FILE *f,struct ir_remote *rem)
 		rem->name);
 }
 
-void fprint_flags(FILE *f, int flags)
+void fprint_flags(FILE* f, int flags)
 {
 	int i;
 	int begin=0;
@@ -73,7 +73,7 @@ void fprint_flags(FILE *f, int flags)
 	if(begin==1) fprintf(f,"\n");
 }
 
-void fprint_remotes(FILE *f, struct ir_remote *all){
+void fprint_remotes(FILE* f, ir_remote const* all){
 
     	while(all)
 	{
@@ -83,7 +83,7 @@ void fprint_remotes(FILE *f, struct ir_remote *all){
         }
 }
 
-void fprint_remote_gap(FILE *f, struct ir_remote *rem)
+void fprint_remote_gap(FILE* f, ir_remote const* rem)
 {
 	if(rem->gap2 != 0)
 	{
@@ -97,7 +97,7 @@ void fprint_remote_gap(FILE *f, struct ir_remote *rem)
 	}
 }
 
-void fprint_remote_head(FILE *f, struct ir_remote *rem)
+void fprint_remote_head(FILE* f, ir_remote const* rem)
 {
 	fprintf(f, "begin remote\n\n");
 	fprintf(f, "  name  %s\n",rem->name);
@@ -263,12 +263,12 @@ void fprint_remote_head(FILE *f, struct ir_remote *rem)
 	fprintf(f,"\n");
 }
 
-void fprint_remote_foot(FILE *f, struct ir_remote *rem)
+void fprint_remote_foot(FILE* f, ir_remote const* rem)
 {
 	fprintf(f, "end remote\n");
 }
 
-void fprint_remote_signal_head(FILE *f, struct ir_remote *rem)
+void fprint_remote_signal_head(FILE* f, ir_remote const* rem)
 {
 	if(!is_raw(rem))
 		fprintf(f, "      begin codes\n");
@@ -276,7 +276,7 @@ void fprint_remote_signal_head(FILE *f, struct ir_remote *rem)
 		fprintf(f, "      begin raw_codes\n\n");
 }
 
-void fprint_remote_signal_foot(FILE *f, struct ir_remote *rem)
+void fprint_remote_signal_foot(FILE* f, ir_remote const* rem)
 {
 	if(!is_raw(rem))
 		fprintf(f, "      end codes\n\n");
@@ -284,14 +284,14 @@ void fprint_remote_signal_foot(FILE *f, struct ir_remote *rem)
 		fprintf(f, "      end raw_codes\n\n");
 }
 
-void fprint_remote_signal(FILE *f,struct ir_remote *rem, struct ir_ncode *codes)
+void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes)
 {
 	int i,j;
 
 	if(!is_raw(rem))
 	{
 		char format[30];
-		struct ir_code_node *loop;
+		ir_code_node* loop;
 		
 #               ifdef LONG_IR_CODE
 		sprintf(format,	"          %%-24s 0x%%0%dllX",
@@ -339,9 +339,9 @@ void fprint_remote_signal(FILE *f,struct ir_remote *rem, struct ir_ncode *codes)
 	}
 }
 
-void fprint_remote_signals(FILE *f, struct ir_remote *rem)
+void fprint_remote_signals(FILE* f, ir_remote const* rem)
 {
-        struct ir_ncode *codes;
+        ir_ncode* codes;
 	
 	fprint_remote_signal_head(f,rem);
 	codes=rem->codes;
@@ -354,7 +354,7 @@ void fprint_remote_signals(FILE *f, struct ir_remote *rem)
 }
 
 
-void fprint_remote(FILE *f, struct ir_remote *rem)
+void fprint_remote(FILE* f, ir_remote const* rem)
 {	
 	fprint_comment(f,rem);
 	fprint_remote_head(f,rem);

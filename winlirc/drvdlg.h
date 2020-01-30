@@ -20,30 +20,17 @@
  * Modifications Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
  */
 
-#if !defined(AFX_DRVDLG_H__C20B80E0_C848_11D2_8C7F_004005637418__INCLUDED_)
-#define AFX_DRVDLG_H__C20B80E0_C848_11D2_8C7F_004005637418__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// drvdlg.h : header file
-//
 
 #include "trayicon.h"
 #include "irdriver.h"
 #include "irconfig.h"
 #include "resource.h"
 
-class CIRConfig;
-
-/////////////////////////////////////////////////////////////////////////////
-// Cdrvdlg dialog
-
 class Cdrvdlg : public CDialog
 {
-// Construction
 public:
-	Cdrvdlg(CWnd* pParent = nullptr);   // standard constructor
+	Cdrvdlg(CWnd* pParent = nullptr);
 	
 	bool initialized;
 	bool AllowTrayNotification;
@@ -52,52 +39,36 @@ public:
 	void GoGreen();
 	void GoBlue();	//turns the tray icon blue to indicate a transmission
 	
-// Dialog Data
-	//{{AFX_DATA(Cdrvdlg)
+	// Dialog Data
 	enum { IDD = IDD_DIALOG };
 	CComboBox	m_IrCodeEditCombo;
 	CComboBox	m_remote_DropDown;
 	CString	m_ircode_edit;
 	CString	m_remote_edit;
 	int	m_reps_edit;
-	//}}AFX_DATA
 
 	CTrayIcon ti;
 	CIRDriver driver;
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(Cdrvdlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
 protected:
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
+	virtual void OnOK() override;
+	virtual void OnCancel() override;
+	virtual BOOL OnInitDialog() override;
 
-	// Generated message map functions
-	//{{AFX_MSG(Cdrvdlg)
-	virtual void OnOK();
-	virtual void OnCancel();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnToggleWindow();
 	afx_msg void OnConfig();
 	afx_msg void OnHideme();
 	afx_msg void OnExitLirc();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
-	virtual BOOL OnInitDialog();
 	afx_msg void OnSendcode();
 	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
 	afx_msg void OnDropdownIrcodeEdit();
-	//}}AFX_MSG
 	afx_msg LRESULT OnPowerBroadcast(WPARAM uPowerEvent, LPARAM lP);
 	void UpdateRemoteComboLists();
 	void UpdateIrCodeComboLists();
 	LRESULT OnTrayNotification(WPARAM uID, LPARAM lEvent);
+
 	DECLARE_MESSAGE_MAP()
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_DRVDLG_H__C20B80E0_C848_11D2_8C7F_004005637418__INCLUDED_)

@@ -19,12 +19,7 @@
  * Copyright (C) 1999 Jim Paris <jim@jtan.com>
  */
 
-#if !defined(AFX_STDAFX_H__4011A5C9_ABBE_11D2_8C7F_004005637418__INCLUDED_)
-#define AFX_STDAFX_H__4011A5C9_ABBE_11D2_8C7F_004005637418__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
 
 #define WINVER 0x0501
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
@@ -38,8 +33,3 @@
 
 #include <winsock2.h>		// winsock 2
 #include <afxsock.h>		// MFC socket extensions
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_STDAFX_H__4011A5C9_ABBE_11D2_8C7F_004005637418__INCLUDED_)
