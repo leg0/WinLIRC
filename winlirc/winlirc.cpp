@@ -24,11 +24,9 @@
 #include "drvdlg.h"
 #include "server.h"
 #include "guicon.h"
+#include <string_view>
 
 Cwinlirc app;
-
-BEGIN_MESSAGE_MAP(Cwinlirc,CWinApp)
-END_MESSAGE_MAP()
 
 BOOL Cwinlirc::InitInstance() {
 
@@ -41,16 +39,16 @@ BOOL Cwinlirc::InitInstance() {
 	// set current directory for plugins from exe path
 
 	{
-		//=====================
-		CString	fullPath;
-		int		indexOfLastSep;
-		//=====================
-
-		GetModuleFileName(nullptr, fullPath.GetBufferSetLength(MAX_PATH+1), MAX_PATH);
-		indexOfLastSep = fullPath.ReverseFind(_T('\\'));
+		wchar_t fullPath[MAX_PATH+1];
+		DWORD const pathLength = GetModuleFileNameW(nullptr, fullPath, MAX_PATH);
+		auto const lastSep = std::find(
+			std::make_reverse_iterator(fullPath + pathLength),
+			std::make_reverse_iterator(fullPath), L'\\');
+		wcscpy(lastSep.base(), L"\\plugins\\");
 		
-		if(!SetCurrentDirectory(fullPath.Left(indexOfLastSep) + _T("\\plugins\\"))) {
-			SetCurrentDirectory(fullPath.Left(indexOfLastSep) + _T("\\"));
+		if (!SetCurrentDirectoryW(fullPath)) {
+			*lastSep = 0;
+			SetCurrentDirectoryW(fullPath);
 		}
 	}
 
@@ -60,50 +58,32 @@ BOOL Cwinlirc::InitInstance() {
 	// command line stuff
 	//
 
-	if(_tcsstr(m_lpCmdLine,_T("/e")) || _tcsstr(m_lpCmdLine,_T("/E"))) {
-		config.exitOnError = TRUE;
-	}
+	std::wstring_view cmdLine{ m_lpCmdLine };
+	auto contains = [](std::wstring_view s, std::wstring_view b) {
+		return s.find(b) != std::wstring_view::npos;
+	};
+	config.exitOnError = contains(cmdLine, L"/e") || contains(cmdLine, L"/E");
+	config.showTrayIcon = !(contains(cmdLine, L"/t") || contains(cmdLine, L"/T"));
 
-	if(_tcsstr(m_lpCmdLine,_T("/t")) || _tcsstr(m_lpCmdLine,_T("/T"))) {
-		config.showTrayIcon = FALSE;
-	}
+	wchar_t mutexName[64];
+	wsprintf(mutexName, L"WinLIRC Multiple Instance Lockout_%i", config.serverPort);
 
-	CString mutexName;
-	mutexName.Format(_T("WinLIRC Multiple Instance Lockout_%i"),config.serverPort);
-
-	if(!CreateMutex(0,FALSE,mutexName) || GetLastError()==ERROR_ALREADY_EXISTS) {
-
-		//=======
-		HWND tmp;
-		//=======
-
-		tmp=FindWindow(nullptr,_T("WinLIRC"));
-
-		if(!tmp)
+	if (!CreateMutex(nullptr, FALSE, mutexName) || GetLastError()==ERROR_ALREADY_EXISTS)
+	{
+		HWND const winlirc = FindWindow(nullptr,_T("WinLIRC"));
+		if (!winlirc)
 		{
-			MessageBox(nullptr,_T("WinLIRC is already running"),_T("WinLIRC"),MB_OK);
+			MessageBoxW(nullptr, L"WinLIRC is already running", L"WinLIRC", MB_OK);
 		}
 		else
 		{
 			// bring it to the top
+			HWND const last = GetLastActivePopup(winlirc);
+			if (!IsWindowVisible(winlirc))
+				ShowWindow(winlirc, SW_SHOW);
 
-			//===========
-			CWnd winlirc;
-			CWnd *last;
-			//===========
-
-			winlirc.Attach(tmp);
-
-			last = winlirc.GetLastActivePopup();
-
-			if(!winlirc.IsWindowVisible()) {
-				winlirc.ShowWindow(SW_SHOW);
-			}
-
-			winlirc.SetForegroundWindow();
-			last->SetForegroundWindow();
-
-			winlirc.Detach();
+			SetForegroundWindow(winlirc);
+			SetForegroundWindow(last);
 		}
 		return FALSE;
 	}
@@ -112,38 +92,33 @@ BOOL Cwinlirc::InitInstance() {
 	//Process initialization and sanity checks
 	//
 	if(SetPriorityClass(GetCurrentProcess(),HIGH_PRIORITY_CLASS)==0 || SetThreadPriority(THREAD_PRIORITY_IDLE)==0) {
-		MessageBox(nullptr,_T("Could not set thread priority."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
+		MessageBoxW(nullptr, L"Could not set thread priority.", L"WinLIRC", MB_OK|MB_ICONERROR);
 		return FALSE;
 	}
 	
-	if(server.startServer()==false) {
-		MessageBox(nullptr,_T("Server could not be started. Try checking the port."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
+	if(!server.startServer()) {
+		MessageBoxW(nullptr,L"Server could not be started. Try checking the port.", L"WinLIRC", MB_OK|MB_ICONERROR);
 	}
 
 	WL_DEBUG("Creating main dialog...\n");
 
-	dlg = new Cdrvdlg();
+	dlg.reset(new Cdrvdlg());
 
 	if(!dlg->Create(IDD_DIALOG,nullptr)) {
-		delete dlg;
-		dlg = nullptr;
-		MessageBox(nullptr,_T("Program exiting."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
+		dlg.reset();
+		MessageBoxW(nullptr, L"Program exiting.", L"WinLIRC", MB_OK|MB_ICONERROR);
 		return FALSE;
 	}
 
-	dlg->ShowWindow(SW_HIDE);	
+	dlg->ShowWindow(SW_HIDE);
 	dlg->UpdateWindow();
-	m_pMainWnd = dlg;
+	m_pMainWnd = dlg.get();
 	
 	return TRUE;
 }
 
 int Cwinlirc::ExitInstance()
 {
-	if(dlg) {
-		delete dlg;
-		dlg = nullptr;
-	}
-
+	dlg.reset();
 	return CWinApp::ExitInstance();
 }

@@ -29,16 +29,16 @@
 #define new DEBUG_NEW
 #endif
 
+#include <memory>
+
 class Cwinlirc : public CWinApp
 {
 public:
-	Cdrvdlg *dlg;
+	std::unique_ptr<Cdrvdlg> dlg;
 	Cserver server;
 
 	virtual BOOL InitInstance() override;
 	virtual int ExitInstance() override;
-protected:
-	DECLARE_MESSAGE_MAP()
 };
 
 extern Cwinlirc app;
