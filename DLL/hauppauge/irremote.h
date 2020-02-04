@@ -47,5 +47,5 @@ public:
 	IrRemote(const wchar_t* libPath);
 	~IrRemote();
 
-	bool getKey(char *out);
+	bool getKey(char *out, size_t out_size);
 };

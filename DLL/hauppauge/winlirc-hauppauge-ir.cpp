@@ -168,13 +168,13 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats)
 	return FALSE;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out)
+WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
 {
 	trace(L"decodeIR");
 
 	if(g_ir)
 	{
-		while(!g_ir->getKey(out))
+		while(!g_ir->getKey(out, out_size))
 			if(WaitForSingleObject(g_exitEvent, 100) == WAIT_OBJECT_0) //= sleep(100)
 			{
 				trace(L"exitEvent signaled");

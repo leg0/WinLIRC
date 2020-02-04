@@ -124,7 +124,7 @@ bool SendReceive::dataReady() {
 	return true;
 }
 
-int SendReceive::decodeCommand(char *out) {
+int SendReceive::decodeCommand(char *out, size_t out_size) {
 
 	//==================
 	char buttonName[32];
@@ -178,7 +178,7 @@ int SendReceive::decodeCommand(char *out) {
 			}
 	}
 
-	_snprintf_s(out,PACKET_SIZE+1,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),m_repeats,buttonName,"Xbox360");
+	_snprintf_s(out,out_size,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),m_repeats,buttonName,"Xbox360");
 
 	m_value = 0;
 	

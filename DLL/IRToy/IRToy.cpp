@@ -170,7 +170,7 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 
@@ -180,7 +180,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 		clear_rec_buffer(&hw);
 
-		if(decodeCommand(&hw,remotes,out)) {
+		if(decodeCommand(&hw,remotes,out,out_size)) {
 			return 1;
 		}
 	}

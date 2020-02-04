@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "../DLL/Common/WLPluginAPI.h"
+
 struct ir_remote;
 struct ir_ncode;
 
@@ -37,20 +39,20 @@ public:
 	BOOL	init			();
 	void	deinit			();
 	int		sendIR			(ir_remote* remote, ir_ncode* code, int repeats);
-	int		decodeIR		(ir_remote* remote, char* out);
+	int		decodeIR		(ir_remote* remote, char* out, size_t out_size);
 	int		setTransmitters	(unsigned int transmitterMask);
 
 	void	DaemonThreadProc() const;
 
 private:
 
-	using InitFunction            = int(*)(HANDLE);
-	using DeinitFunction          = void(*)();
-	using HasGuiFunction          = int(*)();
-	using LoadSetupGuiFunction    = void(*)();
-	using SendFunction            = int(*)(ir_remote *remote, ir_ncode *code, int repeats);
-	using DecodeFunction          = int(*)(ir_remote *remote, char *out);
-	using SetTransmittersFunction = int(*)(unsigned int transmitterMask);
+	using InitFunction = decltype(::init)*;
+	using DeinitFunction = decltype(::deinit)*;
+	using HasGuiFunction = decltype(::hasGui)*;
+	using LoadSetupGuiFunction = decltype(::loadSetupGui)*;
+	using SendFunction = decltype(::sendIR)*;
+	using DecodeFunction = decltype(::decodeIR)*;
+	using SetTransmittersFunction = decltype(::setTransmitters)*;
 
 	/// Protects access to the functions imported from plug-in dll, and the
 	/// DLL handle.

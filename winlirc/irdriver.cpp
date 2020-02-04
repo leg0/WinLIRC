@@ -166,11 +166,11 @@ int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeat
 	return 0;
 }
 
-int	CIRDriver::decodeIR(struct ir_remote *remote, char *out) {
+int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
 
 	CSingleLock l(&m_dllLock);
 	if(m_dll.decodeFunction) {
-		return m_dll.decodeFunction(remote,out);
+		return m_dll.decodeFunction(remote,out, out_size);
 	}
 
 	return 0;
@@ -201,7 +201,7 @@ void CIRDriver::DaemonThreadProc(void) const {
 
 		CSingleLock l(&m_dllLock);
 		ASSERT(m_dll.decodeFunction != nullptr);
-		if(m_dll.decodeFunction(global_remotes,message)) {
+		if(m_dll.decodeFunction(global_remotes,message, sizeof(message))) {
 			l.Unlock();
 
 			//======================

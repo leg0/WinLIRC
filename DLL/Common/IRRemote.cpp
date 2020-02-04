@@ -398,7 +398,7 @@ int write_message(char *buffer, size_t size, const char *remote_name,
 	return len;
 }
 
-bool decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *out)
+WINLIRC_API bool decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
 {
     auto& hw = *phw;
 	struct ir_remote *remote;
@@ -446,7 +446,7 @@ bool decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *
 				remote->last_code->current = remote->last_code->next;
 			}
 			
-			len = write_message(out, PACKET_SIZE+1,
+			len = write_message(out, out_size,
 					    remote->name,
 					    remote->last_code->name, "", code,
 					    remote->reps-(ncode->next ? 1:0));

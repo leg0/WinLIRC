@@ -83,7 +83,7 @@ bool IrRemote::initFunctions(const HMODULE hMod)
 		return true;
 }
 
-bool IrRemote::getKey(char *out)
+bool IrRemote::getKey(char *out, size_t out_size)
 {
 	int32_t keyHit, repeatCode, systemCode, keyCode;
 	keyHit = IR_GetSystemKeyCode(&repeatCode, &systemCode, &keyCode);
@@ -98,7 +98,7 @@ bool IrRemote::getKey(char *out)
 
 		trace(L"Key: kh: %i, rc: %i, sc: %i, kc: %i, repeats: %i", keyHit, repeatCode, systemCode, keyCode, m_repeats);
 		
-		sprintf_s(out, PACKET_SIZE+1, "%016llx %02x btn%d hauppauge%d\n", __int64(keyCode), m_repeats, keyCode, systemCode);
+		sprintf_s(out, out_size, "%016llx %02x btn%d hauppauge%d\n", __int64(keyCode), m_repeats, keyCode, systemCode);
 		return true;
 	}
 	return false;

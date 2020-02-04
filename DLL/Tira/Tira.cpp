@@ -181,7 +181,7 @@ WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 
 extern bool waitForData(lirc_t timeout);
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	last = end;
 
@@ -193,7 +193,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	gettimeofday		(&end,nullptr);
 
-	if(decodeCommand(&hw,remotes,out)) {
+	if(decodeCommand(&hw,remotes,out,out_size)) {
 		ResetEvent(dataReadyEvent);
 		return 1;
 	}

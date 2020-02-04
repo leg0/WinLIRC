@@ -16,7 +16,7 @@ public:
 	void threadProc				();
 	bool waitTillDataIsReady	(int maxUSecs);
 	bool dataReady				();
-	int	 decodeCommand			(char *out);
+	int	 decodeCommand			(char *out, size_t out_size);
 
 private:
 

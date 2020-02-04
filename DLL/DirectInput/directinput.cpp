@@ -110,7 +110,7 @@ WL_API void loadSetupGui() { }
 
 WL_API int sendIR(struct ir_remote*, struct ir_ncode*, int) { return 0; }
 
-WL_API int decodeIR(struct ir_remote*, char *out)
+WL_API int decodeIR(struct ir_remote*, char *out, size_t out_size)
 {
     if (!g_initialized)
         return 0;
@@ -164,7 +164,7 @@ WL_API int decodeIR(struct ir_remote*, char *out)
             // TODO: add support for analogue inputs
             if (foundButton)
             {
-                _snprintf_s(out, PACKET_SIZE, PACKET_SIZE, "%016llx %02x %s DirectInput\n", int64_t{0}, 1, buttonName);
+                _snprintf_s(out, out_size, PACKET_SIZE, "%016llx %02x %s DirectInput\n", int64_t{0}, 1, buttonName);
                 return 1;
             }
         }

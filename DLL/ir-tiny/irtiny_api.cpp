@@ -6,6 +6,7 @@
 #include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Receive.h"
+#include "../Common/WLPluginAPI.h"
 
 static std::unique_ptr<irtiny::CIRDriver> irDriver;
 
@@ -45,44 +46,44 @@ hardware hw /*irtiny_hardware*/ =
     nullptr // get_ir_code 
 };
 
-extern "C" int init(HANDLE exitEvent)
+WL_API int init(HANDLE exitEvent)
 {
     init_rec_buffer();
     irDriver.reset(new irtiny::CIRDriver(exitEvent));
     return irDriver->initPort();
 }
 
-extern "C" void deinit()
+WL_API void deinit()
 {
     irDriver.reset();
 }
 
-extern "C" int hasGui()
+WL_API int hasGui()
 {
     return TRUE;
 }
 
-extern "C" void loadSetupGui()
+WL_API void loadSetupGui()
 {
     irtiny::ConfigDialog dlg;
     dlg.DoModal();
 }
 
-extern "C" int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
+WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 {
     return 0;
 }
 
-extern "C" int decodeIR(struct ir_remote *remotes, char *out)
+WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
 {
     if (!irDriver || !irDriver->waitTillDataIsReady(0))
         return 0;
 
     clear_rec_buffer(&hw);
-    return decodeCommand(&hw,remotes, out);
+    return decodeCommand(&hw,remotes, out, out_size);
 }
 
-extern "C" hardware* getHardware()
+WL_API hardware* getHardware()
 {
     return &hw; // &irtiny_hardware;
 }

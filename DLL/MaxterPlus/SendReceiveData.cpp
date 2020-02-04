@@ -203,7 +203,7 @@ void SendReceiveData::restoreFeatures() {
 	HidD_SetFeature (device.HidDevice, device.FeatureReportBuffer, device.Caps.FeatureReportByteLength);
 }
 
-int SendReceiveData::decodeCommand(char *out) {
+int SendReceiveData::decodeCommand(char *out, size_t out_size) {
 
 	//==================
 	UINT outCode;
@@ -288,7 +288,7 @@ int SendReceiveData::decodeCommand(char *out) {
 	lastValue	= irCode;
 	irCode		= 0;
 
-	_snprintf_s(out,PACKET_SIZE+1,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),repeats,buttonName,"MaxterPlus");
+	_snprintf_s(out, out_size,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),repeats,buttonName,"MaxterPlus");
 
 	return 1;
 
