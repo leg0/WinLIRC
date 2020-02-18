@@ -21,11 +21,11 @@
  * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
-#ifndef IRDRIVER_H
-#define IRDRIVER_H
+#pragma once
 
 #include <Windows.h>
 #include <atlstr.h>
+#include "../DLL/Common/WLPluginAPI.h"
 
 class CIRDriver {
 
@@ -38,19 +38,19 @@ public:
 	BOOL	init		();
 	void	deinit		();
 	int		sendIR		(struct ir_remote *remote,struct ir_ncode *code, int repeats);
-	int		decodeIR	(struct ir_remote *remote, char *out);
+	int		decodeIR	(struct ir_remote *remote, char *out, size_t out_size);
 
 	struct hardware* getHardware();
 
 private:
 
-	typedef int	 (*InitFunction)			(HANDLE);
-	typedef void (*DeinitFunction)			(void);
-	typedef int  (*HasGuiFunction)			(void);
-	typedef void (*LoadSetupGuiFunction)	(void);
-	typedef int	 (*SendFunction)			(struct ir_remote *remote,struct ir_ncode *code, int repeats);
-	typedef int  (*DecodeFunction)			(struct ir_remote *remote, char *out);
-	typedef struct hardware* (*GetHardware)	(void);
+	using InitFunction = decltype(::init)*;
+	using DeinitFunction = decltype(::deinit)*;
+	using HasGuiFunction = decltype(::hasGui)*;
+	using LoadSetupGuiFunction = decltype(::loadSetupGui)*;
+	using SendFunction = decltype(::sendIR)*;
+	using DecodeFunction = decltype(::decodeIR)*;
+	using GetHardware = decltype(::getHardware)*;
 
 	InitFunction			initFunction;
 	DeinitFunction			deinitFunction;
@@ -65,5 +65,3 @@ private:
 	HMODULE		dllFile;
 	//==============================
 };
-
-#endif

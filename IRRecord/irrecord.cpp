@@ -566,7 +566,7 @@ int main(int argc,char **argv)
 		Sleep(1000);
 		while(availabledata())
 		{
-			irDriver.decodeIR(NULL,NULL);
+			irDriver.decodeIR(NULL,NULL, 0);
 		}
 		if(!get_toggle_bit_mask(&remote))
 		{
@@ -633,7 +633,7 @@ int main(int argc,char **argv)
 		{
 			while(availabledata())
 			{
-				irDriver.decodeIR(NULL,NULL);
+				irDriver.decodeIR(NULL,NULL,0);
 			}
 		}
 		printf("\nNow hold down button \"%s\".\n",buffer);
@@ -735,7 +735,7 @@ int main(int argc,char **argv)
 			Sleep(1000);
 			while(availabledata())
 			{
-				irDriver.decodeIR(NULL,NULL);
+				irDriver.decodeIR(NULL,NULL,0);
 
 				if(hw.decode_func(&hw,&remote,&pre,&code,&post,
 					&repeat_flag,
@@ -753,7 +753,7 @@ int main(int argc,char **argv)
 				ncode.name=buffer;
 				ncode.code=code;
 
-				irDriver.decodeIR(NULL,NULL);
+				irDriver.decodeIR(NULL,NULL,0);
 				if(hw.decode_func(&hw,&remote,&pre,&code2,&post,
 					&repeat_flag,
 					&min_remaining_gap,
@@ -966,7 +966,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 	seq=repeats=0;found=0;
 	while(availabledata())
 	{
-		irDriver.decodeIR(NULL,NULL);
+		irDriver.decodeIR(NULL,NULL,0);
 	}
 	while(retval==EXIT_SUCCESS && retries>0)
 	{
@@ -978,7 +978,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 			break;
 		}
 
-		irDriver.decodeIR(remote,message);
+		irDriver.decodeIR(remote,message,sizeof(message));
 
 		if(is_rc6(remote) && remote->rc6_mask==0)
 		{
@@ -2362,7 +2362,7 @@ int get_gap_length(struct ir_remote *remote)
 	{
 		while(availabledata())
 		{
-			irDriver.decodeIR(NULL,NULL);
+			irDriver.decodeIR(NULL,NULL,0);
 		}
 		if(!waitfordata(10000000))
 		{
@@ -2372,7 +2372,7 @@ int get_gap_length(struct ir_remote *remote)
 		gettimeofday(&start);
 		while(availabledata())
 		{
-			irDriver.decodeIR(NULL,NULL);
+			irDriver.decodeIR(NULL,NULL,0);
 		}
 		gettimeofday(&end);
 		if(flag)

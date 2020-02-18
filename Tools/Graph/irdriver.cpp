@@ -125,10 +125,10 @@ int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeat
 	return 0;
 }
 
-int	CIRDriver::decodeIR(struct ir_remote *remote, char *out) {
+int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
 
 	if(decodeFunction) {
-		return decodeFunction(remote,out);
+		return decodeFunction(remote,out, out_size);
 	}
 
 	return 0;
