@@ -45,6 +45,7 @@ add_executable(winlirc WIN32
     winlirc.rc
 
     config.h
+    dll.h
     drvdlg.h
     dumpcfg.h
     globals.h

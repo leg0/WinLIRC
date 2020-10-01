@@ -26,7 +26,11 @@
 #include "winlirc.h"
 #include "drvdlg.h"
 
-#define SAFE_CLOSE_SOCKET(a) if(a!=INVALID_SOCKET) { closesocket(a); a = INVALID_SOCKET; }
+#include <algorithm>
+#include <string_view>
+
+using namespace std::string_view_literals;
+
 #define LISTENQ		4		// listen queue size
 #define MAX_DATA	1024	// longest message a client can send
 
@@ -34,17 +38,7 @@ UINT ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
 
 Cserver::Cserver()
 {
-	//===========
 	WSADATA data;
-	//===========
-
-	for(int i=0;i<MAX_CLIENTS;i++) {
-		m_clients[i] = INVALID_SOCKET;
-	}
-
-	m_server = INVALID_SOCKET;
-	m_serverThreadHandle = nullptr;
-
 	m_winsockStart = WSAStartup(MAKEWORD(2,0),&data);
 }
 
@@ -72,14 +66,13 @@ bool Cserver::startServer()
 		return false;
 	}
 
-	m_server = socket(AF_INET,SOCK_STREAM,0);
+	Socket server{ socket(AF_INET, SOCK_STREAM, 0) };
 
-	if(m_server==INVALID_SOCKET) { 
+	if(!server) { 
 		WL_DEBUG("socket failed, WSAGetLastError=%d\n",WSAGetLastError());
 		return false;
 	}
-
-	memset(&serv_addr,0,sizeof(struct sockaddr_in));
+	memset(&serv_addr,0,sizeof(sockaddr_in));
 
 	serv_addr.sin_family		= AF_INET;
 	serv_addr.sin_addr.s_addr	= htonl(INADDR_ANY);
@@ -89,23 +82,24 @@ bool Cserver::startServer()
 		serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	}
 
-	if(bind(m_server,(struct sockaddr *)&serv_addr,sizeof(serv_addr))==SOCKET_ERROR){ 
+	if(bind(server.get(),(sockaddr *)&serv_addr,sizeof(serv_addr))==SOCKET_ERROR){ 
 		WL_DEBUG("bind failed\n"); 
 		return false; 
 	}
 
-	if(listen(m_server,LISTENQ)==SOCKET_ERROR) { 
+	if(listen(server.get(),LISTENQ)==SOCKET_ERROR) { 
 		WL_DEBUG("listen failed\n"); 
 		return false; 
 	}
 
 	// THREAD_PRIORITY_IDLE combined with the HIGH_PRIORITY_CLASS
 	// of this program still results in a really high priority. (16 out of 31)
-	if((m_serverThreadHandle = AfxBeginThread(ServerThread,(void *)this,THREAD_PRIORITY_IDLE))==nullptr) {
+	if((m_serverThreadHandle = AfxBeginThread(ServerThread,this,THREAD_PRIORITY_IDLE))==nullptr) {
 		WL_DEBUG("AfxBeginThread failed\n");
 		return false;
 	}
 
+	m_server = std::move(server);
 	return true;
 }
 
@@ -113,40 +107,34 @@ void Cserver::stopServer()
 {
 	KillThread(&m_serverThreadHandle,&m_serverThreadEvent);
 
-	for(int i=0;i<MAX_CLIENTS;i++) {
-		SAFE_CLOSE_SOCKET(m_clients[i]);
+	for (auto& client : m_clients)
+	{
+		client.reset();
 	}
 
-	SAFE_CLOSE_SOCKET(m_server);
+	m_server.reset();
 }
 
 void Cserver::sendToClients(const char *s)
 {
-	for(int i=0;i<MAX_CLIENTS;i++) {
-		if(m_clients[i]!=INVALID_SOCKET) {
-			sendData(m_clients[i],s);
-		}
+	for (auto& client : m_clients)
+	{
+		sendData(client, s);
 	}
 }
 
-void Cserver::sendData(SOCKET socket, const char *s) {
+void Cserver::sendData(Socket& socket, const char* s) {
 
-	//=========
-	int	length;
-	int	sent;
-	//=========
+	if (!socket || !s)
+		return;
 
-	if(socket==INVALID_SOCKET || !s) {	// sanity checking
-		return;				
-	}
+	int length = (int)strlen(s);			// must be null terminated
+	int sent = 0;
 
-	length	= (int)strlen(s);			// must be null terminated
-	sent	= 0;
+	while (length > 0) {
+		sent = send(socket.get(), s + sent, length, 0);
 
-	while(length>0) {
-		sent = send(socket,s+sent,length,0);
-
-		if(sent == SOCKET_ERROR) break;
+		if (sent == SOCKET_ERROR) break;
 
 		length -= sent;
 	}
@@ -167,14 +155,12 @@ void Cserver::reply(const char *command,int client,bool success,const char *data
 	
 	packet += "END\n";
 
-	if (m_clients[client]!=INVALID_SOCKET) {
-		sendData(m_clients[client],packet);
-	}
+	sendData(m_clients[client], packet);
 }
 
 void Cserver::ThreadProc(void)
 {
-	if(m_server==INVALID_SOCKET) 
+	if (!m_server)
 		return;
 
 	//=========================================
@@ -186,7 +172,7 @@ void Cserver::ThreadProc(void)
 	HANDLE	events[MAX_CLIENTS+2];
 	//=========================================
 	
-	WSAEventSelect(m_server,serverEvent,FD_ACCEPT);
+	WSAEventSelect(m_server.get(), serverEvent, FD_ACCEPT);
 
 	for(i=0;i<MAX_CLIENTS;i++) {
 		clientData[i][0] = '\0';
@@ -198,13 +184,13 @@ void Cserver::ThreadProc(void)
 		events[count++] = m_serverThreadEvent;	// exit event
 		events[count++] = serverEvent;
 
-		for(i=0;i<MAX_CLIENTS;i++) {
-			if(m_clients[i]!=INVALID_SOCKET) {
+		for (i = 0; i < MAX_CLIENTS; i++) {
+			if (m_clients[i]) {
 				events[count++] = clientEvent[i];
 			}
 		}
 		
-		DWORD res = WaitForMultipleObjects(count,events,FALSE,INFINITE);
+		DWORD res = WaitForMultipleObjects(count, events, FALSE, INFINITE);
 
 		if(res==WAIT_OBJECT_0) 
 		{
@@ -214,34 +200,25 @@ void Cserver::ThreadProc(void)
 		else if(res==(WAIT_OBJECT_0+1))
 		{
 			for(i=0;i<MAX_CLIENTS;i++) {
-				if(m_clients[i]==INVALID_SOCKET) break;
+				if(!m_clients[i]) break;
 			}
 
+			Socket tempSocket{ accept(m_server.get(), nullptr, nullptr) };
 			if(i==MAX_CLIENTS)
 			{
-				//================
-				SOCKET tempSocket;
-				CStringA errorMsg;
-				//================
-
-				errorMsg	= "Sorry the server is full.\n";
-				tempSocket	= accept(m_server,nullptr,nullptr);
-				
-				::send(tempSocket,errorMsg,errorMsg.GetLength(),0);
-				closesocket(tempSocket);
-
+				auto errorMsg = "Sorry the server is full.\n"sv;
+				::send(tempSocket.get(), errorMsg.data(), errorMsg.size(), 0);
 				continue;
 			}
 			
-			m_clients[i] = accept(m_server,nullptr,nullptr);
-
-			if(m_clients[i]==INVALID_SOCKET)
+			if(!tempSocket)
 			{
 				WL_DEBUG("accept() failed\n");
 				continue;
 			}
+			m_clients[i] = std::move(tempSocket);
 
-			WSAEventSelect(m_clients[i],clientEvent[i],FD_CLOSE|FD_READ);
+			WSAEventSelect(m_clients[i].get(), clientEvent[i], FD_CLOSE | FD_READ);
 			clientEvent[i].ResetEvent();
 			clientData[i][0]='\0';
 			WL_DEBUG("Client connection %d accepted\n",i);
@@ -250,19 +227,19 @@ void Cserver::ThreadProc(void)
 		{
 			for(i=0;i<MAX_CLIENTS;i++)
 			{
-				if(m_clients[i]!=INVALID_SOCKET)
+				if(m_clients[i])
 				{
 					if(res==(WAIT_OBJECT_0+(2+i)))
 					{
 						/* either we got data or the connection closed */
 						int curlen	= (int)strlen(clientData[i]);
 						int maxlen	= MAX_DATA-curlen-1;
-						int bytes	= recv(	m_clients[i], clientData[i]+curlen, maxlen, 0);
+						int bytes	= recv(m_clients[i].get(), clientData[i]+curlen, maxlen, 0);
 
 						if(bytes==0 || bytes==SOCKET_ERROR)
 						{
 							/* Connection was closed or something's screwy */
-							SAFE_CLOSE_SOCKET(m_clients[i]);
+							m_clients[i].reset();
 							WL_DEBUG("Client connection %d closed\n",i);
 						}
 						else /* bytes > 0, we read data */

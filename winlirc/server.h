@@ -21,6 +21,27 @@
 
 #pragma once
 
+#include "../DLL/Common/UniqueHandle.h"
+#include <array>
+
+struct SocketTraits
+{
+	using HandleType = SOCKET;
+
+	static HandleType invalidValue() noexcept
+	{
+		return INVALID_SOCKET;
+	}
+
+	static void close(HandleType h) noexcept
+	{
+		if (h != invalidValue())
+			::closesocket(h);
+	}
+};
+
+using Socket = winlirc::UniqueHandle<SocketTraits>;
+
 static constexpr size_t MAX_CLIENTS = 8;
 
 class Cserver
@@ -42,13 +63,14 @@ public:
 	void ThreadProc();
 
 private:
-	void sendData			(SOCKET socket, const char *s);
+	void sendData			(Socket& socket, const char *s);
 	void reply				(const char *command,int client,bool success,const char *data);
 
-	SOCKET		m_server;
-	SOCKET		m_clients[MAX_CLIENTS];
+	Socket m_server;
+	std::array<Socket, MAX_CLIENTS> m_clients;
+
 	int			m_tcp_port;				//tcp port for server
-	CWinThread* m_serverThreadHandle;
+	CWinThread* m_serverThreadHandle = nullptr;
 	CEvent		m_serverThreadEvent;
 	int			m_winsockStart;
 };
