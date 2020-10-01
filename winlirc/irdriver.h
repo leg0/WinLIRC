@@ -24,6 +24,7 @@
 #pragma once
 
 #include "../DLL/Common/WLPluginAPI.h"
+#include "dll.h"
 
 struct ir_remote;
 struct ir_ncode;
@@ -58,20 +59,26 @@ private:
 	/// DLL handle.
 	/// TODO: move all the load/unload logic and related stuff to Dll class.
 	mutable CCriticalSection	m_dllLock;
-	struct Dll
+	struct Plugin
 	{
-		InitFunction			initFunction;
-		DeinitFunction			deinitFunction;
-		HasGuiFunction			hasGuiFunction;
-		LoadSetupGuiFunction	loadSetupGuiFunction;
-		SendFunction			sendFunction;
-		DecodeFunction			decodeFunction;
-		SetTransmittersFunction setTransmittersFunction;
-		HMODULE		dllFile;
+		InitFunction			initFunction = nullptr;
+		DeinitFunction			deinitFunction = nullptr;
+		HasGuiFunction			hasGuiFunction = nullptr;
+		LoadSetupGuiFunction	loadSetupGuiFunction = nullptr;
+		SendFunction			sendFunction = nullptr;
+		DecodeFunction			decodeFunction = nullptr;
+		SetTransmittersFunction setTransmittersFunction = nullptr;
+		Dll dllFile;
+
+		Plugin() = default;
+		Plugin(Plugin const&) = delete;
+		Plugin(Plugin&&) = default;
+		Plugin& operator=(Plugin const&) = delete;
+		Plugin& operator=(Plugin&&) = default;
 	};
 
 	//===============================
-	Dll			m_dll;
+	Plugin		m_dll;
 	CString		m_loadedPlugin;
 	HANDLE		m_daemonThreadEvent;
 	CWinThread*	m_daemonThreadHandle;

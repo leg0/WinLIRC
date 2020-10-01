@@ -36,16 +36,6 @@ unsigned int DaemonThread(void* drv) {
 	
 CIRDriver::CIRDriver()
 {
-	m_dll.initFunction				= nullptr;
-	m_dll.deinitFunction			= nullptr;
-	m_dll.hasGuiFunction			= nullptr;
-	m_dll.loadSetupGuiFunction		= nullptr;
-	m_dll.sendFunction				= nullptr;
-	m_dll.decodeFunction			= nullptr;
-	m_dll.setTransmittersFunction	= nullptr;
-
-	m_dll.dllFile					= nullptr;
-
 	m_daemonThreadHandle			= nullptr;
 	m_daemonThreadEvent				= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 }
@@ -73,20 +63,22 @@ BOOL CIRDriver::loadPlugin(CString plugin) {
 	CSingleLock l(&m_dllLock);
 	unloadPlugin();
 
-	m_loadedPlugin	= plugin;
-	m_dll.dllFile	= LoadLibrary(plugin);
+	Plugin p;
+	p.dllFile.reset(LoadLibrary(plugin));
+	Dll& d = p.dllFile;
+	if(!d) return FALSE;
 
-	if(!m_dll.dllFile) return FALSE;
+	p.initFunction				= (InitFunction)			GetProcAddress(d.get(),"init");
+	p.deinitFunction			= (DeinitFunction)			GetProcAddress(d.get(),"deinit");
+	p.hasGuiFunction			= (HasGuiFunction)			GetProcAddress(d.get(),"hasGui");
+	p.loadSetupGuiFunction		= (LoadSetupGuiFunction)	GetProcAddress(d.get(),"loadSetupGui");
+	p.sendFunction				= (SendFunction)			GetProcAddress(d.get(),"sendIR");
+	p.decodeFunction			= (DecodeFunction)			GetProcAddress(d.get(),"decodeIR");
+	p.setTransmittersFunction	= (SetTransmittersFunction)	GetProcAddress(d.get(),"setTransmitters");
 
-	m_dll.initFunction				= (InitFunction)			GetProcAddress(m_dll.dllFile,"init");
-	m_dll.deinitFunction			= (DeinitFunction)			GetProcAddress(m_dll.dllFile,"deinit");
-	m_dll.hasGuiFunction			= (HasGuiFunction)			GetProcAddress(m_dll.dllFile,"hasGui");
-	m_dll.loadSetupGuiFunction		= (LoadSetupGuiFunction)	GetProcAddress(m_dll.dllFile,"loadSetupGui");
-	m_dll.sendFunction				= (SendFunction)			GetProcAddress(m_dll.dllFile,"sendIR");
-	m_dll.decodeFunction			= (DecodeFunction)			GetProcAddress(m_dll.dllFile,"decodeIR");
-	m_dll.setTransmittersFunction	= (SetTransmittersFunction)	GetProcAddress(m_dll.dllFile,"setTransmitters");
-
-	if(m_dll.initFunction && m_dll.deinitFunction && m_dll.hasGuiFunction && m_dll.loadSetupGuiFunction && m_dll.sendFunction && m_dll.decodeFunction) {
+	if(p.initFunction && p.deinitFunction && p.hasGuiFunction && p.loadSetupGuiFunction && p.sendFunction && p.decodeFunction) {
+		m_dll = std::move(p);
+		m_loadedPlugin = plugin;
 		return TRUE;
 	}
 
@@ -102,20 +94,8 @@ void CIRDriver::unloadPlugin() {
 
 	// daemon thread should not be dead now.
 	ASSERT(m_daemonThreadHandle == nullptr);
-
-	m_dll.initFunction				= nullptr;
-	m_dll.deinitFunction			= nullptr;
-	m_dll.hasGuiFunction			= nullptr;
-	m_dll.loadSetupGuiFunction		= nullptr;
-	m_dll.sendFunction				= nullptr;
-	m_dll.decodeFunction			= nullptr;
-	m_dll.setTransmittersFunction	= nullptr;
-
-	if(m_dll.dllFile) {
-		FreeLibrary(m_dll.dllFile);
-	}
-
-	m_dll.dllFile					= nullptr;
+	m_loadedPlugin = "";
+	m_dll = Plugin{ };
 }
 
 BOOL CIRDriver::init() {

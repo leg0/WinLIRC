@@ -74,3 +74,6 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
 
     set_target_properties( winlirc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${CFG} )
 endforeach()
+
+find_package(Microsoft.GSL CONFIG REQUIRED)
+target_link_libraries(winlirc PRIVATE Microsoft.GSL::GSL)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "afxwin.h"
+#include "dll.h"
 
 class InputPlugin : public CDialog
 {
@@ -8,7 +9,6 @@ class InputPlugin : public CDialog
 
 public:
 	InputPlugin(CWnd* pParent = nullptr);
-	virtual ~InputPlugin();
 
 	enum { IDD = IDD_DIALOG1 };
 
@@ -28,7 +28,7 @@ private:
 	HasGuiFunction			m_hasGuiFunction;
 	LoadSetupGuiFunction	m_loadSetupGuiFunction;
 
-	HMODULE					m_dllFile;
+	Dll m_dllFile;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support

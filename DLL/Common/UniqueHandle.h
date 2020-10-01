@@ -1,7 +1,17 @@
 #pragma once
 
+#include <concepts>
+
 namespace winlirc
 {
+    template <typename T>
+    concept HandleTraits =
+        requires(T x, T::HandleType h)
+        {
+            T::invalidValue();
+            T::close(h);
+        };
+
     /// UniqueHandle is wrapper around a handle value and manages the
     /// ownership of this handle. A handle could be file handle, window
     /// handle, event, ...
@@ -12,12 +22,12 @@ namespace winlirc
     ///    value for the handle
     ///   unspecified_type close(HandleType) - function to close a valid handle
     ///   
-    template <typename HandleTraits>
+    template <HandleTraits T>
     class UniqueHandle
     {
     protected:
-        typedef HandleTraits Traits;
-        typedef typename Traits::HandleType HandleType;
+        using Traits = T;
+        using HandleType = typename Traits::HandleType;
 
     public:
         UniqueHandle(UniqueHandle const&) = delete;

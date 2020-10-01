@@ -8,6 +8,7 @@
 #include <atlbase.h>
 #include "Server.h"
 
+#include <utility>
 
 // InputPlugin dialog
 
@@ -18,11 +19,6 @@ InputPlugin::InputPlugin(CWnd* pParent /*=nullptr*/)
 {
 	m_hasGuiFunction		= nullptr;
 	m_loadSetupGuiFunction	= nullptr;
-	m_dllFile				= nullptr;
-}
-
-InputPlugin::~InputPlugin()
-{
 }
 
 void InputPlugin::listDllFiles() {
@@ -82,22 +78,17 @@ void InputPlugin::listDllFiles() {
 
 bool InputPlugin::checkDllFile(CString file) {
 
-	//==========
-	HMODULE tmp;
-	//==========
+	Dll dll{ LoadLibrary(file) };
 
-	tmp = LoadLibrary(file);
+	if(!dll) return false;
+	auto tmp = dll.get();
 
-	if(!tmp) return false;
-
-	if(!GetProcAddress(tmp,"init"))			{ FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,"deinit"))		{ FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,"hasGui"))		{ FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,"loadSetupGui")) { FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,"sendIR"))		{ FreeLibrary(tmp); return false; }
-	if(!GetProcAddress(tmp,"decodeIR"))		{ FreeLibrary(tmp); return false; }
-
-	FreeLibrary(tmp);
+	if(!GetProcAddress(tmp,"init"))			return false;
+	if(!GetProcAddress(tmp,"deinit"))		return false;
+	if(!GetProcAddress(tmp,"hasGui"))		return false;
+	if(!GetProcAddress(tmp,"loadSetupGui")) return false;
+	if(!GetProcAddress(tmp,"sendIR"))		return false;
+	if(!GetProcAddress(tmp,"decodeIR"))		return false;
 
 	return true;
 }
@@ -143,14 +134,15 @@ void InputPlugin::enableWindows(bool canRecord) {
 
 }
 
-void InputPlugin::loadDll(CString file) {
+void InputPlugin::loadDll(CString file)
+{
+	if (Dll dll{ LoadLibrary(file) })
+	{
+		m_hasGuiFunction = (HasGuiFunction)GetProcAddress(dll.get(), "hasGui");
+		m_loadSetupGuiFunction = (LoadSetupGuiFunction)GetProcAddress(dll.get(), "loadSetupGui");
 
-	m_dllFile = LoadLibrary(file);
-
-	if(!m_dllFile) return;
-
-	m_hasGuiFunction		= (HasGuiFunction)			GetProcAddress(m_dllFile,"hasGui");
-	m_loadSetupGuiFunction	= (LoadSetupGuiFunction)	GetProcAddress(m_dllFile,"loadSetupGui");
+		m_dllFile = std::move(dll);
+	}
 }
 
 void InputPlugin::unloadDll() {
@@ -161,9 +153,7 @@ void InputPlugin::unloadDll() {
 	m_hasGuiFunction		= nullptr;
 	m_loadSetupGuiFunction	= nullptr;
 
-	FreeLibrary(m_dllFile);
-
-	m_dllFile				= nullptr;
+	m_dllFile.reset();
 }
 
 
