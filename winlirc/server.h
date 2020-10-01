@@ -21,27 +21,11 @@
 
 #pragma once
 
-#include "../DLL/Common/UniqueHandle.h"
+#include "../DLL/Common/Socket.h"
 #include <array>
 #include <string_view>
 
-struct SocketTraits
-{
-    using HandleType = SOCKET;
-
-    static HandleType invalidValue() noexcept
-    {
-        return INVALID_SOCKET;
-    }
-
-    static void close(HandleType h) noexcept
-    {
-        if (h != invalidValue())
-            ::closesocket(h);
-    }
-};
-
-using Socket = winlirc::UniqueHandle<SocketTraits>;
+using winlirc::Socket;
 
 static constexpr size_t MAX_CLIENTS = 8;
 

@@ -11,7 +11,6 @@ DWORD WINAPI ServerThread(void *server) {
 
 Server::Server() {
 
-	server			= INVALID_SOCKET;
 	threadHandle	= nullptr;
 	wEvent			= WSA_INVALID_EVENT;
 	bufferStart		= 0;
@@ -30,13 +29,9 @@ int Server::init() {
 		return 0;		// win sock version not supported
 	}
 
-	if(server!=INVALID_SOCKET) {
-		closesocket(server);
-	}
+	server.reset(socket(AF_INET, SOCK_DGRAM, 0));
 
-	server = socket(AF_INET,SOCK_DGRAM,0);
-
-	if(server==INVALID_SOCKET) {
+	if(!server) {
 		//printf("failed socket\n");
 		return 0;	//failed
 	}
@@ -47,13 +42,13 @@ int Server::init() {
 	serv_addr.sin_addr.s_addr	= htonl(INADDR_ANY);
 	serv_addr.sin_port			= htons(8765);
 
-	if(bind(server,(struct sockaddr *)&serv_addr,sizeof(serv_addr))==SOCKET_ERROR) {
+	if(bind(server.get(),(sockaddr *)&serv_addr,sizeof(serv_addr))==SOCKET_ERROR) {
 		//printf("failed bind\n");
 		return 0;
 	}
 
 	wEvent = WSACreateEvent();
-	WSAEventSelect(server, wEvent, FD_READ);
+	WSAEventSelect(server.get(), wEvent, FD_READ);
 
 	exitThread		= CreateEvent(nullptr,FALSE,FALSE,nullptr);
 	threadHandle	= CreateThread(nullptr,0,ServerThread,(void *)this,0,nullptr);
@@ -70,7 +65,7 @@ void Server::deinit() {
 
 	KillThread(exitThread,threadHandle);
 
-	SAFE_CLOSE_SOCKET(server);
+	server.reset();
 	SAFE_CLOSE_HANDLE(exitThread);
 
 	WSACleanup();
@@ -98,7 +93,7 @@ void Server::threadProc() {
 
 			processData();
 
-			WSAEnumNetworkEvents(server,wEvent,&networkEvent);
+			WSAEnumNetworkEvents(server.get(), wEvent, &networkEvent);
 		}
 		else if(res==(WAIT_OBJECT_0+1)) {
 			break;	//exit thread !
@@ -116,7 +111,7 @@ void Server::processData() {
 	CHAR	buffer[8192];
 	//====================
 
-	numberOfBytes = recv(server,buffer,sizeof(buffer),0);
+	numberOfBytes = recv(server.get(), buffer, sizeof(buffer), 0);
 
 	if(numberOfBytes>0 && !(numberOfBytes%2)) {
 

@@ -24,9 +24,19 @@
 #include "drvdlg.h"
 #include "server.h"
 #include "guicon.h"
+#include <filesystem>
 #include <string_view>
 
+namespace fs = std::filesystem;
+
 Cwinlirc app;
+
+static fs::path getModuleFileName()
+{
+	wchar_t fullPath[MAX_PATH + 1];
+	DWORD const pathLength = GetModuleFileNameW(nullptr, fullPath, MAX_PATH);
+	return fs::path{ std::wstring_view{fullPath, pathLength} };
+}
 
 BOOL Cwinlirc::InitInstance() {
 
@@ -37,20 +47,7 @@ BOOL Cwinlirc::InitInstance() {
 #endif
 
 	// set current directory for plugins from exe path
-
-	{
-		wchar_t fullPath[MAX_PATH+1];
-		DWORD const pathLength = GetModuleFileNameW(nullptr, fullPath, MAX_PATH);
-		auto const lastSep = std::find(
-			std::make_reverse_iterator(fullPath + pathLength),
-			std::make_reverse_iterator(fullPath), L'\\');
-		wcscpy(lastSep.base(), L"\\plugins\\");
-		
-		if (!SetCurrentDirectoryW(fullPath)) {
-			*lastSep = 0;
-			SetCurrentDirectoryW(fullPath);
-		}
-	}
+	fs::current_path(getModuleFileName().replace_filename(L"plugins"));
 
 	config.readINIFile();
 

@@ -5,6 +5,7 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include "../Common/LIRCDefines.h"
+#include "../Common/Socket.h"
 
 class Server {
 
@@ -23,7 +24,7 @@ private:
 	void	processData();
 	void	setData(lirc_t data);
 
-	SOCKET		server;
+	winlirc::Socket server;
 	HANDLE		threadHandle;
 	HANDLE		exitThread;
 	WSAEVENT	wEvent;

@@ -19,16 +19,6 @@ inline void SAFE_RELEASE(T*& a)
     }
 }
 
-template <typename S>
-inline void SAFE_CLOSE_SOCKET(S& a)
-{
-    if (a != INVALID_SOCKET)
-    {
-        closesocket(a);
-        a = INVALID_SOCKET;
-    }
-}
-
 inline void KillThread(HANDLE exitEvent, HANDLE &threadHandle)
 {
     if (exitEvent)
