@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of the WinLIRC package, which was derived from
  * LIRC (Linux Infrared Remote Control) 0.5.4pre9.
  *
@@ -22,22 +22,20 @@
 
 #pragma once
 
-class CTrayIcon : public CCmdTarget {
-
-protected:
-	DECLARE_DYNAMIC(CTrayIcon)
-	NOTIFYICONDATA icondata;
-
+class CTrayIcon
+{
 public:
-	CTrayIcon(UINT uID);
-	~CTrayIcon();
+    CTrayIcon(UINT uID) noexcept;
+    ~CTrayIcon() noexcept;
 
-	bool SetIcon			(UINT uID);
-	bool SetIcon			(HICON hicon, LPCTSTR tip);
-	bool SetIcon			(LPCTSTR resname, LPCTSTR tip);
-	bool SetStandardIcon	(LPCTSTR iconname, LPCTSTR tip);
-	void SetNotificationWnd	(CWnd *notifywnd, UINT message);
-	void DisableTrayIcon	();
+    bool SetIcon(UINT uID) noexcept;
+    bool SetIcon(HICON hicon, wchar_t const* tip) noexcept;
+    bool SetIcon(wchar_t const* resname, wchar_t const* tip) noexcept;
+    void SetNotificationWnd(CWnd* notifywnd, UINT message) noexcept;
+    bool DisableTrayIcon() noexcept;
 
-	LRESULT OnTrayNotification(WPARAM id, LPARAM event);
+    LRESULT OnTrayNotification(WPARAM id, LPARAM event) const noexcept;
+
+private:
+    NOTIFYICONDATAW icondata;
 };

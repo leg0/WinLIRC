@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of the WinLIRC package, which was derived from
  * LIRC (Linux Infrared Remote Control) 0.5.4pre9.
  *
@@ -25,142 +25,133 @@
 #include <afxpriv.h>
 #include "trayicon.h"
 #include "winlirc.h"
+#include <iterator>
 
-IMPLEMENT_DYNAMIC(CTrayIcon, CCmdTarget)
-
-CTrayIcon::CTrayIcon(UINT uID) {
-
-	memset(&icondata,0,sizeof(icondata));
-	icondata.cbSize	= sizeof(icondata);
-	icondata.uID	= uID;
-
-	AfxLoadString(uID,icondata.szTip,sizeof(icondata.szTip));
-}
-
-CTrayIcon::~CTrayIcon()
+template <size_t Size>
+static auto LoadString(UINT uID, wchar_t(&s)[Size]) noexcept
 {
-	SetIcon(0);
+    return ::LoadStringW(::GetModuleHandle(nullptr), uID, s, Size);
 }
 
-void CTrayIcon::SetNotificationWnd(CWnd *notifywnd, UINT message)
+CTrayIcon::CTrayIcon(UINT uID) noexcept
+    : icondata{ 0 }
 {
-	if(notifywnd==nullptr || !::IsWindow(notifywnd->GetSafeHwnd()))
-	{
-		WL_DEBUG("Invalid window\n");
-		return;
-	}
-
-	icondata.hWnd=notifywnd->GetSafeHwnd();
-
-	if(message!=0 && message<WM_USER)
-	{
-		WL_DEBUG("Invalid message\n");
-		message=0;
-	}
-	icondata.uCallbackMessage=message;
+    icondata.cbSize = sizeof(icondata);
+    icondata.uID = uID;
+    ::LoadString(uID, icondata.szTip);
 }
 
-bool CTrayIcon::SetIcon(UINT uID) { 
-
-	//=========
-	HICON icon;
-	//=========
-
-	icon = nullptr;
-
-	if(uID) {
-
-		AfxLoadString(uID,icondata.szTip,sizeof(icondata.szTip));
-		icon=AfxGetApp()->LoadIcon(uID);
-	}
-
-	return SetIcon(icon,nullptr);
-}
-
-bool CTrayIcon::SetIcon(HICON icon, LPCTSTR tip) {
-
-	//==========
-	UINT	msg;
-	INT		ret;
-	//==========
-
-	icondata.uFlags = 0;
-
-	if(icon) {
-
-		if(icondata.hIcon)	msg=NIM_MODIFY;
-		else				msg=NIM_ADD;
-		
-		icondata.hIcon	=icon;
-		icondata.uFlags |=NIF_ICON;
-	}
-	else {
-
-		if(icondata.hIcon==nullptr) {
-			return true;
-		}
-
-		msg=NIM_DELETE;
-	}
-
-	if(tip) {
-		_tcsncpy(icondata.szTip,tip,_countof(icondata.szTip));
-	}
-
-	if(*icondata.szTip) {
-		icondata.uFlags|=NIF_TIP;
-	}
-
-	if(icondata.uCallbackMessage && icondata.hWnd) {
-		icondata.uFlags|=NIF_MESSAGE;
-	}
-
-	ret = Shell_NotifyIcon(msg,&icondata);
-
-	if(msg==NIM_DELETE || !ret)	icondata.hIcon=nullptr;
-
-	return (ret==TRUE);
-}
-
-LRESULT CTrayIcon::OnTrayNotification(WPARAM id, LPARAM event)
+CTrayIcon::~CTrayIcon() noexcept
 {
-	if(id!=icondata.uID || (event!=WM_RBUTTONUP && event!=WM_LBUTTONDBLCLK))
-		return 0;
-
-	// resource menu with same ID as icon will be used as popup menu
-	CMenu menu;
-	if(!menu.LoadMenu(icondata.uID)) return 0;
-	CMenu *submenu=menu.GetSubMenu(0); 
-	if(!submenu) 
-		return 0;
-
-	if(event==WM_RBUTTONUP)
-	{
-		::SetMenuDefaultItem(submenu->m_hMenu,0,true);
-		CPoint mouse;
-		GetCursorPos(&mouse);
-		::SetForegroundWindow(icondata.hWnd);	
-		::TrackPopupMenu(submenu->m_hMenu,0,mouse.x,mouse.y,0,icondata.hWnd,nullptr);
-	}
-	else
-	{
-		::SendMessage(icondata.hWnd,WM_COMMAND,submenu->GetMenuItemID(0),0);
-	}
-
-	return 1;
+    DisableTrayIcon();
 }
 
-bool CTrayIcon::SetStandardIcon(LPCTSTR iconname, LPCTSTR tip)
+void CTrayIcon::SetNotificationWnd(CWnd* notifywnd, UINT message) noexcept
 {
-	return SetIcon(::LoadIcon(nullptr,iconname),tip);
+    if (notifywnd == nullptr || !::IsWindow(notifywnd->GetSafeHwnd()))
+    {
+        WL_DEBUG("Invalid window\n");
+        return;
+    }
+
+    if (message != 0 && message < WM_USER)
+    {
+        WL_DEBUG("Invalid message\n");
+        message = 0;
+    }
+
+    icondata.hWnd = notifywnd->GetSafeHwnd();
+    icondata.uCallbackMessage = message;
 }
 
-bool CTrayIcon::SetIcon(LPCTSTR resname, LPCTSTR tip)
+bool CTrayIcon::SetIcon(UINT uID) noexcept
 {
-	return SetIcon(resname?AfxGetApp()->LoadIcon(resname):nullptr,tip);
+    if (uID)
+    {
+        ::LoadString(uID, icondata.szTip);
+        auto const icon = AfxGetApp()->LoadIcon(uID);
+        return SetIcon(icon, nullptr);
+    }
+    else
+    {
+        DisableTrayIcon();
+    }
 }
 
-void CTrayIcon::DisableTrayIcon() {
+bool CTrayIcon::SetIcon(HICON icon, wchar_t const* tip) noexcept
+{
+    if (icon == nullptr && icondata.hIcon == nullptr)
+        // nothing to do here. already not present.
+        return true;
 
-	SetIcon((HICON)nullptr,nullptr);
+    UINT msg;
+    UINT uFlags = 0;
+
+    if (icon)
+    {
+        msg = icondata.hIcon ? NIM_MODIFY : NIM_ADD;
+        icondata.hIcon = icon;
+        uFlags = NIF_ICON;
+    }
+    else
+    {
+        msg = NIM_DELETE;
+    }
+
+    if (tip)
+        wcsncpy(icondata.szTip, tip, std::size(icondata.szTip));
+
+    if (*icondata.szTip)
+        uFlags |= NIF_TIP;
+
+    if (icondata.uCallbackMessage && icondata.hWnd)
+        uFlags |= NIF_MESSAGE;
+
+    icondata.uFlags = uFlags;
+    auto const ret = Shell_NotifyIcon(msg, &icondata);
+
+    if (msg == NIM_DELETE || !ret)
+        icondata.hIcon = nullptr;
+
+    return ret;
+}
+
+LRESULT CTrayIcon::OnTrayNotification(WPARAM id, LPARAM event) const noexcept
+{
+    if (id != icondata.uID || (event != WM_RBUTTONUP && event != WM_LBUTTONDBLCLK))
+        return 0;
+
+    // resource menu with same ID as icon will be used as popup menu
+    CMenu menu;
+    if (!menu.LoadMenu(icondata.uID))
+        return 0;
+
+    CMenu* submenu = menu.GetSubMenu(0);
+    if (!submenu)
+        return 0;
+
+    if (event == WM_RBUTTONUP)
+    {
+        ::SetMenuDefaultItem(submenu->m_hMenu, 0, true);
+        CPoint mouse;
+        ::GetCursorPos(&mouse);
+        ::SetForegroundWindow(icondata.hWnd);
+        ::TrackPopupMenu(submenu->m_hMenu, 0, mouse.x, mouse.y, 0, icondata.hWnd, nullptr);
+    }
+    else
+    {
+        ::SendMessage(icondata.hWnd, WM_COMMAND, submenu->GetMenuItemID(0), 0);
+    }
+
+    return 1;
+}
+
+bool CTrayIcon::SetIcon(wchar_t const* resname, wchar_t const* tip) noexcept
+{
+    return SetIcon(resname ? AfxGetApp()->LoadIcon(resname) : nullptr, tip);
+}
+
+bool CTrayIcon::DisableTrayIcon() noexcept
+{
+    return SetIcon(HICON{}, nullptr);
 }
