@@ -29,6 +29,9 @@
 #include "globals.h"
 #include "server.h" //so we can send SIGHUP
 #include "InputPlugin.h"
+#include <string>
+
+using namespace std::string_literals;
 
 /////////////////////////////////////////////////////////////////////////////
 // Cdrvdlg dialog
@@ -339,7 +342,7 @@ BOOL Cdrvdlg::OnInitDialog()
 	CDialog::OnInitDialog();
 	m_ircode_edit="";
 	UpdateData(FALSE);
-	GetDlgItem(IDC_VERSION)->SetWindowText(WINLIRC_VERSION);
+	GetDlgItem(IDC_VERSION)->SetWindowTextW(WIDE(WINLIRC_VERSION));
 	UpdateRemoteComboLists();
 	return TRUE;
 }
@@ -415,15 +418,8 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 // remotename	ircodename	reps
 // where reps is an optional parameter indicating the number of times to repeat the code (default=0)
 {
-	//================
-	CStringA string;
-	CStringA response;
-	//================
-
-	string  = "SEND_ONCE ";
-	string += (LPCSTR) (pCopyDataStruct->lpData);
-	
-	return app.server.parseSendString(string,response);
+	auto cmd = "SEND_ONCE "s + static_cast<char const*>(pCopyDataStruct->lpData);
+	return app.server.parseSendString(cmd.c_str()).first;
 }
 
 void Cdrvdlg::UpdateRemoteComboLists()

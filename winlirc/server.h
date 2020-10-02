@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of the WinLIRC package, which was derived from
  * LIRC (Linux Infrared Remote Control) 0.5.4pre9.
  *
@@ -23,21 +23,22 @@
 
 #include "../DLL/Common/UniqueHandle.h"
 #include <array>
+#include <string_view>
 
 struct SocketTraits
 {
-	using HandleType = SOCKET;
+    using HandleType = SOCKET;
 
-	static HandleType invalidValue() noexcept
-	{
-		return INVALID_SOCKET;
-	}
+    static HandleType invalidValue() noexcept
+    {
+        return INVALID_SOCKET;
+    }
 
-	static void close(HandleType h) noexcept
-	{
-		if (h != invalidValue())
-			::closesocket(h);
-	}
+    static void close(HandleType h) noexcept
+    {
+        if (h != invalidValue())
+            ::closesocket(h);
+    }
 };
 
 using Socket = winlirc::UniqueHandle<SocketTraits>;
@@ -48,29 +49,30 @@ class Cserver
 {
 public:
 
-	Cserver();
-	~Cserver();
+    Cserver();
+    ~Cserver();
 
-	bool startServer		();
-	void stopServer			();
-	bool restartServer		();
-	void sendToClients		(const char* s);
-	BOOL parseSendString	(const char* string, CStringA& response);
-	BOOL parseListString	(const char* string, CStringA& response);
-	BOOL parseVersion		(const char* string, CStringA& response);
-	BOOL parseTransmitters	(const char* string, CStringA& response);
-
-	void ThreadProc();
+    bool startServer();
+    void stopServer();
+    bool restartServer();
+    void sendToClients(std::string_view s) const;
+    std::pair<bool, std::string> parseSendString(char const* string);
+    std::pair<bool, std::string> parseListString(const char* string);
+    std::pair<bool, std::string> parseVersion(const char* string);
+    std::pair<bool, std::string> parseTransmitters(const char* string);
 
 private:
-	void sendData			(Socket& socket, const char *s);
-	void reply				(const char *command,int client,bool success,const char *data);
+    void ThreadProc();
+    static UINT ServerThread(void* srv);
 
-	Socket m_server;
-	std::array<Socket, MAX_CLIENTS> m_clients;
+    static void sendData(Socket const& socket, std::string_view s) noexcept;
+    void reply(const char* command, int client, bool success, std::string_view data) const;
 
-	int			m_tcp_port;				//tcp port for server
-	CWinThread* m_serverThreadHandle = nullptr;
-	CEvent		m_serverThreadEvent;
-	int			m_winsockStart;
+    Socket m_server;
+    std::array<Socket, MAX_CLIENTS> m_clients;
+
+    int			m_tcp_port = 8765;		//tcp port for server
+    CWinThread* m_serverThreadHandle = nullptr;
+    CEvent		m_serverThreadEvent;
+    int			m_winsockStart;
 };

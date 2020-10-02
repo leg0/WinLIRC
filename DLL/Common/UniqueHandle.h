@@ -34,35 +34,35 @@ namespace winlirc
         void operator=(UniqueHandle const&) = delete;
 
         /// Construct UniqueHandle, assume ownerhip of \a h.
-        explicit UniqueHandle(HandleType h = Traits::invalidValue())
+        explicit UniqueHandle(HandleType h = Traits::invalidValue()) noexcept
             : handle_(h)
         { }
 
-        ~UniqueHandle()
+        ~UniqueHandle() noexcept
         {
             reset();
         }
 
-        UniqueHandle(UniqueHandle&& other)
+        UniqueHandle(UniqueHandle&& other) noexcept
             : handle_(other.release())
         { }
 
-        UniqueHandle& operator=(UniqueHandle&& rhs)
+        UniqueHandle& operator=(UniqueHandle&& rhs) noexcept
         {
             reset(rhs.release());
             return *this;
         }
 
-        HandleType get() const { return handle_; }
+        HandleType get() const noexcept { return handle_; }
 
-        explicit operator bool() const
+        explicit operator bool() const noexcept
         {
             return handle_ != Traits::invalidValue();
         }
 
         /// Give up ownership of the handle.
         /// @post get() == nullptr
-        HandleType release()
+        HandleType release() noexcept
         {
             HandleType const res = handle_;
             handle_ = Traits::invalidValue();
@@ -71,7 +71,7 @@ namespace winlirc
 
         /// Give up ownership of the current handle, assume ownership of replacement.
         /// @post get() == replacement
-        void reset(HandleType replacement = Traits::invalidValue())
+        void reset(HandleType replacement = Traits::invalidValue()) noexcept
         {
             if (handle_ != replacement)
             {

@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of the WinLIRC package, which was derived from
  * LIRC (Linux Infrared Remote Control) 0.5.4pre9.
  *
@@ -27,506 +27,438 @@
 #include "drvdlg.h"
 
 #include <algorithm>
+#include <string>
 #include <string_view>
 
+using namespace std::string_literals;
 using namespace std::string_view_literals;
 
-#define LISTENQ		4		// listen queue size
-#define MAX_DATA	1024	// longest message a client can send
+constexpr int LISTENQ = 4;        // listen queue size
+constexpr size_t MAX_DATA = 1024; // longest message a client can send
 
-UINT ServerThread(void *srv) {((Cserver *)srv)->ThreadProc();return 0;}
+UINT Cserver::ServerThread(void* srv)
+{
+    static_cast<Cserver*>(srv)->ThreadProc();
+    return 0;
+}
 
 Cserver::Cserver()
 {
-	WSADATA data;
-	m_winsockStart = WSAStartup(MAKEWORD(2,0),&data);
+    WSADATA data;
+    m_winsockStart = WSAStartup(MAKEWORD(2, 0), &data);
 }
 
 Cserver::~Cserver()
 {
-	stopServer();
-	WSACleanup();
+    stopServer();
+    WSACleanup();
 }
 
-bool Cserver::restartServer() {
-
-	stopServer();
-	return startServer();
+bool Cserver::restartServer()
+{
+    stopServer();
+    return startServer();
 }
 
 bool Cserver::startServer()
 {
-	//===========================
-	struct sockaddr_in serv_addr;
-	//===========================
 
-	if(m_winsockStart!=0) { 
-		MessageBox(nullptr,_T("Could not initialize Windows Sockets.\n")
-			_T("Note that this program requires WinSock 2.0 or higher."),_T("WinLIRC"),MB_OK);
-		return false;
-	}
+    if (m_winsockStart != 0)
+    {
+        MessageBoxW(nullptr,
+            L"Could not initialize Windows Sockets.\n"
+            L"Note that this program requires WinSock 2.0 or higher.",
+            L"WinLIRC", MB_OK);
+        return false;
+    }
 
-	Socket server{ socket(AF_INET, SOCK_STREAM, 0) };
+    Socket server{ socket(AF_INET, SOCK_STREAM, 0) };
 
-	if(!server) { 
-		WL_DEBUG("socket failed, WSAGetLastError=%d\n",WSAGetLastError());
-		return false;
-	}
-	memset(&serv_addr,0,sizeof(sockaddr_in));
+    if (!server)
+    {
+        WL_DEBUG("socket failed, WSAGetLastError=%d\n", WSAGetLastError());
+        return false;
+    }
+    sockaddr_in serv_addr = { 0 };
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serv_addr.sin_port = htons(config.serverPort);
 
-	serv_addr.sin_family		= AF_INET;
-	serv_addr.sin_addr.s_addr	= htonl(INADDR_ANY);
-	serv_addr.sin_port			= htons(config.serverPort);
+    if (config.localConnectionsOnly)
+        serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-	if(config.localConnectionsOnly) {
-		serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	}
+    if (bind(server.get(), reinterpret_cast<sockaddr*>(&serv_addr), sizeof(serv_addr)) == SOCKET_ERROR)
+    {
+        WL_DEBUG("bind failed\n");
+        return false;
+    }
 
-	if(bind(server.get(),(sockaddr *)&serv_addr,sizeof(serv_addr))==SOCKET_ERROR){ 
-		WL_DEBUG("bind failed\n"); 
-		return false; 
-	}
+    if (listen(server.get(), LISTENQ) == SOCKET_ERROR)
+    {
+        WL_DEBUG("listen failed\n");
+        return false;
+    }
 
-	if(listen(server.get(),LISTENQ)==SOCKET_ERROR) { 
-		WL_DEBUG("listen failed\n"); 
-		return false; 
-	}
+    m_server = std::move(server);
 
-	// THREAD_PRIORITY_IDLE combined with the HIGH_PRIORITY_CLASS
-	// of this program still results in a really high priority. (16 out of 31)
-	if((m_serverThreadHandle = AfxBeginThread(ServerThread,this,THREAD_PRIORITY_IDLE))==nullptr) {
-		WL_DEBUG("AfxBeginThread failed\n");
-		return false;
-	}
-
-	m_server = std::move(server);
-	return true;
+    // THREAD_PRIORITY_IDLE combined with the HIGH_PRIORITY_CLASS
+    // of this program still results in a really high priority. (16 out of 31)
+    m_serverThreadHandle = AfxBeginThread(ServerThread, this, THREAD_PRIORITY_IDLE);
+    if (m_serverThreadHandle == nullptr) {
+        WL_DEBUG("AfxBeginThread failed\n");
+        return false;
+    }
+    return true;
 }
 
 void Cserver::stopServer()
 {
-	KillThread(&m_serverThreadHandle,&m_serverThreadEvent);
+    KillThread(&m_serverThreadHandle, &m_serverThreadEvent);
 
-	for (auto& client : m_clients)
-	{
-		client.reset();
-	}
+    for (auto& client : m_clients)
+    {
+        client.reset();
+    }
 
-	m_server.reset();
+    m_server.reset();
 }
 
-void Cserver::sendToClients(const char *s)
+void Cserver::sendToClients(std::string_view s) const
 {
-	for (auto& client : m_clients)
-	{
-		sendData(client, s);
-	}
+    for (auto& client : m_clients)
+    {
+        sendData(client, s);
+    }
 }
 
-void Cserver::sendData(Socket& socket, const char* s) {
-
-	if (!socket || !s)
-		return;
-
-	int length = (int)strlen(s);			// must be null terminated
-	int sent = 0;
-
-	while (length > 0) {
-		sent = send(socket.get(), s + sent, length, 0);
-
-		if (sent == SOCKET_ERROR) break;
-
-		length -= sent;
-	}
-}
-
-void Cserver::reply(const char *command,int client,bool success,const char *data)
+void Cserver::sendData(Socket const& socket, std::string_view s) noexcept
 {
-	//==============
-	CStringA packet;
-	//==============
-	
-	packet  = "BEGIN\n";
-	packet += command;
+    if (!socket || s.empty())
+        return;
 
-	if(success)	packet += "\nSUCCESS\n";
-	else		packet += "\nERROR\n";
-	if(data)	packet += data;
-	
-	packet += "END\n";
-
-	sendData(m_clients[client], packet);
+    while (!s.empty())
+    {
+        int const sent = send(socket.get(), s.data(), s.size(), 0);
+        if (sent == SOCKET_ERROR)
+            break;
+        s.remove_prefix(sent);
+    }
 }
 
-void Cserver::ThreadProc(void)
+void Cserver::reply(const char* command, int client, bool success, std::string_view data) const
 {
-	if (!m_server)
-		return;
-
-	//=========================================
-	int		i;
-	CEvent	serverEvent;
-	CEvent	clientEvent[MAX_CLIENTS];
-	char	clientData[MAX_CLIENTS][MAX_DATA];
-	char	toparse[MAX_DATA];
-	HANDLE	events[MAX_CLIENTS+2];
-	//=========================================
-	
-	WSAEventSelect(m_server.get(), serverEvent, FD_ACCEPT);
-
-	for(i=0;i<MAX_CLIENTS;i++) {
-		clientData[i][0] = '\0';
-	}
-	
-	for(;;)
-	{		
-		int count=0;
-		events[count++] = m_serverThreadEvent;	// exit event
-		events[count++] = serverEvent;
-
-		for (i = 0; i < MAX_CLIENTS; i++) {
-			if (m_clients[i]) {
-				events[count++] = clientEvent[i];
-			}
-		}
-		
-		DWORD res = WaitForMultipleObjects(count, events, FALSE, INFINITE);
-
-		if(res==WAIT_OBJECT_0) 
-		{
-			WL_DEBUG("ServerThread terminating\n");
-			return;
-		}
-		else if(res==(WAIT_OBJECT_0+1))
-		{
-			for(i=0;i<MAX_CLIENTS;i++) {
-				if(!m_clients[i]) break;
-			}
-
-			Socket tempSocket{ accept(m_server.get(), nullptr, nullptr) };
-			if(i==MAX_CLIENTS)
-			{
-				auto errorMsg = "Sorry the server is full.\n"sv;
-				::send(tempSocket.get(), errorMsg.data(), errorMsg.size(), 0);
-				continue;
-			}
-			
-			if(!tempSocket)
-			{
-				WL_DEBUG("accept() failed\n");
-				continue;
-			}
-			m_clients[i] = std::move(tempSocket);
-
-			WSAEventSelect(m_clients[i].get(), clientEvent[i], FD_CLOSE | FD_READ);
-			clientEvent[i].ResetEvent();
-			clientData[i][0]='\0';
-			WL_DEBUG("Client connection %d accepted\n",i);
-		}
-		else /* client closed or data received */
-		{
-			for(i=0;i<MAX_CLIENTS;i++)
-			{
-				if(m_clients[i])
-				{
-					if(res==(WAIT_OBJECT_0+(2+i)))
-					{
-						/* either we got data or the connection closed */
-						int curlen	= (int)strlen(clientData[i]);
-						int maxlen	= MAX_DATA-curlen-1;
-						int bytes	= recv(m_clients[i].get(), clientData[i]+curlen, maxlen, 0);
-
-						if(bytes==0 || bytes==SOCKET_ERROR)
-						{
-							/* Connection was closed or something's screwy */
-							m_clients[i].reset();
-							WL_DEBUG("Client connection %d closed\n",i);
-						}
-						else /* bytes > 0, we read data */
-						{
-							clientData[i][curlen+bytes]='\0';
-							char *cur=clientData[i];
-							for(;;) {
-								char *nl=strchr(cur,'\n');
-								if(nl==nullptr) {
-									if(cur!=clientData[i]) 
-										memmove(clientData[i],cur,strlen(cur)+1);
-									break;
-								} else {
-									*nl='\0';
-									// ----------------------------
-									// Do something with the received line (cur)
-									WL_DEBUG("Got string: %s\n",cur);
-
-									//================
-									CStringA response;
-									BOOL	 success;
-									char	 *command;
-									//================
-
-									strcpy_s(toparse,cur);									
-									command = strtok(toparse," \t\r");	// strtok is not thread safe ..
-							
-									if (!command) //ignore lines with only whitespace
-									{
-										cur = nl + 1;
-										break;
-									}
-									
-									if (_stricmp(command,"VERSION")==0) {
-										success = parseVersion(cur,response);
-									}
-									else if (_stricmp(command,"LIST")==0) {
-										success = parseListString(cur,response);
-									}
-									else if (_stricmp(command,"SET_TRANSMITTERS")==0) {
-										success = parseTransmitters(cur,response);
-									}
-									else if (_stricmp(command,"SEND_ONCE")==0) {
-										success = parseSendString(cur,response);
-									}
-									else {
-										success = FALSE;
-									}
-	
-									reply(cur,i,success>0,response);
-									cur = nl + 1;
-								}
-							}
-						
-						}
-
-						break;
-					}
-				}
-			}
-		}
-	}
+    std::string packet = "BEGIN\n"s;
+    packet += command;
+    packet += success ? "\nSUCCESS\n" : "\nERROR\n";
+    packet += data;
+    packet += "END\n";
+    sendData(m_clients[client], packet);
 }
 
-BOOL Cserver::parseSendString(const char *string, CStringA &response) {
+void Cserver::ThreadProc()
+{
+    if (!m_server)
+        return;
 
-	//==========================
-	char	remoteName	[128];
-	char	keyName		[128];
-	int		repeats;
-	int		result;
-	BOOL	success;
+    //=========================================
+    int		i;
+    CEvent	serverEvent;
+    CEvent	clientEvent[MAX_CLIENTS];
+    char	clientData[MAX_CLIENTS][MAX_DATA];
+    char	toparse[MAX_DATA];
+    HANDLE	events[MAX_CLIENTS + 2];
+    //=========================================
 
-	struct ir_ncode		*codes;
-	struct ir_remote	*sender;
-	//==========================
+    WSAEventSelect(m_server.get(), serverEvent, FD_ACCEPT);
 
-	CSingleLock lock(&CS_global_remotes,TRUE);
+    for (i = 0; i < MAX_CLIENTS; i++)
+    {
+        clientData[i][0] = '\0';
+    }
 
-	remoteName[0]	= '\0';	// null terminate
-	keyName[0]		= '\0';
-	repeats			= 0;
-	result			= 0;
+    for (;;)
+    {
+        int count = 0;
+        events[count++] = m_serverThreadEvent;	// exit event
+        events[count++] = serverEvent;
 
-	result = sscanf_s(string,"%*s %s %s %i",remoteName,sizeof(remoteName),keyName,sizeof(keyName),&repeats);
+        for (i = 0; i < MAX_CLIENTS; i++) {
+            if (m_clients[i]) {
+                events[count++] = clientEvent[i];
+            }
+        }
 
-	if(result<2) {
-		response.Format("DATA\n1\nremote or code missing\n");
-		return FALSE;
-	}
+        DWORD res = WaitForMultipleObjects(count, events, FALSE, INFINITE);
 
-	sender = get_remote_by_name(global_remotes,remoteName);
+        if (res == WAIT_OBJECT_0)
+        {
+            WL_DEBUG("ServerThread terminating\n");
+            return;
+        }
+        else if (res == (WAIT_OBJECT_0 + 1))
+        {
+            for (i = 0; i < MAX_CLIENTS; i++) {
+                if (!m_clients[i]) break;
+            }
 
-	if(sender==nullptr) {
-		response.Format("DATA\n1\nremote not found\n");
-		return FALSE;	
-	}
+            Socket tempSocket{ accept(m_server.get(), nullptr, nullptr) };
+            if (i == MAX_CLIENTS)
+            {
+                auto errorMsg = "Sorry the server is full.\n"sv;
+                ::send(tempSocket.get(), errorMsg.data(), errorMsg.size(), 0);
+                continue;
+            }
 
-	codes = get_code_by_name(sender->codes,keyName);
+            if (!tempSocket)
+            {
+                WL_DEBUG("accept() failed\n");
+                continue;
+            }
+            m_clients[i] = std::move(tempSocket);
 
-	if(codes->name==nullptr) {
-		response.Format("DATA\n1\ncode not found\n");
-		return FALSE;
-	}
+            WSAEventSelect(m_clients[i].get(), clientEvent[i], FD_CLOSE | FD_READ);
+            clientEvent[i].ResetEvent();
+            clientData[i][0] = '\0';
+            WL_DEBUG("Client connection %d accepted\n", i);
+        }
+        else /* client closed or data received */
+        {
+            for (i = 0; i < MAX_CLIENTS; i++)
+            {
+                if (m_clients[i])
+                {
+                    if (res == (WAIT_OBJECT_0 + (2 + i)))
+                    {
+                        /* either we got data or the connection closed */
+                        int curlen = (int)strlen(clientData[i]);
+                        int maxlen = MAX_DATA - curlen - 1;
+                        int bytes = recv(m_clients[i].get(), clientData[i] + curlen, maxlen, 0);
 
-	repeats = max(repeats,sender->min_repeat);
-	repeats = min(repeats,10);	// sanity check
+                        if (bytes == 0 || bytes == SOCKET_ERROR)
+                        {
+                            /* Connection was closed or something's screwy */
+                            m_clients[i].reset();
+                            WL_DEBUG("Client connection %d closed\n", i);
+                        }
+                        else /* bytes > 0, we read data */
+                        {
+                            clientData[i][curlen + bytes] = '\0';
+                            char* cur = clientData[i];
+                            for (;;) {
+                                char* nl = strchr(cur, '\n');
+                                if (nl == nullptr) {
+                                    if (cur != clientData[i])
+                                        memmove(clientData[i], cur, strlen(cur) + 1);
+                                    break;
+                                }
+                                else {
+                                    *nl = '\0';
+                                    // ----------------------------
+                                    // Do something with the received line (cur)
+                                    WL_DEBUG("Got string: %s\n", cur);
 
-	// reset toggle masks
+                                    strcpy_s(toparse, cur);
+                                    char* command = strtok(toparse, " \t\r");	// strtok is not thread safe ..
 
-	if(has_toggle_mask(sender)) {
-		sender->toggle_mask_state = 0;
-	}
+                                    if (!command) //ignore lines with only whitespace
+                                    {
+                                        cur = nl + 1;
+                                        break;
+                                    }
 
-	if(has_toggle_bit_mask(sender)) {
-		sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state^sender->toggle_bit_mask);
-	}
+                                    std::pair<bool, std::string> response;
+                                    if (_stricmp(command, "VERSION") == 0)
+                                        response = parseVersion(cur);
+                                    else if (_stricmp(command, "LIST") == 0)
+                                        response = parseListString(cur);
+                                    else if (_stricmp(command, "SET_TRANSMITTERS") == 0)
+                                        response = parseTransmitters(cur);
+                                    else if (_stricmp(command, "SEND_ONCE") == 0)
+                                        response = parseSendString(cur);
+                                    else
+                                        response.first = false;
 
-	success = app.dlg->driver.sendIR(sender,codes,repeats);
+                                    reply(cur, i, response.first, response.second);
+                                    cur = nl + 1;
+                                }
+                            }
 
-	if(success==FALSE) {
-		response.Format("DATA\n1\nsend failed/not supported\n");
-		return FALSE;	
-	}
+                        }
 
-	app.dlg->GoBlue();
-
-	return TRUE;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
-BOOL Cserver::parseListString(const char *string, CStringA &response) {
+std::pair<bool, std::string> Cserver::parseSendString(char const* string)
+{
+    CSingleLock lock(&CS_global_remotes, TRUE);
 
-	//====================
-	char	*remoteName;
-	char	*codeName;
-	int		n;
-	struct ir_remote *all;
-	//====================
+    char remoteName[128] = "";
+    char keyName[128] = "";
+    int repeats = 0;
+    int result = sscanf_s(string, "%*s %s %s %i",
+        remoteName, static_cast<uint32_t>(sizeof(remoteName)),
+        keyName, static_cast<uint32_t>(sizeof(keyName)),
+        &repeats);
 
-	CSingleLock lock(&CS_global_remotes,TRUE);
+    if (result < 2)
+        return { false, "DATA\n1\nremote or code missing\n"s };
 
-	remoteName	= strtok(nullptr," \t\r");
-	codeName	= strtok(nullptr," \t\r");
-	n			= 0;
-	all			= global_remotes;
+    ir_remote* const sender = get_remote_by_name(global_remotes, remoteName);
 
-	if (!remoteName)
-	{
-		while(all) 
-		{
-			n++;
-			all = all->next;
-		}
+    if (sender == nullptr)
+        return { false, "DATA\n1\nremote not found\n"s };
 
-		if (n!=0)
-		{
-			response.Format("DATA\n%d\n",n);
-			all = global_remotes;
+    ir_ncode* const codes = get_code_by_name(sender->codes, keyName);
 
-			while(all)
-			{
-				response += all->name;
-				response += "\n";
-				all = all->next;
-			}
-		}
+    if (codes->name == nullptr)
+        return { false, "DATA\n1\ncode not found\n"s };
 
-		return TRUE;
-	}
+    repeats = max(repeats, sender->min_repeat);
+    repeats = min(repeats, 10);	// sanity check
 
-	// find remote name 
+    // reset toggle masks
 
-	if(remoteName) {
+    if (has_toggle_mask(sender)) {
+        sender->toggle_mask_state = 0;
+    }
 
-		all = get_remote_by_name(all,remoteName);
+    if (has_toggle_bit_mask(sender)) {
+        sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state ^ sender->toggle_bit_mask);
+    }
 
-		if(!all) {
-			response.Format("DATA\n1\n%s%s\n","unknown remote: ",remoteName);
-			return FALSE;
-		}
-	}
+    BOOL const success = app.dlg->driver.sendIR(sender, codes, repeats);
 
-	if(remoteName && !codeName)
-	{		
-		//========================
-		struct ir_ncode *allcodes;
-		//========================
+    if (!success)
+        return { false, "DATA\n1\nsend failed/not supported\n"s };
 
-		allcodes = all->codes;
+    app.dlg->GoBlue();
 
-		while (allcodes->name)
-		{
-			n++;
-			allcodes++;
-		}
-		if (n!=0)
-		{
-			response.Format("DATA\n%d\n",n);
-			allcodes = all->codes;
-
-			while(allcodes->name)
-			{
-				response += allcodes->name;
-				response += "\n";
-				allcodes++;
-			}
-		}
-		return TRUE;
-	}
-
-	if(remoteName && codeName) {
-
-		//====================
-		struct ir_ncode *code;
-		//====================
-
-		code = get_code_by_name(all->codes,codeName);
-
-		if(code) {
-			response.Format("DATA\n1\n%016llX %s\n",code->code,code->name);
-			return TRUE;
-		}
-		else {
-			response.Format("DATA\n1\n%s%s\n","unknown code: ",codeName);
-			return FALSE;
-		}
-	}
-
-	return FALSE;
+    return { true, ""s };
 }
 
-BOOL Cserver::parseVersion(const char *string, CStringA &response) {
+std::pair<bool, std::string> Cserver::parseListString(const char* string)
+{
+    //====================
+    char* remoteName;
+    char* codeName;
+    int		n;
+    struct ir_remote* all;
+    //====================
 
-	//===========
-	BOOL success;
-	//===========
+    CSingleLock lock(&CS_global_remotes, TRUE);
 
-	if (strtok(nullptr," \t\r")==nullptr) {
-		success = TRUE;
-		USES_CONVERSION;
-		response.Format("DATA\n1\n%s\n",T2A(id));
-	}
-	else {
-		success = FALSE;
-		response.Format("DATA\n1\nbad send packet\n");
-	}
+    remoteName = strtok(nullptr, " \t\r");
+    codeName = strtok(nullptr, " \t\r");
+    n = 0;
+    all = global_remotes;
 
-	return success;
+    if (!remoteName)
+    {
+        while (all)
+        {
+            n++;
+            all = all->next;
+        }
+
+        std::string response;
+        if (n != 0)
+        {
+            response = "DATA\n"s + std::to_string(n) + "\n";
+            all = global_remotes;
+
+            while (all)
+            {
+                response += all->name;
+                response += "\n";
+                all = all->next;
+            }
+        }
+
+        return { true, std::move(response) };
+    }
+
+    // find remote name 
+
+    if (remoteName) {
+
+        all = get_remote_by_name(all, remoteName);
+        if (!all)
+            return { false, "DATA\n1\nunknown remote: "s + remoteName + "\n" };
+    }
+
+    if (remoteName && !codeName)
+    {
+        ir_ncode* allcodes = all->codes;
+        while (allcodes->name)
+        {
+            n++;
+            allcodes++;
+        }
+        std::string response;
+        if (n != 0)
+        {
+            response = "DATA\n"s + std::to_string(n) + "\n";
+            allcodes = all->codes;
+
+            while (allcodes->name)
+            {
+                response += allcodes->name;
+                response += "\n";
+                allcodes++;
+            }
+        }
+        return { true, std::move(response) };
+    }
+
+    if (remoteName && codeName)
+    {
+        ir_ncode* const code = get_code_by_name(all->codes, codeName);
+        if (code)
+        {
+            char buf[100];
+            sprintf(buf, "DATA\n1\n%016llX %s\n", code->code, code->name);
+            return { true, buf };
+        }
+        else
+        {
+            return { false, "DATA\n1\nunknown code: "s + codeName + "\n" };
+        }
+    }
+    return { false, "DATA\n1\nerror\n"s };
 }
 
-BOOL Cserver::parseTransmitters(const char *string, CStringA &response) {
+std::pair<bool, std::string> Cserver::parseVersion(const char* string)
+{
+    if (strtok(nullptr, " \t\r") == nullptr)
+        return { true, "DATA\n1\n"s + id + "\n" };
+    else
+        return { false, "DATA\n1\nbad send packet\n"s };
+}
 
-	//=========================
-	char	*transmitterNumber;
-	DWORD	transmitterMask;
-	int		transNumber;
-	BOOL	success;
-	//=========================
+std::pair<bool, std::string> Cserver::parseTransmitters(const char* string)
+{
+    DWORD transmitterMask = 0;
 
-	transmitterNumber	= nullptr;
-	transmitterMask		= 0;
-	success				= TRUE;
+    while (char* transmitterNumber = strtok(nullptr, " \t\r"))
+    {
+        int const transNumber = atoi(transmitterNumber);
+        if (transNumber == 0)
+            continue;
 
-	while(transmitterNumber = strtok(nullptr," \t\r")) {
+        if (transNumber > 32)
+            return { false, "DATA\n1\ncannot support more than 32 transmitters\n"s };
 
-		transNumber = atoi(transmitterNumber);
+        transmitterMask |= 1 << (transNumber - 1);
+    }
 
-		if(transNumber==0) continue;
-
-		if(transNumber>32) {
-			success	= FALSE;
-			response.Format("DATA\n1\ncannot support more than 32 transmitters\n");
-			break;
-		}
-
-		transmitterMask |= 1 << (transNumber-1);
-	}
-
-	if(success) {
-
-		success = app.dlg->driver.setTransmitters(transmitterMask);
-
-		if(!success) {
-			response.Format("DATA\n1\nSetTransmitters failed/not supported\n");
-		}
-	}
-
-	return success;
+    if (!app.dlg->driver.setTransmitters(transmitterMask))
+        return { false, "DATA\n1\nSetTransmitters failed/not supported\n"s };
+    else
+        return { true, ""s };
 }
 
