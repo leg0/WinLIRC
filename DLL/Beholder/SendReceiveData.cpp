@@ -21,7 +21,6 @@
 
 #include "Globals.h"
 #include "SendReceiveData.h"
-#include "../Common/Linux.h"
 #include "../Common/Win32Helpers.h"
 
 DWORD WINAPI BeholdRC(void *recieveClass)
@@ -48,7 +47,7 @@ BOOL SendReceiveData::init()
 	threadHandle = nullptr;
 	exitEvent = nullptr;
 
-	gettimeofday(&end,nullptr);	// initialise
+	end = std::chrono::steady_clock::now();
 
 	if( !BTV_GetIStatus() ) {
 		MessageBox( 0, _T( "Library not found" ), _T( "Beholder" ), MB_OK | MB_ICONERROR );
@@ -143,24 +142,17 @@ bool SendReceiveData::waitTillDataIsReady( int maxUSecs )
 
 void SendReceiveData::getCode()
 {
-	//========================
-	ir_code tempCode;
-	struct mytimeval tempStart;
-	struct mytimeval tempEnd;
-	struct mytimeval tempLast;
-	//========================
-
 	//
 	// get code see if its valid because we are polling
 	// 99% of the time it will just return zero
 	//
 
-	gettimeofday(&tempStart,nullptr);
-	tempLast = end;
+	auto const tempStart = std::chrono::steady_clock::now();
+	auto const tempLast = end;
 
-	tempCode = BTV_GetRCCodeEx();
+	ir_code const tempCode = BTV_GetRCCodeEx();
 
-	gettimeofday(&tempEnd,nullptr);
+	auto const tempEnd = std::chrono::steady_clock::now();
 
 	if(tempCode) {
 

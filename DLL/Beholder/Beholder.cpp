@@ -24,7 +24,6 @@
 
 #include "../Common/LIRCDefines.h"
 #include "../Common/WLPluginAPI.h"
-#include "../Common/Linux.h"
 #include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
 

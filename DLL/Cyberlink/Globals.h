@@ -25,6 +25,7 @@
 
 #include <Windows.h>
 #include "ReceiveData.h"
+#include <chrono>
 
 extern ReceiveData *receiveData;
 
@@ -33,6 +34,6 @@ extern HANDLE dataReadyEvent;
 
 extern ir_code irCode;
 
-extern struct mytimeval start,end,last;
+extern std::chrono::steady_clock::time_point start,end,last;
 
 #endif /* #ifndef _GLOBALS_H_ */

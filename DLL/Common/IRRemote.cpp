@@ -26,7 +26,8 @@
 #include "LIRCDefines.h"
 #include "Hardware.h"
 #include <limits.h>
-#include "Linux.h"
+
+using namespace std::chrono_literals;
 
 struct ir_remote *decoding		= nullptr;
 struct ir_remote *last_remote	= nullptr;
@@ -61,25 +62,26 @@ WINLIRC_API int map_code(struct ir_remote *remote,
 	return(1);
 }
 
-WINLIRC_API void map_gap(struct ir_remote *remote,
-	     struct mytimeval *start, struct mytimeval *last,
-	     lirc_t signal_length,
-	     int *repeat_flagp,
-	     lirc_t *min_remaining_gapp,
-	     lirc_t *max_remaining_gapp)
+WINLIRC_API void map_gap(
+		ir_remote *remote,
+		int64_t time_elapsed_us,
+		lirc_t signal_length,
+		int *repeat_flagp,
+		lirc_t *min_remaining_gapp,
+		lirc_t *max_remaining_gapp)
 {
 	// Time gap (us) between a keypress on the remote control and
 	// the next one.
 	lirc_t gap;
 	
 	// Check the time gap between the last keypress and this one.
-	if (start->tv_sec - last->tv_sec >= 2) {
+	if (time_elapsed_us >= 2'000'000) {
 		// Gap of 2 or more seconds: this is not a repeated keypress.
 		*repeat_flagp = 0;
 		gap = 0;
 	} else {
 		// Calculate the time gap in microseconds.
-		gap = time_elapsed(last, start);
+		gap = time_elapsed_us;
 		if(expect_at_most(remote, gap, remote->max_remaining_gap))
 		{
 			// The gap is shorter than a standard gap
@@ -308,15 +310,14 @@ unsigned long long set_code(struct ir_remote *remote,struct ir_ncode *found,
 			    lirc_t min_remaining_gap, lirc_t max_remaining_gap)
 {
 	unsigned long long code;
-	struct mytimeval current;
 	static struct ir_remote *last_decoded = nullptr;
 
-	gettimeofday(&current,nullptr);
+	auto const current = std::chrono::steady_clock::now();
 
 	if(remote==last_decoded &&
 	   (found==remote->last_code || (found->next!=nullptr && found->current!=nullptr)) &&
 	   repeat_flag &&
-	   time_elapsed(&remote->last_send,&current)<1000000 &&
+	   current - remote->last_send < 1s &&
 	   (!has_toggle_bit_mask(remote) || toggle_bit_mask_state==remote->toggle_bit_mask_state))
 	{
 		if(has_toggle_mask(remote))

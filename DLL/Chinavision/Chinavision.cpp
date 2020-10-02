@@ -23,7 +23,6 @@
 #include "Chinavision.h"
 #include "../Common/LIRCDefines.h"
 #include <stdio.h>
-#include "../Common/Linux.h"
 #include "ChinavisionAPI.h"
 
 ChinavisionAPI *chinavisionAPI = nullptr;

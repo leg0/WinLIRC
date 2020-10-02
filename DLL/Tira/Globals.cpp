@@ -8,4 +8,4 @@ HANDLE	dataReadyEvent	= nullptr;
 
 CRITICAL_SECTION criticalSection;
 
-struct mytimeval start,end,last;
+std::chrono::steady_clock::time_point start, end, last;

@@ -5,7 +5,6 @@
 
 struct ir_remote;
 struct hardware;
-struct mytimeval;
 
 WINLIRC_API int map_code(ir_remote* remote,
 	ir_code* prep, ir_code* codep, ir_code* postp,
@@ -13,8 +12,8 @@ WINLIRC_API int map_code(ir_remote* remote,
 	int bits, ir_code code,
 	int post_bits, ir_code post);
 
-WINLIRC_API void map_gap(struct ir_remote* remote,
-	mytimeval* start, mytimeval* last,
+WINLIRC_API void map_gap(ir_remote* remote,
+	int64_t gap_us,
 	lirc_t signal_length,
 	int* repeat_flagp,
 	lirc_t* min_remaining_gapp,

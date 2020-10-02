@@ -24,7 +24,6 @@
 #include "SendReceiveData.h"
 #include "Globals.h"
 #include "../Common/DebugOutput.h"
-#include "../Common/Linux.h"
 #include "../Common/Win32Helpers.h"
 
 DWORD WINAPI IRMan(void *recieveClass) {
@@ -52,7 +51,7 @@ bool SendReceiveData::init() {
 	m_count	= 0;
 	irCode	= 0;
 
-	gettimeofday(&end,nullptr);	// initialise
+	end = std::chrono::steady_clock::now();
 
 	_sntprintf(comPortName,_countof(comPortName),_T("\\\\.\\COM%i"),settings.getComPort());
 
@@ -206,7 +205,7 @@ void SendReceiveData::receiveLoop() {
 			if (!(eEvent & CSerial::EEventRecv)) { DPRINTF("wrong event\n"); continue; }
 
 			if(m_count==0) {
-				gettimeofday(&start,nullptr);
+				start = std::chrono::steady_clock::now();
 			}
 
 			if(m_serial.Read(buffer+m_count,sizeof(buffer)-m_count,&dwBytesRead)!=ERROR_SUCCESS) {
@@ -231,7 +230,7 @@ void SendReceiveData::receiveLoop() {
 
 				LeaveCriticalSection(&criticalSection);
 
-				gettimeofday(&end,nullptr);
+				end = std::chrono::steady_clock::now();
 
 				SetEvent(dataReadyEvent);
 			}

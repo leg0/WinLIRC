@@ -26,7 +26,6 @@
 #include "Globals.h"
 #include "ReceiveData.h"
 #include "../Common/DebugOutput.h"
-#include "../Common/Linux.h"
 #include "../Common/Win32Helpers.h"
 
 #define CLMAKECODE(a, b, c, d) ( (a)<<24 | (b)<<16 | (c)<<8 | (d) )
@@ -115,7 +114,7 @@ bool ReceiveData::init()
 	WINUSB_PIPE_INFORMATION pipeInfo;
 	//====================
 
-	gettimeofday(&end,nullptr);	// initialise
+	end = std::chrono::steady_clock::now();
 
 	findCyberLinkDevicePaths((LPGUID)&CYBERLINK_RC_DEVICE); 
 
@@ -218,7 +217,7 @@ void ReceiveData::threadProc(int threadNumber)
 
 		if ( result == WAIT_OBJECT_0 ) {
 
-			gettimeofday(&start,nullptr);
+			start = std::chrono::steady_clock::now();
 
 			WinUsb_GetOverlappedResult(usbHandle[threadNumber], &overlappedRead, &bytesRead, FALSE);
 
@@ -236,7 +235,7 @@ void ReceiveData::threadProc(int threadNumber)
 
 			last = end;
 
-			gettimeofday(&end,nullptr);
+			end = std::chrono::steady_clock::now();
 
 			setData(code);
 		} else {

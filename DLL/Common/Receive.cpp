@@ -25,9 +25,10 @@
 #include "LIRCDefines.h"
 #include "Hardware.h"
 #include <limits.h>
-#include "Linux.h"
 
 #pragma warning( disable : 4018 )
+
+using namespace std::chrono;
 
 struct rbuf rec_buffer;
 
@@ -1006,7 +1007,7 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
     auto& hw = *phw;
 	ir_code pre,code,post;
 	int header;
-	struct mytimeval current;
+	steady_clock::time_point current;
 
 	lirc_t sync=0;
 	code=pre=post=0;
@@ -1147,7 +1148,7 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 			code = decoded & gen_mask(remote->bits);
 			pre = decoded >> remote->bits;
 			
-			gettimeofday(&current,nullptr);
+			current = steady_clock::now();
 			sum=remote->phead+remote->shead+
 				lirc_t_max(remote->pone+remote->sone,
 					   remote->pzero+remote->szero)*
@@ -1159,8 +1160,7 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 				remote->post_p+remote->post_s;
 			
 			rec_buffer.sum=sum>=remote->gap ? remote->gap-1:sum;
-			sync=time_elapsed(&remote->last_send,&current)-
- 				rec_buffer.sum;
+			sync = duration_cast<microseconds>(current - remote->last_send).count() - rec_buffer.sum;
 		}
 		else
 		{
@@ -1240,9 +1240,9 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 		/* Most TV cards don't pass each signal to the
                    driver. This heuristic should fix repeat in such
                    cases. */
-		if(time_elapsed(&remote->last_send,&current)<325000)
+		if (current - remote->last_send < 325'000us)
 		{
-			*repeat_flagp=1;
+			*repeat_flagp = 1;
 		}
 	}
 	if(is_const(remote))

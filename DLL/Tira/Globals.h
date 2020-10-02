@@ -1,13 +1,12 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
+
+#include <chrono>
 
 extern HANDLE threadExitEvent;
 extern HANDLE dataReadyEvent;
 
 extern CRITICAL_SECTION criticalSection;
 
-extern struct mytimeval start,end,last;
+extern std::chrono::steady_clock::time_point start, end, last;
 
 void waitTillDataIsReady(int maxUSecs);
-
-#endif

@@ -1,6 +1,5 @@
 #include "ChinavisionAPI.h"
 #include <stdio.h>
-#include "../Common/Linux.h"
 #include "../Common/LIRCDefines.h"
 #include <initguid.h>
 #include <setupapi.h>

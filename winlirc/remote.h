@@ -256,18 +256,6 @@ static inline lirc_t max_gap(ir_remote*remote)
 	}
 }
 
-static inline unsigned long time_elapsed(mytimeval *last,
-					 mytimeval *current)
-{
-	__int64 secs,diff;
-	
-	secs=current->tv_sec-last->tv_sec;
-	
-	diff=1000000*secs+current->tv_usec-last->tv_usec;
-	
-	return(unsigned long(diff));
-}
-
 static inline ir_code gen_mask(int bits)
 {
 	int i;

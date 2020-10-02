@@ -17,8 +17,6 @@ set(COMMON_SOURCES
 	../DLL/Common/Hardware.h
 	../DLL/Common/IRRemote.cpp
 	../DLL/Common/IRRemote.h
-	../DLL/Common/Linux.cpp
-	../DLL/Common/Linux.h
 	../DLL/Common/LIRCDefines.h
 	../DLL/Common/Receive.cpp
 	../DLL/Common/Receive.h

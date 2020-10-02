@@ -31,4 +31,4 @@ ReceiveData *receiveData = nullptr;
 
 ir_code irCode = 0;
 
-struct mytimeval start,end,last;
+std::chrono::steady_clock::time_point start, end, last;

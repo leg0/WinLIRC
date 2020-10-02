@@ -24,6 +24,7 @@
 
 #include <windows.h>
 #include "SendReceiveData.h"
+#include <chrono>
 
 extern HANDLE threadExitEvent;
 extern HANDLE dataReadyEvent;
@@ -32,7 +33,7 @@ extern SendReceiveData *sendReceiveData;
 
 extern CRITICAL_SECTION criticalSection;
 
-extern struct mytimeval start,end,last;
+extern std::chrono::steady_clock::time_point start,end,last;
 
 extern ir_code irCode;
 

@@ -9,7 +9,6 @@
 
 #include "../Common/WLPluginAPI.h"
 #include "../Common/Hardware.h"
-#include "../Common/Linux.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Win32Helpers.h"
 
@@ -207,9 +206,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 		}
 
 		last = end;
-		gettimeofday(&start,nullptr);
+		start = std::chrono::steady_clock::now();
 		receive->getData(&irCode);
-		gettimeofday(&end,nullptr);
+		end = std::chrono::steady_clock::now();
 
 		if(decodeCommand(&hw,remotes,out,out_size)) {
 			ResetEvent(dataReadyEvent);

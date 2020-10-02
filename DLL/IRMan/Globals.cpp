@@ -21,7 +21,6 @@
 
 #include <Windows.h>
 #include "Globals.h"
-#include <stdio.h>
 #include "../Common/LircDefines.h"
 
 Settings settings;
@@ -31,7 +30,7 @@ HANDLE	dataReadyEvent	= nullptr;
 
 CRITICAL_SECTION criticalSection;
 
-struct mytimeval start,end,last;
+std::chrono::steady_clock::time_point start, end, last;
 
 ir_code irCode = 0;
 

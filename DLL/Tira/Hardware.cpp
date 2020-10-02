@@ -67,7 +67,8 @@ static int tira_decode (struct hardware const*, struct ir_remote *remote, ir_cod
 
 	if(!success) return 0;
 
-	map_gap(remote, &start, &last, 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
+	using namespace std::chrono;
+	map_gap(remote, duration_cast<microseconds>(last - start).count(), 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
 	
 	return 1;
 }

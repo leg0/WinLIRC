@@ -9,6 +9,6 @@ Settings settings;
 
 CRITICAL_SECTION criticalSection;
 
-struct mytimeval start,end,last;
+std::chrono::steady_clock::time_point start, end, last;
 
 ir_code irCode = 0;

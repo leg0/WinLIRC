@@ -26,6 +26,8 @@
 
 #define CODE_LENGTH 32
 
+using namespace std::chrono;
+
 static int tbs_decode (struct hardware const*, struct ir_remote *remote, ir_code *prep, ir_code *codep,
 		 ir_code *postp, int *repeat_flagp,
 		 lirc_t *min_remaining_gapp,
@@ -41,7 +43,7 @@ static int tbs_decode (struct hardware const*, struct ir_remote *remote, ir_code
 
 	if(!success) return 0;
 
-	map_gap(remote, &start, &last, 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	map_gap(remote, duration_cast<microseconds>(last - start).count(), 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
 	
 	return 1;
 }
