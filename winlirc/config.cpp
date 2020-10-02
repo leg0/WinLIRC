@@ -345,16 +345,6 @@ int defineRemote(char * key, char * val, char *val2, struct ir_remote *rem)
 	
 		return(1);
 	}
-#ifdef DYNCODES
-	if ((strcasecmp("dyncodes_name",key))==0){
-		if(rem->dyncodes_name!=nullptr)
-		{
-			free(rem->dyncodes_name);
-		}
-		rem->dyncodes_name=s_strdup(val);
-		return(1);
-	}
-#endif
 	else if ((strcasecmp("bits",key))==0){
 		rem->bits=s_strtoi(val);
 		return(1);
@@ -944,14 +934,6 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 						break;
 					}
 
-#                                       ifdef DYNCODES
-					if(rem->dyncodes_name==nullptr)
-					{
-						rem->dyncodes_name=s_strdup("unknown");
-					}
-					rem->dyncodes[0].name=rem->dyncodes_name;
-					rem->dyncodes[1].name=rem->dyncodes_name;
-#                                       endif
 					/* not really necessary because we
 					clear the alloced memory */
 					rem->next=nullptr;
@@ -1197,9 +1179,6 @@ void free_config(struct ir_remote *remotes)
 	{
 		next=remotes->next;
 
-#               ifdef DYNCODES
-		if(remotes->dyncodes_name!=nullptr) free(remotes->dyncodes_name);
-#               endif
 		if(remotes->name!=nullptr) free(remotes->name);
 		if(remotes->codes!=nullptr)
 		{
