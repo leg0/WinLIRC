@@ -74,7 +74,7 @@ bool CTrayIcon::SetIcon(UINT uID) noexcept
     }
     else
     {
-        DisableTrayIcon();
+        return DisableTrayIcon();
     }
 }
 

@@ -47,7 +47,6 @@ add_executable(winlirc WIN32
     config.h
     dll.h
     drvdlg.h
-    dumpcfg.h
     globals.h
     guicon.h
     InputPlugin.h
