@@ -9,4 +9,4 @@ extern CRITICAL_SECTION criticalSection;
 
 extern std::chrono::steady_clock::time_point start, end, last;
 
-void waitTillDataIsReady(int maxUSecs);
+void waitTillDataIsReady(std::chrono::microseconds maxUSecs);

@@ -23,6 +23,8 @@
 #include "SendReceiveData.h"
 #include "../Common/Win32Helpers.h"
 
+using namespace std::chrono;
+
 DWORD WINAPI BeholdRC(void *recieveClass)
 {
    ((SendReceiveData*)recieveClass)->threadProc();
@@ -47,7 +49,7 @@ BOOL SendReceiveData::init()
 	threadHandle = nullptr;
 	exitEvent = nullptr;
 
-	end = std::chrono::steady_clock::now();
+	end = steady_clock::now();
 
 	if( !BTV_GetIStatus() ) {
 		MessageBox( 0, _T( "Library not found" ), _T( "Beholder" ), MB_OK | MB_ICONERROR );
@@ -113,7 +115,7 @@ void SendReceiveData::threadProc()
 	SAFE_CLOSE_HANDLE(exitEvent);
 }
 
-bool SendReceiveData::waitTillDataIsReady( int maxUSecs )
+bool SendReceiveData::waitTillDataIsReady(microseconds maxUSecs)
 {
 	HANDLE events[2] = { dataReadyEvent, threadExitEvent };
 	int evt;
@@ -126,11 +128,11 @@ bool SendReceiveData::waitTillDataIsReady( int maxUSecs )
 	{
 		ResetEvent( dataReadyEvent );
 
-		int res;
-		if( maxUSecs )
-			res = WaitForMultipleObjects( evt, events, FALSE, ( maxUSecs + 500 ) / 1000 );
-		else
-			res = WaitForMultipleObjects( evt, events, FALSE, INFINITE );
+		using namespace std::chrono;
+		DWORD const dwTimeout = maxUSecs > 0us
+			? duration_cast<milliseconds>(maxUSecs + 500us).count()
+			: INFINITE;
+		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
 		if( res == (WAIT_OBJECT_0+1) )
 		{
 			return false;
@@ -147,12 +149,12 @@ void SendReceiveData::getCode()
 	// 99% of the time it will just return zero
 	//
 
-	auto const tempStart = std::chrono::steady_clock::now();
+	auto const tempStart = steady_clock::now();
 	auto const tempLast = end;
 
 	ir_code const tempCode = BTV_GetRCCodeEx();
 
-	auto const tempEnd = std::chrono::steady_clock::now();
+	auto const tempEnd = steady_clock::now();
 
 	if(tempCode) {
 

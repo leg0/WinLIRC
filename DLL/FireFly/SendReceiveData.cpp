@@ -166,7 +166,7 @@ void SendReceiveData::threadProc() {
 	SAFE_CLOSE_HANDLE(overlappedRead.hEvent);
 }
 
-bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
+bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
@@ -176,11 +176,11 @@ bool SendReceiveData::waitTillDataIsReady(int maxUSecs) {
 	if(irCode==0)
 	{
 		ResetEvent(dataReadyEvent);
-		int res;
-		if(maxUSecs)
-			res=WaitForMultipleObjects(evt,events,FALSE,(maxUSecs+500)/1000);
-		else
-			res=WaitForMultipleObjects(evt,events,FALSE,INFINITE);
+		using namespace std::chrono;
+		DWORD const dwTimeout = maxUSecs > 0us
+			? duration_cast<milliseconds>(maxUSecs + 500us).count()
+			: INFINITE;
+		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;

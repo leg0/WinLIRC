@@ -53,7 +53,7 @@ public:
 	void	deinit();
 	bool	getData(ir_code *out);
 	bool	dataReady();
-	bool	waitTillDataIsReady(int maxUSecs);
+	bool	waitTillDataIsReady(std::chrono::microseconds maxUSecs);
 	void	threadProc();
 private:
 

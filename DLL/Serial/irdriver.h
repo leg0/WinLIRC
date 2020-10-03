@@ -21,8 +21,9 @@
  * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
  */
 
-#ifndef IRDRIVER_H
-#define IRDRIVER_H
+#pragma once
+
+#include <chrono>
 
 class CIRDriver {
 
@@ -33,10 +34,10 @@ public:
 	bool			InitPort();
 	void			ResetPort();
 	void			ThreadProc();
-	unsigned long	readData(unsigned long maxusec);
+	unsigned long	readData(std::chrono::microseconds maxusec);
 	bool			dataReady();
 	bool			getData(UINT *out);
-	bool			waitTillDataIsReady(int maxUSecs);
+	bool			waitTillDataIsReady(std::chrono::microseconds maxUSecs);
 
 private:
 
@@ -58,5 +59,3 @@ private:
 	HANDLE		hDataReadyEvent;
 	//==========================
 };
-
-#endif

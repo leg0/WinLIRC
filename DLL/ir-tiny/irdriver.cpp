@@ -136,7 +136,7 @@ bool irtiny::CIRDriver::dataReady() const
     return !buffer_.empty();
 }
 
-std::uint32_t irtiny::CIRDriver::readData(std::uint32_t maxusec)
+std::uint32_t irtiny::CIRDriver::readData(std::chrono::microseconds maxusec)
 {
     if (waitTillDataIsReady(maxusec))
         return buffer_.pop();
@@ -144,7 +144,7 @@ std::uint32_t irtiny::CIRDriver::readData(std::uint32_t maxusec)
         return 0;
 }
 
-bool irtiny::CIRDriver::waitTillDataIsReady(std::uint32_t maxUSecs)
+bool irtiny::CIRDriver::waitTillDataIsReady(std::chrono::microseconds maxUSecs)
 {
     if (dataReady())
     {
@@ -154,8 +154,9 @@ bool irtiny::CIRDriver::waitTillDataIsReady(std::uint32_t maxUSecs)
     {
         dataReadyEvent_.resetEvent();
         HANDLE const events[2] = { dataReadyEvent_.get(), finishEvent_.get() };
-        DWORD const dwTimeout = maxUSecs
-            ? (maxUSecs + 500) / 1000
+        using namespace std::chrono;
+        DWORD const dwTimeout = maxUSecs > 0us
+            ? duration_cast<milliseconds>(maxUSecs + 500us).count()
             : INFINITE;
         DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
         return res == WAIT_OBJECT_0;

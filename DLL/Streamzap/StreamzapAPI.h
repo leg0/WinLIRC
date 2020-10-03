@@ -15,7 +15,7 @@ public:
 	void threadProc	();
 	bool getData	(lirc_t *out);
 	bool dataReady	();
-	bool waitTillDataIsReady(int maxUSecs);
+	bool waitTillDataIsReady(std::chrono::microseconds maxUSecs);
 
 private:
 

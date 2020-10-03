@@ -160,10 +160,10 @@ namespace irtiny
 
         bool initPort();
         void resetPort();
-        std::uint32_t readData(std::uint32_t maxusec);
+        std::uint32_t readData(std::chrono::microseconds maxusec);
         bool dataReady() const;
         bool getData(std::uint32_t *out);
-        bool waitTillDataIsReady(std::uint32_t maxUSecs);
+        bool waitTillDataIsReady(std::chrono::microseconds maxUSecs);
 
     private:
 

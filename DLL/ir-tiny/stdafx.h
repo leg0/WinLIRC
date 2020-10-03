@@ -7,9 +7,9 @@
 #pragma warning(disable: 4996) // use of deprecated functions
 #include <atlstr.h>
 #include <atlbase.h>
-#include <atlapp.h>
-#include <atlctrls.h>
-#include <atlddx.h>
+#include <wtl/atlapp.h>
+#include <wtl/atlctrls.h>
+#include <wtl/atlddx.h>
 #pragma warning(pop)
 
 #include <cstdint>

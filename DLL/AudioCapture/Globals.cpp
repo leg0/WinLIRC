@@ -21,6 +21,7 @@
 
 #include "Globals.h"
 #include <Windows.h>
+#include <chrono>
 
 RecordAudio		*recordAudio	= nullptr;
 AnalyseAudio	*analyseAudio	= nullptr;
@@ -28,7 +29,7 @@ Settings		*settings		= nullptr;
 HANDLE			dataReadyEvent	= nullptr;
 HANDLE			threadExitEvent	= nullptr;
 
-bool waitTillDataIsReady(int maxUSecs) {
+bool waitTillDataIsReady(std::chrono::microseconds timeout) {
 
 	//
 	// if buffer start = buffer end we need to wait and read more data
@@ -40,11 +41,9 @@ bool waitTillDataIsReady(int maxUSecs) {
 
 		//=====================
 		HANDLE	events[2];
-		int		res;
 		int		numberOfEvents;
 		//=====================
 
-		res			= 0;
 		events[0]	= dataReadyEvent;
 
 		if(threadExitEvent) {
@@ -57,12 +56,11 @@ bool waitTillDataIsReady(int maxUSecs) {
 		
 		ResetEvent(dataReadyEvent);
 		
-		if(maxUSecs==0) {
-			res=WaitForMultipleObjects(numberOfEvents,events,FALSE,INFINITE);
-		}
-		else {
-			res=WaitForMultipleObjects(numberOfEvents,events,FALSE,(maxUSecs+500)/1000);
-		}
+		using namespace std::chrono;
+		DWORD const dwTimeout = timeout > 0us
+			? duration_cast<milliseconds>(timeout + 500us).count()
+			: INFINITE;
+		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
 
 		if(res==(WAIT_OBJECT_0+1)) {
 			return false;

@@ -31,8 +31,8 @@ add_definitions(
     -D_UNICODE
     )
 
-find_package(WTL REQUIRED)
-include_directories(${WTL_INCLUDE_DIRS})
+find_path(WTL_INCLUDE_DIRS "wtl/atlapp.h")
+target_include_directories(ir-tiny PRIVATE ${WTL_INCLUDE_DIRS})
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/DLL

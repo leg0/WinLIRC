@@ -211,7 +211,8 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 
-		if(!sendReceiveData->waitTillDataIsReady(0)) {
+		using namespace std::chrono_literals;
+		if(!sendReceiveData->waitTillDataIsReady(0us)) {
 			return 0;
 		}
 

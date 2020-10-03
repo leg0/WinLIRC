@@ -14,7 +14,7 @@ public:
 	BOOL init(HANDLE threadExit);
 	void deinit();
 	void threadProc();
-	void waitTillDataIsReady(int maxUSecs);
+	void waitTillDataIsReady(std::chrono::microseconds maxUSecs);
 	int decodeCommand(char *out);
 
 private:

@@ -29,6 +29,7 @@
 #include "../Common/LIRCDefines.h"
 
 #include "BeholdRC.h"
+#include <chrono>
 
 class SendReceiveData
 {
@@ -40,7 +41,7 @@ public:
 	void   deinit();
 
 	int		dataReady();
-	bool	waitTillDataIsReady( int maxUSecs );
+	bool	waitTillDataIsReady(std::chrono::microseconds maxUSecs);
 	void	threadProc();
 
 private:

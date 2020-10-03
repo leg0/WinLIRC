@@ -35,7 +35,7 @@ lirc_t readdata(lirc_t timeout) {
 
 	if(!analyseAudio) return 0;
 
-	waitTillDataIsReady(timeout);
+	waitTillDataIsReady(std::chrono::microseconds{ timeout });
 
 	if(analyseAudio->getData((UINT*)&data)) {
 		
@@ -56,7 +56,7 @@ int data_ready() {
 
 void wait_for_data(lirc_t uSecs) {
 
-	waitTillDataIsReady(uSecs);
+	waitTillDataIsReady(std::chrono::microseconds{ uSecs });
 }
 
 void initHardwareStruct() {

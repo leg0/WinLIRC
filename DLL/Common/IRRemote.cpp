@@ -27,8 +27,6 @@
 #include "Hardware.h"
 #include <limits.h>
 
-using namespace std::chrono_literals;
-
 struct ir_remote *decoding		= nullptr;
 struct ir_remote *last_remote	= nullptr;
 struct ir_remote *repeat_remote	= nullptr;
@@ -313,6 +311,8 @@ unsigned long long set_code(struct ir_remote *remote,struct ir_ncode *found,
 	static struct ir_remote *last_decoded = nullptr;
 
 	auto const current = std::chrono::steady_clock::now();
+
+	using namespace std::chrono_literals;
 
 	if(remote==last_decoded &&
 	   (found==remote->last_code || (found->next!=nullptr && found->current!=nullptr)) &&

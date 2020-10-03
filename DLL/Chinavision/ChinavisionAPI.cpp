@@ -5,6 +5,8 @@
 #include <setupapi.h>
 #include <tchar.h>
 
+using namespace std::chrono;
+
 static const GUID GUID_CLASS_STREAMZAP = { 0x72679574, 0x1865, 0x499d, { 0xb1, 0x82, 0x4b, 0x09, 0x9d, 0x6d, 0x13, 0x91 } };
 
 DWORD WINAPI SZThread(void *recieveClass) {
@@ -168,7 +170,7 @@ void ChinavisionAPI::threadProc() {
 	cleanUp();
 }
 
-void ChinavisionAPI::waitTillDataIsReady(int maxUSecs) {
+void ChinavisionAPI::waitTillDataIsReady(microseconds maxUSecs) {
 
 	HANDLE events[2]={m_dataReadyEvent,m_threadExitEvent};
 	int evt;
@@ -178,11 +180,11 @@ void ChinavisionAPI::waitTillDataIsReady(int maxUSecs) {
 	if(m_irCode==0)
 	{
 		ResetEvent(m_dataReadyEvent);
-		int res;
-		if(maxUSecs)
-			res=WaitForMultipleObjects(evt,events,FALSE,(maxUSecs+500)/1000);
-		else
-			res=WaitForMultipleObjects(evt,events,FALSE,INFINITE);
+		using namespace std::chrono;
+		DWORD const dwTimeout = maxUSecs > 0us
+			? duration_cast<milliseconds>(maxUSecs + 500us).count()
+			: INFINITE;
+		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			ExitThread(0);

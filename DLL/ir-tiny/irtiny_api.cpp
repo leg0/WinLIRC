@@ -13,7 +13,7 @@ static std::unique_ptr<irtiny::CIRDriver> irDriver;
 static lirc_t irtiny_readData(lirc_t timeout)
 {
     if (irDriver)
-        return irDriver->readData(timeout);
+        return irDriver->readData(std::chrono::microseconds{ timeout });
     else
         return 0;
 }
@@ -21,7 +21,7 @@ static lirc_t irtiny_readData(lirc_t timeout)
 static void irtiny_waitForData(lirc_t timeout)
 {
     if (irDriver)
-        irDriver->waitTillDataIsReady(timeout);
+        irDriver->waitTillDataIsReady(std::chrono::microseconds{ timeout });
 }
 
 static int irtiny_dataReady()
@@ -76,7 +76,8 @@ WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 
 WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
 {
-    if (!irDriver || !irDriver->waitTillDataIsReady(0))
+    using namespace std::chrono_literals;
+    if (!irDriver || !irDriver->waitTillDataIsReady(0us))
         return 0;
 
     clear_rec_buffer(&hw);

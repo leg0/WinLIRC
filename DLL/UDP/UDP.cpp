@@ -81,8 +81,8 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(server) {
-
-		if(!server->waitTillDataIsReady(0)) {
+		using namespace std::chrono_literals;
+		if(!server->waitTillDataIsReady(0us)) {
 			return 0;
 		}
 

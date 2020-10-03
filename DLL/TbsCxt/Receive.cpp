@@ -127,7 +127,7 @@ bool Receive::getData(ir_code *out) {
 	return true;
 }
 
-bool Receive::waitTillDataIsReady(int maxUSecs) {
+bool Receive::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	int evt;
@@ -137,11 +137,11 @@ bool Receive::waitTillDataIsReady(int maxUSecs) {
 	if(!dataReady())
 	{
 		ResetEvent(dataReadyEvent);
-		int res;
-		if(maxUSecs)
-			res=WaitForMultipleObjects(evt,events,FALSE,(maxUSecs+500)/1000);
-		else
-			res=WaitForMultipleObjects(evt,events,FALSE,INFINITE);
+		using namespace std::chrono;
+		DWORD const dwTimeout = maxUSecs > 0us
+			? duration_cast<milliseconds>(maxUSecs + 500us).count()
+			: INFINITE;
+		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;

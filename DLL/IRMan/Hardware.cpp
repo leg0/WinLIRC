@@ -69,7 +69,7 @@ void wait_for_data(lirc_t timeout) {
 
 	if(!sendReceiveData) return;
 
-	sendReceiveData->waitTillDataIsReady(timeout);
+	sendReceiveData->waitTillDataIsReady(std::chrono::microseconds{ timeout });
 }
 
 int data_ready() {

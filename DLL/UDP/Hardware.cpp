@@ -36,7 +36,7 @@ lirc_t readData(lirc_t timeout) {
 
 	if(!server) return 0;
 
-	server->waitTillDataIsReady(timeout);
+	server->waitTillDataIsReady(std::chrono::microseconds{ timeout });
 
 	server->getData(&data);
 
@@ -47,7 +47,7 @@ void wait_for_data(lirc_t timeout) {
 
 	if(!server) return;
 
-	server->waitTillDataIsReady(timeout);
+	server->waitTillDataIsReady(std::chrono::microseconds{ timeout });
 }
 
 int data_ready() {

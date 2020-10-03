@@ -34,7 +34,7 @@ public:
 	void	deinit();
 
 	int		dataReady();
-	bool	waitTillDataIsReady(int maxUSecs);
+	bool	waitTillDataIsReady(std::chrono::microseconds maxUSecs);
 	void	receiveLoop();
 	
 private:

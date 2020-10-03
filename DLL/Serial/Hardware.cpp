@@ -31,14 +31,14 @@ lirc_t readData(lirc_t timeout) {
 
 	if(!irDriver) return 0;
 
-	return irDriver->readData(timeout);
+	return irDriver->readData(std::chrono::microseconds{ timeout });
 }
 
 void wait_for_data(lirc_t timeout) {
 
 	if(!irDriver) return;
 
-	irDriver->waitTillDataIsReady(timeout);
+	irDriver->waitTillDataIsReady(std::chrono::microseconds{ timeout });
 }
 
 int data_ready() {

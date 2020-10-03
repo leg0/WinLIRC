@@ -25,6 +25,7 @@
 #include "RecordAudio.h"
 #include "AnalyseAudio.h"
 #include "Settings.h"
+#include <chrono>
 
 extern RecordAudio	*recordAudio;
 extern AnalyseAudio	*analyseAudio;
@@ -32,6 +33,6 @@ extern Settings		*settings;
 extern HANDLE		dataReadyEvent;
 extern HANDLE		threadExitEvent;
 
-bool waitTillDataIsReady(int maxUSecs);
+bool waitTillDataIsReady(std::chrono::microseconds timeout);
 
 #endif

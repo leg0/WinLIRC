@@ -59,7 +59,8 @@ IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 IG_API int decodeIR(struct ir_remote *remotes, char *out) {
 
 	if(chinavisionAPI) {
-		chinavisionAPI->waitTillDataIsReady(0);
+		using namespace std::chrono_literals;
+		chinavisionAPI->waitTillDataIsReady(0us);
 		return chinavisionAPI->decodeCommand(out);
 	}
 

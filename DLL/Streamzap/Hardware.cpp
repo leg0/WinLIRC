@@ -36,7 +36,7 @@ lirc_t readData(lirc_t timeout) {
 
 	if(!streamzapAPI) return 0;
 
-	streamzapAPI->waitTillDataIsReady(timeout);
+	streamzapAPI->waitTillDataIsReady(std::chrono::microseconds{ timeout });
 
 	streamzapAPI->getData(&data);
 
@@ -45,9 +45,9 @@ lirc_t readData(lirc_t timeout) {
 
 void wait_for_data(lirc_t timeout) {
 
-	if(!streamzapAPI) return;
+	if (!streamzapAPI) return;
 
-	streamzapAPI->waitTillDataIsReady(timeout);
+	streamzapAPI->waitTillDataIsReady(std::chrono::microseconds{ timeout });
 }
 
 int data_ready() {

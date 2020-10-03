@@ -42,7 +42,7 @@ public:
 	bool	init();
 	void	deinit();
 
-	bool	waitTillDataIsReady(int maxUSecs);
+	bool	waitTillDataIsReady(std::chrono::microseconds maxUSecs);
 	void	threadProc();
 	int		decodeCommand(char *out, size_t out_size);
 	

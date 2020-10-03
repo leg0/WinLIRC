@@ -62,7 +62,7 @@ ir_code get_ir_code() {
 void wait_for_data(lirc_t timeout) {
 
 	if(!receive) return;
-	receive->waitTillDataIsReady(timeout);
+	receive->waitTillDataIsReady(std::chrono::microseconds{ timeout });
 }
 
 int data_ready() {
