@@ -21,8 +21,8 @@
 
 #include "Globals.h"
 #include "../Common/LIRCDefines.h"
-#include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
+#include "../Common/WLPluginAPI.h"
 
 #define CODE_LENGTH 32
 
@@ -31,18 +31,12 @@ static int technisat_decode(struct hardware const*,struct ir_remote *remote, ir_
 		 lirc_t *min_remaining_gapp,
 		 lirc_t *max_remaining_gapp)
 {
-	//==========
-	int success;
-	//==========
-
-	success = 0;
-
-	success = map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
+	auto success = winlirc_map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
 
 	if(!success) return 0;
 
 	using namespace std::chrono;
-	map_gap(remote, duration_cast<microseconds>(last - start).count(), 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
+	winlirc_map_gap(remote, duration_cast<microseconds>(last - start).count(), 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
 	
 	return 1;
 }

@@ -273,7 +273,6 @@ bool Cdrvdlg::DoInitializeDaemon()
 bool Cdrvdlg::InitializeDaemon() {
 
 	//==============
-	CString		tmp;
 	CWaitCursor foo;
 	//==============
 
@@ -291,10 +290,7 @@ bool Cdrvdlg::InitializeDaemon() {
 		ti.DisableTrayIcon();
 	}
 	
-	tmp = _T(".\\");
-	tmp = tmp + config.plugin;
-
-	if(driver.loadPlugin(tmp)==false) {
+	if(driver.loadPlugin(L".\\"s + config.plugin)==false) {
 		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Initialization Error"));
 		return false;
 	}

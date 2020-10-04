@@ -27,8 +27,10 @@ Window g_window;
 HANDLE g_exitEvent = INVALID_HANDLE_VALUE;
 bool g_initialized = false;
 
-WL_API int init(HANDLE exitEvent)
+WL_API int init(WLEventHandle wlExitEvent)
 {
+    HANDLE const exitEvent = reinterpret_cast<HANDLE>(wlExitEvent);
+
     if (g_initialized || exitEvent == INVALID_HANDLE_VALUE)
         return 0;
 

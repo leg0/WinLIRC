@@ -68,10 +68,10 @@ bool getLibraryPath(wchar_t *path, size_t maxPathLen)
 // WinLIRC-Interface //
 ///////////////////////
 
-WL_API int init(HANDLE exitEvent)
+WL_API int init(WLEventHandle exitEvent)
 {
 	trace(L"init");
-	g_exitEvent = exitEvent;
+	g_exitEvent = reinterpret_cast<HANDLE>(exitEvent);
 
 	try
 	{

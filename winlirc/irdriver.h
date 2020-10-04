@@ -23,8 +23,8 @@
 
 #pragma once
 
-#include "../DLL/Common/WLPluginAPI.h"
-#include "dll.h"
+#include "Plugin.h"
+#include <string>
 
 struct ir_remote;
 struct ir_ncode;
@@ -35,7 +35,7 @@ public:
 	CIRDriver();
 	~CIRDriver();
 
-	BOOL	loadPlugin		(CString plugin);
+	BOOL	loadPlugin		(std::wstring plugin);
 	void	unloadPlugin	();
 	BOOL	init			();
 	void	deinit			();
@@ -47,40 +47,14 @@ public:
 
 private:
 
-	using InitFunction = decltype(::init)*;
-	using DeinitFunction = decltype(::deinit)*;
-	using HasGuiFunction = decltype(::hasGui)*;
-	using LoadSetupGuiFunction = decltype(::loadSetupGui)*;
-	using SendFunction = decltype(::sendIR)*;
-	using DecodeFunction = decltype(::decodeIR)*;
-	using SetTransmittersFunction = decltype(::setTransmitters)*;
-
 	/// Protects access to the functions imported from plug-in dll, and the
 	/// DLL handle.
-	/// TODO: move all the load/unload logic and related stuff to Dll class.
 	mutable CCriticalSection	m_dllLock;
-	struct Plugin
-	{
-		InitFunction			initFunction = nullptr;
-		DeinitFunction			deinitFunction = nullptr;
-		HasGuiFunction			hasGuiFunction = nullptr;
-		LoadSetupGuiFunction	loadSetupGuiFunction = nullptr;
-		SendFunction			sendFunction = nullptr;
-		DecodeFunction			decodeFunction = nullptr;
-		SetTransmittersFunction setTransmittersFunction = nullptr;
-		Dll dllFile;
-
-		Plugin() = default;
-		Plugin(Plugin const&) = delete;
-		Plugin(Plugin&&) = default;
-		Plugin& operator=(Plugin const&) = delete;
-		Plugin& operator=(Plugin&&) = default;
-	};
 
 	//===============================
 	Plugin		m_dll;
-	CString		m_loadedPlugin;
-	HANDLE		m_daemonThreadEvent;
+	std::wstring m_loadedPlugin;
+	HANDLE m_daemonThreadEvent;
 	CWinThread*	m_daemonThreadHandle;
 	//===============================
 };

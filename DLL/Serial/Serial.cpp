@@ -25,7 +25,6 @@
 #include "irdriver.h"
 
 #include "../Common/LircDefines.h"
-#include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Receive.h"
 #include "../Common/WLPluginAPI.h"
@@ -34,9 +33,9 @@
 void initHardwareStruct();
 extern hardware hw;
 
-WL_API int init(HANDLE exitEvent) {
+WL_API int init(WLEventHandle exitEvent) {
 
-	threadExitEvent	= exitEvent;
+	threadExitEvent	= reinterpret_cast<HANDLE>(exitEvent);
 
 	initHardwareStruct();
 	init_rec_buffer();
@@ -85,7 +84,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	clear_rec_buffer(&hw);
 
-	if(decodeCommand(&hw, remotes, out, out_size)) {
+	if(winlirc_decodeCommand(&hw, remotes, out, out_size)) {
 		return 1;
 	}
 	

@@ -1,7 +1,10 @@
 #pragma once
 
 #include "afxwin.h"
-#include "dll.h"
+#include "Plugin.h"
+#include <filesystem>
+#include <string>
+#include <vector>
 
 class InputPlugin : public CDialog
 {
@@ -14,10 +17,8 @@ public:
 
 private:
 	void	listDllFiles	();
-	bool	checkDllFile	(CString file);
-	bool	checkRecording	(CString file);
 	void	enableWindows	(bool canRecord);					// enable windows based upon selection
-	void	loadDll			(CString file);
+	void	loadDll			(std::wstring const& file);
 	void	unloadDll		();
 	bool	getStartup		();
 	void	setStartup		(bool start);
@@ -25,10 +26,7 @@ private:
 	using HasGuiFunction = int(*)();
 	using LoadSetupGuiFunction = void(*)();
 
-	HasGuiFunction			m_hasGuiFunction;
-	LoadSetupGuiFunction	m_loadSetupGuiFunction;
-
-	Dll m_dllFile;
+	Plugin m_plugin;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
@@ -58,4 +56,7 @@ private:
 	CButton		m_browseButton;
 	CButton		m_startWithWindows;
 	CEdit		m_editDefaultPort;
+
+	// contents of the combobox. same sort order.
+	std::vector<std::filesystem::path> m_plugins;
 };

@@ -26,20 +26,15 @@ if (MSVC)
     set_source_files_properties(stdafx.cpp PROPERTIES COMPILE_FLAGS "/Ycstdafx.h")
 endif()
 
-add_definitions(
-    -DUNICODE
-    -D_UNICODE
-    )
+target_compile_definitions(ir-tiny PRIVATE UNICODE _UNICODE)
 
 find_path(WTL_INCLUDE_DIRS "wtl/atlapp.h")
-target_include_directories(ir-tiny PRIVATE ${WTL_INCLUDE_DIRS})
-
-include_directories(
+target_include_directories(ir-tiny PRIVATE
+    ${WTL_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/DLL
     )
 
-target_link_libraries(ir-tiny
-    winlirc
-    )
+target_link_libraries(ir-tiny PRIVATE
+    winlirc)
 
 configure_plugin(ir-tiny)

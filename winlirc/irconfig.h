@@ -39,7 +39,7 @@ public:
 
 	//=============================
 	CString remoteConfig;
-	CString plugin;
+	std::wstring plugin;
 	BOOL	disableRepeats;
 	INT		disableFirstKeyRepeats;
 	INT		serverPort;

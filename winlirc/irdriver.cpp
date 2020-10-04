@@ -36,8 +36,8 @@ unsigned int DaemonThread(void* drv) {
 	
 CIRDriver::CIRDriver()
 {
-	m_daemonThreadHandle			= nullptr;
-	m_daemonThreadEvent				= CreateEvent(nullptr,TRUE,FALSE,nullptr);
+	m_daemonThreadHandle = nullptr;
+	m_daemonThreadEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 }
 
 CIRDriver::~CIRDriver()
@@ -54,35 +54,24 @@ CIRDriver::~CIRDriver()
 	}
 }
 
-BOOL CIRDriver::loadPlugin(CString plugin) {
+BOOL CIRDriver::loadPlugin(std::wstring plugin) {
 
-	//
-	//make sure we have cleaned up first
-	//
+    //
+    //make sure we have cleaned up first
+    //
 
-	CSingleLock l(&m_dllLock);
-	unloadPlugin();
+    CSingleLock l(&m_dllLock);
+    unloadPlugin();
 
-	Plugin p;
-	p.dllFile.reset(LoadLibrary(plugin));
-	Dll& d = p.dllFile;
-	if(!d) return FALSE;
+	Plugin p { plugin };
+    if (p.hasValidInterface())
+	{
+        m_dll = std::move(p);
+        m_loadedPlugin = std::move(plugin);
+        return TRUE;
+    }
 
-	p.initFunction				= (InitFunction)			GetProcAddress(d.get(),"init");
-	p.deinitFunction			= (DeinitFunction)			GetProcAddress(d.get(),"deinit");
-	p.hasGuiFunction			= (HasGuiFunction)			GetProcAddress(d.get(),"hasGui");
-	p.loadSetupGuiFunction		= (LoadSetupGuiFunction)	GetProcAddress(d.get(),"loadSetupGui");
-	p.sendFunction				= (SendFunction)			GetProcAddress(d.get(),"sendIR");
-	p.decodeFunction			= (DecodeFunction)			GetProcAddress(d.get(),"decodeIR");
-	p.setTransmittersFunction	= (SetTransmittersFunction)	GetProcAddress(d.get(),"setTransmitters");
-
-	if(p.initFunction && p.deinitFunction && p.hasGuiFunction && p.loadSetupGuiFunction && p.sendFunction && p.decodeFunction) {
-		m_dll = std::move(p);
-		m_loadedPlugin = plugin;
-		return TRUE;
-	}
-
-	return FALSE;
+    return FALSE;
 }
 
 void CIRDriver::unloadPlugin() {
@@ -94,7 +83,7 @@ void CIRDriver::unloadPlugin() {
 
 	// daemon thread should not be dead now.
 	ASSERT(m_daemonThreadHandle == nullptr);
-	m_loadedPlugin = "";
+	m_loadedPlugin = L"";
 	m_dll = Plugin{ };
 }
 
@@ -108,8 +97,8 @@ BOOL CIRDriver::init() {
 	// daemon thread should be dead now.
 	ASSERT(m_daemonThreadHandle == nullptr);
 
-	if(m_dll.initFunction) {
-		if(m_dll.initFunction(m_daemonThreadEvent)) {
+	if(auto pluginInit = m_dll.interface_.init) {
+		if(pluginInit(reinterpret_cast<WLEventHandle>(m_daemonThreadEvent))) {
 
 			m_daemonThreadHandle = AfxBeginThread(DaemonThread, this, THREAD_PRIORITY_IDLE);
 
@@ -131,16 +120,16 @@ void CIRDriver::deinit() {
 	// daemon thread should be dead now.
 	ASSERT(m_daemonThreadHandle == nullptr);
 
-	if(m_dll.deinitFunction) {
-		m_dll.deinitFunction();
+	if(auto pluginDeinit = m_dll.interface_.deinit) {
+		pluginDeinit();
 	}
 }
 
 int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeats) {
 
 	CSingleLock l(&m_dllLock);
-	if(m_dll.sendFunction) {
-		return m_dll.sendFunction(remote,code,repeats);
+	if (auto pluginSendIr = m_dll.interface_.sendIR) {
+		return pluginSendIr(remote, code, repeats);
 	}
 
 	return 0;
@@ -149,8 +138,8 @@ int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeat
 int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
 
 	CSingleLock l(&m_dllLock);
-	if(m_dll.decodeFunction) {
-		return m_dll.decodeFunction(remote,out, out_size);
+	if(auto pluginDecodeIr = m_dll.interface_.decodeIR) {
+		return pluginDecodeIr(remote,out, out_size);
 	}
 
 	return 0;
@@ -159,8 +148,8 @@ int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
 int	CIRDriver::setTransmitters(unsigned int transmitterMask) {
 
 	CSingleLock l(&m_dllLock);
-	if(m_dll.setTransmittersFunction) {
-		return m_dll.setTransmittersFunction(transmitterMask);
+	if(auto pluginSetTransmitters = m_dll.interface_.setTransmitters) {
+		return pluginSetTransmitters(transmitterMask);
 	}
 
 	return 0;
@@ -180,8 +169,9 @@ void CIRDriver::DaemonThreadProc(void) const {
 	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {
 
 		CSingleLock l(&m_dllLock);
-		ASSERT(m_dll.decodeFunction != nullptr);
-		if(m_dll.decodeFunction(global_remotes,message, sizeof(message))) {
+		auto pluginDecodeIr = m_dll.interface_.decodeIR;
+		ASSERT(pluginDecodeIr != nullptr);
+		if(pluginDecodeIr(global_remotes,message, sizeof(message))) {
 			l.Unlock();
 
 			//======================

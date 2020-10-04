@@ -36,13 +36,13 @@ namespace irtiny
         //
         // if our ini files doesn't exist try and create it
         //
-        FILE* file = _tfopen(iniFilePath.c_str(), L"r");
+        FILE* file = _wfopen(iniFilePath.c_str(), L"r");
         if (file == nullptr)
-            file = _tfopen(iniFilePath.c_str(), L"w");
+            file = _wfopen(iniFilePath.c_str(), L"w");
 
         if (file != nullptr)
             fclose(file);
 
-        WritePrivateProfileString(_T("SerialDevice"), _T("Port"), port_.c_str(), iniFilePath.c_str());
+        WritePrivateProfileStringW(L"SerialDevice", L"Port", port_.c_str(), iniFilePath.c_str());
     }
 }

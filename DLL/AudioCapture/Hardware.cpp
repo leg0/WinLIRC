@@ -19,11 +19,11 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
+#include <stdio.h>
 #include "Globals.h"
 #include "../Common/LIRCDefines.h"
-#include "../Common/Hardware.h"
 #include "../Common/Receive.h"
-#include <stdio.h>
+#include "../Common/WLPluginAPI.h"
 
 struct hardware hw;
 

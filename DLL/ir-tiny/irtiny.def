@@ -1,9 +1,3 @@
 LIBRARY ir-tiny
 EXPORTS
-    init
-    deinit
-    hasGui
-    loadSetupGui
-    sendIR
-    decodeIR
-    getHardware
+    getPluginInterface

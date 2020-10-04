@@ -23,7 +23,6 @@
 #include "../Common/LIRCDefines.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Receive.h"
-#include "../Common/Hardware.h"
 #include "../Common/WLPluginAPI.h"
 #include "../Common/Win32Helpers.h"
 #include "resource.h"
@@ -45,7 +44,7 @@ int			indexNumber = 0;
 Settings	*guiSettings = nullptr;
 //==============================
 
-WL_API int init(HANDLE exitEvent) {
+WL_API int init(WLEventHandle exitEvent) {
 
 	//=====================
 	TCHAR	deviceName[32];
@@ -59,7 +58,7 @@ WL_API int init(HANDLE exitEvent) {
 	settings		= new Settings();
 	recordAudio		= new RecordAudio();
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
-	threadExitEvent	= exitEvent;
+	threadExitEvent	= reinterpret_cast<HANDLE>(exitEvent);
 
 	initHardwareStruct();
 	init_rec_buffer();
@@ -484,7 +483,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	clear_rec_buffer(&hw);
 
-	if(decodeCommand(&hw, remotes, out, out_size)) {
+	if(winlirc_decodeCommand(&hw, remotes, out, out_size)) {
 		return 1;
 	}
 	

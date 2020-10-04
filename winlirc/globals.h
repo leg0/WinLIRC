@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "../DLL/Common/WLPluginAPI.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -84,17 +86,6 @@ extern void winlirc_debug(const char *file, int line, char *format, ...);
 #define LIRC_MODE_LIRCCODE  0x00000010
 #define LIRC_MODE_STRING    0x00000020
 
-
-//
-// Typedefs
-//
-#ifdef LONG_IR_CODE
-typedef unsigned __int64 ir_code;
-#else
-typedef unsigned long ir_code;
-#endif
-
-typedef int lirc_t;
 
 //
 //Structure definitions

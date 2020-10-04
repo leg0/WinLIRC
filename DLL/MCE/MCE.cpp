@@ -22,7 +22,6 @@
 #include <Windows.h>
 #include <tchar.h>
 #include "../Common/LircDefines.h"
-#include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Receive.h"
 #include "../Common/WLPluginAPI.h"
@@ -38,7 +37,7 @@ void initHardwareStruct();
 extern hardware hw;
 HANDLE hMutexLockout = nullptr;
 
-WL_API int init(HANDLE exitEvent) {
+WL_API int init(WLEventHandle exitEvent) {
 
 	hMutexLockout = CreateMutex(0,FALSE,_T("WinLIRC_MCE_Plugin_Lock_Out"));
 
@@ -49,7 +48,7 @@ WL_API int init(HANDLE exitEvent) {
 	init_rec_buffer();
 	initHardwareStruct();
 
-	threadExitEvent = exitEvent;
+	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	sendReceiveData = new SendReceiveData();
@@ -218,7 +217,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 		clear_rec_buffer(&hw);
 
-		if(decodeCommand(&hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&hw,remotes,out,out_size)) {
 			return 1;
 		}
 	}

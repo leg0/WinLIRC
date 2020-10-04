@@ -20,10 +20,10 @@
  */
 
 #include "Receive.h"
+#include "LIRCDefines.h"
+#include "WLPluginAPI.h"
 #include <stdio.h>
 #include <string.h>
-#include "LIRCDefines.h"
-#include "Hardware.h"
 #include <limits.h>
 
 #pragma warning( disable : 4018 )

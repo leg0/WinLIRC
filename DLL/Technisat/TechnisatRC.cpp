@@ -6,7 +6,6 @@
 #include "Receive.h"
 #include "Settings.h"
 #include "../Common/WLPluginAPI.h"
-#include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Win32helpers.h"
 
@@ -14,11 +13,11 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();
 extern hardware hw;
 
-WL_API int init(HANDLE exitEvent) {
+WL_API int init(WLEventHandle exitEvent) {
 
 	initHardwareStruct();
 
-	threadExitEvent = exitEvent;
+	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
 	dataReadyEvent	= CreateEvent(nullptr,FALSE,FALSE,nullptr);
 
 	receive = new Receive();
@@ -159,7 +158,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 		receive->getData(&irCode);
 		end = std::chrono::steady_clock::now();
 
-		if(decodeCommand(&hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&hw,remotes,out,out_size)) {
 			ResetEvent(dataReadyEvent);
 			return 1;
 		}

@@ -24,19 +24,18 @@
 
 #include "../Common/LIRCDefines.h"
 #include "../Common/WLPluginAPI.h"
-#include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
 
 void initHardwareStruct();
 extern hardware hw;
 
-WL_API int init( HANDLE exitEvent )
+WL_API int init( WLEventHandle exitEvent )
 {
 	initHardwareStruct();
 
 	InitializeCriticalSection(&criticalSection);
 
-	threadExitEvent = exitEvent;
+	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
 	dataReadyEvent	= CreateEvent( nullptr, TRUE, FALSE, nullptr );
 
 	sendReceiveData = new SendReceiveData();
@@ -90,7 +89,7 @@ WL_API int decodeIR( struct ir_remote *remotes, char *out, size_t out_size )
 			return 0;
 		}
 	   	
-		if(decodeCommand(&hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&hw,remotes,out,out_size)) {
 			ResetEvent(dataReadyEvent);
 			return 1;
 		}

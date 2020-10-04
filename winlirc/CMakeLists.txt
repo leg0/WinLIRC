@@ -14,7 +14,6 @@ set(COMMON_SOURCES
 	../DLL/Common/DebugOutput.h
 	../DLL/Common/enumSerialPorts.h
 	../DLL/Common/fifo.h
-	../DLL/Common/Hardware.h
 	../DLL/Common/IRRemote.cpp
 	../DLL/Common/IRRemote.h
 	../DLL/Common/LIRCDefines.h
@@ -36,6 +35,7 @@ add_executable(winlirc WIN32
 	InputPlugin.cpp
 	irconfig.cpp
 	irdriver.cpp
+	Plugin.cpp
 	server.cpp
 	trayicon.cpp
 	winlirc.cpp
@@ -50,6 +50,7 @@ add_executable(winlirc WIN32
     InputPlugin.h
     irconfig.h
     irdriver.h
+	Plugin.h
     remote.h
     resource.h
     server.h

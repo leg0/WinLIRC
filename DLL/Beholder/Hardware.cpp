@@ -21,8 +21,8 @@
 
 #include "Globals.h"
 #include "../Common/LIRCDefines.h"
-#include "../Common/Hardware.h"
 #include "../Common/IRRemote.h"
+#include "../Common/WLPluginAPI.h"
 #include <chrono>
 
 #define CODE_LENGTH 32
@@ -39,13 +39,13 @@ static int beholder_decode(struct hardware const*,struct ir_remote *remote, ir_c
 	success = 0;
 
 	EnterCriticalSection(&criticalSection);
-	success = map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
+	success = winlirc_map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
 	LeaveCriticalSection(&criticalSection);
 
 	if(!success) return 0;
 
 	using namespace std::chrono;
-	map_gap(remote, duration_cast<microseconds>(last-start).count(), 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
+	winlirc_map_gap(remote, duration_cast<microseconds>(last-start).count(), 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
 
 	return 1;
 } 

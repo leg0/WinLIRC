@@ -8,152 +8,84 @@
 #include <atlbase.h>
 #include "Server.h"
 
+#include <cassert>
+#include <filesystem>
 #include <utility>
+#include <vector>
 
-// InputPlugin dialog
+namespace fs = std::filesystem;
+
+static bool checkRecording(Plugin const& file) noexcept;
 
 IMPLEMENT_DYNAMIC(InputPlugin, CDialog)
 
 InputPlugin::InputPlugin(CWnd* pParent /*=nullptr*/)
 	: CDialog(InputPlugin::IDD, pParent)
+{ }
+
+void InputPlugin::listDllFiles()
 {
-	m_hasGuiFunction		= nullptr;
-	m_loadSetupGuiFunction	= nullptr;
-}
-
-void InputPlugin::listDllFiles() {
-
-	//==========================
-	CFileFind	cFileFind;
-	CString		searchFile;
-	BOOL		found;
-	BOOL		foundMatch;			// match with the ini config
-	bool		canRecord;
-	CString		temp;
-	int			i;
-	int			matchIndex;
-	//==========================
-
-	searchFile	= _T(".\\*.dll");
-	found		= cFileFind.FindFile(searchFile);
-	foundMatch	= FALSE;
-	i			= 0;
-	matchIndex	= 0;
-	canRecord	= false;
-
-	if(!found) {
-
-		MessageBox(_T("No valid dlls found."));
-
-		return;
-	}
-
-	while(found) {
-
-		found = cFileFind.FindNextFile();
-
-		if(checkDllFile(cFileFind.GetFilePath())) {
-
-			m_cboxInputPlugin.AddString(cFileFind.GetFileName());
-		
-			if(cFileFind.GetFileName() == config.plugin) {
-				m_cboxInputPlugin.SetCurSel(i);
-				foundMatch	= TRUE;
-				matchIndex	= i;
-				canRecord	= checkRecording(cFileFind.GetFilePath());
-			}
-			
-			i++;
+	std::vector<fs::path> plugins;
+	for (auto& p : fs::directory_iterator("."))
+	{
+		auto path = p.path();
+		if (path.extension().wstring() == L".dll")
+		{
+			Plugin plugin{ path };
+			if (plugin.hasValidInterface())
+				plugins.push_back(std::move(path));
 		}
 	}
 
-	m_cboxInputPlugin.SetCurSel(matchIndex);
-	m_cboxInputPlugin.GetLBText(matchIndex,temp);
-
-	temp = _T(".\\") + temp;
-
-	loadDll(temp);
-	enableWindows(canRecord);
-}
-
-bool InputPlugin::checkDllFile(CString file) {
-
-	Dll dll{ LoadLibrary(file) };
-
-	if(!dll) return false;
-	auto tmp = dll.get();
-
-	if(!GetProcAddress(tmp,"init"))			return false;
-	if(!GetProcAddress(tmp,"deinit"))		return false;
-	if(!GetProcAddress(tmp,"hasGui"))		return false;
-	if(!GetProcAddress(tmp,"loadSetupGui")) return false;
-	if(!GetProcAddress(tmp,"sendIR"))		return false;
-	if(!GetProcAddress(tmp,"decodeIR"))		return false;
-
-	return true;
-}
-
-bool InputPlugin::checkRecording(CString file) {
-
-	//==========
-	HMODULE tmp;
-	//==========
-
-	tmp = LoadLibrary(file);
-
-	if(!tmp) return false;
-
-	if(!GetProcAddress(tmp,"getHardware")) { 
-		FreeLibrary(tmp); return false; 
+	if (plugins.empty())
+	{
+		MessageBox(_T("No valid dlls found."));
+		m_plugins.clear();
+		return;
 	}
 
-	FreeLibrary(tmp);
+	std::sort(begin(plugins), end(plugins));
+	for (auto const& filePath : plugins)
+	{
+		m_cboxInputPlugin.AddString(filePath.filename().wstring().c_str());
+	}
 
-	return true;
+	auto currentPlugin = std::find_if(begin(plugins), end(plugins), [](fs::path const& p) {
+			return p.filename().wstring() == config.plugin;
+		});
+	auto const matchIndex = currentPlugin != end(plugins)
+		? std::distance(begin(plugins), currentPlugin)
+		: 0;
+	m_cboxInputPlugin.SetCurSel(matchIndex);
+
+	loadDll(plugins[matchIndex].wstring());
+	enableWindows(checkRecording(m_plugin));
+	m_plugins = std::move(plugins);
+}
+
+static bool checkRecording(Plugin const& plugin) noexcept
+{
+	return plugin && (plugin.interface_.hardware || plugin.interface_.getHardware);
 }
 
 void InputPlugin::enableWindows(bool canRecord) {
 
-	if(m_hasGuiFunction) {
-		m_setupButton.EnableWindow(m_hasGuiFunction());
-	}
-	else {
-		m_setupButton.EnableWindow(FALSE);
-	}
-
-	if(canRecord) {
-		m_configPath.EnableWindow();
-		m_createConfigButton.EnableWindow();
-		m_browseButton.EnableWindow();
-	}
-	else {
-		m_configPath.EnableWindow(FALSE);
-		m_createConfigButton.EnableWindow(FALSE);
-		m_browseButton.EnableWindow(FALSE);
-	}
-
+	auto hasGuiFn = m_plugin.interface_.hasGui;
+	m_setupButton.EnableWindow(hasGuiFn && hasGuiFn());
+	m_configPath.EnableWindow(canRecord);
+	m_createConfigButton.EnableWindow(canRecord);
+	m_browseButton.EnableWindow(canRecord);
 }
 
-void InputPlugin::loadDll(CString file)
+void InputPlugin::loadDll(std::wstring const& file)
 {
-	if (Dll dll{ LoadLibrary(file) })
-	{
-		m_hasGuiFunction = (HasGuiFunction)GetProcAddress(dll.get(), "hasGui");
-		m_loadSetupGuiFunction = (LoadSetupGuiFunction)GetProcAddress(dll.get(), "loadSetupGui");
-
-		m_dllFile = std::move(dll);
-	}
+	if (Plugin plugin{ file.c_str() })
+		m_plugin = std::move(plugin);
 }
 
-void InputPlugin::unloadDll() {
-
-	//
-	// make sure we have cleaned up
-	//
-	m_hasGuiFunction		= nullptr;
-	m_loadSetupGuiFunction	= nullptr;
-
-	m_dllFile.reset();
+void InputPlugin::unloadDll()
+{
+	m_plugin = Plugin{ };
 }
 
 
@@ -187,29 +119,27 @@ END_MESSAGE_MAP()
 
 // InputPlugin message handlers
 
-void InputPlugin::OnCbnSelchangeInputPlugin() {
-
-	//======================
-	int		cursorSelection;
-	CString file;
-	bool	validFile;
-	bool	canRecord;
-	//======================
-
+void InputPlugin::OnCbnSelchangeInputPlugin()
+{
 	unloadDll();
 
-	cursorSelection = m_cboxInputPlugin.GetCurSel();
+	auto const selection = m_cboxInputPlugin.GetCurSel();
+	if (selection == CB_ERR)
+		return;
 
-	m_cboxInputPlugin.GetLBText(m_cboxInputPlugin.GetCurSel(),file);
+	assert(selection < m_plugins.size());
+	auto const& file = m_plugins[selection];
 
-	file		= _T(".\\") + file;
-	validFile	= checkDllFile(file);
-	canRecord	= checkRecording(file);
-
-	if(!validFile) MessageBox(_T("Invalid dll file"),_T("Error"),0);
-
-	loadDll(file);
-	enableWindows(canRecord);
+	Plugin plugin{ file };
+	if (plugin.hasValidInterface())
+	{
+		m_plugin = std::move(plugin);
+		enableWindows(checkRecording(m_plugin));
+	}
+	else
+	{
+		MessageBoxW(L"Invalid dll file", L"Error", 0);
+	}
 }
 
 void InputPlugin::OnBnClickedOk() {
@@ -245,7 +175,9 @@ void InputPlugin::OnBnClickedOk() {
 
 	config.remoteConfig = confPath;
 
-	m_cboxInputPlugin.GetWindowText(config.plugin);
+	CStringW pluginName;
+	m_cboxInputPlugin.GetWindowText(pluginName);
+	config.plugin = pluginName;
 
 	if(m_disableKeyRepeats.GetCheck()==BST_CHECKED) {
 		config.disableRepeats = TRUE;
@@ -326,10 +258,10 @@ void InputPlugin::OnBnClickedCancel()
 
 void InputPlugin::OnBnClickedPluginSetup()
 {
-	if(m_loadSetupGuiFunction) {
-
+	if (auto loadSetupGui = m_plugin.interface_.loadSetupGui)
+	{
 		this->EnableWindow(FALSE);
-		m_loadSetupGuiFunction();
+		loadSetupGui();
 		this->EnableWindow(TRUE);
 		this->SetFocus();
 	}

@@ -22,8 +22,8 @@
 #include "Globals.h"
 
 #include "../Common/LIRCDefines.h"
-#include "../Common/hardware.h"
 #include "../Common/Receive.h"
+#include "../Common/WLPluginAPI.h"
 
 struct hardware hw;
 

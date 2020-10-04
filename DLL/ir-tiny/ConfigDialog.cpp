@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ConfigDialog.h"
-#include "../Common/LIRCDefines.h"
-#include "../Common/enumSerialPorts.h"
+#include "Common/LIRCDefines.h"
+#include "Common/enumSerialPorts.h"
 
 // SerialDialog dialog
 

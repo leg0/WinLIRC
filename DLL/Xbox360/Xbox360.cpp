@@ -22,22 +22,22 @@
 #include <Windows.h>
 #include "SendReceive.h"
 #include "../Common/WLPluginAPI.h"
+#include <memory>
 
-SendReceive *sendReceive = nullptr;
+std::unique_ptr<SendReceive> sendReceive;
 
-WL_API int init(HANDLE exitEvent) {
+WL_API int init(WLEventHandle exitEvent) {
 
-	sendReceive = new SendReceive();
+	sendReceive = std::make_unique<SendReceive>();
 
-	return sendReceive->init(exitEvent);
+	return sendReceive->init(reinterpret_cast<HANDLE>(exitEvent));
 }
 
 WL_API void deinit() {
 
 	if(sendReceive) {
 		sendReceive->deinit();
-		delete sendReceive;
-		sendReceive = nullptr;
+		sendReceive.reset();
 	}
 }
 

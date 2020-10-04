@@ -116,7 +116,7 @@ bool CIRConfig::writeINIFile() {
 	tempPath += _T("\\WinLIRC.ini");
 
 	WritePrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),remoteConfig,tempPath);
-	WritePrivateProfileString(_T("WinLIRC"),_T("Plugin"),plugin,tempPath);
+	WritePrivateProfileString(_T("WinLIRC"),_T("Plugin"),plugin.c_str(),tempPath);
 
 	_sntprintf(tempIni,_countof(tempIni),_T("%i"),disableRepeats);
 	WritePrivateProfileString(_T("WinLIRC"),_T("DisableKeyRepeats"),tempIni,tempPath);

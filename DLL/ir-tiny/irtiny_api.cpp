@@ -2,11 +2,10 @@
 #include "ConfigDialog.h"
 #include "irdriver.h"
 
-#include "../Common/LircDefines.h"
-#include "../Common/Hardware.h"
-#include "../Common/IRRemote.h"
-#include "../Common/Receive.h"
-#include "../Common/WLPluginAPI.h"
+#include "Common/LircDefines.h"
+#include "Common/IRRemote.h"
+#include "Common/Receive.h"
+#include "Common/WLPluginAPI.h"
 
 static std::unique_ptr<irtiny::CIRDriver> irDriver;
 
@@ -29,9 +28,33 @@ static int irtiny_dataReady()
     return irDriver && irDriver->dataReady();
 }
 
-// XXX WTF TODO: refactor common so that the functions that are hardcoded to use global variable hw take it as a parameter.
-hardware hw /*irtiny_hardware*/ =
+extern "C" static int irtiny_init(WLEventHandle exitEvent)
 {
+    init_rec_buffer();
+    irDriver = std::make_unique<irtiny::CIRDriver>(reinterpret_cast<HANDLE>(exitEvent));
+    return irDriver->initPort();
+}
+
+extern "C" static void irtiny_deinit()
+{
+    irDriver.reset();
+}
+
+extern "C" static int irtiny_hasGui()
+{
+    return true;
+}
+
+extern "C" static void irtiny_loadSetupGui()
+{
+    irtiny::ConfigDialog dlg;
+    dlg.DoModal();
+}
+
+// XXX WTF TODO: refactor common so that the functions that are hardcoded to use global variable hw take it as a parameter.
+static hardware const irtiny_hardware =
+{
+    winlirc_plugin_api_version,
     "serial ir-tiny",
     "ir-tiny",
     LIRC_CAN_REC_MODE2, // features
@@ -46,45 +69,36 @@ hardware hw /*irtiny_hardware*/ =
     nullptr // get_ir_code 
 };
 
-WL_API int init(HANDLE exitEvent)
-{
-    init_rec_buffer();
-    irDriver.reset(new irtiny::CIRDriver(exitEvent));
-    return irDriver->initPort();
-}
-
-WL_API void deinit()
-{
-    irDriver.reset();
-}
-
-WL_API int hasGui()
-{
-    return TRUE;
-}
-
-WL_API void loadSetupGui()
-{
-    irtiny::ConfigDialog dlg;
-    dlg.DoModal();
-}
-
-WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
-{
-    return 0;
-}
-
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
+extern "C" int static irtiny_decodeIR(ir_remote* remotes, char* out, size_t out_size)
 {
     using namespace std::chrono_literals;
     if (!irDriver || !irDriver->waitTillDataIsReady(0us))
         return 0;
 
-    clear_rec_buffer(&hw);
-    return decodeCommand(&hw,remotes, out, out_size);
+    clear_rec_buffer(&irtiny_hardware);
+    return winlirc_decodeCommand(&irtiny_hardware, remotes, out, out_size);
 }
 
-WL_API hardware* getHardware()
+extern "C" hardware const* irtiny_getHardware()
 {
-    return &hw; // &irtiny_hardware;
+    return &irtiny_hardware;
+}
+
+static plugin_interface const irtiny_plugin_interface
+{
+    winlirc_plugin_api_version,
+    irtiny_init,
+    irtiny_deinit,
+    irtiny_hasGui,
+    irtiny_loadSetupGui,
+    nullptr, // sendIR
+    irtiny_decodeIR,
+    nullptr, // setTransmitters
+    irtiny_getHardware,
+    &irtiny_hardware
+};
+
+WL_API plugin_interface const* getPluginInterface()
+{
+    return &irtiny_plugin_interface;
 }

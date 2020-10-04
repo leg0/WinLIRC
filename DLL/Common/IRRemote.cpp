@@ -20,11 +20,11 @@
  */
 
 #include "IRRemote.h"
+#include "LIRCDefines.h"
+#include "WLPluginAPI.h"
 #include <stdio.h>
 #include <sys/timeb.h>
 #include <string.h>
-#include "LIRCDefines.h"
-#include "Hardware.h"
 #include <limits.h>
 
 struct ir_remote *decoding		= nullptr;
@@ -32,7 +32,7 @@ struct ir_remote *last_remote	= nullptr;
 struct ir_remote *repeat_remote	= nullptr;
 struct ir_ncode *repeat_code	= nullptr;
 
-WINLIRC_API int map_code(struct ir_remote *remote,
+int winlirc_map_code(struct ir_remote *remote,
 	     ir_code *prep,ir_code *codep,ir_code *postp,
 	     int pre_bits,ir_code pre,
 	     int bits,ir_code code,
@@ -60,7 +60,7 @@ WINLIRC_API int map_code(struct ir_remote *remote,
 	return(1);
 }
 
-WINLIRC_API void map_gap(
+void winlirc_map_gap(
 		ir_remote *remote,
 		int64_t time_elapsed_us,
 		lirc_t signal_length,
@@ -399,7 +399,7 @@ int write_message(char *buffer, size_t size, const char *remote_name,
 	return len;
 }
 
-WINLIRC_API bool decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
+bool winlirc_decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
 {
     auto& hw = *phw;
 	struct ir_remote *remote;

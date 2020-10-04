@@ -7,7 +7,6 @@
 #include "Globals.h"
 
 #include "../Common/LIRCDefines.h"
-#include "../Common/Hardware.h"
 #include "../Common/WLPluginAPI.h"
 #include "../Common/IRRemote.h"
 
@@ -22,12 +21,12 @@ Settings	settings;
 
 int WINAPI tiraCallbackFunction(const char * eventstring);
 
-WL_API int init(HANDLE exitEvent) {
+WL_API int init(WLEventHandle exitEvent) {
 
 	if(tiraDLL.tira_init()!=TIRA_TRUE) 
 		return 0;
 
-	threadExitEvent = exitEvent;
+	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	InitializeCriticalSection(&criticalSection);
@@ -192,7 +191,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	end = std::chrono::steady_clock::now();
 
-	if(decodeCommand(&hw,remotes,out,out_size)) {
+	if(winlirc_decodeCommand(&hw,remotes,out,out_size)) {
 		ResetEvent(dataReadyEvent);
 		return 1;
 	}
