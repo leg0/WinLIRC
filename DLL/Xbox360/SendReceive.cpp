@@ -80,19 +80,8 @@ void SendReceive::threadProc() {
 
 bool SendReceive::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
-	//================
-	HANDLE	events[2];
-	int		count;
-	//================
-
-	events[0] = m_dataReadyEvent;
-	events[1] = m_threadExitEvent;
-
-	count = 2;
-
-	if(m_threadExitEvent==nullptr) {
-		count = 1;
-	}
+	HANDLE const events[] = { m_dataReadyEvent, m_threadExitEvent };
+	DWORD const count = (m_threadExitEvent == nullptr) ? 1 : 2;
 
 	if(!dataReady()) {
 
@@ -102,7 +91,7 @@ bool SendReceive::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const result = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const result = ::WaitForMultipleObjects(count, events, false, dwTimeout);
 
 		if(result==(WAIT_OBJECT_0+1)) {
 			return false;

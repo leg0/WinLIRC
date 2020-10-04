@@ -4,6 +4,7 @@
 #include <initguid.h>
 #include <setupapi.h>
 #include <tchar.h>
+#include <vector>
 
 using namespace std::chrono;
 
@@ -30,11 +31,6 @@ ChinavisionAPI::ChinavisionAPI() {
 
 BOOL ChinavisionAPI::init(HANDLE threadExit) {
 
-	//==========================================
-	USB_INTERFACE_DESCRIPTOR	ifaceDescriptor;
-	WINUSB_PIPE_INFORMATION		pipeInfo;
-	//==========================================
-		
 	m_usbHandle			= nullptr;
 	m_deviceHandle		= nullptr;
 	m_inPipeId			= 0;
@@ -59,6 +55,7 @@ BOOL ChinavisionAPI::init(HANDLE threadExit) {
 		return FALSE;
 	}
 
+	USB_INTERFACE_DESCRIPTOR ifaceDescriptor;
 	if(!WinUsb_QueryInterfaceSettings(m_usbHandle, 0, &ifaceDescriptor)) {
 		cleanUp();
 		return FALSE;
@@ -66,6 +63,7 @@ BOOL ChinavisionAPI::init(HANDLE threadExit) {
 
 	for (int i=0; i<ifaceDescriptor.bNumEndpoints; i++) {
 		
+		WINUSB_PIPE_INFORMATION pipeInfo;
 		if(!WinUsb_QueryPipe(m_usbHandle, 0, (UCHAR) i, &pipeInfo)) {
 			cleanUp();
 			return FALSE;
@@ -106,36 +104,25 @@ void ChinavisionAPI::deinit() {
 void ChinavisionAPI::threadProc() {
 
 	//========================
-	OVERLAPPED	overlappedRead;
-	HANDLE		events[2];
-	DWORD		result;
-	UCHAR		buffer[4];
-	ULONG		length;
+	OVERLAPPED	overlappedRead = { 0 };
 	//========================
-
-	memset(&overlappedRead,0,sizeof(OVERLAPPED));
 
 	overlappedRead.hEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
 	m_exitEvent = CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
-	events[0] = overlappedRead.hEvent;
-	events[1] = m_exitEvent;
+	HANDLE const events[2] = { overlappedRead.hEvent, m_exitEvent };
 
 	while(1) {
 
-		memset(buffer,0,sizeof(buffer));	//sometiemes only reads 3 bytes
-
+		UCHAR buffer[4] = { 0 };
+		ULONG length;
 		WinUsb_ReadPipe(m_usbHandle, m_inPipeId, buffer, sizeof(buffer), &length, &overlappedRead);
 
-		result = WaitForMultipleObjects(2,events,FALSE,INFINITE);
+		auto const result = WaitForMultipleObjects(2,events,FALSE,INFINITE);
 
 		if(result==WAIT_OBJECT_0) {
 
-			//=============
-			DWORD tempCode;
-			//=============
-
-			tempCode = *(DWORD*)buffer;
+			DWORD tempCode = *(DWORD*)buffer;
 			printf("irCode %x\n",tempCode>>8);
 
 			printf("length %i\n",length);
@@ -173,9 +160,7 @@ void ChinavisionAPI::threadProc() {
 void ChinavisionAPI::waitTillDataIsReady(microseconds maxUSecs) {
 
 	HANDLE events[2]={m_dataReadyEvent,m_threadExitEvent};
-	int evt;
-	if(m_threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	DWORD const evt = (m_threadExitEvent == nullptr) ? 1 : 2;
 
 	if(m_irCode==0)
 	{
@@ -184,7 +169,7 @@ void ChinavisionAPI::waitTillDataIsReady(microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			ExitThread(0);
@@ -201,12 +186,7 @@ void ChinavisionAPI::killThread() {
 
 	if(m_threadHandle!=nullptr) {
 
-		//===========
-		DWORD result;
-		//===========
-
-		result = 0;
-
+		DWORD result = 0;
 		if(GetExitCodeThread(m_threadHandle,&result)==0) 
 		{
 			CloseHandle(m_threadHandle);
@@ -226,17 +206,10 @@ void ChinavisionAPI::killThread() {
 
 int ChinavisionAPI::decodeCommand(char *out) {
 
-	//=====================
-	int		tempCode;
-	int		reportID;
-	char	buttonName[32];
+	char	buttonName[32] = "";
 	int		repeats = 0;
-	//=====================
-
-	buttonName[0] = '\0';
-
-	tempCode = m_irCode >> 8;		// remove report ID value
-	reportID = m_irCode & 0xFF;
+	int tempCode = m_irCode >> 8;		// remove report ID value
+	int reportID = m_irCode & 0xFF;
 
 	//
 	// pointer
@@ -274,13 +247,8 @@ int ChinavisionAPI::decodeCommand(char *out) {
 	//
 	else if(reportID==2) {
 
-		//===========
-		UCHAR mouseX;
-		UCHAR mouseY;
-		//===========
-
-		mouseX = (tempCode >> 8) & 0xFF;
-		mouseY = (tempCode >> 16);
+		UCHAR const mouseX = (tempCode >> 8) & 0xFF;
+		UCHAR const mouseY = (tempCode >> 16);
 
 		if(mouseX && !mouseY) {
 			
@@ -317,11 +285,7 @@ int ChinavisionAPI::decodeCommand(char *out) {
 		}
 		else {
 
-			//=============
-			UCHAR mButtons;
-			//=============
-
-			mButtons = tempCode & 0xFF;
+			UCHAR const mButtons = tempCode & 0xFF;
 
 			if(mButtons==32) {
 				strcpy_s(buttonName,_countof(buttonName),"MouseButton-Left");
@@ -462,14 +426,9 @@ int ChinavisionAPI::decodeCommand(char *out) {
 
 void ChinavisionAPI::findDevice() {
 
-	//=================================
-	HDEVINFO		hardwareDeviceInfo;
-	SP_DEVINFO_DATA deviceInfoData;
-	//=================================
-
 	m_deviceName[0] = '\0';
 
-	hardwareDeviceInfo = SetupDiGetClassDevs(&GUID_CLASS_STREAMZAP,nullptr,nullptr,(DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
+	HDEVINFO const hardwareDeviceInfo = SetupDiGetClassDevs(&GUID_CLASS_STREAMZAP,nullptr,nullptr,(DIGCF_PRESENT | DIGCF_DEVICEINTERFACE));
 
 	printf("got here\n");
 
@@ -480,18 +439,14 @@ void ChinavisionAPI::findDevice() {
 
 	for(int i=0; ; i++) {
 
-		memset(&deviceInfoData, 0, sizeof(deviceInfoData));
+		SP_DEVINFO_DATA deviceInfoData = { 0 };
         deviceInfoData.cbSize = sizeof(deviceInfoData);
 
 		if(SetupDiEnumDeviceInfo(hardwareDeviceInfo,i,&deviceInfoData)) {
 
 			for(int j=0; ; j++) {
 
-				//===========================================
-				SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
-				//===========================================
-
-				memset(&deviceInterfaceData, 0, sizeof(deviceInterfaceData));
+				SP_DEVICE_INTERFACE_DATA deviceInterfaceData = { 0 };
 				deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
 
 				if(SetupDiEnumDeviceInterfaces(hardwareDeviceInfo,&deviceInfoData,&GUID_CLASS_STREAMZAP,j,&deviceInterfaceData)) {
@@ -500,19 +455,14 @@ void ChinavisionAPI::findDevice() {
 					// get the size needed for interface details
 					//
 
-					//=======================================================
 					DWORD requiredSize;
-					PSP_DEVICE_INTERFACE_DETAIL_DATA functionClassDeviceData;
-					//=======================================================
-
 					SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, nullptr, 0, &requiredSize, nullptr);
 
-					functionClassDeviceData = (PSP_DEVICE_INTERFACE_DETAIL_DATA) malloc (requiredSize);
-					memset(functionClassDeviceData, 0, requiredSize);
+					std::vector<std::byte> storage(requiredSize, std::byte{0});
+					auto functionClassDeviceData = reinterpret_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA>(storage.data());
 					functionClassDeviceData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
 					if (! SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,functionClassDeviceData,requiredSize,nullptr,nullptr)) {
-						free(functionClassDeviceData);
 						printf("failed here ..");
 						break;
 					}
@@ -520,8 +470,6 @@ void ChinavisionAPI::findDevice() {
 					_tprintf(_T("device name: %s\n"),functionClassDeviceData->DevicePath);
 
 					_tcscpy_s(m_deviceName,_countof(m_deviceName),functionClassDeviceData->DevicePath);
-
-					free(functionClassDeviceData);
 
 					return;
 				}

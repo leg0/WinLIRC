@@ -32,14 +32,8 @@ static int beholder_decode(struct hardware const*,struct ir_remote *remote, ir_c
 					lirc_t *min_remaining_gapp,
 					lirc_t *max_remaining_gapp)
 {
-	//==========
-	int success;
-	//==========
-
-	success = 0;
-
 	EnterCriticalSection(&criticalSection);
-	success = winlirc_map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
+	int const success = winlirc_map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
 	LeaveCriticalSection(&criticalSection);
 
 	if(!success) return 0;
@@ -52,12 +46,8 @@ static int beholder_decode(struct hardware const*,struct ir_remote *remote, ir_c
 
 ir_code get_ir_code() {
 
-	//==================
-	ir_code currentCode;
-	//==================
-
 	EnterCriticalSection(&criticalSection);
-	currentCode = irCode;
+	ir_code const currentCode = irCode;
 	ResetEvent(dataReadyEvent);
 	LeaveCriticalSection(&criticalSection);
 

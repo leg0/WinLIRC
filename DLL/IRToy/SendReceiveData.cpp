@@ -125,10 +125,8 @@ void SendReceiveData::threadProc() {
 
 bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
-	HANDLE events[2]={dataReadyEvent,threadExitEvent};
-	int evt;
-	if(threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	HANDLE const events[2]={dataReadyEvent,threadExitEvent};
+	DWORD const evt = (threadExitEvent==nullptr) ? 1 : 2;
 
 	if(!dataReady())
 	{
@@ -137,7 +135,7 @@ bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;
@@ -178,54 +176,37 @@ bool SendReceiveData::getData(lirc_t *out) {
 
 void SendReceiveData::receiveLoop() {
 
-	//=================
-	HANDLE	wait[2];
-	DWORD	result;
-	bool	highByte;
-	bool	pulse;
-	lirc_t	value;
-	bool	firstSpace;
-	char	tempBuffer[1024];
-	//=================
+	HANDLE const wait[2] = { overlappedEvent, exitEvent };
 
-	wait[0] = overlappedEvent;
-	wait[1] = exitEvent;
-
-	highByte	= true;
-	pulse		= true;
-	value		= 0;
-	firstSpace	= false;
+	bool highByte	= true;
+	bool pulse		= true;
+	lirc_t value		= 0;
+	bool firstSpace	= false;
 
 	//
 	// read any random data waiting - we don't care if this fails
 	//
+	char	tempBuffer[1024];
 	serial.Read(tempBuffer,sizeof(tempBuffer));
 
 	serial.SetMask(CSerial::EEventRecv);	//register events we want to handle
 
 	while(1)
 	{
-		//=====================
-		CSerial::EEvent eEvent;
-		//=====================
-
 		serial.WaitEvent(&overlapped);
 
-		result = WaitForMultipleObjects(sizeof(wait)/sizeof(*wait),wait,FALSE,INFINITE);
+		auto const result = WaitForMultipleObjects(sizeof(wait)/sizeof(*wait),wait,FALSE,INFINITE);
 
 		if(result==WAIT_OBJECT_0) {
 
-			//==================
-			DWORD	dwBytesRead;
-			char	buffer[256];
-			//==================
-
-			eEvent = serial.GetEventType();
+			auto const eEvent = serial.GetEventType();
 
 			if (!(eEvent & CSerial::EEventRecv)) { /*printf("wrong event\n");*/ continue; }
 
 			while(1) {
 
+				DWORD	dwBytesRead;
+				char	buffer[256];
 				if(serial.Read(buffer,sizeof(buffer),&dwBytesRead)!=ERROR_SUCCESS) {
 					break;					// read error
 				}

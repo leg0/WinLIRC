@@ -2,16 +2,7 @@
 
 void removeTrailingWhiteSpace(TCHAR *string) {
 
-	//==================
-	size_t stringLength;
-	//==================
-
-	//
-	// get string length
-	//
-
-	stringLength = _tcslen(string);
-
+	size_t stringLength = _tcslen(string);
 	while(stringLength>0) {
 
 		if(string[stringLength-1] == ' ') {

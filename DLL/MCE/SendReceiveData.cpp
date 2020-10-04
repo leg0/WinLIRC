@@ -134,20 +134,17 @@ void SendReceiveData::threadProc() {
 
 bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
-	HANDLE events[2]={dataReadyEvent,threadExitEvent};
-	int evt;
-	if(threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	HANDLE const events[2]={dataReadyEvent,threadExitEvent};
+	DWORD const evt = (threadExitEvent==nullptr) ? 1 : 2;
 
 	if(!dataReady())
 	{
 		ResetEvent(dataReadyEvent);
-		int res;
 		using namespace std::chrono;
-		if(maxUSecs>0us)
-			res=WaitForMultipleObjects(evt,events,FALSE,duration_cast<milliseconds>(maxUSecs+500us).count());
-		else
-			res=WaitForMultipleObjects(evt,events,FALSE,INFINITE);
+		DWORD const dwTimeout = maxUSecs > 0us
+			? duration_cast<milliseconds>(maxUSecs + 500us).count()
+			: INFINITE;
+		auto const res = WaitForMultipleObjects(evt, events, FALSE, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;
@@ -189,19 +186,13 @@ bool SendReceiveData::DeviceIo( DWORD IoCtlCode, void * inBuffer, DWORD inBuffer
 
 bool SendReceiveData::DeviceIo( DWORD IoCtlCode, void * inBuffer, DWORD inBufferSize, void * outBuffer, DWORD outBufferSize, DWORD & bytesReturned, DWORD timeout, bool dontInterrupt, bool & interupted )
 {
-	//=====================
-	OVERLAPPED	overlapped;
-	HANDLE		events[2];
-	//=====================
+	OVERLAPPED	overlapped = { 0 };
 
 	interupted = false;
 
-	memset(&overlapped, 0, sizeof(overlapped));
-
 	overlapped.hEvent = CreateEvent(0,false,false,0);
 	
-	events[0] = overlapped.hEvent;
-	events[1] = exitEvent;
+	HANDLE const events[] = { overlapped.hEvent, exitEvent };
 
 	if ( DeviceIoControl(deviceHandle, IoCtlCode, inBuffer, inBufferSize, outBuffer, outBufferSize, &bytesReturned, &overlapped) == FALSE )
 	{

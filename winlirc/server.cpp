@@ -188,7 +188,7 @@ void Cserver::ThreadProc()
             }
         }
 
-        DWORD res = WaitForMultipleObjects(count, events, FALSE, INFINITE);
+        DWORD const res = WaitForMultipleObjects(count, events, FALSE, INFINITE);
 
         if (res == WAIT_OBJECT_0)
         {

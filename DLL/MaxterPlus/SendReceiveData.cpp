@@ -96,34 +96,23 @@ void SendReceiveData::deinit() {
 
 void SendReceiveData::threadProc() {
 
-	//========================
-	OVERLAPPED	overlappedRead;
-	HANDLE		events[2];
-	DWORD		result;
-	//========================
-
-	memset(&overlappedRead,0,sizeof(OVERLAPPED));
-
+	OVERLAPPED	overlappedRead = { 0 };
 	overlappedRead.hEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
 	exitEvent = CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
-	events[0] = overlappedRead.hEvent;
-	events[1] = exitEvent;
+	HANDLE const events[] = { overlappedRead.hEvent, exitEvent };
 
 	setFeatures();
 
 	while(1) {
 
-		//==============
 		UCHAR buffer[5];
 		DWORD bytesRead;
-		//==============
-
 		if(!ReadFile(device.HidDevice,buffer,5,&bytesRead,&overlappedRead)) {
 			//break;
 		}
 
-		result = WaitForMultipleObjects(2,events,FALSE,INFINITE);
+		auto const result = WaitForMultipleObjects(2,events,FALSE,INFINITE);
 
 		if(result==(WAIT_OBJECT_0)) 
 		{
@@ -159,9 +148,7 @@ void SendReceiveData::threadProc() {
 bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
-	int evt;
-	if(threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	DWORD const evt = (threadExitEvent==nullptr) ? 1 : 2;
 
 	if(irCode==0)
 	{
@@ -170,7 +157,7 @@ bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;

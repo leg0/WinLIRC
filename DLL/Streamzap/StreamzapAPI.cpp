@@ -122,9 +122,7 @@ void StreamzapAPI::threadProc() {
 bool StreamzapAPI::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
 	HANDLE events[2]={m_dataReadyEvent,m_threadExitEvent};
-	int evt;
-	if(m_threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	DWORD const evt = (m_threadExitEvent == nullptr) ? 1 : 2;
 
 	if(!dataReady())
 	{
@@ -133,7 +131,7 @@ bool StreamzapAPI::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;

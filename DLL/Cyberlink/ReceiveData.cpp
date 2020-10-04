@@ -59,42 +59,30 @@ ReceiveData::ReceiveData()
 
 void ReceiveData::findCyberLinkDevicePaths(LPGUID  pGuid )
 {
-	//==========================================================
-    HANDLE							hOut = INVALID_HANDLE_VALUE;
-    HDEVINFO						hardwareDeviceInfo;
-	SP_DEVICE_INTERFACE_DATA		deviceInterfaceData;
-	//==========================================================
-
-    hardwareDeviceInfo = SetupDiGetClassDevs(pGuid, nullptr, nullptr, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
+    auto const hardwareDeviceInfo = SetupDiGetClassDevs(pGuid, nullptr, nullptr, (DIGCF_PRESENT | DIGCF_DEVICEINTERFACE)); 
 
     if (hardwareDeviceInfo == INVALID_HANDLE_VALUE) {
 		DPRINTF("Could not find any CyberLink remote controller.");
         return;
 	}
  
-    memset(&deviceInterfaceData, 0, sizeof(deviceInterfaceData));
+	SP_DEVICE_INTERFACE_DATA deviceInterfaceData = { 0 };
     deviceInterfaceData.cbSize = sizeof(deviceInterfaceData);
 
 	for ( int i = 0; ; i++)
 	{
 		if(SetupDiEnumDeviceInterfaces (hardwareDeviceInfo, nullptr, pGuid, i, &deviceInterfaceData)) {
 
-			//================================================================
 			DWORD requiredLength;
-			PSP_DEVICE_INTERFACE_DETAIL_DATA deviceInterfaceDetailData = nullptr;
-			//================================================================
-
 			SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo, &deviceInterfaceData, nullptr, 0, &requiredLength, nullptr);
 
-			deviceInterfaceDetailData = (PSP_DEVICE_INTERFACE_DETAIL_DATA) new UCHAR[requiredLength];
+			std::vector<std::byte> storage(requiredLength, std::byte{ 0 });
+			auto const deviceInterfaceDetailData = reinterpret_cast<PSP_DEVICE_INTERFACE_DETAIL_DATA>(storage.data());
 			deviceInterfaceDetailData->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 			
 			if(SetupDiGetDeviceInterfaceDetail(hardwareDeviceInfo,&deviceInterfaceData,deviceInterfaceDetailData,requiredLength,nullptr,nullptr)) {
 				CyberLinkDevicePaths.push_back(deviceInterfaceDetailData->DevicePath);
 			}
-
-			delete [] deviceInterfaceDetailData;
-
 		}
 		else {
 			break;
@@ -193,34 +181,30 @@ void ReceiveData::deinit()
 void ReceiveData::threadProc(int threadNumber)
 {
 	//========================
-	OVERLAPPED	overlappedRead;
-	HANDLE		events[2];
-	DWORD		result;
-	DWORD		bytesRead, bytesReadDummy;
-	DWORD		code;
-	UCHAR		buffer[32];
 	//========================
 
-	memset(&overlappedRead, 0 ,sizeof(OVERLAPPED));
-
+	OVERLAPPED	overlappedRead = { 0 };
 	overlappedRead.hEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	exitEvent[threadNumber] = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-	events[0] = overlappedRead.hEvent;
-	events[1] = exitEvent[threadNumber];
+	HANDLE const events[2] = { overlappedRead.hEvent, exitEvent[threadNumber] };
 
 	while (true) {
 
+		UCHAR		buffer[32];
+		DWORD		bytesReadDummy;
 		WinUsb_ReadPipe(usbHandle[threadNumber], inPipeId[threadNumber], buffer, inMaxPacketSize[threadNumber], &bytesReadDummy, &overlappedRead);
 
-		result = WaitForMultipleObjects(2, events, FALSE, INFINITE);
+		auto const result = WaitForMultipleObjects(2, events, FALSE, INFINITE);
 
 		if ( result == WAIT_OBJECT_0 ) {
 
 			start = std::chrono::steady_clock::now();
 
+			DWORD		bytesRead;
 			WinUsb_GetOverlappedResult(usbHandle[threadNumber], &overlappedRead, &bytesRead, FALSE);
 
+			DWORD		code;
 			if ( (bytesRead == 8) || (bytesRead == 4) ) {
 				code = CLMAKECODE(buffer[0], buffer[1], buffer[2], buffer[3]);
 			} else if ( bytesRead == 3 ) {
@@ -234,7 +218,6 @@ void ReceiveData::threadProc(int threadNumber)
 			}
 
 			last = end;
-
 			end = std::chrono::steady_clock::now();
 
 			setData(code);
@@ -247,13 +230,8 @@ void ReceiveData::threadProc(int threadNumber)
 
 bool ReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs)
 {
-	HANDLE events[2] = { dataReadyEvent, threadExitEvent };
-	int evt;
-
-	if ( threadExitEvent == nullptr)
-		evt = 1;
-	else
-		evt = 2;
+	HANDLE const events[2] = { dataReadyEvent, threadExitEvent };
+	DWORD const evt = (threadExitEvent == nullptr) ? 1 : 2;
 
 	if ( !dataReady() ) {
 		ResetEvent(dataReadyEvent);
@@ -261,7 +239,7 @@ bool ReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs)
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if ( res == (WAIT_OBJECT_0 + 1) ) {
 			return false;
 		}
@@ -272,9 +250,7 @@ bool ReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs)
 
 void ReceiveData::setData(lirc_t data)
 {
-	DWORD res;
-
-	res = WaitForSingleObject(dataBufferSemaphore, INFINITE);
+	auto const res = WaitForSingleObject(dataBufferSemaphore, INFINITE);
 	if ( res == WAIT_OBJECT_0 ) {
 		dataBuffer[bufferEnd] = data;
 		bufferEnd++;

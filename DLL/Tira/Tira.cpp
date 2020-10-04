@@ -177,7 +177,7 @@ WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 	return 0;
 }
 
-extern bool waitForData(lirc_t timeout);
+extern bool waitForData(std::chrono::microseconds timeout);
 
 WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
@@ -185,7 +185,8 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	start = std::chrono::steady_clock::now();
 
-	if(!waitForData(0)) {
+	using namespace std::chrono_literals;
+	if(!waitForData(0us)) {
 		return 0;
 	}
 

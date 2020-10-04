@@ -39,20 +39,8 @@ bool waitTillDataIsReady(std::chrono::microseconds timeout) {
 
 	if(!analyseAudio->dataReady()) {
 
-		//=====================
-		HANDLE	events[2];
-		int		numberOfEvents;
-		//=====================
-
-		events[0]	= dataReadyEvent;
-
-		if(threadExitEvent) {
-			numberOfEvents = 2;
-			events[1] = threadExitEvent;
-		}
-		else {
-			numberOfEvents = 1;
-		}
+		HANDLE const events[2] = { dataReadyEvent, threadExitEvent };
+		DWORD const numberOfEvents = (threadExitEvent) ? 2 : 1;
 		
 		ResetEvent(dataReadyEvent);
 		
@@ -60,7 +48,7 @@ bool waitTillDataIsReady(std::chrono::microseconds timeout) {
 		DWORD const dwTimeout = timeout > 0us
 			? duration_cast<milliseconds>(timeout + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(numberOfEvents, events, false, dwTimeout);
 
 		if(res==(WAIT_OBJECT_0+1)) {
 			return false;

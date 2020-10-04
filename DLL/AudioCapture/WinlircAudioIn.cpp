@@ -107,25 +107,19 @@ WL_API int hasGui() {
 
 void addAudioDeviceList(HWND hwnd, int item) {
 
-	//==============================
-	UINT		numberOfDevices;
-	TCHAR		audioDeviceName[32];
-	WAVEINCAPS	caps;
-	BOOL		foundDevice;
-	UINT		foundIndex;
-	//==============================
+	UINT const numberOfDevices = waveInGetNumDevs();
+	if(!numberOfDevices)
+		return;			//no audio devices
 
-	numberOfDevices	= waveInGetNumDevs();
-	foundDevice		= FALSE;
-	foundIndex		= FALSE;
-
-	if(!numberOfDevices) return;			//no audio devices
-
+	TCHAR audioDeviceName[32];
 	guiSettings->getAudioDeviceName(audioDeviceName);
 
+	BOOL foundDevice = FALSE;
+	UINT foundIndex = FALSE;
 	for(UINT i=0; i<numberOfDevices; i++) {
 
-		waveInGetDevCaps(i,&caps,sizeof(caps));
+		WAVEINCAPS caps;
+		waveInGetDevCaps(i, &caps, sizeof(caps));
 		removeTrailingWhiteSpace(caps.szPname);
 
 		SendDlgItemMessage(hwnd,item,CB_ADDSTRING,0,(LPARAM)caps.szPname);
@@ -142,6 +136,7 @@ void addAudioDeviceList(HWND hwnd, int item) {
 	if(! _tcscmp(_T(""),audioDeviceName) ) {
 
 		SendDlgItemMessage(hwnd,item,CB_SETCURSEL,0,0);	//select first item
+		WAVEINCAPS caps;
 		waveInGetDevCaps(0,&caps,sizeof(caps));
 		removeTrailingWhiteSpace(caps.szPname);
 		guiSettings->setAudioDeviceName(caps.szPname);
@@ -158,35 +153,22 @@ void addAudioDeviceList(HWND hwnd, int item) {
 
 void addAudioFormats(HWND hwnd, int item) {
 
-	//==================================
-	TCHAR		selectedAudioDevice[32];
-	int			audioIndex;
-	WAVEINCAPS	caps;
-	//==================================
-
-	audioIndex = 0;
-
 	SendDlgItemMessage(hwnd,item,CB_RESETCONTENT,0,0);		//reset content
 
+	TCHAR selectedAudioDevice[32];
 	GetDlgItemText(hwnd,IDC_COMBO1,selectedAudioDevice,32);
 
-	audioIndex = AudioFormats::getAudioIndex(selectedAudioDevice);
+	int const audioIndex = AudioFormats::getAudioIndex(selectedAudioDevice);
 
+	WAVEINCAPS caps;
 	if(MMSYSERR_NOERROR == waveInGetDevCaps(audioIndex,&caps,sizeof(caps)) ) {
 
-		//===============
-		int shiftFormat;
-		int tempFormat;
-		int indexCounter;
-		//===============
-
-		shiftFormat		= 1;
-		tempFormat		= 0;
-		indexCounter	= 0;
+		int shiftFormat		= 1;
+		int indexCounter	= 0;
 
 		for(int i=0; i<30; i++) {
 
-			tempFormat = caps.dwFormats & shiftFormat;
+			int const tempFormat = caps.dwFormats & shiftFormat;
 
 			if(tempFormat) {
 
@@ -194,10 +176,7 @@ void addAudioFormats(HWND hwnd, int item) {
 
 				if(AudioFormats::formatSupported(tempFormat)) {
 
-					//===============
 					TCHAR string[64];
-					//===============
-
 					AudioFormats::getFormatString(tempFormat,string,64);
 
 					//add string to combo box thing !
@@ -227,13 +206,6 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 		case WM_INITDIALOG: {
 
-			//==============
-			int audioFormat;
-			int i;
-			int temp;
-			int stereo;
-			//==============
-
 			SendDlgItemMessage(hwnd,IDC_COMBO3,CB_ADDSTRING,0,(LPARAM)_T("Left Channel"));
 			SendDlgItemMessage(hwnd,IDC_COMBO3,CB_ADDSTRING,0,(LPARAM)_T("Right Channel"));
 			SendDlgItemMessage(hwnd,IDC_COMBO3,CB_SETCURSEL,0,0);
@@ -249,9 +221,9 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 			//
 			// match audio format to window
 			//
-			audioFormat = guiSettings->getAudioFormat();
+			int const audioFormat = guiSettings->getAudioFormat();
 
-			for(i=0; i< _countof(formatArray); i++) {
+			for(int i=0; i< _countof(formatArray); i++) {
 
 				if(audioFormat == formatArray[i]) {
 					SendDlgItemMessage(hwnd,IDC_COMBO2,CB_SETCURSEL,i,0);
@@ -272,6 +244,8 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 			//
 			// disable / enable CB3
 			//
+			int stereo;
+			int temp;
 			AudioFormats::getFormatDetails(audioFormat,&stereo,&temp);
 
 			if(stereo) {
@@ -306,11 +280,8 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 			if(lParam==(LPARAM)GetDlgItem(hwnd,IDC_SLIDER1)) {
 
-				//================
-				TCHAR editText[4];
-				//================
-
 				guiSettings->setNoiseValue(SendDlgItemMessage(hwnd,IDC_SLIDER1,TBM_GETPOS,0,0));
+				TCHAR editText[4];
 				_stprintf_s(editText,_countof(editText),_T("%i"),guiSettings->getNoiseValue());
 				SetWindowText(GetDlgItem(hwnd,IDC_EDIT1),editText);
 			}
@@ -339,14 +310,12 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 					if(HIWORD(wParam)==CBN_SELCHANGE) {
 						
-						//===============
-						TCHAR device[32];
-						//===============
 
 						//
 						// update selected device
 						//
 
+						TCHAR device[32];
 						GetDlgItemText(hwnd,IDC_COMBO1,device,_countof(device));
 
 						guiSettings->setAudioDeviceName(device);
@@ -359,21 +328,16 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 					if(HIWORD(wParam)==CBN_SELCHANGE) {
 
-						//==============
-						int index;
-						int audioFormat;
-						int temp;
-						int stereo;
-						//==============
-						
-						index = SendDlgItemMessage(hwnd,IDC_COMBO2,CB_GETCURSEL,0,0);
-						audioFormat = formatArray[index];
+						int const index = SendDlgItemMessage(hwnd,IDC_COMBO2,CB_GETCURSEL,0,0);
+						int const audioFormat = formatArray[index];
 
 						//
 						// double check it case of cataclysm
 						//
 						if(AudioFormats::formatSupported(audioFormat)) {
 						
+							int stereo;
+							int temp;
 							AudioFormats::getFormatDetails(audioFormat,&stereo,&temp);
 
 							if(stereo) {
@@ -393,18 +357,8 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 					if(HIWORD(wParam)==CBN_SELCHANGE) {
 
-						//============
-						LRESULT index;
-						//============
-						
-						index = SendDlgItemMessage(hwnd,IDC_COMBO3,CB_GETCURSEL,0,0);
-
-						if(!index) {
-							guiSettings->setChannel(true);
-						}
-						else {
-							guiSettings->setChannel(false);
-						}
+						LRESULT const index = SendDlgItemMessage(hwnd,IDC_COMBO3,CB_GETCURSEL,0,0);
+						guiSettings->setChannel(!index);
 					}
 					
 				}
@@ -413,12 +367,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 					if(HIWORD(wParam)==CBN_SELCHANGE) {
 
-						//============
-						LRESULT index;
-						//============
-						
-						index = SendDlgItemMessage(hwnd,IDC_COMBO4,CB_GETCURSEL,0,0);
-
+						LRESULT const index = SendDlgItemMessage(hwnd,IDC_COMBO4,CB_GETCURSEL,0,0);
 						guiSettings->setPolarity((SP)index);
 					}
 					
@@ -441,21 +390,16 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 WL_API void loadSetupGui() {
 
-	//==============
-	HWND	hDialog;
-	MSG		msg;
-    INT		status;
-	//==============
-
 	guiSettings = new Settings();
 
-	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),nullptr,dialogProc);
+	HWND const hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),nullptr,dialogProc);
 
-    while ((status = GetMessage (& msg, 0, 0, 0)) != 0) {
+	MSG msg;
+	for (INT status; (status = GetMessage(&msg, 0, 0, 0)) != 0;) {
 
         if (status == -1) return;
 
-        if (!IsDialogMessage (hDialog, & msg)) {
+		if (!IsDialogMessage (hDialog, & msg)) {
 
             TranslateMessage ( & msg );
             DispatchMessage ( & msg );

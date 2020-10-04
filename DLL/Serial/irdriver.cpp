@@ -215,7 +215,7 @@ void CIRDriver::ThreadProc(void)
 		}
 
 		/* Wait for the event to get triggered */
-		int res=WaitForMultipleObjects(2,events,FALSE,INFINITE);
+		auto const res=WaitForMultipleObjects(2,events,FALSE,INFINITE);
 		
 		/* Get time (both LR and HR) */
 		QueryPerformanceCounter((LARGE_INTEGER *)&hr_time);
@@ -326,10 +326,8 @@ unsigned long CIRDriver::readData(std::chrono::microseconds maxusec)
 
 bool CIRDriver::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
-	HANDLE events[2]={hDataReadyEvent,threadExitEvent};
-	int evt;
-	if(threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	HANDLE const events[2]={hDataReadyEvent,threadExitEvent};
+	DWORD const evt = (threadExitEvent == nullptr) ? 1 : 2;
 
 	if(!dataReady())
 	{
@@ -338,7 +336,7 @@ bool CIRDriver::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;

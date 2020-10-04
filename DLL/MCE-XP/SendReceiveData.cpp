@@ -83,7 +83,6 @@ void SendReceiveData::threadProc() {
 
 	//========================
 	OVERLAPPED	overlappedRead;
-	HANDLE		events[2];
 	DWORD		result;
 	UCHAR		buffer[256];
 	DWORD		overflowCount;
@@ -95,8 +94,7 @@ void SendReceiveData::threadProc() {
 	overlappedRead.hEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
 	exitEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
 
-	events[0] = overlappedRead.hEvent;
-	events[1] = exitEvent;
+	HANDLE const events[] = { overlappedRead.hEvent, exitEvent };
 
 	overflowCount = 0;
 
@@ -163,10 +161,8 @@ overflowExit:
 
 bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
-	HANDLE events[2]={dataReadyEvent,threadExitEvent};
-	int evt;
-	if(threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	HANDLE const events[2]={dataReadyEvent,threadExitEvent};
+	DWORD const evt = (threadExitEvent==nullptr) ? 1 : 2;
 
 	if(!dataReady())
 	{
@@ -175,7 +171,7 @@ bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;

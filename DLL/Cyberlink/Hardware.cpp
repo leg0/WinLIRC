@@ -34,11 +34,7 @@ static int cyberlink_receive_decode (struct hardware const*,struct ir_remote *re
 		 lirc_t *min_remaining_gapp,
 		 lirc_t *max_remaining_gapp)
 {
-	//==========
-	int success;
-	//==========
-
-	success = winlirc_map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
+	int const success = winlirc_map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
 
 	if(!success) return 0;
 

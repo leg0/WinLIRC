@@ -69,16 +69,12 @@ int RecordAudio::calcBufferSize(int frequency, int numberOfChannels) {
 
 bool RecordAudio::startRecording(int deviceID, int frequency, int numberOfChannels, bool leftChannel, SP sp) {
 
-	//==============
-	MMRESULT result;
-	//==============
-
 	openAudioDevice(deviceID,frequency,numberOfChannels,leftChannel,sp);
 	prepareBuffers(calcBufferSize(frequency,numberOfChannels));
 
 	m_stop = FALSE;
 
-	result = waveInStart(m_hWaveIn);
+	auto const result = waveInStart(m_hWaveIn);
 
 	if(result!=MMSYSERR_NOERROR) {
 		DPRINTF("waveInStart failed\n");
@@ -98,10 +94,7 @@ void RecordAudio::stopRecording() {
 
 void RecordAudio::openAudioDevice(int deviceID, int frequency, int numberOfChannels, bool leftChannel, SP sp) {
 
-	//======================
 	WAVEFORMATEX waveFormat;
-	//======================
-
 	waveFormat.cbSize			= 0;
 	waveFormat.wFormatTag		= WAVE_FORMAT_PCM;
 	waveFormat.nChannels		= numberOfChannels;
@@ -133,14 +126,7 @@ void RecordAudio::closeAudioDevice() {
 
 void RecordAudio::prepareBuffers(int bufferSize) {
 
-	//==============
-	MMRESULT	res;
-	int			i;
-	//==============
-
-	res = 0;
-
-	for(i=0;i<NUMBER_OF_BUFFERS; i++) {
+	for(int i=0;i<NUMBER_OF_BUFFERS; i++) {
 
 		ZeroMemory(&m_waveHDR[i],sizeof(WAVEHDR));
 
@@ -148,7 +134,7 @@ void RecordAudio::prepareBuffers(int bufferSize) {
 		m_waveHDR[i].dwBufferLength	= bufferSize;		// must be aligned with nBlockAlign
 		m_waveHDR[i].dwUser			= i;
 
-		res = waveInPrepareHeader(m_hWaveIn,&m_waveHDR[i],sizeof(WAVEHDR));
+		auto res = waveInPrepareHeader(m_hWaveIn,&m_waveHDR[i],sizeof(WAVEHDR));
 
 		if(res!=MMSYSERR_NOERROR) {
 			DPRINTF("waveInPrepareHeader failed\n");

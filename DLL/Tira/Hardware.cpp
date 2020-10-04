@@ -102,36 +102,20 @@ int data_ready() {
 	return 0;
 }
 
-bool waitForData(lirc_t timeout) {
+bool waitForData(std::chrono::microseconds timeout) {
 
-	//================
-	HANDLE	events[2];
-	int		count;
-	//================
-
-	events[0] = dataReadyEvent;
-	events[1] = threadExitEvent;
-
-	count = 2;
-
-	if(threadExitEvent==nullptr) {
-		count = 1;
-	}
+	HANDLE const events[] = { dataReadyEvent, threadExitEvent };
+	DWORD const count = (threadExitEvent == nullptr) ? 1 : 2;
 
 	if(!data_ready()) {
 
-		//=========
-		int result;
-		//=========
-
 		ResetEvent(dataReadyEvent);
 
-		if(timeout) {
-			result = WaitForMultipleObjects(count,events,FALSE,(timeout+500)/1000);
-		}
-		else {
-			result = WaitForMultipleObjects(count,events,FALSE,INFINITE);
-		}
+		using namespace std::chrono;
+		DWORD const dwTimeout = timeout > 0us
+			? duration_cast<milliseconds>(timeout + 500us).count()
+			: INFINITE;
+		auto const result = WaitForMultipleObjects(count,events,FALSE,dwTimeout);
 
 		if(result==(WAIT_OBJECT_0+1)) {
 			return false;
@@ -143,7 +127,7 @@ bool waitForData(lirc_t timeout) {
 
 void wait_for_data(lirc_t timeout) {
 
-	waitForData(timeout);
+	waitForData(std::chrono::microseconds{ timeout });
 }
 
 struct hardware hw;

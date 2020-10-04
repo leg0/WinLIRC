@@ -90,18 +90,11 @@ void AudioFormats::getFormatDetails(int format, BOOL *outStereo, int *outFrequen
 
 int AudioFormats::getAudioIndex(TCHAR *audioDeviceName) {
 
-	//===================
-	UINT numberOfDevices;
-	//===================
-
-	numberOfDevices = waveInGetNumDevs();
+	UINT const numberOfDevices = waveInGetNumDevs();
 
 	for(UINT i=0; i<numberOfDevices; i++) {
 
-		//==============
 		WAVEINCAPS caps;
-		//==============
-
 		waveInGetDevCaps(i,&caps,sizeof(caps));
 		removeTrailingWhiteSpace(caps.szPname);
 

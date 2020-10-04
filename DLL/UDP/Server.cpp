@@ -73,17 +73,11 @@ void Server::deinit() {
 
 void Server::threadProc() {
 
-	//===============
-	HANDLE events[2];
-	int res;
-	//===============
-
-	events[0] = wEvent;
-	events[1] = exitThread;
+	HANDLE const events[] = { wEvent, exitThread };
 
 	while(1) {
 
-		res = WaitForMultipleObjects(2,events,FALSE,INFINITE);
+		auto const res = WaitForMultipleObjects(2,events,FALSE,INFINITE);
 
 		if(res==(WAIT_OBJECT_0)) {
 
@@ -172,9 +166,7 @@ bool Server::getData(lirc_t *out) {
 bool Server::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
-	int evt;
-	if(threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	DWORD const evt = (threadExitEvent==nullptr) ? 1 : 2;
 
 	if(!dataReady())
 	{
@@ -183,7 +175,7 @@ bool Server::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;

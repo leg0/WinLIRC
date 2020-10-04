@@ -29,17 +29,14 @@ struct hardware hw;
 
 lirc_t readdata(lirc_t timeout) {
 
-	//==========
-	lirc_t data;
-	//==========
-
 	if(!analyseAudio) return 0;
 
 	waitTillDataIsReady(std::chrono::microseconds{ timeout });
 
-	if(analyseAudio->getData((UINT*)&data)) {
+	UINT data;
+	if(analyseAudio->getData(&data)) {
 		
-		return data;
+		return static_cast<lirc_t>(data);
 	}
 
 	return 0;

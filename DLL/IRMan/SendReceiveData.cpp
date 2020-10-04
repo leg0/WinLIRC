@@ -25,6 +25,7 @@
 #include "Globals.h"
 #include "../Common/DebugOutput.h"
 #include "../Common/Win32Helpers.h"
+#include <iterator>
 
 DWORD WINAPI IRMan(void *recieveClass) {
 
@@ -135,10 +136,8 @@ void SendReceiveData::deinit() {
 
 bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
-	HANDLE events[2]={dataReadyEvent,threadExitEvent};
-	int evt;
-	if(threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	HANDLE const events[2]={dataReadyEvent,threadExitEvent};
+	DWORD const evt = (threadExitEvent==nullptr) ? 1 : 2;
 
 	if(!dataReady())
 	{
@@ -147,7 +146,7 @@ bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;
@@ -175,32 +174,17 @@ int SendReceiveData::dataReady() {
 
 void SendReceiveData::receiveLoop() {
 
-	//==============
-	HANDLE	wait[2];
-	DWORD	result;
-	//==============
-
-	wait[0] = m_overlappedEvent;
-	wait[1] = m_exitEvent;
+	HANDLE const wait[2] = { m_overlappedEvent, m_exitEvent };
 
 	while(1)
 	{
-		//=====================
-		CSerial::EEvent eEvent;
-		//=====================
-
 		m_serial.WaitEvent(&m_overlapped);
 
-		result = WaitForMultipleObjects(_countof(wait),wait,FALSE,INFINITE);
+		auto const result = WaitForMultipleObjects(std::size(wait),wait,FALSE,INFINITE);
 
 		if(result==WAIT_OBJECT_0) {
 
-			//==================
-			DWORD	dwBytesRead;
-			char	buffer[6];
-			//==================
-
-			eEvent = m_serial.GetEventType();
+			auto const eEvent = m_serial.GetEventType();
 
 			if (!(eEvent & CSerial::EEventRecv)) { DPRINTF("wrong event\n"); continue; }
 
@@ -208,6 +192,8 @@ void SendReceiveData::receiveLoop() {
 				start = std::chrono::steady_clock::now();
 			}
 
+			DWORD dwBytesRead;
+			char buffer[6];
 			if(m_serial.Read(buffer+m_count,sizeof(buffer)-m_count,&dwBytesRead)!=ERROR_SUCCESS) {
 				break;					// read error
 			}

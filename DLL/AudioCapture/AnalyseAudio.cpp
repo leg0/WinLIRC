@@ -83,24 +83,11 @@ void AnalyseAudio::detectSignalPolarity(UCHAR sample) {
 
 void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 
-	//==================
-	UCHAR currentSample;
-	//==================
-
 	for(int i=0; i<bytesRecorded; i+=m_numberOfChans) {
 
-		//=================
-		bool changeToPulse;
-		//=================
-
-		changeToPulse = false;
-
-		if(m_numberOfChans>1 && !m_leftChannel) {
-			currentSample = data[i+1];
-		}
-		else {
-			currentSample = data[i];
-		}
+		UCHAR const currentSample = (m_numberOfChans>1 && !m_leftChannel)
+			? data[i+1]
+			: data[i];
 
 		if(!m_detected) {
 			detectSignalPolarity(currentSample);
@@ -111,6 +98,7 @@ void AnalyseAudio::decodeData(UCHAR *data, int bytesRecorded) {
 			m_pulse = false;
 		}
 
+		bool changeToPulse = false;
 		if(m_inverted) {
 			if(currentSample < (128 - m_noiseValue)) changeToPulse = true;
 		}

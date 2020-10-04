@@ -81,30 +81,22 @@ void Settings::setNoiseValue(int n) {
 
 void Settings::saveSettings() {
 
-	//===============================
 	TCHAR currentDirectory[MAX_PATH];
-	TCHAR temp[8];
-	FILE  *file;	
-	//===============================
-
 	GetCurrentDirectory(MAX_PATH,currentDirectory);
 	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
 
 	//
 	// if our ini files doesn't exist try and create it
 	//
-	file = _tfopen(currentDirectory,_T("r"));
-
-	if(!file) {
+	auto file = _tfopen(currentDirectory,_T("r"));
+	if(!file)
 		file = _tfopen(currentDirectory,_T("w"));
-		if(file) fclose(file);
-	}
-	else {
+	if (file)
 		fclose(file);
-	}
 
 	WritePrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"), m_deviceName, currentDirectory);
 
+	TCHAR temp[8];
 	_sntprintf(temp, _countof(temp), _T("%i"), m_audioFormat);
 	WritePrivateProfileString(_T("AudioInputPlugin"),_T("AudioFormat"),	temp, currentDirectory);
 	
@@ -120,10 +112,7 @@ void Settings::saveSettings() {
 
 void Settings::loadSettings() {
 
-	//===============================
 	TCHAR currentDirectory[MAX_PATH];
-	//===============================
-
 	GetCurrentDirectory(MAX_PATH,currentDirectory);
 
 	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));

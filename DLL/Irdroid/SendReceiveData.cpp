@@ -26,6 +26,7 @@
 #include <tchar.h>
 #include "../Common/Send.h"
 #include "../Common/Win32Helpers.h"
+#include <iterator>
 
 DWORD WINAPI Irdroid(void *recieveClass) {
 
@@ -125,10 +126,8 @@ void SendReceiveData::threadProc() {
 
 bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
-	HANDLE events[2]={dataReadyEvent,threadExitEvent};
-	int evt;
-	if(threadExitEvent==nullptr) evt=1;
-	else evt=2;
+	HANDLE const events[2]={dataReadyEvent,threadExitEvent};
+	DWORD const evt = (threadExitEvent == nullptr) ? 1 : 2;
 
 	if(!dataReady())
 	{
@@ -137,7 +136,7 @@ bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if(res==(WAIT_OBJECT_0+1))
 		{
 			return false;
@@ -179,8 +178,6 @@ bool SendReceiveData::getData(lirc_t *out) {
 void SendReceiveData::receiveLoop() {
 
 	//=================
-	HANDLE	wait[2];
-	DWORD	result;
 	bool	highByte;
 	bool	pulse;
 	lirc_t	value;
@@ -188,8 +185,7 @@ void SendReceiveData::receiveLoop() {
 	char	tempBuffer[1024];
 	//=================
 
-	wait[0] = overlappedEvent;
-	wait[1] = exitEvent;
+	HANDLE const wait[2] = { overlappedEvent, exitEvent };
 
 	highByte	= true;
 	pulse		= true;
@@ -211,7 +207,7 @@ void SendReceiveData::receiveLoop() {
 
 		serial.WaitEvent(&overlapped);
 
-		result = WaitForMultipleObjects(sizeof(wait)/sizeof(*wait),wait,FALSE,INFINITE);
+		auto const result = WaitForMultipleObjects(std::size(wait),wait,FALSE,INFINITE);
 
 		if(result==WAIT_OBJECT_0) {
 

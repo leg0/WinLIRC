@@ -118,11 +118,7 @@ void SendReceiveData::threadProc()
 bool SendReceiveData::waitTillDataIsReady(microseconds maxUSecs)
 {
 	HANDLE events[2] = { dataReadyEvent, threadExitEvent };
-	int evt;
-	if( threadExitEvent == nullptr )
-      evt = 1;
-	else
-      evt = 2;
+	DWORD const evt = (threadExitEvent == nullptr) ? 1 : 2;
 
 	if(!dataReady())
 	{
@@ -132,7 +128,7 @@ bool SendReceiveData::waitTillDataIsReady(microseconds maxUSecs)
 		DWORD const dwTimeout = maxUSecs > 0us
 			? duration_cast<milliseconds>(maxUSecs + 500us).count()
 			: INFINITE;
-		DWORD const res = ::WaitForMultipleObjects(2, events, false, dwTimeout);
+		DWORD const res = ::WaitForMultipleObjects(evt, events, false, dwTimeout);
 		if( res == (WAIT_OBJECT_0+1) )
 		{
 			return false;
@@ -172,13 +168,5 @@ void SendReceiveData::getCode()
 
 int	SendReceiveData::dataReady() {
 
-	//=========
-	int result;
-	//=========
-
-	result = WaitForSingleObject(dataReadyEvent,0);
-
-	if(result==WAIT_OBJECT_0) return 1;
-	
-	return 0;
+	return WaitForSingleObject(dataReadyEvent, 0) == WAIT_OBJECT_0;
 }
