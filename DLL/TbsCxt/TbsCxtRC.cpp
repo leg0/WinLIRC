@@ -222,7 +222,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API struct hardware* getHardware() {
+WL_API hardware const* getHardware() {
 
 	initHardwareStruct();
 	return &hw;

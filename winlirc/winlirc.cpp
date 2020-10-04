@@ -38,6 +38,11 @@ static fs::path getModuleFileName()
 	return fs::path{ std::wstring_view{fullPath, pathLength} };
 }
 
+fs::path getPluginsDirectory()
+{
+	return absolute(getModuleFileName().replace_filename(L"plugins"));
+}
+
 BOOL Cwinlirc::InitInstance() {
 
 	AfxInitRichEdit();
@@ -47,7 +52,7 @@ BOOL Cwinlirc::InitInstance() {
 #endif
 
 	// set current directory for plugins from exe path
-	fs::current_path(getModuleFileName().replace_filename(L"plugins"));
+	fs::current_path(getPluginsDirectory());
 
 	config.readINIFile();
 

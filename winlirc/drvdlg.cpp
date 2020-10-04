@@ -290,7 +290,7 @@ bool Cdrvdlg::InitializeDaemon() {
 		ti.DisableTrayIcon();
 	}
 	
-	if(driver.loadPlugin(L".\\"s + config.plugin)==false) {
+	if(!driver.loadPlugin(config.plugin)) {
 		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Initialization Error"));
 		return false;
 	}
@@ -299,7 +299,7 @@ bool Cdrvdlg::InitializeDaemon() {
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),_T("WinLIRC / Initializing"));
 	}
 
-	if(driver.init()==false) {
+	if(!driver.init()) {
 		if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Initialization Error"));
 		return false;
 	}

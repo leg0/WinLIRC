@@ -23,17 +23,20 @@ InputPlugin::InputPlugin(CWnd* pParent /*=nullptr*/)
 	: CDialog(InputPlugin::IDD, pParent)
 { }
 
+fs::path getPluginsDirectory();
+
 void InputPlugin::listDllFiles()
 {
 	std::vector<fs::path> plugins;
-	for (auto& p : fs::directory_iterator("."))
+	auto pluginsDir = getPluginsDirectory();
+	for (auto& p : fs::directory_iterator(pluginsDir))
 	{
 		auto path = p.path();
-		if (path.extension().wstring() == L".dll")
+		if (path.extension() == L".dll")
 		{
 			Plugin plugin{ path };
 			if (plugin.hasValidInterface())
-				plugins.push_back(std::move(path));
+				plugins.push_back(absolute(path));
 		}
 	}
 
@@ -50,15 +53,13 @@ void InputPlugin::listDllFiles()
 		m_cboxInputPlugin.AddString(filePath.filename().wstring().c_str());
 	}
 
-	auto currentPlugin = std::find_if(begin(plugins), end(plugins), [](fs::path const& p) {
-			return p.filename().wstring() == config.plugin;
-		});
-	auto const matchIndex = currentPlugin != end(plugins)
-		? std::distance(begin(plugins), currentPlugin)
-		: 0;
-	m_cboxInputPlugin.SetCurSel(matchIndex);
+	auto currentPlugin = std::find(begin(plugins), end(plugins), config.plugin);
+	if (currentPlugin == end(plugins))
+		currentPlugin = begin(plugins);
 
-	loadDll(plugins[matchIndex].wstring());
+	m_cboxInputPlugin.SetCurSel(std::distance(begin(plugins), currentPlugin));
+
+	loadDll(*currentPlugin);
 	enableWindows(checkRecording(m_plugin));
 	m_plugins = std::move(plugins);
 }
@@ -175,9 +176,7 @@ void InputPlugin::OnBnClickedOk() {
 
 	config.remoteConfig = confPath;
 
-	CStringW pluginName;
-	m_cboxInputPlugin.GetWindowText(pluginName);
-	config.plugin = pluginName;
+	config.plugin = m_plugins[m_cboxInputPlugin.GetCurSel()];
 
 	if(m_disableKeyRepeats.GetCheck()==BST_CHECKED) {
 		config.disableRepeats = TRUE;

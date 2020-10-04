@@ -26,6 +26,7 @@
 
 #include "stdafx.h"
 #include "irdriver.h"
+#include <filesystem>
 
 class CIRConfig
 {
@@ -39,7 +40,7 @@ public:
 
 	//=============================
 	CString remoteConfig;
-	std::wstring plugin;
+	std::filesystem::path plugin;
 	BOOL	disableRepeats;
 	INT		disableFirstKeyRepeats;
 	INT		serverPort;

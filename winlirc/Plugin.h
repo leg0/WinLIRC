@@ -13,6 +13,7 @@ using LoadSetupGuiFunction = decltype(::loadSetupGui)*;
 using SendFunction = decltype(::sendIR)*;
 using DecodeFunction = decltype(::decodeIR)*;
 using SetTransmittersFunction = decltype(::setTransmitters)*;
+using GethardwareFunction = decltype(::getHardware)*;
 
 struct Plugin
 {

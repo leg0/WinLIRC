@@ -235,7 +235,7 @@ WL_API int setTransmitters(unsigned int transmitterMask) {
 	return 0;
 }
 
-WL_API struct hardware* getHardware() {
+WL_API hardware const* getHardware() {
 
 	initHardwareStruct();
 	return &hw;

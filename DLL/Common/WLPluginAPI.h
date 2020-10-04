@@ -98,4 +98,4 @@ WL_API void	loadSetupGui	();
 WL_API int	sendIR			(ir_remote* remote, ir_ncode *code, int repeats);
 WL_API int	decodeIR		(ir_remote* remotes, char* out, size_t out_size);
 WL_API int	setTransmitters	(unsigned int transmitterMask);
-WL_API hardware* getHardware();							// optional API for IRRecord
+WL_API hardware const* getHardware();							// optional API for IRRecord

@@ -19,6 +19,7 @@ Plugin::Plugin(wchar_t const* path) noexcept
 			interface_.sendIR = (SendFunction)GetProcAddress(d.get(), "sendIR");
 			interface_.decodeIR = (DecodeFunction)GetProcAddress(d.get(), "decodeIR");
 			interface_.setTransmitters = (SetTransmittersFunction)GetProcAddress(d.get(), "setTransmitters");
+			interface_.getHardware = (GethardwareFunction)GetProcAddress(d.get(), "getHardware");
 		}
 	}
 }
