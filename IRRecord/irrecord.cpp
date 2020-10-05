@@ -36,15 +36,16 @@
 #include <errno.h>
 #include <limits.h>
 #include <signal.h>
+#include <chrono>
 
 #include "../DLL/Common/LIRCDefines.h"
-#include "hardware.h"
 #include "config.h"
 #include "dump_config.h"
 #include "irdriver.h"
 #include "emulation.h"
 #include "atlstr.h"
-#include "../DLL/Common/Linux.h"
+
+using namespace std::chrono;
 
 void flushhw(void);
 int resethw(void);
@@ -297,15 +298,13 @@ int main(int argc,char **argv)
 
 			if(i+1<argc) {
 
-				struct hardware *temp;
-
 				//load hw
 				if(!irDriver.loadPlugin(argv[i+1])) {
 					printf("Invalid plugin\n");
 					exit(0);
 				}
 
-				temp = irDriver.getHardware();
+				auto const temp = irDriver.getHardware();
 
 				if(!temp) {
 					printf("The driver doesn't export the required functions.\n");
@@ -2343,11 +2342,10 @@ int get_data_length(struct ir_remote *remote, int interactive)
 	return(0);
 }
 
-void gettimeofday(struct mytimeval *a);
 int get_gap_length(struct ir_remote *remote)
 {
 	struct lengths *gaps=NULL;
-	struct mytimeval start,end,last={0,0};
+	steady_clock::time_point start,end,last;
 	int count,flag;
 	struct lengths *scan;
 	int maxcount,lastmaxcount;
@@ -2369,15 +2367,15 @@ int get_gap_length(struct ir_remote *remote)
 			free_lengths(&gaps);
 			return(0);
 		}
-		gettimeofday(&start);
+		start = steady_clock::now();
 		while(availabledata())
 		{
 			irDriver.decodeIR(NULL,NULL,0);
 		}
-		gettimeofday(&end);
+		end = steady_clock::now();
 		if(flag)
 		{
-			gap=time_elapsed(&last,&start);
+			gap=duration_cast<microseconds>(start - last).count();
 			add_length(&gaps,gap);
 			merge_lengths(gaps);
 			maxcount=0;

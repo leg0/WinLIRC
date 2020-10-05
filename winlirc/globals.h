@@ -24,6 +24,7 @@
 
 #include "../DLL/Common/WLPluginAPI.h"
 
+#include <chrono>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -107,11 +108,6 @@ struct ir_ncode {
 	struct ir_code_node *transmit_state;
 };
 
-struct mytimeval {
-	__int64 tv_sec;
-	__int64 tv_usec;
-};
-
 struct ir_remote 
 {
 	char *name;                 /* name of remote control */
@@ -172,7 +168,7 @@ struct ir_remote
 	struct ir_ncode *last_code; /* code received or sent last */
 	struct ir_ncode *toggle_code;/* toggle code received or sent last */
 	int reps;
-	struct mytimeval last_send;   /* time last_code was received or sent */
+	std::chrono::steady_clock::time_point last_send;   /* time last_code was received or sent */
 	lirc_t min_remaining_gap;   /* remember gap for CONST_LENGTH remotes */
 	lirc_t max_remaining_gap;   /* gap range */
 	struct ir_remote *next;

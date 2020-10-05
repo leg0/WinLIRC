@@ -6,7 +6,6 @@ project(RawCodes)
 #set(CMAKE_MFC_FLAG 0)
 
 add_executable(RawCodes WIN32
-	hardware.h
 	irdriver.cpp
 	irdriver.h
 	main.cpp

@@ -134,7 +134,7 @@ int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
 	return 0;
 }
 
-struct hardware* CIRDriver::getHardware() {
+hardware const* CIRDriver::getHardware() {
 
 	if(!getHardwareFunction) return NULL;
 

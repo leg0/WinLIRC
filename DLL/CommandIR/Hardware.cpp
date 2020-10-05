@@ -22,7 +22,7 @@
 #include "Globals.h"
 #include "../Common/LIRCDefines.h"
 #include "../Common/Receive.h"
-#include "../Common/Hardware.h"
+#include "../Common/WLPluginAPI.h"
 
 //
 // All this stuff below is for irrecord, it's totally optional

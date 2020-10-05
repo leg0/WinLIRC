@@ -2,11 +2,12 @@
 #include <sys/timeb.h>
 #include <string.h>
 #include "../Dll/Common/LIRCDefines.h"
-#include "hardware.h"
-#include <limits.h>
-#include "../DLL/Common/Linux.h"
+#include "../DLL/Common/WLPluginAPI.h"
 
-#pragma warning(disable: 4018)	// disable signed/unsigned mismatch
+#include <chrono>
+#include <limits.h>
+
+using namespace std::chrono;
 
 extern char *progname;
 extern hardware hw;
@@ -24,16 +25,6 @@ struct ir_ncode *next_code = NULL;
 struct ir_ncode *current_code = NULL;
 int current_index = 0;
 int current_rep = 0;
-
-void gettimeofday(struct mytimeval *a)
-/* only accurate to milliseconds, instead of microseconds */
-{
-    struct _timeb tstruct;
-    _ftime_s(&tstruct);
-
-    a->tv_sec = tstruct.time;
-    a->tv_usec = tstruct.millitm * 1000;
-}
 
 lirc_t emulation_readdata(lirc_t timeout)
 {
@@ -1126,7 +1117,7 @@ int receive_decode(struct ir_remote *remote,
 	ir_code pre,code,post;
 	lirc_t sync;
 	int header;
-	struct mytimeval current;
+	steady_clock::time_point current;
 
 	sync=0; /* make compiler happy */
 	code=pre=post=0;
@@ -1283,7 +1274,7 @@ int receive_decode(struct ir_remote *remote,
 			code = decoded & gen_mask(remote->bits);
 			pre = decoded >> remote->bits;
 			
-			gettimeofday(&current);
+			current = steady_clock::now();
 			sum=remote->phead+remote->shead+
 				lirc_t_max(remote->pone+remote->sone,
 					   remote->pzero+remote->szero)*
@@ -1295,8 +1286,7 @@ int receive_decode(struct ir_remote *remote,
 				remote->post_p+remote->post_s;
 			
 			rec_buffer.sum=sum>=remote->gap ? remote->gap-1:sum;
-			sync=time_elapsed(&remote->last_send,&current)-
- 				rec_buffer.sum;
+			sync = duration_cast<microseconds>(current - remote->last_send - microseconds{ rec_buffer.sum }).count();
 		}
 		else
 		{
@@ -1397,7 +1387,7 @@ int receive_decode(struct ir_remote *remote,
 		/* Most TV cards don't pass each signal to the
                    driver. This heuristic should fix repeat in such
                    cases. */
-		if(time_elapsed(&remote->last_send,&current)<325000)
+		if(current - remote->last_send < 325000us)
 		{
 			*repeat_flagp=1;
 		}

@@ -1,10 +1,10 @@
 #include <Windows.h>
 #include <tchar.h>
 #include "Opengl.h"
-#include "hardware.h"
 #include "irdriver.h"
 #include "Settings.h"
 #include "guicon.h"
+#include "../../DLL/Common/LIRCDefines.h"
 
 #define	IDT_TIMER1 1
 
@@ -13,7 +13,7 @@ Opengl			opengl;
 CIRDriver		irDriver;
 //===========================
 
-struct hardware *hw = NULL;
+hardware const* hw = NULL;
 
 HWND		mainWindowHandle	= NULL;
 UINT_PTR	timerID				= NULL;

@@ -3,10 +3,8 @@
 #include <tchar.h>
 
 #include "../Common/LIRCDefines.h"
-#include "../Common/Hardware.h"
 #include "../Common/WLPluginAPI.h"
 #include "../Common/IRRemote.h"
-#include "../Common/Linux.h"
 #include "../Common/Win32Helpers.h"
 
 #include "Globals.h"
@@ -14,14 +12,18 @@
 #include "Receive.h"
 #include "Settings.h"
 
+#include <chrono>
+
+using namespace std::chrono;
+
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();
 extern hardware hw;
 
-WL_API int init(HANDLE exitEvent) {
+WL_API int init(WLEventHandle exitEvent) {
 
 	initHardwareStruct();
-	threadExitEvent = exitEvent;
+	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
 	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
 
 	receive = new Receive();
@@ -121,11 +123,11 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 		}
 
 		last = end;
-		gettimeofday(&start,NULL);
+		start = steady_clock::now();
 		receive->getData(&irCode);
-		gettimeofday(&end,NULL);
+		end = steady_clock::now();
 
-		if(decodeCommand(&hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&hw,remotes,out,out_size)) {
 			ResetEvent(dataReadyEvent);
 			return 1;
 		}
@@ -136,7 +138,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API struct hardware* getHardware() {
+WL_API hardware const* getHardware() {
 
 	initHardwareStruct();
 	return &hw;

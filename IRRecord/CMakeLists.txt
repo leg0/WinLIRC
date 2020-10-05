@@ -7,7 +7,6 @@ add_executable(IRRecord
 	dump_config.h
 	emulation.cpp
 	emulation.h
-	hardware.h
 	irdriver.cpp
 	irdriver.h
 	irrecord.cpp

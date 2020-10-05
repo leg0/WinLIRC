@@ -26,10 +26,10 @@
 #include "../Common/LIRCDefines.h"
 #include "../Common/IRRemote.h"
 #include "../Common/Receive.h"
-#include "../Common/Hardware.h"
 #include "../Common/Send.h"
 #include "../Common/WLPluginAPI.h"
 #include "../Common/Win32Helpers.h"
+#include "../Common/WLPluginAPI.h"
 #include "iguanaIR.h"
 #include "SendReceiveData.h"
 
@@ -37,13 +37,13 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();
 extern hardware hw;
 
-WL_API int init(HANDLE exitEvent) {
+WL_API int init(WLEventHandle exitEvent) {
 
 	init_rec_buffer();
 	init_send_buffer();
 	initHardwareStruct();
 
-	threadExitEvent = exitEvent;
+	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	sendReceiveData = new SendReceiveData();
@@ -198,7 +198,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 		clear_rec_buffer(&hw);
 
-		if(decodeCommand(&hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&hw,remotes,out,out_size)) {
 			return 1;
 		}
 	}
@@ -215,7 +215,7 @@ WL_API int setTransmitters(unsigned int transmitterMask) {
 	return 0;
 }
 
-WL_API struct hardware* getHardware() {
+WL_API hardware const* getHardware() {
 
 	initHardwareStruct();
 	return &hw;

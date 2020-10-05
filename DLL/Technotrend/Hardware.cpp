@@ -22,7 +22,7 @@
 #include "Globals.h"
 #include "../Common/LIRCDefines.h"
 #include "../Common/Receive.h"
-#include "../Common/Hardware.h"
+#include "../Common/WLPluginAPI.h"
 
 lirc_t readData(lirc_t timeout) {
 

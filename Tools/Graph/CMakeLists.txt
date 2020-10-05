@@ -8,7 +8,6 @@ set(CMAKE_MFC_FLAG 0)
 add_executable(Graph WIN32
 	guicon.cpp
 	guicon.h
-	hardware.h
 	irdriver.cpp
 	irdriver.h
 	main.cpp

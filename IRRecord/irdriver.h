@@ -40,7 +40,7 @@ public:
 	int		sendIR		(struct ir_remote *remote,struct ir_ncode *code, int repeats);
 	int		decodeIR	(struct ir_remote *remote, char *out, size_t out_size);
 
-	struct hardware* getHardware();
+	hardware const* getHardware();
 
 private:
 

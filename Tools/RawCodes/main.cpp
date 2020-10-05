@@ -1,8 +1,9 @@
 #include <Windows.h>
 #include <tchar.h>
-#include "hardware.h"
 #include "irdriver.h"
 #include "Settings.h"
+#include "../../DLL/Common/LIRCDefines.h"
+#include "../../DLL/Common/WLPluginAPI.h"
 #include <conio.h>
 
 void main()
@@ -13,7 +14,7 @@ void main()
 	CIRDriver	irDriver;
 	//==========================
 
-	struct hardware *hw = NULL;
+	hardware const* hw = NULL;
 
 	SetCurrentDirectory(_T(".\\plugins\\"));
 
