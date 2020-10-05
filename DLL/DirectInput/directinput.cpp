@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include "../Common/LIRCDefines.h"
 #include "../Common/UniqueHandle.h"
-#include "../Common/WLPluginAPI.h"
+#include <winlirc/WLPluginAPI.h>
 
 #include <atlbase.h> // CComPtr
 #include <dinput.h>

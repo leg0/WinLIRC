@@ -5,8 +5,8 @@
 #include "resource.h"
 #include "Receive.h"
 #include "Settings.h"
-#include "../Common/WLPluginAPI.h"
-#include "../Common/IRRemote.h"
+#include <winlirc/WLPluginAPI.h>
+#include <winlirc/IRRemote.h>
 #include "../Common/Win32helpers.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;

@@ -21,7 +21,7 @@
 
 #include <Windows.h>
 #include "SendReceive.h"
-#include "../Common/WLPluginAPI.h"
+#include <winlirc/WLPluginAPI.h>
 #include <memory>
 
 std::unique_ptr<SendReceive> sendReceive;

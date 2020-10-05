@@ -25,7 +25,7 @@
 
 #include <Windows.h>
 #include <atlstr.h>
-#include "../DLL/Common/WLPluginAPI.h"
+#include <winlirc/WLPluginAPI.h>
 
 class CIRDriver {
 

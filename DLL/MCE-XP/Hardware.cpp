@@ -20,8 +20,8 @@
  */
 
 #include "Globals.h"
-#include "../Common/Receive.h"
-#include "../Common/WLPluginAPI.h"
+#include <winlirc/Receive.h>
+#include <winlirc/WLPluginAPI.h>
 
 struct hardware hw;
 

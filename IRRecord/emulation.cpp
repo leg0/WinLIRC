@@ -2,7 +2,7 @@
 #include <sys/timeb.h>
 #include <string.h>
 #include "../Dll/Common/LIRCDefines.h"
-#include "../DLL/Common/WLPluginAPI.h"
+#include <winlirc/WLPluginAPI.h>
 
 #include <chrono>
 #include <limits.h>

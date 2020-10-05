@@ -19,9 +19,9 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#include "IRRemote.h"
-#include "LIRCDefines.h"
-#include "WLPluginAPI.h"
+#include <winlirc/IRRemote.h>
+#include "../DLL/Common/LIRCDefines.h"
+#include <winlirc/WLPluginAPI.h>
 #include <stdio.h>
 #include <sys/timeb.h>
 #include <string.h>

@@ -16,3 +16,5 @@ add_executable(IRRecord
 #	)
 
 set_target_properties(IRRecord PROPERTIES  FOLDER "Tools")
+
+target_link_libraries(IRRecord PRIVATE winlirc)

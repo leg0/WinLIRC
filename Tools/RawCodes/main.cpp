@@ -3,7 +3,7 @@
 #include "irdriver.h"
 #include "Settings.h"
 #include "../../DLL/Common/LIRCDefines.h"
-#include "../../DLL/Common/WLPluginAPI.h"
+#include <winlirc/WLPluginAPI.h>
 #include <conio.h>
 
 void main()

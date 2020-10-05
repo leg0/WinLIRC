@@ -21,8 +21,8 @@
 
 #include "Globals.h"
 #include "../Common/LIRCDefines.h"
-#include "../Common/Receive.h"
-#include "../Common/WLPluginAPI.h"
+#include <winlirc/Receive.h>
+#include <winlirc/WLPluginAPI.h>
 
 hardware hw;
 

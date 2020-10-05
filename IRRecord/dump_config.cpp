@@ -28,7 +28,7 @@
 #include "../DLL/Common/LIRCDefines.h"
 #include "dump_config.h"
 #include "config.h"
-#include "../DLL/Common/WLPluginAPI.h"
+#include <winlirc/WLPluginAPI.h>
 
 #define VERSION "0.9.0"
 extern hardware hw;

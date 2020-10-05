@@ -22,8 +22,8 @@
 
 #include "Globals.h"
 #include "../Common/LIRCDefines.h"
-#include "../Common/IRRemote.h"
-#include "../Common/WLPluginAPI.h"
+#include <winlirc/IRRemote.h>
+#include <winlirc/WLPluginAPI.h>
 
 #define CODE_LENGTH 32
 

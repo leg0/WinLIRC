@@ -11,3 +11,11 @@
 #else
 #define WINLIRC_API WINLIRC_EXTERNC __declspec(dllimport)
 #endif
+
+#include <stdint.h>
+
+typedef struct ir_remote ir_remote;
+typedef struct ir_ncode ir_ncode;
+typedef struct hardware hardware;
+typedef uint64_t ir_code;
+typedef int lirc_t;

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "../DLL/Common/WLPluginAPI.h"
+#include <winlirc/WLPluginAPI.h>
 
 #include <chrono>
 #include <stdio.h>

@@ -1,10 +1,6 @@
 #pragma once
 
-#include "LIRCDefines.h"
 #include "winlirc_api.h"
-
-struct hardware;
-struct ir_remote;
 
 WINLIRC_API void init_rec_buffer();
 WINLIRC_API int clear_rec_buffer(hardware const* hw);

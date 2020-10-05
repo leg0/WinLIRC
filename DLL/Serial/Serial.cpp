@@ -25,9 +25,9 @@
 #include "irdriver.h"
 
 #include "../Common/LircDefines.h"
-#include "../Common/IRRemote.h"
-#include "../Common/Receive.h"
-#include "../Common/WLPluginAPI.h"
+#include <winlirc/IRRemote.h>
+#include <winlirc/Receive.h>
+#include <winlirc/WLPluginAPI.h>
 #include "Transmit.h"
 
 void initHardwareStruct();

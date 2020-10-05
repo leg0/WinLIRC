@@ -24,7 +24,7 @@ else()
 	#    -D_UNICODE
 	#    )
 
-	target_link_libraries(Iguana
+	target_link_libraries(Iguana PRIVATE
 		winlirc
 		${CMAKE_CURRENT_SOURCE_DIR}/iguanaIR.lib
 		wsock32.lib

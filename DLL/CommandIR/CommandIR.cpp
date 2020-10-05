@@ -23,10 +23,10 @@
 #include <stdio.h>
 
 #include "../Common/LIRCDefines.h"
-#include "../Common/IRRemote.h"
-#include "../Common/Receive.h"
-#include "../Common/Send.h"
-#include "../Common/WLPluginAPI.h"
+#include <winlirc/IRRemote.h>
+#include <winlirc/Receive.h>
+#include <winlirc/Send.h>
+#include <winlirc/WLPluginAPI.h>
 #include "../Common/Win32Helpers.h"
 
 #include "Settings.h"

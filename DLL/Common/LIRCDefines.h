@@ -21,6 +21,7 @@
 
 #pragma once
 #include <Math.h>
+#include <winlirc/winlirc_api.h>
 #include <chrono>
 
 //
@@ -112,17 +113,6 @@
 #define LIRC_CAN_REC(x) ((x)&LIRC_CAN_REC_MASK)
 
 #define LIRC_CAN_NOTIFY_DECODE            0x01000000
-
-//
-// Typedefs
-//
-#ifdef LONG_IR_CODE
-typedef unsigned __int64 ir_code;
-#else
-typedef unsigned long ir_code;
-#endif
-
-typedef int lirc_t;
 
 //
 //Structure definitions

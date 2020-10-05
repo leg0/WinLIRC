@@ -25,7 +25,7 @@
 #include "Settings.h"
 #include "Globals.h"
 #include <stdio.h>
-#include "../Common/Send.h"
+#include <winlirc/Send.h>
 #include "../Common/DebugOutput.h"
 #include "../Common/Win32Helpers.h"
 

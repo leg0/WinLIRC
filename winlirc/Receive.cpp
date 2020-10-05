@@ -19,9 +19,9 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#include "Receive.h"
-#include "LIRCDefines.h"
-#include "WLPluginAPI.h"
+#include <winlirc/Receive.h>S
+#include "../DLL/Common/LIRCDefines.h"
+#include <winlirc/WLPluginAPI.h>
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>

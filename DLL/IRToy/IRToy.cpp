@@ -22,9 +22,9 @@
 #include <Windows.h>
 #include "../Common/enumSerialPorts.h"
 #include "../Common/LircDefines.h"
-#include "../Common/IRRemote.h"
-#include "../Common/Receive.h"
-#include "../Common/WLPluginAPI.h"
+#include <winlirc/IRRemote.h>
+#include <winlirc/Receive.h>
+#include <winlirc/WLPluginAPI.h>
 #include "../Common/Win32Helpers.h"
 
 #include "Globals.h"

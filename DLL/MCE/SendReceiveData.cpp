@@ -22,7 +22,7 @@
 #include <windows.h>
 #include "SendReceiveData.h"
 #include "Globals.h"
-#include "../Common/Send.h"
+#include <winlirc/Send.h>
 #include "../Common/DebugOutput.h"
 #include "../Common/Win32Helpers.h"
 

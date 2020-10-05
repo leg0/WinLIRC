@@ -20,6 +20,6 @@ add_definitions(
     -DWIN32
     )
 
-target_link_libraries(DirectInput dinput8.lib dxguid.lib)
+target_link_libraries(DirectInput PRIVATE winlirc dinput8.lib dxguid.lib)
 
 configure_plugin(DirectInput)

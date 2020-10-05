@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 2.8)
 
 project(WinLIRC)
 
+find_package(Microsoft.GSL CONFIG REQUIRED)
+
 # Use MFC in a shared DLL.
 set(CMAKE_MFC_FLAG 2)
 
@@ -10,22 +12,12 @@ add_definitions(
 	-D_UNICODE
 	)
 
-set(COMMON_SOURCES
-	../DLL/Common/DebugOutput.h
-	../DLL/Common/enumSerialPorts.h
-	../DLL/Common/fifo.h
-	../DLL/Common/IRRemote.cpp
-	../DLL/Common/IRRemote.h
-	../DLL/Common/LIRCDefines.h
-	../DLL/Common/Receive.cpp
-	../DLL/Common/Receive.h
-	../DLL/Common/Send.cpp
-	../DLL/Common/Send.h
-	../DLL/Common/UniqueHandle.h
-	../DLL/Common/Win32Helpers.cpp
-	../DLL/Common/Win32Helpers.h
-	../DLL/Common/winlirc_api.h
-	../DLL/Common/WLPluginAPI.h)
+set (PUBLIC_API_FILES
+	include/winlirc/IRRemote.h
+	include/winlirc/Receive.h
+	include/winlirc/Send.h
+	include/winlirc/winlirc_api.h
+	include/winlirc/WLPluginApi.h)
 
 add_executable(winlirc WIN32
 	config.cpp
@@ -35,7 +27,10 @@ add_executable(winlirc WIN32
 	InputPlugin.cpp
 	irconfig.cpp
 	irdriver.cpp
+	IRRemote.cpp
 	Plugin.cpp
+	Receive.cpp
+	Send.cpp
 	server.cpp
 	trayicon.cpp
 	winlirc.cpp
@@ -58,13 +53,15 @@ add_executable(winlirc WIN32
     trayicon.h
     version.h
     winlirc.h
-	${COMMON_SOURCES}
+	${PUBLIC_API_FILES}
 	)
 
 # TODO: add unit tests
 # add_subdirectory(tests)
 
 source_group(Common FILES ${COMMON_SOURCES})
+source_group("Public API" FILES ${PUBLIC_API_FILES})
+
 set_target_properties(winlirc PROPERTIES ENABLE_EXPORTS on)
 
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
@@ -74,5 +71,12 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set_target_properties( winlirc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${CFG} )
 endforeach()
 
-find_package(Microsoft.GSL CONFIG REQUIRED)
-target_link_libraries(winlirc PRIVATE Microsoft.GSL::GSL)
+target_link_libraries(winlirc PRIVATE
+	Microsoft.GSL::GSL
+	winlirc-common)
+
+target_include_directories(winlirc PRIVATE
+	${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_include_directories(winlirc INTERFACE
+	${CMAKE_CURRENT_SOURCE_DIR}/include)

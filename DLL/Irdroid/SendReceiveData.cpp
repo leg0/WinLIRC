@@ -24,7 +24,7 @@
 #include "Globals.h"
 #include <stdio.h>
 #include <tchar.h>
-#include "../Common/Send.h"
+#include <winlirc/Send.h>
 #include "../Common/Win32Helpers.h"
 #include <iterator>
 

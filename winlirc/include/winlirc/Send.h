@@ -1,6 +1,5 @@
 #pragma once
 
-#include "LIRCDefines.h"
 #include "winlirc_api.h"
 
 WINLIRC_API int get_send_buffer_length();

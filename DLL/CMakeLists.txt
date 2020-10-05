@@ -5,6 +5,8 @@ macro(add_plugin plugin_name)
   endif()
 endmacro()
 
+add_subdirectory(Common)
+
 add_plugin(AudioCapture)
 add_plugin(Beholder)
 add_plugin(Chinavision)

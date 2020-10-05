@@ -1,6 +1,6 @@
-#include "Send.h"
+#include <winlirc/Send.h>
 #include <Windows.h>
-#include "LIRCDefines.h"
+#include "../DLL/Common/LIRCDefines.h"
 
 #define LIRCD_EXACT_GAP_THRESHOLD 10000
 

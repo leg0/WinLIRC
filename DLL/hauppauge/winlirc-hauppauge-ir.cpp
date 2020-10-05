@@ -24,7 +24,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "stdafx.h"
-#include "../Common/WLPluginAPI.h"
+#include <winlirc/WLPluginAPI.h>
 #include "irremote.h"
 
 const wchar_t *g_cPluginName = L"hauppauge-irremote";

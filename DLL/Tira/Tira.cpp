@@ -7,8 +7,8 @@
 #include "Globals.h"
 
 #include "../Common/LIRCDefines.h"
-#include "../Common/WLPluginAPI.h"
-#include "../Common/IRRemote.h"
+#include <winlirc/WLPluginAPI.h>
+#include <winlirc/IRRemote.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();
