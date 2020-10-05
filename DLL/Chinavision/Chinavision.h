@@ -22,25 +22,6 @@
 #ifndef CHINAVISION_H
 #define CHINAVISION_H
 
-//
-// API
-//
-#define IG_API __declspec(dllexport)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-IG_API int	init		(HANDLE exitEvent);
-IG_API void	deinit		();
-IG_API int	hasGui		();
-IG_API void	loadSetupGui();
-IG_API int	sendIR		(struct ir_remote *remote, struct ir_ncode *code, int repeats);
-IG_API int	decodeIR	(struct ir_remote *remotes, char *out);
-
-
-#ifdef __cplusplus
-}
-#endif
+#include <winlirc/WLPluginAPI.h>
 
 #endif

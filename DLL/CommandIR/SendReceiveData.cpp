@@ -25,6 +25,7 @@
 #include "Globals.h"
 #include <stdio.h>
 #include <winlirc/Send.h>
+#include "../Common/LIRCDefines.h"
 
 lirc_t			dataBuffer[256];
 unsigned char	bufferStart;

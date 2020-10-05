@@ -2,8 +2,8 @@
 #define RECEIVE_H
 
 #include <windows.h>
-#include "../Common/LIRCDefines.h"
 #include "ttusbirapiexp.h"
+#include <winlirc/WLPluginAPI.h>
 
 class Receive {
 

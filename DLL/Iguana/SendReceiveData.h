@@ -22,8 +22,8 @@
 #ifndef RECEIVEDATA_H
 #define RECEIVEDATA_H
 
-#include "../Common/LIRCDefines.h"
 #include "iguanaIR.h"
+#include <winlirc/WLPluginAPI.h>
 
 #define IGUANA_TRANSMITTER1	1
 #define IGUANA_TRANSMITTER2	2

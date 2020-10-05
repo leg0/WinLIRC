@@ -20,13 +20,13 @@
  */
 
 #include "Globals.h"
-#include "../Common/LIRCDefines.h"
 #include <winlirc/IRRemote.h>
 #include <winlirc/WLPluginAPI.h>
+#include <chrono>
 
 #define CODE_LENGTH 64
 
-static int irman_decode (struct hardware const*,struct ir_remote *remote, ir_code *prep, ir_code *codep,
+static int irman_decode (hardware const*,ir_remote *remote, ir_code *prep, ir_code *codep,
 		 ir_code *postp, int *repeat_flagp,
 		 lirc_t *min_remaining_gapp,
 		 lirc_t *max_remaining_gapp)

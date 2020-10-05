@@ -22,6 +22,7 @@
 #include "Globals.h"
 #include "SendReceiveData.h"
 #include "../Common/Win32Helpers.h"
+#include <winlirc/WLPluginAPI.h>
 
 using namespace std::chrono;
 

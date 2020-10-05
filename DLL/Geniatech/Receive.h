@@ -2,7 +2,7 @@
 #define RECEIVE_H
 
 #include <windows.h>
-#include "../Common/LIRCDefines.h"
+#include <winlirc/winlirc_api.h>
 
 class Receive {
 

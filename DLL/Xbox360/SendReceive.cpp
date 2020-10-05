@@ -1,6 +1,5 @@
 #include "SendReceive.h"
 #include <stdio.h>
-#include "../Common/LIRCDefines.h"
 #include "../Common/Win32Helpers.h"
 
 DWORD WINAPI XBThread(void *recieveClass) {
@@ -162,7 +161,7 @@ int SendReceive::decodeCommand(char *out, size_t out_size) {
 			}
 	}
 
-	_snprintf_s(out,out_size,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),m_repeats,buttonName,"Xbox360");
+	_snprintf_s(out,out_size,out_size,"%016llx %02x %s %s\n",__int64(0),m_repeats,buttonName,"Xbox360");
 
 	m_value = 0;
 	

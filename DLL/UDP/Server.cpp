@@ -1,6 +1,7 @@
 #include "Server.h"
 #include "Globals.h"
 #include <stdio.h>
+#include "../Common/LIRCDefines.h"
 #include "../Common/Win32Helpers.h"
 
 DWORD WINAPI ServerThread(void *server) {

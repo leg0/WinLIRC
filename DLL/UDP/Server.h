@@ -4,8 +4,9 @@
 
 #include <winsock2.h>
 #include <Windows.h>
-#include "../Common/LIRCDefines.h"
 #include "../Common/Socket.h"
+#include <winlirc/WLPluginAPI.h>
+#include <chrono>
 
 class Server {
 

@@ -2,7 +2,7 @@
 #define RECEIVE_H
 
 #include <windows.h>
-#include "../Common/LIRCDefines.h"
+#include <winlirc/WLPluginAPI.h>
 #include <Dshow.h>
 #include <initguid.h>
 #include "b2c2_defs.h"
@@ -10,6 +10,7 @@
 #include "ib2c2mpeg2tunerctrl.h"
 #include "ib2c2mpeg2datactrl.h"
 #include "ib2c2mpeg2avctrl.h"
+#include <chrono>
 
 class Receive {
 

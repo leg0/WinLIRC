@@ -2,8 +2,8 @@
 #define STREAMZAPAPI_H
 
 #include <Windows.h>
-#include "../Common/LIRCDefines.h"
 #include "XInput.h"
+#include <chrono>
 
 class SendReceive {
 

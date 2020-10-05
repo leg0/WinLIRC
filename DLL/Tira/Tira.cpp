@@ -6,7 +6,6 @@
 #include "Settings.h"
 #include "Globals.h"
 
-#include "../Common/LIRCDefines.h"
 #include <winlirc/WLPluginAPI.h>
 #include <winlirc/IRRemote.h>
 

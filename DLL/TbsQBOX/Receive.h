@@ -2,7 +2,7 @@
 #define RECEIVE_H
 
 #include <windows.h>
-#include "../Common/LIRCDefines.h"
+#include <winlirc/WLPluginAPI.h>
 
 #include "bdaiface.h"
 #include "bdatif.h"
@@ -14,6 +14,7 @@
 #include <bdamedia.h>
 #include <atlbase.h> //needed for string conversions
 #include <dshow.h>
+#include <chrono>
 
 DEFINE_GUIDSTRUCT( "C6EFE5EB-855A-4f1b-B7AA-87B5E1DC4113", KSPROPERTYSET_QBOXControl );
 #define KSPROPERTYSET_QBOXControl DEFINE_GUIDNAMED( KSPROPERTYSET_QBOXControl )

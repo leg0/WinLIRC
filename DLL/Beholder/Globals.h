@@ -24,6 +24,7 @@
 
 #include <windows.h>
 #include "SendReceiveData.h"
+#include <winlirc/WLPluginAPI.h>
 #include <chrono>
 
 extern HANDLE threadExitEvent;

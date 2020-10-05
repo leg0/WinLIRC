@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <winlirc/Send.h>
 #include "../Common/DebugOutput.h"
+#include "../Common/LIRCDefines.h"
 #include "../Common/Win32Helpers.h"
 
 DWORD WINAPI IGThread(void *recieveClass) {

@@ -23,10 +23,11 @@
 #ifndef _RECEIVEDATA_H_
 #define _RECEIVEDATA_H_
 
+#include <winlirc/WLPluginAPI.h>
+#include <chrono>
 #include <vector>
 #include <string>
 #include <winusb.h>
-#include "../Common/LIRCDefines.h"
 
 class ReceiveData
 {

@@ -2,6 +2,7 @@
 #include "winlirc.h"
 #include "SendReceiveData.h"
 #include "../Common/Win32Helpers.h"
+#include "../Common/LIRCDefines.h"
 
 extern "C" {
 	#include "CommandIRUtils\libcmdir.h"

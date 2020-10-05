@@ -26,8 +26,6 @@
 #include <tchar.h>
 #include <cstdio>
 
-#include "../Common/LIRCDefines.h"
-
 #include "BeholdRC.h"
 #include <chrono>
 

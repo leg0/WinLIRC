@@ -1,6 +1,5 @@
 #include "ChinavisionAPI.h"
 #include <stdio.h>
-#include "../Common/LIRCDefines.h"
 #include <initguid.h>
 #include <setupapi.h>
 #include <tchar.h>
@@ -204,7 +203,7 @@ void ChinavisionAPI::killThread() {
 	}
 }
 
-int ChinavisionAPI::decodeCommand(char *out) {
+int ChinavisionAPI::decodeCommand(char *out, size_t out_size) {
 
 	char	buttonName[32] = "";
 	int		repeats = 0;
@@ -417,7 +416,7 @@ int ChinavisionAPI::decodeCommand(char *out) {
 	}
 
 
-	_snprintf_s(out,PACKET_SIZE+1,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),repeats,buttonName,"PC_Remote");
+	_snprintf_s(out,out_size, out_size,"%016llx %02x %s %s\n",__int64(0),repeats,buttonName,"PC_Remote");
 
 	m_irCode = 0;
 

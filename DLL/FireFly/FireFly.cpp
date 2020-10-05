@@ -20,7 +20,6 @@
  */
 
 #include <Windows.h>
-#include "../Common/LIRCDefines.h"
 #include <winlirc/WLPluginAPI.h>
 #include "../Common/Win32Helpers.h"
 #include <stdio.h>

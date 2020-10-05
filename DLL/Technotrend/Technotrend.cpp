@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <tchar.h>
 
-#include "../Common/LIRCDefines.h"
 #include <winlirc/IRRemote.h>
 #include <winlirc/Receive.h>
 #include <winlirc/Send.h>

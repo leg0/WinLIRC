@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <winlirc/Send.h>
+#include "../Common/LIRCDefines.h"
 #include "../Common/Win32Helpers.h"
 #include <iterator>
 

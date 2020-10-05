@@ -25,7 +25,6 @@
 #include "Globals.h"
 #include "TiraDLL.h"
 
-#include "../Common/LIRCDefines.h"
 #include <winlirc/IRRemote.h>
 #include <winlirc/WLPluginAPI.h>
 

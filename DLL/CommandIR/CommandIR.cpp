@@ -22,7 +22,6 @@
 #include <Windows.h>
 #include <stdio.h>
 
-#include "../Common/LIRCDefines.h"
 #include <winlirc/IRRemote.h>
 #include <winlirc/Receive.h>
 #include <winlirc/Send.h>

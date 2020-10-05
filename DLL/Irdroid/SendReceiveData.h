@@ -22,9 +22,9 @@
 #ifndef RECEIVEDATA_H
 #define RECEIVEDATA_H
 
-#include "../Common/LIRCDefines.h"
 #include "Serial.h"
-
+#include <winlirc/WLPluginAPI.h>
+#include <chrono>
 
 class SendReceiveData
 {

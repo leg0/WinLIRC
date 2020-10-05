@@ -21,19 +21,18 @@
 
 #include <Windows.h>
 #include "Chinavision.h"
-#include "../Common/LIRCDefines.h"
 #include <stdio.h>
 #include "ChinavisionAPI.h"
 
 ChinavisionAPI *chinavisionAPI = nullptr;
 
-IG_API int init(HANDLE exitEvent) {
+WL_API int init(WLEventHandle exitEvent) {
 
 	chinavisionAPI = new ChinavisionAPI();
-	return chinavisionAPI->init(exitEvent);
+	return chinavisionAPI->init(reinterpret_cast<HANDLE>(exitEvent));
 }
 
-IG_API void deinit() {
+WL_API void deinit() {
 
 	if(chinavisionAPI) {
 		chinavisionAPI->deinit();
@@ -42,26 +41,26 @@ IG_API void deinit() {
 	}
 }
 
-IG_API int hasGui() {
+WL_API int hasGui() {
 
 	return FALSE;
 }
 
-IG_API void	loadSetupGui() {
+WL_API void	loadSetupGui() {
 
 }
 
-IG_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-IG_API int decodeIR(struct ir_remote *remotes, char *out) {
+WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(chinavisionAPI) {
 		using namespace std::chrono_literals;
 		chinavisionAPI->waitTillDataIsReady(0us);
-		return chinavisionAPI->decodeCommand(out);
+		return chinavisionAPI->decodeCommand(out, out_size);
 	}
 
 	return 0;

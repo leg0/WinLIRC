@@ -1,7 +1,6 @@
 #define DIRECTINPUT_VERSION 0x0800
 
 #include <Windows.h>
-#include "../Common/LIRCDefines.h"
 #include "../Common/UniqueHandle.h"
 #include <winlirc/WLPluginAPI.h>
 
@@ -11,6 +10,7 @@
 #include <cassert>
 #include <cstdint>
 #include <utility>
+#include <vector>
 
 struct HwndTraits
 {
@@ -138,9 +138,9 @@ WL_API int decodeIR(struct ir_remote*, char *out, size_t out_size)
         else
         {
             bool foundButton = false;
-            char buttonName[PACKET_SIZE-40];
-            char* btn = buttonName;
-            int bytesLeft = sizeof(buttonName) - 1;
+            std::vector<char> buttonName(out_size);
+            char* btn = buttonName.data();
+            int bytesLeft = buttonName.size() - 1;
             for (size_t i = 0; i < sizeof(state.rgbButtons); ++i)
             {
                 if (state.rgbButtons[i] & 0x80)
@@ -166,7 +166,7 @@ WL_API int decodeIR(struct ir_remote*, char *out, size_t out_size)
             // TODO: add support for analogue inputs
             if (foundButton)
             {
-                _snprintf_s(out, out_size, PACKET_SIZE, "%016llx %02x %s DirectInput\n", int64_t{0}, 1, buttonName);
+                _snprintf_s(out, out_size, out_size, "%016llx %02x %s DirectInput\n", int64_t{0}, 1, buttonName);
                 return 1;
             }
         }

@@ -2,8 +2,8 @@
 #define ChinavisionAPI_H
 
 #include <Windows.h>
-#include "../Common/LIRCDefines.h"
 #include "winusb.h"
+#include <chrono>
 
 class ChinavisionAPI {
 
@@ -15,7 +15,7 @@ public:
 	void deinit();
 	void threadProc();
 	void waitTillDataIsReady(std::chrono::microseconds maxUSecs);
-	int decodeCommand(char *out);
+	int decodeCommand(char *out, size_t out_size);
 
 private:
 

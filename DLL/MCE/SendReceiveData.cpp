@@ -24,6 +24,7 @@
 #include "Globals.h"
 #include <winlirc/Send.h>
 #include "../Common/DebugOutput.h"
+#include "../Common/LIRCDefines.h"
 #include "../Common/Win32Helpers.h"
 
 DWORD WINAPI MCEthread(void *recieveClass) {

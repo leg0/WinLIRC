@@ -24,6 +24,7 @@
 #include "Globals.h"
 #include <stdio.h>
 #include <winlirc/Send.h>
+#include "../Common/LIRCDefines.h"
 #include "../Common/Win32Helpers.h"
 #include <tchar.h>
 

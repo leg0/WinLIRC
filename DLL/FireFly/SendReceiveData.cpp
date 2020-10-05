@@ -239,7 +239,7 @@ int SendReceiveData::decodeCommand(char *out, size_t out_size) {
 	irLastCode	= outCode;
 	irCode		= 0;
 
-	_snprintf_s(out,out_size,PACKET_SIZE+1,"%016llx %02x %s %s\n",__int64(0),repeats,buttonName,"FireFlyMini");
+	_snprintf_s(out,out_size,out_size,"%016llx %02x %s %s\n",__int64(0),repeats,buttonName,"FireFlyMini");
 
 	return 1;
 }

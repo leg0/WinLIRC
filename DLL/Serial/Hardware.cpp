@@ -21,7 +21,6 @@
 
 #include "Globals.h"
 
-#include "../Common/LIRCDefines.h"
 #include <winlirc/Receive.h>
 #include <winlirc/WLPluginAPI.h>
 

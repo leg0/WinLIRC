@@ -4,7 +4,6 @@
 #include "irdriver.h"
 #include "Settings.h"
 #include "guicon.h"
-#include "../../DLL/Common/LIRCDefines.h"
 
 #define	IDT_TIMER1 1
 

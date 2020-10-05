@@ -23,7 +23,6 @@
 #include "resource.h"
 #include "Settings.h"
 #include "Globals.h"
-#include "../Common/LIRCDefines.h"
 #include <winlirc/IRRemote.h>
 #include <winlirc/Receive.h>
 #include <winlirc/Send.h>

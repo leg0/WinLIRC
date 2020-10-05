@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <tchar.h>
 
-#include "../Common/LIRCDefines.h"
 #include <winlirc/WLPluginAPI.h>
 #include <winlirc/IRRemote.h>
 #include "../Common/Win32Helpers.h"

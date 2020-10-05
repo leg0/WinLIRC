@@ -22,7 +22,7 @@
 #ifndef RECEIVEDATA_H
 #define RECEIVEDATA_H
 
-#include "../Common/LIRCDefines.h"
+#include <chrono>
 
 #if !defined __drv_maxIRQL
 #define __drv_maxIRQL(x)

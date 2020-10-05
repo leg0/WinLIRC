@@ -22,8 +22,6 @@
 #include "stdafx.h"
 #include "SerialDialog.h"
 #include "Globals.h"
-
-#include "../Common/LIRCDefines.h"
 #include "Transmit.h"
 
 

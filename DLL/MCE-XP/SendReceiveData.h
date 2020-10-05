@@ -22,9 +22,10 @@
 #ifndef RECEIVEDATA_H
 #define RECEIVEDATA_H
 
-#include "../Common/LIRCDefines.h"
 #include "MCEDefines.h"
 #include "IrDeviceList.h"
+#include <winlirc/WLPluginAPI.h>
+#include <chrono>
 
 class SendReceiveData
 {
