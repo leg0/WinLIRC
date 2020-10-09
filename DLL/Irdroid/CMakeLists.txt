@@ -25,9 +25,8 @@ add_definitions(
 	-D_UNICODE
 	)
 
-target_link_libraries(Irdroid
-	winlirc
+#target_link_libraries(Irdroid PRIVATE
 #	${CMAKE_CURRENT_SOURCE_DIR}/libusb.lib
-	)
+#	)
 
 configure_plugin(Irdroid)

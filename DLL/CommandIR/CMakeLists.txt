@@ -28,8 +28,7 @@ else()
 		-DWIN
 		)
 
-	target_link_libraries(CommandIR
-		winlirc
+	target_link_libraries(CommandIR PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/libusb.lib
 		)
 

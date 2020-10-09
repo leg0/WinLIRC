@@ -20,8 +20,7 @@ else()
 	set(XINPUT_LIB XInput.lib)
 endif()
 
-target_link_libraries(Xbox360
-	winlirc
+target_link_libraries(Xbox360 PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/${XINPUT_LIB}
 	)
 

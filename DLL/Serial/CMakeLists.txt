@@ -30,8 +30,4 @@ add_definitions(
 	-D_UNICODE
 	)
 
-target_link_libraries(Serial
-	winlirc
-	)
-
 configure_plugin(Serial)

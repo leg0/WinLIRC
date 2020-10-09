@@ -24,8 +24,7 @@ add_definitions(
 	-D_UNICODE
 	)
 
-target_link_libraries(TbsQBOX
-	winlirc
+target_link_libraries(TbsQBOX PRIVATE
 	winmm.lib
 	strmiids.lib
 	ksproxy.lib

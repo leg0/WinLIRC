@@ -15,8 +15,7 @@ add_definitions(
 	-D_UNICODE
 	)
 
-target_link_libraries(Streamzap
-	winlirc
+target_link_libraries(Streamzap PRIVATE
 	setupapi.lib
 	)
 

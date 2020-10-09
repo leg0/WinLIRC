@@ -28,8 +28,7 @@ add_library(Technisat MODULE
 #	-D_UNICODE
 #	)
 
-target_link_libraries(Technisat
-	winlirc
+target_link_libraries(Technisat PRIVATE
 	strmiids.lib
 	)
 

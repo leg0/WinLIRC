@@ -22,8 +22,7 @@ add_library(MaxterPlus MODULE
     Settings.h
 	)
 
-target_link_libraries(MaxterPlus
-	winlirc
+target_link_libraries(MaxterPlus PRIVATE
     setupapi.lib
     hid.lib
 	)

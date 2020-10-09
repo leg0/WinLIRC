@@ -18,8 +18,7 @@ add_library(UDP MODULE
 #	-D_UNICODE
 #	)
 
-target_link_libraries(UDP
-	winlirc
+target_link_libraries(UDP PRIVATE
 	ws2_32.lib
 	)
 

@@ -34,7 +34,4 @@ target_include_directories(ir-tiny PRIVATE
     ${CMAKE_SOURCE_DIR}/DLL
     )
 
-target_link_libraries(ir-tiny PRIVATE
-    winlirc)
-
 configure_plugin(ir-tiny)

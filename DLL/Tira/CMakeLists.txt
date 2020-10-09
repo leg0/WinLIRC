@@ -23,8 +23,4 @@ add_library(Tira MODULE
 #	-D_UNICODE
 #	)
 
-target_link_libraries(Tira
-	winlirc
-	)
-
 configure_plugin(Tira)

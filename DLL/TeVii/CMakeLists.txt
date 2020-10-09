@@ -19,8 +19,7 @@ else()
 		TeVii.h
 		)
 
-	target_link_libraries(TeVii
-		winlirc
+	target_link_libraries(TeVii PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/TeVii.lib
 		)
 

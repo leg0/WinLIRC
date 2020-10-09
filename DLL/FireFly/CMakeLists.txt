@@ -15,8 +15,7 @@ add_library(FireFly MODULE
     SendReceiveData.h
 	)
 
-target_link_libraries(FireFly
-	winlirc
+target_link_libraries(FireFly PRIVATE
     setupapi.lib
     hid.lib
 	)

@@ -19,8 +19,7 @@ else()
 		ttusbirapiexp.h
 		)
 
-	target_link_libraries(Technotrend
-		winlirc
+	target_link_libraries(Technotrend PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/TTUSBIR.lib
 		)
 

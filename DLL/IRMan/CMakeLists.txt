@@ -25,8 +25,4 @@ add_definitions(
 	-D_UNICODE
 	)
 
-target_link_libraries(IRMan
-	winlirc
-	)
-
 configure_plugin(IRMan)

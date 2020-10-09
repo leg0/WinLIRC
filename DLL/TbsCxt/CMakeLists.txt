@@ -24,8 +24,7 @@ add_definitions(
 	-D_UNICODE
 	)
 
-target_link_libraries(TbsCxt
-	winlirc
+target_link_libraries(TbsCxt PRIVATE
     winmm.lib
     strmiids.lib
     ksproxy.lib

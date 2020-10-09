@@ -28,8 +28,7 @@ add_definitions(
 	-D_UNICODE
 	)
 
-target_link_libraries(MCE-XP
-	winlirc
+target_link_libraries(MCE-XP PRIVATE
 	setupapi.lib
 	hid.lib
 	)

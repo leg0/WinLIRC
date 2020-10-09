@@ -27,8 +27,4 @@ add_library(AudioCapture MODULE
     targetver.h
 	)
 
-target_link_libraries (AudioCapture
-	winlirc
-	)
-
 configure_plugin(AudioCapture)

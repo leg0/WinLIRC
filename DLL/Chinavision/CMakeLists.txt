@@ -13,8 +13,7 @@ add_library(Chinavision MODULE
     winusbio.h
     )
 
-target_link_libraries(Chinavision
-    winlirc
+target_link_libraries(Chinavision PRIVATE
     setupapi.lib
     winusb.lib
     )

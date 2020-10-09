@@ -19,8 +19,7 @@ else()
 		Settings.h
 		)
 
-	target_link_libraries(Geniatech
-		winlirc
+	target_link_libraries(Geniatech PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/LwExtLib.lib
 		setupapi.lib
 		)

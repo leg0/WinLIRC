@@ -25,9 +25,8 @@ add_definitions(
 	-D_UNICODE
 	)
 
-target_link_libraries(IRToy
-	winlirc
+#target_link_libraries(IRToy
 #	${CMAKE_CURRENT_SOURCE_DIR}/libusb.lib
-	)
+#	)
 
 configure_plugin(IRToy)

@@ -13,8 +13,4 @@ add_library(Beholder MODULE
     SendReceiveData.h
 	)
 
-target_link_libraries(Beholder
-	winlirc
-	)
-
 configure_plugin(Beholder)
