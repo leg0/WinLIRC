@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 if (WL_PLATFORM MATCHES "[Xx]64")
 	message("Iguana is only available in 32 bit")
 else()
-	add_library(Iguana SHARED
+	add_library(Iguana MODULE
 		Globals.cpp
 		Hardware.cpp
 		Iguana.cpp

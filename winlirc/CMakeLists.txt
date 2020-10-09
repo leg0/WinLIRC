@@ -56,13 +56,17 @@ add_executable(winlirc WIN32
 	${PUBLIC_API_FILES}
 	)
 
+
 # TODO: add unit tests
 # add_subdirectory(tests)
 
 source_group(Common FILES ${COMMON_SOURCES})
 source_group("Public API" FILES ${PUBLIC_API_FILES})
 
-set_target_properties(winlirc PROPERTIES ENABLE_EXPORTS on)
+set_target_properties(winlirc PROPERTIES
+	ENABLE_EXPORTS on
+	PUBLIC_HEADER "${PUBLIC_API_FILES}")
+
 
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set (CFG ${OUTPUTCONFIG})
@@ -80,3 +84,11 @@ target_include_directories(winlirc PRIVATE
 
 target_include_directories(winlirc INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+install(TARGETS winlirc 
+	DESTINATION .
+	ARCHIVE DESTINATION plugin_sdk/lib
+	PUBLIC_HEADER DESTINATION plugin_sdk/include/winlirc
+	RESOURCE DESTINATION configs
+)
+

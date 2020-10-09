@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 # Don't use MFC
 set(CMAKE_MFC_FLAG 0)
 
-add_library(DirectInput SHARED
+add_library(DirectInput MODULE
     directinput.cpp
     directinput.rc
     directinput.def

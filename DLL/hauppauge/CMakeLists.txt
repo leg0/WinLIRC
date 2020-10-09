@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_library(Hauppauge SHARED
+add_library(Hauppauge MODULE
 	irremote.cpp
 	stdafx.cpp
 	winlirc-hauppauge-ir.cpp

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 # Use MFC in a shared DLL.
 #set(CMAKE_MFC_FLAG 2)
 
-add_library(UDP SHARED
+add_library(UDP MODULE
 	Globals.cpp
 	hardware.cpp
 	Server.cpp

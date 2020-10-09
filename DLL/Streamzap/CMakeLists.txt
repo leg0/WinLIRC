@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_library(Streamzap SHARED
+add_library(Streamzap MODULE
 	Globals.cpp
 	hardware.cpp
 	Streamzap.cpp

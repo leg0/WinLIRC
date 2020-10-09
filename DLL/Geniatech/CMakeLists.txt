@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 if (WL_PLATFORM MATCHES "[Xx]64")
 	message("Geniatech is available only in 32 bit")
 else()
-	add_library(Geniatech SHARED
+	add_library(Geniatech MODULE
 		GeniatechRC.cpp
 		Globals.cpp
 		hardware.cpp

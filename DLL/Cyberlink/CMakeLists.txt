@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_MFC_FLAG 0)
 
-add_library(Cyberlink SHARED
+add_library(Cyberlink MODULE
 	CyberLink.cpp
 	Globals.cpp
 	Hardware.cpp

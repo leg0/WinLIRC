@@ -6,7 +6,7 @@ else()
 	# Use MFC in a shared DLL.
 	set(CMAKE_MFC_FLAG 2)
 
-	add_library(CommandIR SHARED
+	add_library(CommandIR MODULE
 		CommandIR.cpp
 		Globals.cpp
 		hardware.cpp

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 # Use MFC in a shared DLL.
 set(CMAKE_MFC_FLAG 0)
 
-add_library(Irdroid SHARED
+add_library(Irdroid MODULE
 	Globals.cpp
 	Hardware.cpp
 	Irdroid.cpp

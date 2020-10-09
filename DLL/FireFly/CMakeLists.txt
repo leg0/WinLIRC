@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_library(FireFly SHARED
+add_library(FireFly MODULE
 	FireFly.cpp
 	Globals.cpp
 	SendReceiveData.cpp
@@ -22,3 +22,4 @@ target_link_libraries(FireFly
 	)
 
 configure_plugin(FireFly)
+

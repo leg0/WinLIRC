@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_library(Beholder SHARED
+add_library(Beholder MODULE
 	Beholder.cpp
 	BeholdRC.cpp
 	Globals.cpp

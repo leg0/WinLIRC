@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 # include("dll.cmake")
 
-add_library(AudioCapture SHARED
+add_library(AudioCapture MODULE
 	AnalyseAudio.cpp
 	# AudioCapture.cpp
 	AudioFormats.cpp

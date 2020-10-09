@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 if (WL_PLATFORM MATCHES "[Xx]64")
 	message("TeVii is only available in 32 bit")
 else()
-	add_library(TeVii SHARED
+	add_library(TeVii MODULE
 		Globals.cpp
 		hardware.cpp
 		Receive.cpp

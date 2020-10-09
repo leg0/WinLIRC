@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 # Use MFC in a shared DLL.
 #set(CMAKE_MFC_FLAG 2)
 
-add_library(Tira SHARED
+add_library(Tira MODULE
 	Globals.cpp
 	Hardware.cpp
 	Settings.cpp

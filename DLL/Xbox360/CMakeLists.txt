@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-add_library(Xbox360 SHARED
+add_library(Xbox360 MODULE
 	SendReceive.cpp
 	Xbox360.cpp
 

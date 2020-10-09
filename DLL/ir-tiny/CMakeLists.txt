@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 # Use MFC in a shared DLL.
 set(CMAKE_MFC_FLAG 2)
 
-add_library(ir-tiny SHARED
+add_library(ir-tiny MODULE
     stdafx.cpp
     irdriver.cpp
     irtiny_api.cpp
