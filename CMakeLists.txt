@@ -18,13 +18,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 
 macro(configure_plugin plugin_name)
-  set_target_properties(${plugin_name} PROPERTIES  FOLDER "DLL")
+  set_target_properties(${plugin_name} PROPERTIES  FOLDER "Plugins")
   target_link_libraries(${plugin_name} PRIVATE winlirc)
   foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set (CFG ${OUTPUTCONFIG})
     string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
 
-    set_target_properties( ${plugin_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${CFG}/plugins )
+    set_target_properties( ${plugin_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${CFG}/plugins )
   endforeach()
 
   install(TARGETS ${plugin_name}
