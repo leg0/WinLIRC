@@ -1,0 +1,3 @@
+ms-gsl:x86-windows
+wtl:x86-windows
+gtest:x86-windows
