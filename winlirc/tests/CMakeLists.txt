@@ -2,6 +2,8 @@ find_package(GTest CONFIG REQUIRED)
 
 add_executable(winlirc_tests
 	test.cpp
+	config_test.cpp
+	../config.cpp
 	../wl_string.cpp)
 
 target_link_libraries(winlirc_tests
