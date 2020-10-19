@@ -39,7 +39,7 @@
 #include <chrono>
 
 #include "../DLL/Common/LIRCDefines.h"
-#include "config.h"
+#include "../winlirc/config.h"
 #include "dump_config.h"
 #include "irdriver.h"
 #include "emulation.h"

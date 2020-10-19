@@ -27,7 +27,7 @@
 
 #include "../DLL/Common/LIRCDefines.h"
 #include "dump_config.h"
-#include "config.h"
+#include "../winlirc/config.h"
 #include <winlirc/WLPluginAPI.h>
 
 #define VERSION "0.9.0"

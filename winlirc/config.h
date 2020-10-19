@@ -1,26 +1,14 @@
-/*      $Id$      */
-
-/****************************************************************************
- ** config_file.h ***********************************************************
- ****************************************************************************
- *
- * config_file.h - parses the config file of lircd
- *
- * Copyright (C) 1998 Pablo d'Angelo (pablo@ag-trek.allgaeu.org)
- *
- */
-
-#ifndef  _CONFIG_FILE_H
-#define  _CONFIG_FILE_H
+#pragma once
 
 #include <sys/types.h>
 
-struct flaglist {
-	char *name;
+struct flaglist
+{
+	char const *name;
 	int flag;
 };
 
-static struct flaglist all_flags[]=
+static constexpr flaglist all_flags[]=
 {
 	{"RAW_CODES",       RAW_CODES},
 	{"RC5",             RC5},
@@ -40,7 +28,6 @@ static struct flaglist all_flags[]=
     {"NO_FOOT_REP",     NO_FOOT_REP},
 	{"CONST_LENGTH",    CONST_LENGTH}, /* remember to adapt warning message when changing this */
     {"REPEAT_HEADER",   REPEAT_HEADER},
-	{nullptr,0},
 };
 
 /*
@@ -70,20 +57,7 @@ inline void * get_void_array(struct void_array *ar);
 
 /* some safer functions */
 void * s_malloc(size_t size);
-char * s_strdup(char * string);
-ir_code s_strtocode(const char *val);
-unsigned long  s_strtoul(char *val);
-int s_strtoi(char *val);
-unsigned int s_strtoui(char *val);
-lirc_t s_strtolirc_t(char *val);
 
 int checkMode(int is_mode, int c_mode, char *error);
-int parseFlags(char *val);
-int addSignal(struct void_array *signals, char *val);
-struct ir_ncode * defineCode(char *key, char *val, struct ir_ncode *code);
-struct ir_code_node *defineNode(struct ir_ncode *code, const char *val);
-int defineRemote(char * key, char * val, char *val2, struct ir_remote *rem);
 struct ir_remote *read_config(FILE *f, const char *name);
 void free_config(struct ir_remote *remotes);
-
-#endif

@@ -34,6 +34,7 @@ add_executable(winlirc WIN32
 	server.cpp
 	trayicon.cpp
 	winlirc.cpp
+	wl_string.cpp
 
     winlirc.rc
 
@@ -53,12 +54,9 @@ add_executable(winlirc WIN32
     trayicon.h
     version.h
     winlirc.h
+	wl_string.h
 	${PUBLIC_API_FILES}
 	)
-
-
-# TODO: add unit tests
-# add_subdirectory(tests)
 
 source_group(Common FILES ${COMMON_SOURCES})
 source_group("Public API" FILES ${PUBLIC_API_FILES})
@@ -92,3 +90,4 @@ install(TARGETS winlirc
 	RESOURCE DESTINATION configs
 )
 
+add_subdirectory(tests)

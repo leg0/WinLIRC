@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 add_executable(IRRecord
 	../winlirc/config.cpp
-	config.h
+	../winlirc/config.h
+	../winlirc/wl_string.cpp
+	../winlirc/wl_string.h
 	dump_config.cpp
 	dump_config.h
 	emulation.cpp
@@ -11,9 +13,6 @@ add_executable(IRRecord
 	irdriver.h
 	irrecord.cpp
 	)
-
-# target_link_libraries (IRRecord
-#	)
 
 set_target_properties(IRRecord PROPERTIES  FOLDER "Tools")
 

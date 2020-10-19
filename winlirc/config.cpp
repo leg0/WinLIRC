@@ -24,15 +24,17 @@
 #include "config.h"
 #include "globals.h"
 
-#define LINE_LEN 1024
-#define MAX_INCLUDES 10
+#include "wl_string.h"
+#include <charconv>
+#include <filesystem>
 
-const char *whitespace = " \t";
-
+static constexpr size_t LINE_LEN = 1024;
+static constexpr uint32_t MAX_INCLUDES = 10;
+static constexpr char whitespace[] = " \t";
 static int line;
 static int parse_error;
 
-static struct ir_remote * read_config_recursive(FILE *f, const char *name, int depth);
+static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth);
 
 void **init_void_array(struct void_array *ar,size_t chunk_size, size_t item_size)
 {
@@ -83,14 +85,12 @@ void *s_malloc(size_t size)
 	return (ptr);
 }
 
-inline char *s_strdup(char * string)
+static char* s_strdup(winlirc::istring_view string)
 {
-	char *ptr;
-	if(!(ptr=_strdup(string))){
-		parse_error=1;
-		return(nullptr);
-	}
-	return (ptr);
+    char* ptr = new char[string.size()+1];
+    memcpy(ptr, string.data(), string.size());
+    ptr[string.size()] = 0;
+    return ptr;
 }
 
 /* my very own strtouq */
@@ -134,108 +134,57 @@ unsigned __int64 strtouq(const char *val, char **endptr, int base)
 	return result;
 }
 
-inline ir_code s_strtocode(const char *val)
+template <typename Int, typename Char, typename CharTraits>
+requires(std::is_integral_v<Int>)
+static Int s_str_to_int(std::basic_string_view<Char, CharTraits> s)
 {
-	ir_code code=0;
-	char *endptr;
+    Int        out;
+    auto       end  = s.data() + s.size();
+    auto const base = [&]() {
+        if (s.starts_with("0x"))
+        {
+            s.remove_prefix(2);
+            return 16;
+        }
+        else
+            return 10;
+    }();
+    auto res = std::from_chars(s.data(), end, out, base);
+    if (res.ec == std::errc{} && res.ptr == end)
+        return out;
 
-	errno=0;
-#       ifdef LONG_IR_CODE
-	code=strtouq(val,&endptr,0);
-	if((code==(unsigned long long) -1 && errno==ERANGE) ||
-		strlen(endptr)!=0 || strlen(val)==0)
-	{
-
-		parse_error=1;
-		return(0);
-	}
-#       else
-	code=strtoul(val,&endptr,0);
-	if(code==ULONG_MAX && errno==ERANGE)
-	{
-		logprintf(LOG_ERR,"error in configfile line %d:",line);
-		logprintf(LOG_ERR,"code is out of range");
-		logprintf(LOG_ERR,"try compiling lircd with the LONG_IR_CODE "
-			"option");
-		parse_error=1;
-		return(0);
-	}
-	else if(strlen(endptr)!=0 || strlen(val)==0)
-	{
-		logprintf(LOG_ERR,"error in configfile line %d:",line);
-		logprintf(LOG_ERR,"\"%s\": must be a valid (unsigned long) "
-			"number",val);
-		parse_error=1;
-		return(0);
-	}
-#       endif
-	return(code);
+    parse_error = 1;
+    return Int{};
 }
 
-unsigned long s_strtoul(char *val)
+template <typename Char, typename CharTraits>
+static ir_code s_strtocode(std::basic_string_view<Char, CharTraits> val)
 {
-	unsigned long n;
-	char *endptr;
-
-	n=strtoul(val,&endptr,0);
-	if(!*val || *endptr)
-	{
-		parse_error=1;
-		return(0);
-	}
-	return(n);
+    return s_str_to_int<ir_code>(val);
 }
 
-int s_strtoi(char *val)
+template <typename Char, typename CharTraits>
+static unsigned long s_strtoul(std::basic_string_view<Char, CharTraits> val)
 {
-	char *endptr;
-	long n;
-	int h;
-
-	n=strtol(val,&endptr,0);
-	h=(int) n;
-	if(!*val || *endptr || n!=((long) h))
-	{
-		parse_error=1;
-		return(0);
-	}
-	return(h);
+    return s_str_to_int<unsigned long>(val);
 }
 
-unsigned int s_strtoui(char *val)
+template <typename Char, typename CharTraits>
+static int s_strtoi(std::basic_string_view<Char, CharTraits> val)
 {
-	char *endptr;
-	unsigned long n;
-	unsigned int h;
-
-	n=strtoul(val,&endptr,0);
-	h=(unsigned int) n;
-	if(!*val || *endptr || n!=((unsigned long) h))
-	{
-		parse_error=1;
-		return(0);
-	}
-	return(h);
+    return s_str_to_int<int>(val);
 }
 
-lirc_t s_strtolirc_t(char *val)
+template <typename Char, typename CharTraits>
+static unsigned int s_strtoui(std::basic_string_view<Char, CharTraits> val)
 {
-	unsigned long n;
-	lirc_t h;
-	char *endptr;
+    return s_str_to_int<unsigned int>(val);
+}
 
-	n=strtoul(val,&endptr,0);
-	h=(lirc_t) n;
-	if(!*val || *endptr || n!=((unsigned long) h))
-	{
-		parse_error=1;
-		return(0);
-	}
-	if(h < 0)
-	{
-
-	}
-	return(h);
+template <typename Char, typename CharTraits>
+static lirc_t s_strtolirc_t(std::basic_string_view<Char, CharTraits> val)
+{
+    return s_str_to_int<lirc_t>(val);
 }
 
 int checkMode(int is_mode, int c_mode, char *error)
@@ -248,11 +197,9 @@ int checkMode(int is_mode, int c_mode, char *error)
 	return(1);
 }
 
-int addSignal(struct void_array *signals, char *val)
+int addSignal(void_array *signals, winlirc::istring_view val)
 {
-	lirc_t t;
-
-	t=s_strtolirc_t(val);
+	auto t=s_strtolirc_t(val);
 	if(parse_error) return(0);
 	if(!add_void_array(signals, &t)){
 		return(0);
@@ -260,7 +207,7 @@ int addSignal(struct void_array *signals, char *val)
 	return(1);
 }
 
-struct ir_ncode *defineCode(char *key, char *val, struct ir_ncode *code)
+ir_ncode* defineCode(winlirc::istring_view key, winlirc::istring_view val, ir_ncode* code)
 {
 	memset(code, 0, sizeof(*code));
 	code->name=s_strdup(key);
@@ -269,7 +216,7 @@ struct ir_ncode *defineCode(char *key, char *val, struct ir_ncode *code)
 	return(code);
 }
 
-struct ir_code_node *defineNode(struct ir_ncode *code, const char *val)
+struct ir_code_node *defineNode(struct ir_ncode *code, winlirc::istring_view val)
 {
 	struct ir_code_node *node;
 
@@ -292,162 +239,138 @@ struct ir_code_node *defineNode(struct ir_ncode *code, const char *val)
 	return node;
 }
 
-int parseFlags(char *val)
+int parseFlags(winlirc::istring_view val)
 {
-	struct flaglist *flaglptr;
-	int flags=0;
-	char *flag,*help;
-
-	flag=help=val;
-	while(flag!=nullptr)
-	{
-		while(*help!='|' && *help!=0) help++;
-		if(*help=='|')
-		{
-			*help=0;help++;
-		}
-		else
-		{
-			help=nullptr;
-		}
-
-		flaglptr=all_flags;
-		while(flaglptr->name!=nullptr){
-			if(strcasecmp(flaglptr->name,flag)==0){
-				if(flaglptr->flag&IR_PROTOCOL_MASK &&
-					flags&IR_PROTOCOL_MASK)
-				{
-					parse_error=1;
-					return(0);
-				}
-				flags=flags|flaglptr->flag;
-
-				break;
-			}
-			flaglptr++;
-		}
-		if(flaglptr->name==nullptr)
-		{
-			parse_error=1;
-			return(0);
-		}
-		flag=help;
-	}
-
-	return(flags);
+    int flags = 0;
+    while (!val.empty())
+    {
+        auto flagName = strtok(val, "|");
+        auto flagIt   = std::find_if(std::begin(all_flags), std::end(all_flags), [&](auto& fp) {
+            return fp.name == flagName;
+        });
+        if (
+          flagIt == std::end(all_flags) ||
+          (flagIt->flag & IR_PROTOCOL_MASK) && (flags & IR_PROTOCOL_MASK))
+        {
+            parse_error = 1;
+            return 0;
+        }
+        flags = flags | flagIt->flag;
+    }
+    return flags;
 }
 
-int defineRemote(char * key, char * val, char *val2, struct ir_remote *rem)
+int defineRemote(winlirc::istring_view key, winlirc::istring_view val, winlirc::istring_view val2, ir_remote *rem)
 {
-	if ((strcasecmp("name",key))==0){
+	if ("name" == key){
 		if(rem->name!=nullptr) free(rem->name);
 		rem->name=s_strdup(val);
 	
 		return(1);
 	}
-	else if ((strcasecmp("bits",key))==0){
+	else if ("bits" == key){
 		rem->bits=s_strtoi(val);
 		return(1);
 	}
-	else if (strcasecmp("flags",key)==0){
+	else if ("flags" == key){
 		rem->flags|=parseFlags(val);
 		return(1);
 	}
-	else if (strcasecmp("eps",key)==0){
+	else if ("eps" == key){
 		rem->eps=s_strtoi(val);
 		return(1);
 	}
-	else if (strcasecmp("aeps",key)==0){
+	else if ("aeps" == key){
 		rem->aeps=s_strtoi(val);
 		return(1);
 	}
-	else if (strcasecmp("plead",key)==0){
+	else if ("plead" == key){
 		rem->plead=s_strtolirc_t(val);
 		return(1);
 	}
-	else if (strcasecmp("ptrail",key)==0){
+	else if ("ptrail" == key){
 		rem->ptrail=s_strtolirc_t(val);
 		return(1);
 	}
-	else if (strcasecmp("pre_data_bits",key)==0){
+	else if ("pre_data_bits" == key){
 		rem->pre_data_bits=s_strtoi(val);
 		return(1);
 	}
-	else if (strcasecmp("pre_data",key)==0){
+	else if ("pre_data" == key){
 		rem->pre_data=s_strtocode(val);
 		return(1);
 	}
-	else if (strcasecmp("post_data_bits",key)==0){
+	else if ("post_data_bits" == key){
 		rem->post_data_bits=s_strtoi(val);
 		return(1);
 	}
-	else if (strcasecmp("post_data",key)==0){
+	else if ("post_data" == key){
 		rem->post_data=s_strtocode(val);
 		return(1);
 	}
-	else if (strcasecmp("gap",key)==0){
-		if(val2 != nullptr)
+	else if ("gap" == key){
+		if(!val2.empty())
 		{
 			rem->gap2=s_strtoul(val2);
 		}
 		rem->gap=s_strtoul(val);
-		return(val2 != nullptr ? 2:1);
+		return(!val2.empty() ? 2:1);
 	}
-	else if (strcasecmp("repeat_gap",key)==0){
+	else if ("repeat_gap" == key){
 		rem->repeat_gap=s_strtoul(val);
 		return(1);
 	}
 	/* obsolete: use toggle_bit_mask instead */
-	else if (strcasecmp("toggle_bit",key)==0){
+	else if ("toggle_bit" == key){
 		rem->toggle_bit = s_strtoi(val);
 		return 1;
 	}
-	else if (strcasecmp("toggle_bit_mask",key)==0){
+	else if ("toggle_bit_mask" == key){
 		rem->toggle_bit_mask = s_strtocode(val);
 		return 1;
 	}
-	else if (strcasecmp("toggle_mask",key)==0){
+	else if ("toggle_mask" == key){
 		rem->toggle_mask=s_strtocode(val);
 		return(1);
 	}
-	else if (strcasecmp("rc6_mask",key)==0){
+	else if ("rc6_mask" == key){
 		rem->rc6_mask=s_strtocode(val);
 		return(1);
 	}
-	else if (strcasecmp("ignore_mask",key)==0){
+	else if ("ignore_mask" == key){
 		rem->ignore_mask=s_strtocode(val);
 		return(1);
 	}
 	/* obsolete name */
-	else if (strcasecmp("repeat_bit",key)==0){
+	else if ("repeat_bit" == key){
 		rem->toggle_bit=s_strtoi(val);
 		return(1);
 	}
-	else if (strcasecmp("suppress_repeat",key)==0){
+	else if ("suppress_repeat" == key){
 		//rem->suppress_repeat=s_strtoi(val);	//TODO support this per remote
 		return(1);
 	}
-	else if (strcasecmp("min_repeat",key)==0){
+	else if ("min_repeat" == key){
 		rem->min_repeat=s_strtoi(val);
 		return(1);
 	}
-	else if (strcasecmp("min_code_repeat",key)==0){
+	else if ("min_code_repeat" == key){
 		rem->min_code_repeat=s_strtoi(val);
 		return(1);
 	}
-	else if (strcasecmp("frequency",key)==0){
+	else if ("frequency" == key){
 		rem->freq=s_strtoui(val);
 		return(1);
 	}
-	else if (strcasecmp("duty_cycle",key)==0){
+	else if ("duty_cycle" == key){
 		rem->duty_cycle=s_strtoui(val);
 		return(1);
 	}
-	else if (strcasecmp("baud",key)==0){
+	else if ("baud" == key){
 		rem->baud=s_strtoui(val);
 		return(1);
 	}
-	else if (strcasecmp("serial_mode",key)==0){
+	else if ("serial_mode" == key){
 		if(val[0]<'5' || val[0]>'9')
 		{
 			parse_error=1;
@@ -469,68 +392,63 @@ int defineRemote(char * key, char * val, char *val2, struct ir_remote *rem)
 			parse_error=1;
 			return 0;
 		}
-		if(strcmp(val+2, "1.5")==0)
+		if(val.substr(2) == "1.5")
 		{
 			rem->stop_bits=3;
 		}
 		else
 		{
-			rem->stop_bits=s_strtoui(val+2)*2;
+			rem->stop_bits=s_strtoui(val.substr(2))*2;
 		}
 		return(1);
 	}
-	else if (val2!=nullptr)
+	else if (!val2.empty())
 	{
-		if (strcasecmp("header",key)==0){
+		if ("header" == key){
 			rem->phead=s_strtolirc_t(val);
 			rem->shead=s_strtolirc_t(val2);
 			return(2);
 		}
-		else if (strcasecmp("three",key)==0){
+		else if ("three" == key){
 			rem->pthree=s_strtolirc_t(val);
 			rem->sthree=s_strtolirc_t(val2);
 			return(2);
 		}
-		else if (strcasecmp("two",key)==0){
+		else if ("two" == key){
 			rem->ptwo=s_strtolirc_t(val);
 			rem->stwo=s_strtolirc_t(val2);
 			return(2);
 		}
-		else if (strcasecmp("one",key)==0){
+		else if ("one" == key){
 			rem->pone=s_strtolirc_t(val);
 			rem->sone=s_strtolirc_t(val2);
 			return(2);
 		}
-		else if (strcasecmp("zero",key)==0){
+		else if ("zero" == key){
 			rem->pzero=s_strtolirc_t(val);
 			rem->szero=s_strtolirc_t(val2);
 			return(2);
 		}
-		else if (strcasecmp("foot",key)==0){
+		else if ("foot" == key){
 			rem->pfoot=s_strtolirc_t(val);
 			rem->sfoot=s_strtolirc_t(val2);
 			return(2);
 		}
-		else if (strcasecmp("repeat",key)==0){
+		else if ("repeat" == key){
 			rem->prepeat=s_strtolirc_t(val);
 			rem->srepeat=s_strtolirc_t(val2);
 			return(2);
 		}
-		else if (strcasecmp("pre",key)==0){
+		else if ("pre" == key){
 			rem->pre_p=s_strtolirc_t(val);
 			rem->pre_s=s_strtolirc_t(val2);
 			return(2);
 		}
-		else if (strcasecmp("post",key)==0){
+		else if ("post" == key){
 			rem->post_p=s_strtolirc_t(val);
 			rem->post_s=s_strtolirc_t(val2);
 			return(2);
 		}
-	}
-	if(val2){
-
-	}else{
-
 	}
 	parse_error=1;
 	return(0);
@@ -622,115 +540,29 @@ struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
 	return top;
 }
 
-static const char *lirc_parse_include(char *s)
+static winlirc::istring_view lirc_parse_include(winlirc::istring_view s)
 {
-	char *last;
-	size_t len;
-
-	len=strlen(s);
-	if(len<2)
-	{
-		return nullptr;
-	}
-	last = s+len-1;
-	while(last >  s && strchr(whitespace, *last) != nullptr)
-	{
-		last--;
-	}
-	if(last <= s)
-	{
-		return nullptr;
-	}
-	if(*s!='"' && *s!='<')
-	{
-		return nullptr;
-	}
-	if(*s=='"' && *last!='"')
-	{
-		return nullptr;
-	}
-	else if(*s=='<' && *last!='>')
-	{
-		return nullptr;
-	}
-	*last = 0;
-	memmove(s, s+1, len-2+1); /* terminating 0 is copied, and
-							  maybe more, but we don't care */
-	return s;
+    s = winlirc::rtrim(s, whitespace);
+    if (!s.empty() && (s.front() == '"' && s.back() == '"' || s.front() == '<' && s.back() == '>'))
+    {
+        s.remove_prefix(1);
+        s.remove_suffix(1);
+        return s;
+    }
+    return {};
 }
 
-//
-// My own win32 version of dirname, bit ugly but C is ugly :p
-//
-char* dirname(char *path) {
-
-   char drive[_MAX_DRIVE];
-   char dir[_MAX_DIR];
-   char fname[_MAX_FNAME];
-   char ext[_MAX_EXT];
-   char *tmp;
-   int stringLength;
-
-   _splitpath( path, drive, dir, fname, ext );
-
-   //
-   // convert back slashes to forward for consistency ..
-   //
-
-   tmp	= &dir[0];
-
-   while(*tmp) {
-
-	   if(*tmp == '\\') *tmp = '/';
-	   tmp++;
-   }
-
-   //
-   // remove trailing slash
-   //
-   stringLength = strlen(dir);
-
-   if(stringLength) {
-		if(dir[stringLength-1]=='/') dir[stringLength-1] = '\0';
-   }
-
-   strcpy(path,dir);
-   return path;
-}
-
-static const char *lirc_parse_relative(char *dst, size_t dst_size,
-									   const char *child, const char *current)
+static winlirc::istring lirc_parse_relative(winlirc::istring_view child, winlirc::istring_view current)
 {
-	char *dir;
-	size_t dirlen;
+	if (current.empty())
+		return static_cast<winlirc::istring>(child);
 
-	if (!current)
-		return child;
+	std::filesystem::path p{ child };
+	if (p.is_absolute())
+		return static_cast<winlirc::istring>(child);
 
-	/* Not a relative path */
-	if (*child == '/')
-		return child;
-
-	if(strlen(current) >= dst_size)
-	{
-		return nullptr;
-	}
-	strcpy(dst, current);
-	dir = dirname(dst);
-	dirlen = strlen(dir);
-	if(dir != dst)
-	{
-		memmove(dst, dir, dirlen + 1);
-	}
-
-	if(dirlen + 1 + strlen(child) + 1 > dst_size)
-	{
-		return nullptr;
-	}
-	strcat(dst, "/");
-	strcat(dst, child);
-
-	return dst;
+	auto cur = std::filesystem::path { current }.remove_filename() / child;
+	return cur.string().c_str();
 }
 
 struct ir_remote * read_config(FILE *f, const char *name)
@@ -738,10 +570,11 @@ struct ir_remote * read_config(FILE *f, const char *name)
 	return read_config_recursive(f, name, 0);
 }
 
-static struct ir_remote * read_config_recursive(FILE *f, const char *name, int depth)
+static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth)
 {
-	char buf[LINE_LEN+1], *key, *val, *val2;
-	int len,argc;
+    char bufx[LINE_LEN + 1];
+	winlirc::istring_view key, val, val2;
+	int argc;
 	struct ir_remote *top_rem=nullptr,*rem=nullptr;
 	struct void_array codes_list,raw_codes,signals;
 	struct ir_ncode raw_code={nullptr,0,0,nullptr};
@@ -752,66 +585,51 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 	line=0;
 	parse_error=0;
 
-	while(fgets(buf,LINE_LEN,f)!=nullptr)
+	while(fgets(bufx,LINE_LEN,f)!=nullptr)
 	{
+        winlirc::istring_view buf{ bufx };
 		line++;
-		len=strlen(buf);
-		if(len==LINE_LEN && buf[len-1]!='\n')
+        if (buf.size() == LINE_LEN && buf.back() != '\n')
 		{
 			parse_error=1;
 			break;
 		}
 
-		if(len>0)
-		{
-			len--;
-			if(buf[len]=='\n') buf[len]=0;
-		}
-		if(len>0)
-		{
-			len--;
-			if(buf[len]=='\r') buf[len]=0;
-		}
+		if (!buf.empty() && buf.back() == '\n')
+            buf.remove_suffix(1);
+        if (!buf.empty() && buf.back() == '\r')
+            buf.remove_suffix(1);
 		/* ignore comments */
-		if(buf[0]=='#'){
+		if(!buf.empty() && buf[0]=='#')
 			continue;
-		}
+
 		key=strtok(buf, whitespace);
 		/* ignore empty lines */
-		if(key==nullptr) continue;
-		val=strtok(nullptr, whitespace);
-		if(val!=nullptr){
-			val2=strtok(nullptr, whitespace);
+		if(key.empty()) continue;
+		val=strtok(buf, whitespace);
+		if(!val.empty()){
+			val2=strtok(buf, whitespace);
 
-			if (strcasecmp("include",key)==0){
-				FILE* childFile;
-				const char *childName;
-				const char *fullPath;
-				char result[FILENAME_MAX+1];
-
-
+			if ("include" == key){
 				if (depth > MAX_INCLUDES) {
 					parse_error=-1;
 					break;
 				}
 
-				childName = lirc_parse_include(val);
-				if (!childName){
+				auto childName = lirc_parse_include(val);
+				if (childName.empty()){
 					parse_error=-1;
 					break;
 				}
 
-				fullPath = lirc_parse_relative(result, sizeof(result), childName, name);
-				if (!fullPath) {
+				auto fullPath = lirc_parse_relative(childName, name);
+				if (fullPath.empty()) {
 					parse_error=-1;
 					break;
 				}
 
-				childFile = fopen(fullPath, "r");
-				if (childFile == nullptr){
-	
-				}
-				else{
+				auto childFile = fopen(fullPath.c_str(), "r");
+				if (childFile != nullptr){
 					int save_line = line;
 
 					if (!top_rem){
@@ -835,8 +653,8 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 					fclose(childFile);
 					line = save_line;
 				}
-			}else if (strcasecmp("begin",key)==0){
-				if (strcasecmp("codes", val)==0){
+			}else if ("begin" == key){
+				if ("codes" == val){
 					/* init codes mode */
 
 					if (!checkMode(mode, ID_remote,
@@ -848,7 +666,7 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 
 					init_void_array(&codes_list,30, sizeof(struct ir_ncode));
 					mode=ID_codes;
-				}else if(strcasecmp("raw_codes",val)==0){
+				}else if("raw_codes" == val){
 					/* init raw_codes mode */
 
 					if(!checkMode(mode, ID_remote,
@@ -862,7 +680,7 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 					raw_code.code=0;
 					init_void_array(&raw_codes,30, sizeof(struct ir_ncode));
 					mode=ID_raw_codes;
-				}else if(strcasecmp("remote",val)==0){
+				}else if("remote" == val){
 					/* create new remote */
 					
 					if(!checkMode(mode, ID_none,
@@ -880,32 +698,29 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 					}
 				}else if(mode==ID_codes){
 					code=defineCode(key, val, &name_code);
-					while(!parse_error && val2!=nullptr)
+					while(!parse_error && !val2.empty())
 					{
 						struct ir_code_node *node;
 
 						if(val2[0]=='#') break; /* comment */
 						node=defineNode(code, val2);
-						val2=strtok(nullptr, whitespace);
+						val2=strtok(buf, whitespace);
 					}
 					code->current=nullptr;
 					add_void_array(&codes_list, code);
 				}else{
 					parse_error=1;
 				}
-				if(!parse_error && val2!=nullptr)
-				{
-				}
-			}else if (strcasecmp("end",key)==0){
+			}else if ("end" == key){
 
-				if (strcasecmp("codes", val)==0){
+				if ("codes" == val){
 					/* end Codes mode */
 					if (!checkMode(mode, ID_codes,
 						"end codes")) break;
 					rem->codes=(ir_ncode*)get_void_array(&codes_list);
 					mode=ID_remote;     /* switch back */
 
-				}else if(strcasecmp("raw_codes",val)==0){
+				}else if("raw_codes" == val){
 					/* end raw codes mode */
 
 
@@ -924,7 +739,7 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 						"end raw_codes")) break;
 					rem->codes=(ir_ncode *)get_void_array(&raw_codes);
 					mode=ID_remote;     /* switch back */
-				}else if(strcasecmp("remote",val)==0){
+				}else if("remote" == val){
 					/* end remote mode */
 					/* print_remote(rem); */
 					if (!checkMode(mode,ID_remote,
@@ -941,48 +756,40 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 					mode=ID_none;     /* switch back */
 				}else if(mode==ID_codes){
 					code=defineCode(key, val, &name_code);
-					while(!parse_error && val2!=nullptr)
+					while(!parse_error && !val2.empty())
 					{
 						struct ir_code_node *node;
 
 						if(val2[0]=='#') break; /* comment */
 						node=defineNode(code, val2);
-						val2=strtok(nullptr, whitespace);
+						val2=strtok(buf, whitespace);
 					}
 					code->current=nullptr;
 					add_void_array(&codes_list, code);
 				}else{
 					parse_error=1;
 				}
-				if(!parse_error && val2!=nullptr)
-				{
-
-				}
 			} else {
 				switch (mode){
 	case ID_remote:
 		argc=defineRemote(key, val, val2, rem);
-		if(!parse_error && ((argc==1 && val2!=nullptr) || 
-			(argc==2 && val2!=nullptr && strtok(nullptr, whitespace)!=nullptr)))
-		{
-		}
 		break;
 	case ID_codes:
 		code=defineCode(key, val, &name_code);
-		while(!parse_error && val2!=nullptr)
+		while(!parse_error && !val2.empty())
 		{
 			struct ir_code_node *node;
 
 			if(val2[0]=='#') break; /* comment */
 			node=defineNode(code, val2);
-			val2=strtok(nullptr, whitespace);
+			val2=strtok(buf, whitespace);
 		}
 		code->current=nullptr;
 		add_void_array(&codes_list, code);
 		break;
 	case ID_raw_codes:
 	case ID_raw_name:
-		if(strcasecmp("name",key)==0){
+		if("name" == key){
 			if(mode==ID_raw_name)
 			{
 				raw_code.signals=(lirc_t*)get_void_array(&signals);
@@ -1000,9 +807,6 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 			raw_code.code++;
 			init_void_array(&signals,50,sizeof(lirc_t));
 			mode=ID_raw_name;
-			if(!parse_error && val2!=nullptr)
-			{
-			}
 		}else{
 			if(mode==ID_raw_codes)
 			{
@@ -1011,13 +815,14 @@ static struct ir_remote * read_config_recursive(FILE *f, const char *name, int d
 			}
 			if(!addSignal(&signals, key)) break;
 			if(!addSignal(&signals, val)) break;
-			if (val2){
+			if (!val2.empty()){
 				if (!addSignal(&signals, val2)){
 					break;
 				}
 			}
-			while ((val=strtok(nullptr, whitespace))){
-				if (!addSignal(&signals, val)) break;
+			while (true){
+				auto val=strtok(buf, whitespace);
+				if (val.empty() || !addSignal(&signals, val)) break;
 			}
 		}
 		break;

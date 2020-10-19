@@ -11,8 +11,6 @@ else()
 endif()
 
 enable_testing()
-# http://www.cmake.org/cmake/help/v3.0/module/FindGTest.html
-find_package(GTest)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON) 
 
