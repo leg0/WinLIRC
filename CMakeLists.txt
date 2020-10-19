@@ -48,7 +48,7 @@ endmacro()
 
 
 if (MSVC)
-  add_compile_options("/std:c++latest")
+  add_compile_options(/std:c++latest /MP)
 else()
   set(CMAKE_CXX_STANDARD 17)
 endif()
