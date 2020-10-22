@@ -11,7 +11,7 @@ using namespace std::chrono;
 
 extern char *progname;
 extern hardware hw;
-struct rbuf rec_buffer;
+extern rbuf rec_buffer;
 
 struct ir_remote *decoding		= NULL;
 struct ir_remote *last_remote	= NULL;

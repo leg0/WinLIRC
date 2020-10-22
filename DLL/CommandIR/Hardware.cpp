@@ -28,7 +28,8 @@
 // and not needed for winlirc itself
 //
 
-struct hardware hw;
+hardware hw;
+rbuf rec_buffer;
 
 lirc_t readData(lirc_t timeout) {
 

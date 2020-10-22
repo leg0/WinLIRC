@@ -32,7 +32,6 @@
 
 #define LONG_IR_CODE
 #define PACKET_SIZE		(256)
-#define RBUF_SIZE		(256)
 #define WBUF_SIZE		(2048)
 #define REC_SYNC		8
 
@@ -72,19 +71,6 @@
 //
 //Structure definitions
 //
-
-struct rbuf
-{
-	lirc_t data[RBUF_SIZE];
-	ir_code decoded;
-	int rptr;
-	int wptr;
-	int too_long;
-	int is_biphase;
-	lirc_t pendingp;
-	lirc_t pendings;
-	lirc_t sum;
-};
 
 struct sbuf
 {

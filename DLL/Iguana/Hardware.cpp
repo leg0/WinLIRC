@@ -24,6 +24,7 @@
 #include <winlirc/WLPluginAPI.h>
 
 hardware hw;
+rbuf rec_buffer;
 
 lirc_t readData(lirc_t timeout) {
 

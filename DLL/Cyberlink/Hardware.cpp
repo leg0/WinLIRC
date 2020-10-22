@@ -26,9 +26,10 @@
 
 #define CODE_LENGTH 32
 
-struct hardware hw;
+hardware hw;
+rbuf rec_buffer;
 
-static int cyberlink_receive_decode (struct hardware const*,struct ir_remote *remote, ir_code *prep, ir_code *codep,
+static int cyberlink_receive_decode (rbuf* rec_buffer, hardware const*, ir_remote *remote, ir_code *prep, ir_code *codep,
 		 ir_code *postp, int *repeat_flagp,
 		 lirc_t *min_remaining_gapp,
 		 lirc_t *max_remaining_gapp)

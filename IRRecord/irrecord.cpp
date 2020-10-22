@@ -83,7 +83,9 @@ void fprint_copyright(FILE *fout);
 
 CIRDriver irDriver;
 
-struct hardware hw;
+hardware hw;
+rbuf rec_buffer;
+
 extern struct ir_remote *last_remote;
 
 char *progname;
@@ -736,7 +738,7 @@ int main(int argc,char **argv)
 			{
 				irDriver.decodeIR(NULL,NULL,0);
 
-				if(hw.decode_func(&hw,&remote,&pre,&code,&post,
+				if(hw.decode_func(&rec_buffer, &hw,&remote,&pre,&code,&post,
 					&repeat_flag,
 					&min_remaining_gap,
 					&max_remaining_gap))
@@ -753,7 +755,7 @@ int main(int argc,char **argv)
 				ncode.code=code;
 
 				irDriver.decodeIR(NULL,NULL,0);
-				if(hw.decode_func(&hw,&remote,&pre,&code2,&post,
+				if(hw.decode_func(&rec_buffer, &hw,&remote,&pre,&code2,&post,
 					&repeat_flag,
 					&min_remaining_gap,
 					&max_remaining_gap))
@@ -987,7 +989,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 			for(i=0,mask=1;i<remote->bits;i++,mask<<=1)
 			{
 				remote->rc6_mask=mask;
-				success=hw.decode_func(&hw,remote,&pre,&code,&post,
+				success=hw.decode_func(&rec_buffer, &hw,remote,&pre,&code,&post,
 					&repeat_flag,
 					&min_remaining_gap,
 					&max_remaining_gap);
@@ -1002,7 +1004,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 		}
 		else
 		{
-			success=hw.decode_func(&hw,remote,&pre,&code,&post,
+			success=hw.decode_func(&rec_buffer, &hw,remote,&pre,&code,&post,
 				&repeat_flag,
 				&min_remaining_gap,
 				&max_remaining_gap);

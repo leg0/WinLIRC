@@ -30,6 +30,7 @@
 
 void initHardwareStruct();
 extern hardware hw;
+extern rbuf rec_buffer;
 
 WL_API int init(WLEventHandle exitEvent) {
 
@@ -37,7 +38,7 @@ WL_API int init(WLEventHandle exitEvent) {
 	BOOL success;
 	//===========
 
-	init_rec_buffer();
+	init_rec_buffer(&rec_buffer);
 	initHardwareStruct();
 
 	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
@@ -84,9 +85,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 			return 0;
 		}
 
-		clear_rec_buffer(&hw);
+		clear_rec_buffer(&rec_buffer, &hw);
 		
-		if(winlirc_decodeCommand(&hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
 			return 1;
 		}
 	}

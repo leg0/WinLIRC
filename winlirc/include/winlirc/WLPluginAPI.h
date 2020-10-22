@@ -23,6 +23,7 @@ static const uint32_t winlirc_plugin_api_version = 1;
 typedef struct ir_remote ir_remote;
 typedef struct ir_ncode ir_ncode;
 typedef struct hardware hardware;
+typedef struct rbuf rbuf;
 typedef uint64_t ir_code;
 typedef int lirc_t;
 typedef uintptr_t WLEventHandle;
@@ -55,7 +56,7 @@ struct hardware
 	uint32_t code_length;
 	uint32_t resolution;
 
-	int (*decode_func)(hardware const* hw, ir_remote* remote,
+	int (*decode_func)(rbuf*, hardware const* hw, ir_remote* remote,
 		ir_code* prep, ir_code* codep, ir_code* postp,
 		int* repeat_flag,
 		lirc_t* min_remaining_gapp,

@@ -30,8 +30,6 @@
 
 using namespace std::chrono;
 
-struct rbuf rec_buffer;
-
 extern struct ir_remote *decoding;
 extern struct ir_remote *last_remote;
 extern struct ir_remote *repeat_remote;
@@ -42,17 +40,17 @@ inline lirc_t lirc_t_max(lirc_t a,lirc_t b)
 	return(a>b ? a:b);
 }
 
-inline void set_pending_pulse(lirc_t deltap)
+inline void set_pending_pulse(rbuf& rec_buffer, lirc_t deltap)
 {
 	rec_buffer.pendingp=deltap;
 }
 
-inline void set_pending_space(lirc_t deltas)
+inline void set_pending_space(rbuf& rec_buffer, lirc_t deltas)
 {	
 	rec_buffer.pendings=deltas;
 }
 
-static lirc_t get_next_rec_buffer_internal(hardware const& hw, lirc_t maxusec)
+static lirc_t get_next_rec_buffer_internal(rbuf& rec_buffer, hardware const& hw, lirc_t maxusec)
 {
 	if(rec_buffer.rptr<rec_buffer.wptr)
 	{
@@ -91,28 +89,29 @@ static lirc_t get_next_rec_buffer_internal(hardware const& hw, lirc_t maxusec)
 	return(0);
 }
 
-static lirc_t get_next_rec_buffer(hardware const& hw, lirc_t maxusec)
+static lirc_t get_next_rec_buffer(rbuf& rec_buffer, hardware const& hw, lirc_t maxusec)
 {
-	return get_next_rec_buffer_internal(hw, maxusec);
+	return get_next_rec_buffer_internal(rec_buffer, hw, maxusec);
 }
 
-WINLIRC_API void init_rec_buffer()
+WINLIRC_API void init_rec_buffer(rbuf* rec_buffer)
 {
-	memset(&rec_buffer,0,sizeof(rec_buffer));
+	memset(rec_buffer, 0, sizeof(*rec_buffer));
 }
 
-static void rewind_rec_buffer()
+static void rewind_rec_buffer(rbuf& rec_buffer)
 {
 	rec_buffer.rptr=0;
 	rec_buffer.too_long=0;
-	set_pending_pulse(0);
-	set_pending_space(0);
+	set_pending_pulse(rec_buffer, 0);
+	set_pending_space(rec_buffer, 0);
 	rec_buffer.sum=0;
 }
 
-WINLIRC_API int clear_rec_buffer(hardware const* phw)
+WINLIRC_API int clear_rec_buffer(rbuf* prec_buffer, hardware const* phw)
 {
     auto& hw = *phw;
+	auto& rec_buffer = *prec_buffer;
 	int move;
 
 	if(hw.rec_mode==LIRC_MODE_LIRCCODE)
@@ -141,13 +140,13 @@ WINLIRC_API int clear_rec_buffer(hardware const* phw)
 		}
 	}
 
-	rewind_rec_buffer();
+	rewind_rec_buffer(rec_buffer);
 	rec_buffer.is_biphase=0;
 	
 	return(1);
 }
 
-static inline void unget_rec_buffer(int count)
+static inline void unget_rec_buffer(rbuf& rec_buffer, int count)
 {
 	if(count==1 || count==2)
 	{
@@ -160,18 +159,18 @@ static inline void unget_rec_buffer(int count)
 	}
 }
 
-inline void unget_rec_buffer_delta(lirc_t delta)
+inline void unget_rec_buffer_delta(rbuf& rec_buffer, lirc_t delta)
 {
 	rec_buffer.rptr--;
 	rec_buffer.sum-=delta&(PULSE_MASK);
 	rec_buffer.data[rec_buffer.rptr]=delta;
 }
 
-static inline lirc_t get_next_pulse(hardware const& hw, lirc_t maxusec)
+static inline lirc_t get_next_pulse(rbuf& rec_buffer, hardware const& hw, lirc_t maxusec)
 {
 	lirc_t data;
 
-	data=get_next_rec_buffer(hw, maxusec);
+	data=get_next_rec_buffer(rec_buffer, hw, maxusec);
 	if(data==0) return(0);
 	if(!is_pulse(data))
 	{
@@ -180,9 +179,9 @@ static inline lirc_t get_next_pulse(hardware const& hw, lirc_t maxusec)
 	return(data&(PULSE_MASK));
 }
 
-static inline lirc_t get_next_space(hardware const& hw, lirc_t maxusec)
+static inline lirc_t get_next_space(rbuf& rec_buffer, hardware const& hw, lirc_t maxusec)
 {
-	auto data=get_next_rec_buffer(hw, maxusec);
+	auto data=get_next_rec_buffer(rec_buffer, hw, maxusec);
 	if(data==0) return(0);
 	if(!is_space(data))
 	{
@@ -191,47 +190,47 @@ static inline lirc_t get_next_space(hardware const& hw, lirc_t maxusec)
 	return(data);
 }
 
-static inline int sync_pending_pulse(hardware const& hw, struct ir_remote *remote)
+static inline int sync_pending_pulse(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
 	if(rec_buffer.pendingp>0)
 	{
 		lirc_t deltap;
 		
-		deltap=get_next_pulse(hw,rec_buffer.pendingp);
+		deltap=get_next_pulse(rec_buffer, hw,rec_buffer.pendingp);
 		if(deltap==0) return 0;
 		if(!expect(remote,deltap,rec_buffer.pendingp)) return 0;
-		set_pending_pulse(0);
+		set_pending_pulse(rec_buffer, 0);
 	}
 	return 1;
 }
 
-static int sync_pending_space(hardware const& hw, struct ir_remote *remote)
+static int sync_pending_space(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
 	if(rec_buffer.pendings>0)
 	{
-		auto deltas=get_next_space(hw, rec_buffer.pendings);
+		auto deltas=get_next_space(rec_buffer, hw, rec_buffer.pendings);
 		if(deltas==0) return 0;
 		if(!expect(remote,deltas,rec_buffer.pendings)) return 0;
-		set_pending_space(0);
+		set_pending_space(rec_buffer, 0);
 	}
 	return 1;
 }
 
-static int expectpulse(hardware const& hw, struct ir_remote *remote,int exdelta)
+static int expectpulse(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,int exdelta)
 {
 	lirc_t deltap;
 	int retval;
 	
-	if(!sync_pending_space(hw, remote)) return 0;
+	if(!sync_pending_space(rec_buffer, hw, remote)) return 0;
 	
-	deltap=get_next_pulse(hw,rec_buffer.pendingp+exdelta);
+	deltap = get_next_pulse(rec_buffer, hw, rec_buffer.pendingp + exdelta);
 	if(deltap==0) return(0);
 	if(rec_buffer.pendingp>0)
 	{
 		if(rec_buffer.pendingp>deltap) return 0;
 		retval=expect(remote,deltap-rec_buffer.pendingp,exdelta);
 		if(!retval) return(0);
-		set_pending_pulse(0);
+		set_pending_pulse(rec_buffer, 0);
 	}
 	else
 	{
@@ -240,21 +239,21 @@ static int expectpulse(hardware const& hw, struct ir_remote *remote,int exdelta)
 	return(retval);
 }
 
-static int expectspace(hardware const& hw, struct ir_remote *remote,int exdelta)
+static int expectspace(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,int exdelta)
 {
 	lirc_t deltas;
 	int retval;
 
-	if(!sync_pending_pulse(hw, remote)) return 0;
+	if(!sync_pending_pulse(rec_buffer, hw, remote)) return 0;
 	
-	deltas=get_next_space(hw,rec_buffer.pendings+exdelta);
+	deltas=get_next_space(rec_buffer, hw,rec_buffer.pendings+exdelta);
 	if(deltas==0) return(0);
 	if(rec_buffer.pendings>0)
 	{
 		if(rec_buffer.pendings>deltas) return 0;
 		retval=expect(remote,deltas-rec_buffer.pendings,exdelta);
 		if(!retval) return(0);
-		set_pending_space(0);
+		set_pending_space(rec_buffer, 0);
 	}
 	else
 	{
@@ -263,7 +262,7 @@ static int expectspace(hardware const& hw, struct ir_remote *remote,int exdelta)
 	return(retval);
 }
 
-static int expectone(hardware const& hw, struct ir_remote *remote,int bit)
+static int expectone(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,int bit)
 {
 	if(is_biphase(remote))
 	{
@@ -274,61 +273,61 @@ static int expectone(hardware const& hw, struct ir_remote *remote,int bit)
 		if(mask&remote->rc6_mask)
 		{
 			if(remote->sone>0 &&
-			   !expectspace(hw,remote,2*remote->sone))
+			   !expectspace(rec_buffer, hw, remote, 2 * remote->sone))
 			{
-				unget_rec_buffer(1);
+				unget_rec_buffer(rec_buffer, 1);
 				return(0);
 			}
-			set_pending_pulse(2*remote->pone);
+			set_pending_pulse(rec_buffer, 2 * remote->pone);
 		}
 		else
 		{
-			if(remote->sone>0 && !expectspace(hw,remote,remote->sone))
+			if (remote->sone > 0 && !expectspace(rec_buffer, hw, remote, remote->sone))
 			{
-				unget_rec_buffer(1);
+				unget_rec_buffer(rec_buffer, 1);
 				return(0);
 			}
-			set_pending_pulse(remote->pone);
+			set_pending_pulse(rec_buffer, remote->pone);
 		}
 	}
-	else if(is_space_first(remote))
+	else if (is_space_first(remote))
 	{
-		if(remote->sone>0 && !expectspace(hw,remote,remote->sone))
+		if (remote->sone > 0 && !expectspace(rec_buffer, hw, remote, remote->sone))
 		{
-			unget_rec_buffer(1);
+			unget_rec_buffer(rec_buffer, 1);
 			return(0);
 		}
-		if(remote->pone>0 && !expectpulse(hw,remote,remote->pone))
+		if (remote->pone > 0 && !expectpulse(rec_buffer, hw, remote, remote->pone))
 		{
-			unget_rec_buffer(2);
+			unget_rec_buffer(rec_buffer, 2);
 			return(0);
 		}
 	}
 	else
 	{
-		if(remote->pone>0 && !expectpulse(hw,remote,remote->pone))
+		if (remote->pone > 0 && !expectpulse(rec_buffer, hw, remote, remote->pone))
 		{
-			unget_rec_buffer(1);
+			unget_rec_buffer(rec_buffer, 1);
 			return(0);
 		}
-		if(remote->ptrail>0)
+		if (remote->ptrail > 0)
 		{
-			if(remote->sone>0 &&
-			   !expectspace(hw,remote,remote->sone))
+			if (remote->sone > 0 &&
+				!expectspace(rec_buffer, hw, remote, remote->sone))
 			{
-				unget_rec_buffer(2);
+				unget_rec_buffer(rec_buffer, 2);
 				return(0);
 			}
 		}
 		else
 		{
-			set_pending_space(remote->sone);
+			set_pending_space(rec_buffer, remote->sone);
 		}
 	}
 	return(1);
 }
 
-static int expectzero(hardware const& hw, struct ir_remote *remote,int bit)
+static int expectzero(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,int bit)
 {
 	if(is_biphase(remote))
 	{
@@ -338,65 +337,65 @@ static int expectzero(hardware const& hw, struct ir_remote *remote,int bit)
 		mask=((ir_code) 1)<<(all_bits-1-bit);
 		if(mask&remote->rc6_mask)
 		{
-			if(!expectpulse(hw,remote,2*remote->pzero))
+			if(!expectpulse(rec_buffer, hw, remote, 2 * remote->pzero))
 			{
-				unget_rec_buffer(1);
+				unget_rec_buffer(rec_buffer, 1);
 				return(0);
 			}
-			set_pending_space(2*remote->szero);
+			set_pending_space(rec_buffer, 2 * remote->szero);
 		}
 		else
 		{
-			if(!expectpulse(hw,remote,remote->pzero))
+			if (!expectpulse(rec_buffer, hw, remote, remote->pzero))
 			{
-				unget_rec_buffer(1);
+				unget_rec_buffer(rec_buffer, 1);
 				return(0);
 			}
-			set_pending_space(remote->szero);
+			set_pending_space(rec_buffer, remote->szero);
 		}
 	}
-	else if(is_space_first(remote))
+	else if (is_space_first(remote))
 	{
-		if(remote->szero>0 && !expectspace(hw,remote,remote->szero))
+		if (remote->szero > 0 && !expectspace(rec_buffer, hw, remote, remote->szero))
 		{
-			unget_rec_buffer(1);
+			unget_rec_buffer(rec_buffer, 1);
 			return(0);
 		}
-		if(remote->pzero>0 && !expectpulse(hw,remote,remote->pzero))
+		if (remote->pzero > 0 && !expectpulse(rec_buffer, hw, remote, remote->pzero))
 		{
-			unget_rec_buffer(2);
+			unget_rec_buffer(rec_buffer, 2);
 			return(0);
 		}
 	}
 	else
 	{
-		if(!expectpulse(hw,remote,remote->pzero))
+		if (!expectpulse(rec_buffer, hw, remote, remote->pzero))
 		{
-			unget_rec_buffer(1);
+			unget_rec_buffer(rec_buffer, 1);
 			return(0);
 		}
-		if(remote->ptrail>0)
+		if (remote->ptrail > 0)
 		{
-			if(!expectspace(hw,remote,remote->szero))
+			if (!expectspace(rec_buffer, hw, remote, remote->szero))
 			{
-				unget_rec_buffer(2);
+				unget_rec_buffer(rec_buffer, 2);
 				return(0);
 			}
 		}
 		else
 		{
-			set_pending_space(remote->szero);
+			set_pending_space(rec_buffer, remote->szero);
 		}
 	}
 	return(1);
 }
 
-static lirc_t sync_rec_buffer(hardware const& hw, struct ir_remote *remote)
+static lirc_t sync_rec_buffer(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
 	lirc_t deltap;
 	
 	auto count=0;
-	auto deltas=get_next_space(hw,1000000);
+	auto deltas=get_next_space(rec_buffer, hw,1000000);
 	if(deltas==0) return(0);
 	
 	if(last_remote!=nullptr && !is_rcmm(remote))
@@ -404,9 +403,9 @@ static lirc_t sync_rec_buffer(hardware const& hw, struct ir_remote *remote)
 		while(!expect_at_least(last_remote, deltas,
 				       last_remote->min_remaining_gap))
 		{
-			deltap=get_next_pulse(hw,1000000);
-			if(deltap==0) return(0);
-			deltas=get_next_space(hw,1000000);
+			deltap=get_next_pulse(rec_buffer, hw, 1000000);
+			if (deltap == 0) return(0);
+			deltas = get_next_space(rec_buffer, hw,1000000);
 			if(deltas==0) return(0);
 			count++;
 			if(count>REC_SYNC) /* no sync found, 
@@ -430,38 +429,38 @@ static lirc_t sync_rec_buffer(hardware const& hw, struct ir_remote *remote)
 	return(deltas);
 }
 
-static int get_header(hardware const& hw, struct ir_remote *remote)
+static int get_header(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
 	if(is_rcmm(remote))
 	{
-		auto deltap=get_next_pulse(hw,remote->phead);
+		auto deltap=get_next_pulse(rec_buffer, hw,remote->phead);
 		if(deltap==0)
 		{
-			unget_rec_buffer(1);
+			unget_rec_buffer(rec_buffer, 1);
 			return(0);
 		}
-		auto deltas=get_next_space(hw, remote->shead);
-		if(deltas==0)
+		auto deltas = get_next_space(rec_buffer, hw, remote->shead);
+		if (deltas == 0)
 		{
-			unget_rec_buffer(2);
+			unget_rec_buffer(rec_buffer, 2);
 			return(0);
 		}
-		auto sum=deltap+deltas;
-		if(expect(remote,sum,remote->phead+remote->shead))
+		auto sum = deltap + deltas;
+		if (expect(remote, sum, remote->phead + remote->shead))
 		{
 			return(1);
 		}
-		unget_rec_buffer(2);
+		unget_rec_buffer(rec_buffer, 2);
 		return(0);
 	}
-	else if(is_bo(remote))
+	else if (is_bo(remote))
 	{
-		if(expectpulse(hw, remote, remote->pone) &&
-		   expectspace(hw, remote, remote->sone) &&
-		   expectpulse(hw, remote, remote->pone) &&
-		   expectspace(hw, remote, remote->sone) &&
-		   expectpulse(hw, remote, remote->phead) &&
-		   expectspace(hw, remote, remote->shead))
+		if (expectpulse(rec_buffer, hw, remote, remote->pone) &&
+			expectspace(rec_buffer, hw, remote, remote->sone) &&
+			expectpulse(rec_buffer, hw, remote, remote->pone) &&
+			expectspace(rec_buffer, hw, remote, remote->sone) &&
+			expectpulse(rec_buffer, hw, remote, remote->phead) &&
+			expectspace(rec_buffer, hw, remote, remote->shead))
 		{
 			return 1;
 		}
@@ -469,76 +468,76 @@ static int get_header(hardware const& hw, struct ir_remote *remote)
 	}
 	if(remote->shead==0)
 	{
-		if(!sync_pending_space(hw,remote)) return 0;
-		set_pending_pulse(remote->phead);
+		if(!sync_pending_space(rec_buffer, hw, remote)) return 0;
+		set_pending_pulse(rec_buffer, remote->phead);
 		return 1;
 	}
-	if(!expectpulse(hw,remote,remote->phead))
+	if (!expectpulse(rec_buffer, hw, remote, remote->phead))
 	{
-		unget_rec_buffer(1);
+		unget_rec_buffer(rec_buffer, 1);
 		return(0);
 	}
 	/* if this flag is set I need a decision now if this is really
-           a header */
-	if(remote->flags&NO_HEAD_REP)
+		   a header */
+	if (remote->flags & NO_HEAD_REP)
 	{
 		lirc_t deltas;
-		
-		deltas=get_next_space(hw,remote->shead);
-		if(deltas!=0)
+
+		deltas = get_next_space(rec_buffer, hw, remote->shead);
+		if (deltas != 0)
 		{
-			if(expect(remote,remote->shead,deltas))
+			if (expect(remote, remote->shead, deltas))
 			{
 				return(1);
 			}
-			unget_rec_buffer(2);
+			unget_rec_buffer(rec_buffer, 2);
 			return(0);
 		}
 	}
-	
-	set_pending_space(remote->shead);
+
+	set_pending_space(rec_buffer, remote->shead);
 	return(1);
 }
 
-static int get_foot(hardware const& hw, struct ir_remote *remote)
+static int get_foot(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
-	if(!expectspace(hw,remote,remote->sfoot)) return(0);
-	if(!expectpulse(hw,remote,remote->pfoot)) return(0);
+	if(!expectspace(rec_buffer, hw,remote,remote->sfoot)) return(0);
+	if(!expectpulse(rec_buffer, hw,remote,remote->pfoot)) return(0);
 	return(1);
 }
 
-static int get_lead(hardware const& hw, struct ir_remote *remote)
+static int get_lead(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
 	if(remote->plead==0) return 1;
-	if(!sync_pending_space(hw,remote)) return 0;
-	set_pending_pulse(remote->plead);
+	if(!sync_pending_space(rec_buffer, hw, remote)) return 0;
+	set_pending_pulse(rec_buffer, remote->plead);
 	return 1;
 }
 
-static int get_trail(hardware const& hw, struct ir_remote *remote)
+static int get_trail(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
 	if(remote->ptrail!=0)
 	{
-		if(!expectpulse(hw,remote,remote->ptrail)) return(0);
+		if(!expectpulse(rec_buffer, hw, remote, remote->ptrail)) return(0);
 	}
-	if(rec_buffer.pendingp>0)
+	if (rec_buffer.pendingp > 0)
 	{
-		if(!sync_pending_pulse(hw,remote)) return(0);
+		if (!sync_pending_pulse(rec_buffer, hw,remote)) return(0);
 	}
 	return(1);
 }
 
-static int get_gap(hardware const& hw, struct ir_remote *remote,lirc_t gap)
+static int get_gap(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,lirc_t gap)
 {
 	lirc_t data;
 	
-	data=get_next_rec_buffer(hw,gap-gap*remote->eps/100);
+	data=get_next_rec_buffer(rec_buffer, hw,gap-gap*remote->eps/100);
 	if(data==0) return(1);
 	if(!is_space(data))
 	{
 		return(0);
 	}
-	unget_rec_buffer(1);
+	unget_rec_buffer(rec_buffer, 1);
 	if(!expect_at_least(remote, data, gap))
 	{
 		return(0);
@@ -546,21 +545,21 @@ static int get_gap(hardware const& hw, struct ir_remote *remote,lirc_t gap)
 	return(1);	
 }
 
-static int get_repeat(hardware const& hw, struct ir_remote *remote)
+static int get_repeat(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
-	if(!get_lead(hw,remote)) return(0);
+	if(!get_lead(rec_buffer, hw,remote)) return(0);
 	if(is_biphase(remote))
 	{
-		if(!expectspace(hw,remote,remote->srepeat)) return(0);
-		if(!expectpulse(hw,remote,remote->prepeat)) return(0);
+		if(!expectspace(rec_buffer, hw,remote,remote->srepeat)) return(0);
+		if(!expectpulse(rec_buffer, hw,remote,remote->prepeat)) return(0);
 	}
 	else
 	{
-		if(!expectpulse(hw,remote,remote->prepeat)) return(0);
-		set_pending_space(remote->srepeat);
+		if(!expectpulse(rec_buffer, hw,remote,remote->prepeat)) return(0);
+		set_pending_space(rec_buffer, remote->srepeat);
 	}
-	if(!get_trail(hw,remote)) return(0);
-	if(!get_gap(hw,remote,
+	if(!get_trail(rec_buffer, hw, remote)) return(0);
+	if (!get_gap(rec_buffer, hw,remote,
 		    is_const(remote) ? 
 		    (min_gap(remote)>rec_buffer.sum ? min_gap(remote)-rec_buffer.sum:0):
 		    (has_repeat_gap(remote) ? remote->repeat_gap:min_gap(remote))
@@ -568,7 +567,7 @@ static int get_repeat(hardware const& hw, struct ir_remote *remote)
 	return(1);
 }
 
-static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,int done)
+static ir_code get_data(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,int bits,int done)
 {
 	int i;
 	
@@ -582,58 +581,58 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 		{
 			return((ir_code) -1);
 		}
-		if(!sync_pending_space(hw,remote)) return 0;
-		for(i=0;i<bits;i+=2)
+		if(!sync_pending_space(rec_buffer, hw, remote)) return 0;
+		for (i = 0; i < bits; i += 2)
 		{
-			code<<=2;
-			deltap=get_next_pulse(hw,remote->pzero+remote->pone+
-					      remote->ptwo+remote->pthree);
-			deltas=get_next_space(hw,remote->szero+remote->sone+
-					      remote->stwo+remote->sthree);
-			if(deltap==0 || deltas==0) 
+			code <<= 2;
+			deltap = get_next_pulse(rec_buffer, hw, remote->pzero + remote->pone +
+				remote->ptwo + remote->pthree);
+			deltas = get_next_space(rec_buffer, hw, remote->szero + remote->sone +
+				remote->stwo + remote->sthree);
+			if (deltap == 0 || deltas == 0)
 			{
-				return((ir_code) -1);
+				return((ir_code)-1);
 			}
-			sum=deltap+deltas;
-			
-			if(expect(remote,sum,remote->pzero+remote->szero))
+			sum = deltap + deltas;
+
+			if (expect(remote, sum, remote->pzero + remote->szero))
 			{
-				code|=0;
+				code |= 0;
 			}
-			else if(expect(remote,sum,remote->pone+remote->sone))
+			else if (expect(remote, sum, remote->pone + remote->sone))
 			{
-				code|=1;
+				code |= 1;
 			}
-			else if(expect(remote,sum,remote->ptwo+remote->stwo))
+			else if (expect(remote, sum, remote->ptwo + remote->stwo))
 			{
-				code|=2;
+				code |= 2;
 			}
-			else if(expect(remote,sum,remote->pthree+remote->sthree))
+			else if (expect(remote, sum, remote->pthree + remote->sthree))
 			{
-				code|=3;
+				code |= 3;
 			}
 			else
 			{
-				return((ir_code) -1);
+				return((ir_code)-1);
 			}
 		}
 		return(code);
 	}
-	else if(is_grundig(remote))
+	else if (is_grundig(remote))
 	{
-		lirc_t deltap,deltas,sum;
-		int state,laststate;
-		
-		if(bits%2 || done%2)
+		lirc_t deltap, deltas, sum;
+		int state, laststate;
+
+		if (bits % 2 || done % 2)
 		{
-			return((ir_code) -1);
+			return((ir_code)-1);
 		}
-		if(!sync_pending_pulse(hw,remote)) return ((ir_code) -1);
-		for(laststate=state=-1,i=0;i<bits;)
+		if (!sync_pending_pulse(rec_buffer, hw, remote)) return ((ir_code)-1);
+		for (laststate = state = -1, i = 0; i < bits;)
 		{
-			deltas=get_next_space(hw,remote->szero+remote->sone+
+			deltas = get_next_space(rec_buffer, hw,remote->szero+remote->sone+
 					      remote->stwo+remote->sthree);
-			deltap=get_next_pulse(hw,remote->pzero+remote->pone+
+			deltap=get_next_pulse(rec_buffer, hw,remote->pzero+remote->pone+
 					      remote->ptwo+remote->pthree);
 			if(deltas==0 || deltap==0) 
 			{
@@ -705,7 +704,7 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 		base=1000000/remote->baud;
 		
 		/* start bit */
-		set_pending_pulse(base);
+		set_pending_pulse(rec_buffer, base);
 		
 		received=0;
 		space=(rec_buffer.pendingp==0); /* expecting space ? */
@@ -732,8 +731,8 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 			if(delta==0)
 			{
 				delta=space ?
-					get_next_space(hw,max_space):
-					get_next_pulse(hw,max_pulse);
+					get_next_space(rec_buffer, hw,max_space):
+					get_next_pulse(rec_buffer, hw,max_pulse);
 				if(delta==0 && space &&
 				   received+remote->bits_in_byte+parity_bit>=bits)
 				{
@@ -766,15 +765,15 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 				{
 					gap_delta = delta;
 					delta=0;
-					set_pending_pulse(base);
-					set_pending_space(0);
+					set_pending_pulse(rec_buffer, base);
+					set_pending_space(rec_buffer, 0);
 					stop_bit=0;
 					space=0;
 				}
 				else
 				{
-					set_pending_pulse(0);
-					set_pending_space(0);
+					set_pending_pulse(rec_buffer, 0);
+					set_pending_space(rec_buffer, 0);
 					if(delta==0)
 					{
 						space=(space ? 0:1);
@@ -813,7 +812,7 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 						return((ir_code) -1);
 					}
 					
-					set_pending_space(stop);
+					set_pending_space(rec_buffer, stop);
 					stop_bit=1;
 				}				
 			}
@@ -830,9 +829,9 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 				space=(space ? 0:1);
 			}
 		}
-		if(gap_delta) unget_rec_buffer_delta(gap_delta);
-		set_pending_pulse(0);
-		set_pending_space(0);
+		if(gap_delta) unget_rec_buffer_delta(rec_buffer, gap_delta);
+		set_pending_pulse(rec_buffer, 0);
+		set_pending_space(rec_buffer, 0);
 		return code;
 	}
 	else if(is_bo(remote))
@@ -845,9 +844,9 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 		for(i=0; i<bits; i++)
 		{
 			code<<=1;
-			deltap=get_next_pulse(hw,remote->pzero+remote->pone+
+			deltap=get_next_pulse(rec_buffer, hw,remote->pzero+remote->pone+
 					      remote->ptwo+remote->pthree);
-			deltas=get_next_space(hw,remote->szero+remote->sone+
+			deltas=get_next_space(rec_buffer, hw,remote->szero+remote->sone+
 					      remote->stwo+remote->sthree);
 			if(deltap==0 || deltas==0) 
 			{
@@ -901,12 +900,12 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 		{
 			return((ir_code) -1);
 		}
-		if(!sync_pending_space(hw,remote)) return 0;
+		if(!sync_pending_space(rec_buffer, hw,remote)) return 0;
 		for(i=0;i<bits;i+=4)
 		{
 			code<<=4;
-			deltap=get_next_pulse(hw,remote->pzero);
-			deltas=get_next_space(hw,remote->szero+16*remote->sone);
+			deltap=get_next_pulse(rec_buffer, hw,remote->pzero);
+			deltas=get_next_space(rec_buffer, hw,remote->szero+16*remote->sone);
 			if(deltap==0 || deltas==0) 
 			{
 				return((ir_code) -1);
@@ -943,11 +942,11 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 			}
 		}
 		
-		if(expectone(hw,remote,done+i))
+		if(expectone(rec_buffer, hw,remote,done+i))
 		{
 			code|=1;
 		}
-		else if(expectzero(hw,remote,done+i))
+		else if(expectzero(rec_buffer, hw,remote,done+i))
 		{			
 			code|=0;
 		}
@@ -959,11 +958,11 @@ static ir_code get_data(hardware const& hw, struct ir_remote *remote,int bits,in
 	return(code);
 }
 
-static ir_code get_pre(hardware const& hw, struct ir_remote *remote)
+static ir_code get_pre(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
 	ir_code pre;
 
-	pre=get_data(hw,remote,remote->pre_data_bits,0);
+	pre=get_data(rec_buffer, hw,remote,remote->pre_data_bits,0);
 
 	if(pre==(ir_code) -1)
 	{		
@@ -971,25 +970,25 @@ static ir_code get_pre(hardware const& hw, struct ir_remote *remote)
 	}
 	if(remote->pre_p>0 && remote->pre_s>0)
 	{
-		if(!expectpulse(hw,remote,remote->pre_p))
+		if(!expectpulse(rec_buffer, hw,remote,remote->pre_p))
 			return((ir_code) -1);
-		set_pending_space(remote->pre_s);
+		set_pending_space(rec_buffer, remote->pre_s);
 	}
 	return(pre);
 }
 
-static ir_code get_post(hardware const& hw, struct ir_remote *remote)
+static ir_code get_post(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
 {
 	ir_code post;
 
 	if(remote->post_p>0 && remote->post_s>0)
 	{
-		if(!expectpulse(hw,remote,remote->post_p))
+		if(!expectpulse(rec_buffer, hw,remote,remote->post_p))
 			return((ir_code) -1);
-		set_pending_space(remote->post_s);
+		set_pending_space(rec_buffer, remote->post_s);
 	}
 
-	post=get_data(hw,remote,remote->post_data_bits,remote->pre_data_bits+
+	post=get_data(rec_buffer, hw,remote,remote->post_data_bits,remote->pre_data_bits+
 		      remote->bits);
 
 	if(post==(ir_code) -1)
@@ -999,12 +998,14 @@ static ir_code get_post(hardware const& hw, struct ir_remote *remote)
 	return(post);
 }
 
-WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
-		   ir_code *prep,ir_code *codep,ir_code *postp,
-		   int *repeat_flagp,
-		   lirc_t *min_remaining_gapp, lirc_t *max_remaining_gapp)
+WINLIRC_API int receive_decode(
+	rbuf* prec_buffer,hardware const* phw, struct ir_remote *remote,
+	ir_code *prep,ir_code *codep,ir_code *postp,
+	int *repeat_flagp,
+	lirc_t *min_remaining_gapp, lirc_t *max_remaining_gapp)
 {
     auto& hw = *phw;
+	auto& rec_buffer = *prec_buffer;
 	ir_code pre,code,post;
 	int header;
 	steady_clock::time_point current;
@@ -1017,11 +1018,11 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 	   hw.rec_mode==LIRC_MODE_PULSE ||
 	   hw.rec_mode==LIRC_MODE_RAW)
 	{
-		rewind_rec_buffer();
+		rewind_rec_buffer(rec_buffer);
 		rec_buffer.is_biphase=is_biphase(remote) ? 1:0;
 		
 		/* we should get a long space first */
-		if(!(sync=sync_rec_buffer(hw,remote)))
+		if(!(sync=sync_rec_buffer(rec_buffer, hw,remote)))
 		{	
 			return(0);
 		}
@@ -1030,13 +1031,13 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 		{
 			if(remote->flags&REPEAT_HEADER && has_header(remote))
 			{
-				if(!get_header(hw,remote))
+				if(!get_header(rec_buffer, hw,remote))
 				{
 					return(0);
 				}
 				
 			}
-			if(get_repeat(hw,remote))
+			if(get_repeat(rec_buffer, hw,remote))
 			{
 				if(remote->last_code==nullptr)
 				{
@@ -1064,8 +1065,8 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 			}
 			else
 			{
-				rewind_rec_buffer();
-				sync_rec_buffer(hw,remote);
+				rewind_rec_buffer(rec_buffer);
+				sync_rec_buffer(rec_buffer, hw,remote);
 			}
 
 		}
@@ -1073,7 +1074,7 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 		if(has_header(remote))
 		{
 			header=1;
-			if(!get_header(hw,remote))
+			if(!get_header(rec_buffer, hw,remote))
 			{
 				header=0;
 				if(!(remote->flags&NO_HEAD_REP && 
@@ -1101,26 +1102,26 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 			found=codes;
 			for(i=0;i<codes->length;)
 			{
-				if(!expectpulse(hw,remote,codes->signals[i++]))
+				if(!expectpulse(rec_buffer, hw,remote,codes->signals[i++]))
 				{
 					found=nullptr;
-					rewind_rec_buffer();
-					sync_rec_buffer(hw,remote);
+					rewind_rec_buffer(rec_buffer);
+					sync_rec_buffer(rec_buffer, hw,remote);
 					break;
 				}
 				if(i<codes->length &&
-				   !expectspace(hw,remote,codes->signals[i++]))
+				   !expectspace(rec_buffer, hw, remote, codes->signals[i++]))
 				{
-					found=nullptr;
-					rewind_rec_buffer();
-					sync_rec_buffer(hw,remote);
+					found = nullptr;
+					rewind_rec_buffer(rec_buffer);
+					sync_rec_buffer(rec_buffer, hw, remote);
 					break;
 				}
 			}
 			codes++;
-			if(found!=nullptr)
+			if (found != nullptr)
 			{
-				if(!get_gap(hw,remote,
+				if (!get_gap(rec_buffer, hw,remote,
 					    is_const(remote) ? 
 					    min_gap(remote)-rec_buffer.sum:
 					    min_gap(remote))) 
@@ -1164,21 +1165,21 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 		}
 		else
 		{
-			if(!get_lead(hw,remote))
+			if(!get_lead(rec_buffer, hw,remote))
 			{
 				return(0);
 			}
 			
 			if(has_pre(remote))
 			{
-				pre=get_pre(hw,remote);
+				pre=get_pre(rec_buffer, hw,remote);
 				if(pre==(ir_code) -1)
 				{
 					return(0);
 				}
 			}
 			
-			code=get_data(hw,remote,remote->bits,
+			code=get_data(rec_buffer, hw,remote,remote->bits,
 				      remote->pre_data_bits);
 			if(code==(ir_code) -1)
 			{
@@ -1187,44 +1188,44 @@ WINLIRC_API int receive_decode(hardware const* phw, struct ir_remote *remote,
 
 			if(has_post(remote))
 			{
-				post=get_post(hw,remote);
+				post=get_post(rec_buffer, hw,remote);
 				if(post==(ir_code) -1)
 				{
 					return(0);
 				}
 
 			}
-			if(!get_trail(hw,remote))
+			if(!get_trail(rec_buffer, hw,remote))
 			{
 				return(0);
 			}
 			if(has_foot(remote))
 			{
-				if(!get_foot(hw,remote))
+				if(!get_foot(rec_buffer, hw, remote))
 				{
 					return(0);
 				}
 			}
-			if(header==1 && is_const(remote) &&
-			   (remote->flags&NO_HEAD_REP))
+			if (header == 1 && is_const(remote) &&
+				(remote->flags & NO_HEAD_REP))
 			{
-				rec_buffer.sum-=remote->phead+remote->shead;
+				rec_buffer.sum -= remote->phead + remote->shead;
 			}
-			if(is_rcmm(remote))
+			if (is_rcmm(remote))
 			{
-				if(!get_gap(hw,remote,1000))
+				if (!get_gap(rec_buffer, hw,remote,1000))
 					return(0);
 			}
 			else if(is_const(remote))
 			{
-				if(!get_gap(hw,remote,
+				if(!get_gap(rec_buffer, hw,remote,
 					    min_gap(remote)>rec_buffer.sum ?
 					    min_gap(remote)-rec_buffer.sum:0))
 					return(0);
 			}
 			else
 			{
-				if(!get_gap(hw,remote, min_gap(remote)))
+				if(!get_gap(rec_buffer, hw,remote, min_gap(remote)))
 					return(0);
 			}
 		} /* end of mode specific code */

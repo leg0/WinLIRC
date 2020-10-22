@@ -14,6 +14,7 @@
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();
 extern hardware hw;
+extern rbuf rec_buffer;
 
 WL_API int init(WLEventHandle exitEvent) {
 	initHardwareStruct();
@@ -210,7 +211,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 		receive->getData(&irCode);
 		end = std::chrono::steady_clock::now();
 
-		if(winlirc_decodeCommand(&hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
 			ResetEvent(dataReadyEvent);
 			return 1;
 		}

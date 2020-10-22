@@ -56,7 +56,8 @@ int data_ready() {
 	return 0;
 }
 
-struct hardware hw;
+hardware hw;
+rbuf rec_buffer;
 
 void initHardwareStruct() {
 

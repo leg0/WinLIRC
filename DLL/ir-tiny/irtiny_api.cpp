@@ -27,9 +27,11 @@ static int irtiny_dataReady()
     return irDriver && irDriver->dataReady();
 }
 
+rbuf rec_buffer;
+
 extern "C" static int irtiny_init(WLEventHandle exitEvent)
 {
-    init_rec_buffer();
+    init_rec_buffer(&rec_buffer);
     irDriver = std::make_unique<irtiny::CIRDriver>(reinterpret_cast<HANDLE>(exitEvent));
     return irDriver->initPort();
 }
@@ -74,8 +76,8 @@ extern "C" int static irtiny_decodeIR(ir_remote* remotes, char* out, size_t out_
     if (!irDriver || !irDriver->waitTillDataIsReady(0us))
         return 0;
 
-    clear_rec_buffer(&irtiny_hardware);
-    return winlirc_decodeCommand(&irtiny_hardware, remotes, out, out_size);
+    clear_rec_buffer(&rec_buffer, &irtiny_hardware);
+    return winlirc_decodeCommand(&rec_buffer, &irtiny_hardware, remotes, out, out_size);
 }
 
 extern "C" hardware const* irtiny_getHardware()

@@ -399,7 +399,7 @@ int write_message(char *buffer, size_t size, const char *remote_name,
 	return len;
 }
 
-bool winlirc_decodeCommand(struct hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
+bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
 {
     auto& hw = *phw;
 	struct ir_remote *remote;
@@ -417,7 +417,7 @@ bool winlirc_decodeCommand(struct hardware const* phw, struct ir_remote *remotes
 	{
 		//LOGPRINTF(1,"trying \"%s\" remote",remote->name);
 		
-		if(hw.decode_func(&hw,remote,&pre,&code,&post,&repeat_flag,
+		if(hw.decode_func(prec_buffer, &hw,remote,&pre,&code,&post,&repeat_flag,
 				  &min_remaining_gap, &max_remaining_gap) &&
 		   (ncode=get_code(remote,pre,code,post,&toggle_bit_mask_state)))
 		{

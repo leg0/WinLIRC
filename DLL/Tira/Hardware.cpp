@@ -47,7 +47,7 @@ int WINAPI tiraCallbackFunction(const char * eventstring) {
 	return TIRA_TRUE;
 }
 
-static int tira_decode (struct hardware const*, struct ir_remote *remote, ir_code *prep, ir_code *codep,
+static int tira_decode (rbuf* rec_buffer, hardware const*, ir_remote *remote, ir_code *prep, ir_code *codep,
 		 ir_code *postp, int *repeat_flagp,
 		 lirc_t *min_remaining_gapp,
 		 lirc_t *max_remaining_gapp)
@@ -129,7 +129,8 @@ void wait_for_data(lirc_t timeout) {
 	waitForData(std::chrono::microseconds{ timeout });
 }
 
-struct hardware hw;
+hardware hw;
+rbuf rec_buffer;
 
 void initHardwareStruct() {
 
