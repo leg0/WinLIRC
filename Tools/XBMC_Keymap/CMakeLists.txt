@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 2.8)
 
 project(XBMC_Keymap)
 
+find_package(tinyxml2 CONFIG REQUIRED)
+
 # Use MFC in a shared DLL.
 set(CMAKE_MFC_FLAG 2)
 
@@ -19,13 +21,9 @@ add_executable(XBMC_Keymap WIN32
 	xbmcclient.h
 	res/Keymap.ico
 	res/Keymap.rc2
-	tinyxml2/tinyxml2.cpp
-	tinyxml2/tinyxml2.h
 	)
 
-add_definitions(
-	-DUNICODE
-	-D_UNICODE
-	)
+target_link_libraries(XBMC_Keymap PRIVATE tinyxml2::tinyxml2)
+target_compile_definitions(XBMC_Keymap PRIVATE UNICODE _UNICODE)
 
 configure_tool(XBMC_Keymap "Tools")

@@ -1,3 +1,4 @@
 ms-gsl:x64-windows
 wtl:x64-windows
 gtest:x64-windows
+tinyxml2:x64-windows

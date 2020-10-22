@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "Keymap.h"
 #include "KeymapDlg.h"
-#include "./tinyxml2/tinyxml2.h"
+#include <tinyxml2.h>
 #include <Shlwapi.h>
 
 #ifdef _DEBUG
