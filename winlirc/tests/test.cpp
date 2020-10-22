@@ -78,11 +78,11 @@ TEST(Trim, only_spaces)
 TEST(Trim, ends_with_one_space)
 {
     istring_view s = "x ";
-    EXPECT_TRUE("x", rtrim(s, " \r\n"));
+    EXPECT_EQ("x", rtrim(s, " \r\n"));
 }
 
 TEST(Trim, ends_with_two_spaces)
 {
     istring_view s = "   x  ";
-    EXPECT_TRUE("   x", rtrim(s, " \r\n"));
+    EXPECT_EQ("   x", rtrim(s, " \r\n"));
 }

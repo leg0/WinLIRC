@@ -7,11 +7,6 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 # Use MFC in a shared DLL.
 set(CMAKE_MFC_FLAG 2)
 
-add_definitions(
-	-DUNICODE
-	-D_UNICODE
-	)
-
 set (PUBLIC_API_FILES
 	include/winlirc/IRRemote.h
 	include/winlirc/Receive.h
@@ -73,15 +68,17 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set_target_properties( winlirc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${CFG} )
 endforeach()
 
+target_compile_definitions(winlirc PRIVATE UNICODE _UNICODE)
+
 target_link_libraries(winlirc PRIVATE
 	Microsoft.GSL::GSL
 	winlirc-common)
 
-target_include_directories(winlirc PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-target_include_directories(winlirc INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(winlirc
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/include
+	INTERFACE
+		${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 install(TARGETS winlirc 
 	DESTINATION .
