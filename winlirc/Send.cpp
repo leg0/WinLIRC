@@ -4,24 +4,22 @@
 
 #define LIRCD_EXACT_GAP_THRESHOLD 10000
 
-static struct sbuf send_buffer;
-
-WINLIRC_API int winlirc_get_send_buffer_length(void)
+WINLIRC_API int winlirc_get_send_buffer_length(sbuf const* send_buffer)
 {
-    return send_buffer.wptr;
+    return send_buffer->wptr;
 }
 
-WINLIRC_API lirc_t const* winlirc_get_send_buffer_data(void)
+WINLIRC_API lirc_t const* winlirc_get_send_buffer_data(sbuf const* send_buffer)
 {
-    return send_buffer.data;
+    return send_buffer->data;
 }
 
-WINLIRC_API void winlirc_init_send_buffer(void)
+WINLIRC_API void winlirc_init_send_buffer(sbuf* send_buffer)
 {
-	memset(&send_buffer,0,sizeof(send_buffer));
+	memset(send_buffer, 0, sizeof(*send_buffer));
 }
 
-void clear_send_buffer(void)
+static void clear_send_buffer(sbuf& send_buffer)
 {
 	send_buffer.wptr=0;
 	send_buffer.too_long=0;
@@ -31,7 +29,7 @@ void clear_send_buffer(void)
 	send_buffer.sum=0;
 }
 
-void add_send_buffer(lirc_t data)
+static void add_send_buffer(sbuf& send_buffer, lirc_t data)
 {
 	if(send_buffer.wptr<WBUF_SIZE)
 	{
@@ -45,7 +43,7 @@ void add_send_buffer(lirc_t data)
 	}
 }
 
-void send_pulse(lirc_t data)
+static void send_pulse(sbuf& send_buffer, lirc_t data)
 {
 	if(send_buffer.pendingp>0)
 	{
@@ -55,14 +53,14 @@ void send_pulse(lirc_t data)
 	{
 		if(send_buffer.pendings>0)
 		{
-			add_send_buffer(send_buffer.pendings);
+			add_send_buffer(send_buffer, send_buffer.pendings);
 			send_buffer.pendings=0;
 		}
 		send_buffer.pendingp=data;
 	}
 }
 
-void send_space(lirc_t data)
+static void send_space(sbuf& send_buffer, lirc_t data)
 {
 	if(send_buffer.wptr==0 && send_buffer.pendingp==0)
 	{
@@ -76,14 +74,14 @@ void send_space(lirc_t data)
 	{
 		if(send_buffer.pendingp>0)
 		{
-			add_send_buffer(send_buffer.pendingp);
+			add_send_buffer(send_buffer, send_buffer.pendingp);
 			send_buffer.pendingp=0;
 		}
 		send_buffer.pendings=data;
 	}
 }
 
-int bad_send_buffer(void)
+static int bad_send_buffer(sbuf const& send_buffer)
 {
 	if(send_buffer.too_long!=0) return(1);
 	if(send_buffer.wptr==WBUF_SIZE && send_buffer.pendingp>0)
@@ -93,7 +91,7 @@ int bad_send_buffer(void)
 	return(0);
 }
 
-int check_send_buffer(void)
+static int check_send_buffer(sbuf const& send_buffer)
 {
 	int i;
 
@@ -105,14 +103,6 @@ int check_send_buffer(void)
 	{
 		if(send_buffer.data[i] == 0)
 		{
-			if(i%2)
-			{
-
-			}
-			else
-			{
-
-			}
 			return 0;
 		}
 	}
@@ -120,65 +110,65 @@ int check_send_buffer(void)
 	return 1;
 }
 
-void flush_send_buffer(void)
+static void flush_send_buffer(sbuf& send_buffer)
 {
 	if(send_buffer.pendingp>0)
 	{
-		add_send_buffer(send_buffer.pendingp);
+		add_send_buffer(send_buffer, send_buffer.pendingp);
 		send_buffer.pendingp=0;
 	}
 	if(send_buffer.pendings>0)
 	{
-		add_send_buffer(send_buffer.pendings);
+		add_send_buffer(send_buffer, send_buffer.pendings);
 		send_buffer.pendings=0;
 	}
 }
 
-void sync_send_buffer(void)
+static void sync_send_buffer(sbuf& send_buffer)
 {
 	if(send_buffer.pendingp>0)
 	{
-		add_send_buffer(send_buffer.pendingp);
+		add_send_buffer(send_buffer, send_buffer.pendingp);
 		send_buffer.pendingp=0;
 	}
 	if(send_buffer.wptr>0 && send_buffer.wptr%2==0) send_buffer.wptr--;
 }
 
-void send_header(struct ir_remote *remote)
+static void send_header(sbuf& send_buffer, ir_remote *remote)
 {
 	if(has_header(remote))
 	{
-		send_pulse(remote->phead);
-		send_space(remote->shead);
+		send_pulse(send_buffer, remote->phead);
+		send_space(send_buffer, remote->shead);
 	}
 }
 
-void send_foot(struct ir_remote *remote)
+static void send_foot(sbuf& send_buffer, ir_remote *remote)
 {
 	if(has_foot(remote))
 	{
-		send_space(remote->sfoot);
-		send_pulse(remote->pfoot);
+		send_space(send_buffer, remote->sfoot);
+		send_pulse(send_buffer, remote->pfoot);
 	}
 }
 
-void send_lead(struct ir_remote *remote)
+static void send_lead(sbuf& send_buffer, ir_remote *remote)
 {
 	if(remote->plead!=0)
 	{
-		send_pulse(remote->plead);
+		send_pulse(send_buffer, remote->plead);
 	}
 }
 
-void send_trail(struct ir_remote *remote)
+static void send_trail(sbuf& send_buffer, ir_remote *remote)
 {
 	if(remote->ptrail!=0)
 	{
-		send_pulse(remote->ptrail);
+		send_pulse(send_buffer, remote->ptrail);
 	}
 }
 
-void send_data(struct ir_remote *remote,ir_code data,int bits,int done)
+static void send_data(sbuf& send_buffer, ir_remote *remote,ir_code data,int bits,int done)
 {
 	int i;
 	int all_bits = bit_count(remote);
@@ -198,21 +188,21 @@ void send_data(struct ir_remote *remote,ir_code data,int bits,int done)
 			switch(data&3)
 			{
 			case 0:
-				send_pulse(remote->pzero);
-				send_space(remote->szero);
+				send_pulse(send_buffer, remote->pzero);
+				send_space(send_buffer, remote->szero);
 				break;
 			/* 2 and 1 swapped due to reverse() */
 			case 2:
-				send_pulse(remote->pone);
-				send_space(remote->sone);
+				send_pulse(send_buffer, remote->pone);
+				send_space(send_buffer, remote->sone);
 				break;
 			case 1:
-				send_pulse(remote->ptwo);
-				send_space(remote->stwo);
+				send_pulse(send_buffer, remote->ptwo);
+				send_space(send_buffer, remote->stwo);
 				break;
 			case 3:
-				send_pulse(remote->pthree);
-				send_space(remote->sthree);
+				send_pulse(send_buffer, remote->pthree);
+				send_space(send_buffer, remote->sthree);
 				break;
 			}
 			data=data>>2;
@@ -230,8 +220,8 @@ void send_data(struct ir_remote *remote,ir_code data,int bits,int done)
 			ir_code nibble;
 
 			nibble = reverse(data & 0xf, 4);
-			send_pulse(remote->pzero);
-			send_space((unsigned long)(remote->szero + nibble*remote->sone));
+			send_pulse(send_buffer, remote->pzero);
+			send_space(send_buffer, (unsigned long)(remote->szero + nibble*remote->sone));
 			data >>= 4;
 		}
 		return;
@@ -272,94 +262,94 @@ void send_data(struct ir_remote *remote,ir_code data,int bits,int done)
 				
 				if(mask&remote->rc6_mask)
 				{
-					send_space(2*remote->sone);
-					send_pulse(2*remote->pone);
+					send_space(send_buffer, 2*remote->sone);
+					send_pulse(send_buffer, 2*remote->pone);
 				}
 				else
 				{
-					send_space(remote->sone);
-					send_pulse(remote->pone);
+					send_space(send_buffer, remote->sone);
+					send_pulse(send_buffer, remote->pone);
 				}
 			}
 			else if(is_space_first(remote))
 			{
-				send_space(remote->sone);
-				send_pulse(remote->pone);
+				send_space(send_buffer, remote->sone);
+				send_pulse(send_buffer, remote->pone);
 			}
 			else
 			{
-				send_pulse(remote->pone);
-				send_space(remote->sone);
+				send_pulse(send_buffer, remote->pone);
+				send_space(send_buffer, remote->sone);
 			}
 		}
 		else
 		{
 			if(mask&remote->rc6_mask)
 			{
-				send_pulse(2*remote->pzero);
-				send_space(2*remote->szero);
+				send_pulse(send_buffer, 2*remote->pzero);
+				send_space(send_buffer, 2*remote->szero);
 			}
 			else if(is_space_first(remote))
 			{
-				send_space(remote->szero);
-				send_pulse(remote->pzero);
+				send_space(send_buffer, remote->szero);
+				send_pulse(send_buffer, remote->pzero);
 			}
 			else
 			{
-				send_pulse(remote->pzero);
-				send_space(remote->szero);
+				send_pulse(send_buffer, remote->pzero);
+				send_space(send_buffer, remote->szero);
 			}
 		}
 		data=data>>1;
 	}
 }
 
-void send_pre(struct ir_remote *remote)
+static void send_pre(sbuf& send_buffer, ir_remote *remote)
 {
 	if(has_pre(remote))
 	{
-		send_data(remote,remote->pre_data,remote->pre_data_bits,0);
+		send_data(send_buffer, remote,remote->pre_data,remote->pre_data_bits,0);
 		if(remote->pre_p>0 && remote->pre_s>0)
 		{
-			send_pulse(remote->pre_p);
-			send_space(remote->pre_s);
+			send_pulse(send_buffer, remote->pre_p);
+			send_space(send_buffer, remote->pre_s);
 		}
 	}
 }
 
-void send_post(struct ir_remote *remote)
+static void send_post(sbuf& send_buffer, ir_remote *remote)
 {
 	if(has_post(remote))
 	{
 		if(remote->post_p>0 && remote->post_s>0)
 		{
-			send_pulse(remote->post_p);
-			send_space(remote->post_s);
+			send_pulse(send_buffer, remote->post_p);
+			send_space(send_buffer, remote->post_s);
 		}
-		send_data(remote,remote->post_data,remote->post_data_bits,
+		send_data(send_buffer, remote,remote->post_data,remote->post_data_bits,
 			  remote->pre_data_bits+remote->bits);
 	}
 }
 
-void send_repeat(struct ir_remote *remote)
+static void send_repeat(sbuf& send_buffer, ir_remote *remote)
 {
-	send_lead(remote);
-	send_pulse(remote->prepeat);
-	send_space(remote->srepeat);
-	send_trail(remote);
+	send_lead(send_buffer, remote);
+	send_pulse(send_buffer, remote->prepeat);
+	send_space(send_buffer, remote->srepeat);
+	send_trail(send_buffer, remote);
 }
 
-void send_code(struct ir_remote *remote,ir_code code, int repeat)
+static void send_code(sbuf& send_buffer, ir_remote *remote,ir_code code, int repeat)
 {
 	if(!repeat || !(remote->flags&NO_HEAD_REP))
-		send_header(remote);
-	send_lead(remote);
-	send_pre(remote);
-	send_data(remote,code,remote->bits,remote->pre_data_bits);
-	send_post(remote);
-	send_trail(remote);
-	if(!repeat || !(remote->flags&NO_FOOT_REP))
-		send_foot(remote);
+		send_header(send_buffer, remote);
+	send_lead(send_buffer, remote);
+	send_pre(send_buffer, remote);
+	send_data(send_buffer, remote, code, remote->bits, remote->pre_data_bits);
+	send_post(send_buffer, remote);
+	send_trail(send_buffer, remote);
+	if (!repeat || !(remote->flags & NO_FOOT_REP))
+		send_foot(send_buffer, remote);
 	
 	if(!repeat &&
 	   remote->flags&NO_HEAD_REP &&
@@ -369,25 +359,25 @@ void send_code(struct ir_remote *remote,ir_code code, int repeat)
 	}
 }
 
-void send_signals(lirc_t *signals, int n)
+static void send_signals(sbuf& send_buffer, lirc_t *signals, int n)
 {
 	int i;
 	
 	for(i=0; i<n; i++)
 	{
-		add_send_buffer(signals[i]);
+		add_send_buffer(send_buffer, signals[i]);
 	}
 }
 
-WINLIRC_API int winlirc_init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
+WINLIRC_API int winlirc_init_send(sbuf* psend_buffer, ir_remote *remote, ir_ncode *code, int repeats)
 {
 	int repeat=0;
-	
+	auto& send_buffer = *psend_buffer;
 	if(is_grundig(remote) ||  is_goldstar(remote) || is_serial(remote) || is_bo(remote))
 	{
 		return(0);
 	}
-	clear_send_buffer();
+	clear_send_buffer(send_buffer);
 	if(is_biphase(remote))
 	{
 		send_buffer.is_biphase=1;
@@ -400,9 +390,9 @@ WINLIRC_API int winlirc_init_send(struct ir_remote *remote,struct ir_ncode *code
 	{
 		if(remote->flags&REPEAT_HEADER && has_header(remote))
 		{
-			send_header(remote);
+			send_header(send_buffer, remote);
 		}
-		send_repeat(remote);
+		send_repeat(send_buffer, remote);
 	}
 	else
 	{
@@ -419,7 +409,7 @@ WINLIRC_API int winlirc_init_send(struct ir_remote *remote,struct ir_ncode *code
 				next_code = code->transmit_state->code;
 			}
 
-			send_code(remote, next_code, repeat);
+			send_code(send_buffer, remote, next_code, repeat);
 
 			if(has_toggle_mask(remote))
 			{
@@ -437,11 +427,11 @@ WINLIRC_API int winlirc_init_send(struct ir_remote *remote,struct ir_ncode *code
 				return 0;
 			}
 			
-			send_signals(code->signals, code->length);
+			send_signals(send_buffer, code->signals, code->length);
 		}
 	}
-	sync_send_buffer();
-	if(bad_send_buffer())
+	sync_send_buffer(send_buffer);
+	if(bad_send_buffer(send_buffer))
 	{
 		return(0);
 	}
@@ -487,8 +477,8 @@ WINLIRC_API int winlirc_init_send(struct ir_remote *remote,struct ir_ncode *code
 		}
 	}
 
-	send_space(remote->min_remaining_gap);
-	flush_send_buffer();
+	send_space(send_buffer, remote->min_remaining_gap);
+	flush_send_buffer(send_buffer);
 
 	if(remote->repeat_countdown>0 || code->transmit_state != nullptr )
 	{
@@ -505,7 +495,7 @@ WINLIRC_API int winlirc_init_send(struct ir_remote *remote,struct ir_ncode *code
 
 	send_buffer.data=send_buffer._data;
 
-	if(!check_send_buffer())
+	if(!check_send_buffer(send_buffer))
 	{
 		return 0;
 	}

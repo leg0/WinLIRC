@@ -32,7 +32,6 @@
 
 #define LONG_IR_CODE
 #define PACKET_SIZE		(256)
-#define WBUF_SIZE		(2048)
 #define REC_SYNC		8
 
 #define IR_PROTOCOL_MASK 0x07ff
@@ -71,18 +70,6 @@
 //
 //Structure definitions
 //
-
-struct sbuf
-{
-	lirc_t *data;
-	lirc_t _data[WBUF_SIZE];
-	int wptr;
-	int too_long;
-	int is_biphase;
-	lirc_t pendingp;
-	lirc_t pendings;
-	lirc_t sum;
-};
 
 struct ir_code_node
 {

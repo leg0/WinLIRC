@@ -30,6 +30,8 @@
 #include "../Common/LIRCDefines.h"
 #include "../Common/Win32Helpers.h"
 
+sbuf send_buffer;
+
 DWORD WINAPI IGThread(void *recieveClass) {
 
 	((SendReceiveData*)recieveClass)->threadProc();
@@ -316,15 +318,15 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		currentCarrier = remote->freq;
 	}
 
-	if (winlirc_init_send(remote, code,repeats))
+	if (winlirc_init_send(&send_buffer, remote, code,repeats))
 	{
 		//==================
 		int		x;
 		UINT	*igsignals;
 		//==================
 
-		auto const length		= winlirc_get_send_buffer_length();
-		auto const signals		= winlirc_get_send_buffer_data();
+		auto const length		= winlirc_get_send_buffer_length(&send_buffer);
+		auto const signals		= winlirc_get_send_buffer_data(&send_buffer);
 		igsignals	= (UINT*)malloc(sizeof(UINT) * length);
 
 		if (igsignals != nullptr)

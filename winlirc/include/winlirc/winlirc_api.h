@@ -19,6 +19,7 @@
 #endif
 
 #define RBUF_SIZE		(256)
+#define WBUF_SIZE		(2048)
 
 typedef struct ir_remote ir_remote;
 typedef struct ir_ncode ir_ncode;
@@ -31,6 +32,18 @@ struct rbuf
 	lirc_t data[RBUF_SIZE];
 	ir_code decoded;
 	int rptr;
+	int wptr;
+	int too_long;
+	int is_biphase;
+	lirc_t pendingp;
+	lirc_t pendings;
+	lirc_t sum;
+};
+
+struct sbuf
+{
+	lirc_t *data;
+	lirc_t _data[WBUF_SIZE];
 	int wptr;
 	int too_long;
 	int is_biphase;
@@ -73,7 +86,7 @@ WINLIRC_API int winlirc_receive_decode(rbuf* rec_buffer,
 
 // Send
 
-WINLIRC_API int winlirc_get_send_buffer_length();
-WINLIRC_API lirc_t const* winlirc_get_send_buffer_data();
-WINLIRC_API void winlirc_init_send_buffer();
-WINLIRC_API int winlirc_init_send(ir_remote *remote, ir_ncode *code, int repeats);
+WINLIRC_API int winlirc_get_send_buffer_length(sbuf const* send_buffer);
+WINLIRC_API lirc_t const* winlirc_get_send_buffer_data(sbuf const* send_buffer);
+WINLIRC_API void winlirc_init_send_buffer(sbuf* send_buffer);
+WINLIRC_API int winlirc_init_send(sbuf* send_buffer, ir_remote *remote, ir_ncode *code, int repeats);

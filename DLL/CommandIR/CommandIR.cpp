@@ -35,6 +35,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();
 extern hardware hw;
 extern rbuf rec_buffer;
+extern sbuf send_buffer;
 
 WL_API int init(WLEventHandle exitEvent) {
 
@@ -43,7 +44,7 @@ WL_API int init(WLEventHandle exitEvent) {
 	//==========
 
 	winlirc_init_rec_buffer		(&rec_buffer);
-	winlirc_init_send_buffer	();
+	winlirc_init_send_buffer	(&send_buffer);
 	initHardwareStruct	();
 
 	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);

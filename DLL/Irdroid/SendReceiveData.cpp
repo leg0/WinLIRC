@@ -29,6 +29,8 @@
 #include "../Common/Win32Helpers.h"
 #include <iterator>
 
+static sbuf send_buffer;
+
 DWORD WINAPI Irdroid(void *recieveClass) {
 
 	((SendReceiveData*)recieveClass)->threadProc();
@@ -309,7 +311,7 @@ UCHAR SendReceiveData::calcPR2(int frequency) {
 
 int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 
-	if (winlirc_init_send(remote, code, repeats)) {
+	if (winlirc_init_send(&send_buffer, remote, code, repeats)) {
 
 		//====================
 		USHORT	*irDroidSignals;
@@ -346,8 +348,8 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			}
 		}
 
-		auto length		= winlirc_get_send_buffer_length()+1;
-		auto const signals		= winlirc_get_send_buffer_data();
+		auto length		= winlirc_get_send_buffer_length(&send_buffer)+1;
+		auto const signals		= winlirc_get_send_buffer_data(&send_buffer);
 		temp[0]		= 0x03;	// transmit mode
 		irDroidSignals= (USHORT*)malloc(sizeof(USHORT) * (length)); // add 1 for 0xFFFF terminator
 		

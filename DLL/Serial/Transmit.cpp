@@ -12,6 +12,7 @@ unsigned long pulse_width = 13; /* pulse/space ratio of 50/50 */
 unsigned long space_width = 13; /* 1000000/freq-pulse_width */
 int pulse_byte_length=78; //usecs per byte (tx soft carrier)
 unsigned transmittertype;
+static sbuf send_buffer;
 
 #define MAXPULSEBYTES 256
 int pulsedata[MAXPULSEBYTES];
@@ -246,10 +247,10 @@ int Transmit(ir_ncode *data,struct ir_remote *rem, int repeats)
 
 	init_timer			();
 
-	if (winlirc_init_send(rem, data, repeats)) {
+	if (winlirc_init_send(&send_buffer, rem, data, repeats)) {
 
-		auto const length	= winlirc_get_send_buffer_length();
-		auto const signals	= winlirc_get_send_buffer_data();
+		auto const length	= winlirc_get_send_buffer_length(&send_buffer);
+		auto const signals	= winlirc_get_send_buffer_data(&send_buffer);
 
 		for(int i=0; i<length; i++) {
 			if(i%2==0)	send_pulse(signals[i]);

@@ -30,6 +30,7 @@
 lirc_t			dataBuffer[256];
 unsigned char	bufferStart;
 unsigned char	bufferEnd;
+sbuf send_buffer;
 
 bool waitTillDataIsReady(int maxUSecs) {
 
@@ -123,10 +124,10 @@ int send(ir_remote *remote, ir_ncode *code, int repeats) {
 		frequency = remote->freq;
 	}
 
-	if (winlirc_init_send(remote, code,repeats))
+	if (winlirc_init_send(&send_buffer, remote, code,repeats))
 	{
-		auto const length		= winlirc_get_send_buffer_length();
-		auto const signals		= winlirc_get_send_buffer_data();
+		auto const length		= winlirc_get_send_buffer_length(&send_buffer);
+		auto const signals		= winlirc_get_send_buffer_data(&send_buffer);
 
 		//
 		// raw array of timing values
