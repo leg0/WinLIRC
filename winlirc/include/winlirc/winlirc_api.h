@@ -63,9 +63,9 @@ WINLIRC_API bool winlirc_decodeCommand(
 
 // Receive
 
-WINLIRC_API void init_rec_buffer(rbuf* rec_buffer);
-WINLIRC_API int clear_rec_buffer(rbuf* rec_buffer, hardware const* hw);
-WINLIRC_API int receive_decode(rbuf* rec_buffer,
+WINLIRC_API void winlirc_init_rec_buffer(rbuf* rec_buffer);
+WINLIRC_API int winlirc_clear_rec_buffer(rbuf* rec_buffer, hardware const* hw);
+WINLIRC_API int winlirc_receive_decode(rbuf* rec_buffer,
 	hardware const* hw, ir_remote* remote,
 	ir_code* prep, ir_code* codep, ir_code* postp,
 	int* repeat_flagp,
@@ -73,7 +73,7 @@ WINLIRC_API int receive_decode(rbuf* rec_buffer,
 
 // Send
 
-WINLIRC_API int get_send_buffer_length();
-WINLIRC_API lirc_t const* get_send_buffer_data();
-WINLIRC_API void init_send_buffer();
-WINLIRC_API int init_send(ir_remote *remote, ir_ncode *code, int repeats);
+WINLIRC_API int winlirc_get_send_buffer_length();
+WINLIRC_API lirc_t const* winlirc_get_send_buffer_data();
+WINLIRC_API void winlirc_init_send_buffer();
+WINLIRC_API int winlirc_init_send(ir_remote *remote, ir_ncode *code, int repeats);

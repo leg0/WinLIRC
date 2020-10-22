@@ -415,7 +415,7 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		carrierFrequency = remote->freq;
 	}
 
-	if (init_send(remote, code, repeats)) {
+	if (winlirc_init_send(remote, code, repeats)) {
 
 		//====================
 		int		*mceData;
@@ -430,8 +430,8 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		//
 		KillThread(exitEvent,threadHandle);
 
-		auto const length		= get_send_buffer_length();
-		auto const signals		= get_send_buffer_data();
+		auto const length		= winlirc_get_send_buffer_length();
+		auto const signals		= winlirc_get_send_buffer_data();
 
 		mceData		= new int[length];
 

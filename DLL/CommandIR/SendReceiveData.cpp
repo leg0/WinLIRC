@@ -123,10 +123,10 @@ int send(ir_remote *remote, ir_ncode *code, int repeats) {
 		frequency = remote->freq;
 	}
 
-	if (init_send(remote, code,repeats))
+	if (winlirc_init_send(remote, code,repeats))
 	{
-		auto const length		= get_send_buffer_length();
-		auto const signals		= get_send_buffer_data();
+		auto const length		= winlirc_get_send_buffer_length();
+		auto const signals		= winlirc_get_send_buffer_data();
 
 		//
 		// raw array of timing values

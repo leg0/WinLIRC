@@ -94,7 +94,7 @@ static lirc_t get_next_rec_buffer(rbuf& rec_buffer, hardware const& hw, lirc_t m
 	return get_next_rec_buffer_internal(rec_buffer, hw, maxusec);
 }
 
-WINLIRC_API void init_rec_buffer(rbuf* rec_buffer)
+WINLIRC_API void winlirc_init_rec_buffer(rbuf* rec_buffer)
 {
 	memset(rec_buffer, 0, sizeof(*rec_buffer));
 }
@@ -108,7 +108,7 @@ static void rewind_rec_buffer(rbuf& rec_buffer)
 	rec_buffer.sum=0;
 }
 
-WINLIRC_API int clear_rec_buffer(rbuf* prec_buffer, hardware const* phw)
+WINLIRC_API int winlirc_clear_rec_buffer(rbuf* prec_buffer, hardware const* phw)
 {
     auto& hw = *phw;
 	auto& rec_buffer = *prec_buffer;
@@ -998,7 +998,7 @@ static ir_code get_post(rbuf& rec_buffer, hardware const& hw, struct ir_remote *
 	return(post);
 }
 
-WINLIRC_API int receive_decode(
+WINLIRC_API int winlirc_receive_decode(
 	rbuf* prec_buffer,hardware const* phw, struct ir_remote *remote,
 	ir_code *prep,ir_code *codep,ir_code *postp,
 	int *repeat_flagp,

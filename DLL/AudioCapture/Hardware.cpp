@@ -58,7 +58,7 @@ void wait_for_data(lirc_t uSecs) {
 
 void initHardwareStruct() {
 
-	hw.decode_func	= &receive_decode;
+	hw.decode_func	= &winlirc_receive_decode;
 	hw.readdata		= &readdata;
 	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;

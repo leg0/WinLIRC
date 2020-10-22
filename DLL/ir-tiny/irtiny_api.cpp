@@ -31,7 +31,7 @@ rbuf rec_buffer;
 
 extern "C" static int irtiny_init(WLEventHandle exitEvent)
 {
-    init_rec_buffer(&rec_buffer);
+    winlirc_init_rec_buffer(&rec_buffer);
     irDriver = std::make_unique<irtiny::CIRDriver>(reinterpret_cast<HANDLE>(exitEvent));
     return irDriver->initPort();
 }
@@ -63,7 +63,7 @@ static hardware const irtiny_hardware =
     LIRC_MODE_MODE2, //rec_mode
     0, // code_length
     0, // resolution
-    &receive_decode, // decode_func 
+    &winlirc_receive_decode, // decode_func 
     &irtiny_readData, // readdata 
     &irtiny_waitForData, // wait_for_data 
     &irtiny_dataReady, // data_ready
@@ -76,7 +76,7 @@ extern "C" int static irtiny_decodeIR(ir_remote* remotes, char* out, size_t out_
     if (!irDriver || !irDriver->waitTillDataIsReady(0us))
         return 0;
 
-    clear_rec_buffer(&rec_buffer, &irtiny_hardware);
+    winlirc_clear_rec_buffer(&rec_buffer, &irtiny_hardware);
     return winlirc_decodeCommand(&rec_buffer, &irtiny_hardware, remotes, out, out_size);
 }
 

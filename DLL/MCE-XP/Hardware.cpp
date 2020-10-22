@@ -61,7 +61,7 @@ int data_ready() {
 
 void initHardwareStruct() {
 
-	hw.decode_func	= &receive_decode;
+	hw.decode_func	= &winlirc_receive_decode;
 	hw.readdata		= &readData;
 	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;

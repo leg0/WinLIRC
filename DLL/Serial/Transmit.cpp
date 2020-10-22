@@ -246,10 +246,10 @@ int Transmit(ir_ncode *data,struct ir_remote *rem, int repeats)
 
 	init_timer			();
 
-	if (init_send(rem, data, repeats)) {
+	if (winlirc_init_send(rem, data, repeats)) {
 
-		auto const length	= get_send_buffer_length();
-		auto const signals	= get_send_buffer_data();
+		auto const length	= winlirc_get_send_buffer_length();
+		auto const signals	= winlirc_get_send_buffer_data();
 
 		for(int i=0; i<length; i++) {
 			if(i%2==0)	send_pulse(signals[i]);

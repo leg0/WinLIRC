@@ -6,17 +6,17 @@
 
 static struct sbuf send_buffer;
 
-WINLIRC_API int get_send_buffer_length(void)
+WINLIRC_API int winlirc_get_send_buffer_length(void)
 {
     return send_buffer.wptr;
 }
 
-WINLIRC_API lirc_t const* get_send_buffer_data(void)
+WINLIRC_API lirc_t const* winlirc_get_send_buffer_data(void)
 {
     return send_buffer.data;
 }
 
-WINLIRC_API void init_send_buffer(void)
+WINLIRC_API void winlirc_init_send_buffer(void)
 {
 	memset(&send_buffer,0,sizeof(send_buffer));
 }
@@ -379,7 +379,7 @@ void send_signals(lirc_t *signals, int n)
 	}
 }
 
-WINLIRC_API int init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
+WINLIRC_API int winlirc_init_send(struct ir_remote *remote,struct ir_ncode *code, int repeats)
 {
 	int repeat=0;
 	
