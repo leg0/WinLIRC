@@ -23,7 +23,7 @@
 #include <tchar.h>
 #include "../Common/enumSerialPorts.h"
 #include <winlirc/WLPluginAPI.h>
-#include <winlirc/IRRemote.h>
+#include <winlirc/winlirc_api.h>
 #include "../Common/Win32Helpers.h"
 #include "Globals.h"
 #include "resource.h"

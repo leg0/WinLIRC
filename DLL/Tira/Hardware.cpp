@@ -25,7 +25,7 @@
 #include "Globals.h"
 #include "TiraDLL.h"
 
-#include <winlirc/IRRemote.h>
+#include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
 
 #define CODE_LENGTH 64

@@ -22,8 +22,7 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include "../Common/LircDefines.h"
-#include <winlirc/IRRemote.h>
-#include <winlirc/Receive.h>
+#include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
 #include "../Common/Win32Helpers.h"
 #include <stdio.h>

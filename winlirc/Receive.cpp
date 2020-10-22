@@ -19,7 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#include <winlirc/Receive.h>S
+#include <winlirc/winlirc_api.h>
 #include "../DLL/Common/LIRCDefines.h"
 #include <winlirc/WLPluginAPI.h>
 #include <stdio.h>

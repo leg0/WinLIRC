@@ -1,7 +1,7 @@
 #include <windows.h>
 
 #include "../Common/LIRCDefines.h"
-#include <winlirc/Send.h>
+#include <winlirc/winlirc_api.h>
 
 #include "Transmit.h"
 

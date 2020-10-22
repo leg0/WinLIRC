@@ -20,7 +20,7 @@
  */
 
 #include "Globals.h"
-#include <winlirc/IRRemote.h>
+#include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
 #include <chrono>
 

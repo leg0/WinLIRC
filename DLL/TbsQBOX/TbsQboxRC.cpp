@@ -8,7 +8,7 @@
 #include "Settings.h"
 
 #include <winlirc/WLPluginAPI.h>
-#include <winlirc/IRRemote.h>
+#include <winlirc/winlirc_api.h>
 #include "../Common/Win32Helpers.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;

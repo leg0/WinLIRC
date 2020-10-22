@@ -1,4 +1,4 @@
-#include <winlirc/Send.h>
+#include <winlirc/winlirc_api.h>
 #include <Windows.h>
 #include "../DLL/Common/LIRCDefines.h"
 

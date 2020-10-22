@@ -23,7 +23,7 @@
 #include <Windows.h>
 
 #include <winlirc/WLPluginAPI.h>
-#include <winlirc/IRRemote.h>
+#include <winlirc/winlirc_api.h>
 
 void initHardwareStruct();
 extern hardware hw;

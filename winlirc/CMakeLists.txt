@@ -8,9 +8,6 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 set(CMAKE_MFC_FLAG 2)
 
 set (PUBLIC_API_FILES
-	include/winlirc/IRRemote.h
-	include/winlirc/Receive.h
-	include/winlirc/Send.h
 	include/winlirc/winlirc_api.h
 	include/winlirc/WLPluginApi.h)
 

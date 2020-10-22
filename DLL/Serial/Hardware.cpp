@@ -21,7 +21,7 @@
 
 #include "Globals.h"
 
-#include <winlirc/Receive.h>
+#include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
 
 struct hardware hw;

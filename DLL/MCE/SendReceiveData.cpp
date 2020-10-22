@@ -22,7 +22,7 @@
 #include <windows.h>
 #include "SendReceiveData.h"
 #include "Globals.h"
-#include <winlirc/Send.h>
+#include <winlirc/winlirc_api.h>
 #include "../Common/DebugOutput.h"
 #include "../Common/LIRCDefines.h"
 #include "../Common/Win32Helpers.h"
