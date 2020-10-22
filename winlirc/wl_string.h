@@ -41,7 +41,7 @@ std::basic_string_view<C, CT> rtrim(std::basic_string_view<C, CT> s, char const*
         // everything is in s is a space.
         return {};
     else
-        return s.substr(0, pos);
+        return s.substr(0, pos+1);
 }
 
 bool operator==(istring_view const&, nullptr_t) = delete;
