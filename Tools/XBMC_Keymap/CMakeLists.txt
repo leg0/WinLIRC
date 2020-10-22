@@ -11,7 +11,6 @@ add_executable(XBMC_Keymap WIN32
 	Keymap.rc
 	KeymapDlg.cpp
 	KeymapDlg.h
-	ReadMe.txt
 	resource.h
 	stdafx.cpp
 	stdafx.h
