@@ -309,13 +309,13 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 	retval = 0;
 
 	/* set the carrier frequency if necessary */
-	freq = htonl(remote->freq);
+	freq = htonl(get_freq(remote));
 
-	if (remote->freq != currentCarrier 
-	&& remote->freq >= 25000 && remote->freq <= 100000 
+	if (get_freq(remote) != currentCarrier 
+	&& get_freq(remote) >= 25000 && get_freq(remote) <= 100000 
 	&& daemonTransaction(IG_DEV_SETCARRIER, &freq, sizeof(freq))) {
 
-		currentCarrier = remote->freq;
+		currentCarrier = get_freq(remote);
 	}
 
 	if (winlirc_init_send(&send_buffer, remote, code,repeats))

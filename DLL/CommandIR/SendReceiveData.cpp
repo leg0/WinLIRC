@@ -120,8 +120,8 @@ int send(ir_remote *remote, ir_ncode *code, int repeats) {
 
 	int frequency = 38000;
 	
-	if(remote->freq) {
-		frequency = remote->freq;
+	if(get_freq(remote)) {
+		frequency = get_freq(remote);
 	}
 
 	if (winlirc_init_send(&send_buffer, remote, code,repeats))

@@ -17,3 +17,7 @@ target_link_libraries(winlirc_tests
 add_test(
 	NAME winlirc_tests 
 	COMMAND winlirc_tests)
+
+# Copy winlirc.exe next to winlirc_tests.exe
+add_custom_command(TARGET winlirc_tests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:winlirc>" "$<TARGET_FILE_DIR:winlirc_tests>")

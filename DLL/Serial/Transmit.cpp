@@ -181,12 +181,12 @@ void SetTransmitPort(HANDLE hCom,unsigned type)  // sets the serial port to tran
 	return;
 }
 
-bool config_transmitter(struct ir_remote *rem) //configures the transmitter for the specified remote
+bool config_transmitter(ir_remote *rem) //configures the transmitter for the specified remote
 {
-	if (rem->freq==0) rem->freq=38000;				//default this should really be elsewhere
-	if (rem->duty_cycle==0) rem->duty_cycle=50;		//default this should really be elsewhere
-	pulse_width=(unsigned long) rem->duty_cycle*10000/rem->freq;
-	space_width=(unsigned long) 1000000L/rem->freq-pulse_width;
+	if (get_freq(rem)==0) set_freq(rem,38000);				//default this should really be elsewhere
+	if (get_duty_cycle(rem)==0) set_duty_cycle(rem,50);		//default this should really be elsewhere
+	pulse_width=(unsigned long) get_duty_cycle(rem)*10000/get_freq(rem);
+	space_width=(unsigned long) 1000000L/get_freq(rem)-pulse_width;
 
 	if (transmittertype==TXTRANSMITTER) //tx software carrier
 	{
@@ -200,11 +200,11 @@ bool config_transmitter(struct ir_remote *rem) //configures the transmitter for 
 		dcb.BaudRate=CBR_115200;
 		dcb.Parity=NOPARITY;
 		dcb.StopBits=ONESTOPBIT;
-		if (rem->freq<48000)
+		if (get_freq(rem)<48000)
 		{
 			dcb.ByteSize=7;
 			pulse_byte_length=78; // (1+bytesize+parity+stopbits+)/Baudrate*1E6
-			if (rem->duty_cycle<50) for (int i=0;i<MAXPULSEBYTES;i++) pulsedata[i]=0x5b;
+			if (get_duty_cycle(rem)<50) for (int i=0;i<MAXPULSEBYTES;i++) pulsedata[i]=0x5b;
 			else for (int i=0;i<MAXPULSEBYTES;i++) pulsedata[i]=0x12;
 		} else {		
 			dcb.ByteSize=8;

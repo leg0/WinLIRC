@@ -51,7 +51,7 @@ static int irman_decode (rbuf* rec_buffer, hardware const*,ir_remote *remote, ir
 	return 1;
 }
 
-ir_code get_ir_code() {
+ir_code irman_get_ir_code() {
 
 	//==================
 	ir_code currentCode;
@@ -88,7 +88,7 @@ void initHardwareStruct() {
 	hw.readdata		= nullptr;
 	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;
-	hw.get_ir_code	= &get_ir_code;
+	hw.get_ir_code	= &irman_get_ir_code;
 
 	hw.features		= LIRC_CAN_REC_LIRCCODE;
 	hw.send_mode	= 0;

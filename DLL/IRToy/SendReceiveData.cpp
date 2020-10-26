@@ -314,13 +314,13 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		serial.SetMask(CSerial::EEventNone);
 		serial.SetupReadTimeouts(CSerial::EReadTimeoutBlocking);
 
-		if(remote->freq) {
+		if(get_freq(remote)) {
 
 			//======
 			int pr2;
 			//======
 
-			pr2 = calcPR2(remote->freq);
+			pr2 = calcPR2(get_freq(remote));
 
 			if(pr2) {
 

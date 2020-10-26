@@ -410,11 +410,11 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		return 0;			// not set any blaster ports
 	}
 
-	if(remote->freq==0) {
+	if(get_freq(remote)==0) {
 		carrierFrequency = 38000;
 	}
 	else {
-		carrierFrequency = remote->freq;
+		carrierFrequency = get_freq(remote);
 	}
 
 	if (winlirc_init_send(&send_buffer, remote, code, repeats)) {

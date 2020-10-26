@@ -38,7 +38,7 @@ extern void winlirc_debug(const char *file, int line, char *format, ...);
 
 /* Constants */
 #include "version.h"
-#define WBUF_SIZE (256)
+//#define WBUF_SIZE (256)
 #define RBUF_SIZE (256)
 #define PACKET_SIZE (256)
 #define PULSE_BIT 0x1000000

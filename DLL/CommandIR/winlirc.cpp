@@ -3,6 +3,7 @@
 #include "SendReceiveData.h"
 #include "../Common/Win32Helpers.h"
 #include "../Common/LIRCDefines.h"
+#include <winlirc/winlirc_api.h>
 
 extern "C" {
 	#include "CommandIRUtils\libcmdir.h"

@@ -32,7 +32,7 @@ struct ir_remote *last_remote	= nullptr;
 struct ir_remote *repeat_remote	= nullptr;
 struct ir_ncode *repeat_code	= nullptr;
 
-int winlirc_map_code(struct ir_remote *remote,
+WINLIRC_API int winlirc_map_code(struct ir_remote *remote,
 	     ir_code *prep,ir_code *codep,ir_code *postp,
 	     int pre_bits,ir_code pre,
 	     int bits,ir_code code,
@@ -60,7 +60,7 @@ int winlirc_map_code(struct ir_remote *remote,
 	return(1);
 }
 
-void winlirc_map_gap(
+WINLIRC_API void winlirc_map_gap(
 		ir_remote *remote,
 		int64_t time_elapsed_us,
 		lirc_t signal_length,
@@ -303,7 +303,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 	return(found);
 }
 
-unsigned long long set_code(struct ir_remote *remote,struct ir_ncode *found,
+static unsigned long long set_code(ir_remote *remote, ir_ncode *found,
 			    ir_code toggle_bit_mask_state,int repeat_flag,
 			    lirc_t min_remaining_gap, lirc_t max_remaining_gap)
 {
@@ -384,7 +384,7 @@ unsigned long long set_code(struct ir_remote *remote,struct ir_ncode *found,
 	return(code);
 }
 
-int write_message(char *buffer, size_t size, const char *remote_name,
+static int write_message(char *buffer, size_t size, const char *remote_name,
 		  const char *button_name, const char *button_suffix,
 		  ir_code code, int reps)
 {
@@ -399,7 +399,7 @@ int write_message(char *buffer, size_t size, const char *remote_name,
 	return len;
 }
 
-bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
+WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
 {
     auto& hw = *phw;
 	struct ir_remote *remote;
@@ -472,4 +472,309 @@ bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, struct ir_rem
 	last_remote=nullptr;
 
 	return false;
+}
+
+WINLIRC_API ir_code get_ir_code(struct ir_ncode* ncode, struct ir_code_node* node)
+{
+	if (ncode->next && node != nullptr) return node->code;
+	return ncode->code;
+}
+
+WINLIRC_API struct ir_code_node* get_next_ir_code_node(struct ir_ncode* ncode, struct ir_code_node* node)
+{
+	if (node == nullptr) return ncode->next;
+	return node->next;
+}
+
+WINLIRC_API int bit_count(ir_remote const* remote)
+{
+	return remote->pre_data_bits +
+		remote->bits +
+		remote->post_data_bits;
+}
+
+WINLIRC_API int bits_set(ir_code data)
+{
+	int ret = 0;
+	while (data)
+	{
+		if (data & 1) ret++;
+		data >>= 1;
+	}
+	return ret;
+}
+
+WINLIRC_API ir_code reverse(ir_code data, int bits)
+{
+	int i;
+	ir_code c;
+
+	c = 0;
+	for (i = 0; i < bits; i++)
+	{
+		c |= (ir_code)(((data & (((ir_code)1) << i)) ? 1 : 0))
+			<< (bits - 1 - i);
+	}
+	return(c);
+}
+
+WINLIRC_API int is_pulse(lirc_t data)
+{
+	return(data & PULSE_BIT ? 1 : 0);
+}
+
+WINLIRC_API int is_space(lirc_t data)
+{
+	return(!is_pulse(data));
+}
+
+WINLIRC_API int has_repeat(ir_remote const* remote)
+{
+	if (remote->prepeat > 0 && remote->srepeat > 0) return(1);
+	else return(0);
+}
+
+WINLIRC_API void set_protocol(ir_remote* remote, int protocol)
+{
+	remote->flags &= ~(IR_PROTOCOL_MASK);
+	remote->flags |= protocol;
+}
+
+WINLIRC_API int is_raw(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == RAW_CODES) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_space_enc(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == SPACE_ENC) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_space_first(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == SPACE_FIRST) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_rc5(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == RC5) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_rc6(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == RC6 ||
+		remote->rc6_mask) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_biphase(ir_remote const* remote)
+{
+	if (is_rc5(remote) || is_rc6(remote)) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_rcmm(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == RCMM) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_goldstar(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == GOLDSTAR) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_grundig(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == GRUNDIG) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_bo(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == BO) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_serial(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == SERIAL) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_xmp(ir_remote const* remote)
+{
+	if ((remote->flags & IR_PROTOCOL_MASK) == XMP) return(1);
+	else return(0);
+}
+
+WINLIRC_API int is_const(ir_remote const* remote)
+{
+	if (remote->flags & CONST_LENGTH) return(1);
+	else return(0);
+}
+
+WINLIRC_API int has_repeat_gap(ir_remote const* remote)
+{
+	if (remote->repeat_gap > 0) return(1);
+	else return(0);
+}
+
+WINLIRC_API int has_pre(ir_remote const* remote)
+{
+	if (remote->pre_data_bits > 0) return(1);
+	else return(0);
+}
+
+WINLIRC_API int has_post(ir_remote const* remote)
+{
+	if (remote->post_data_bits > 0) return(1);
+	else return(0);
+}
+
+WINLIRC_API int has_header(ir_remote const* remote)
+{
+	if (remote->phead > 0 && remote->shead > 0) return(1);
+	else return(0);
+}
+
+WINLIRC_API int has_foot(ir_remote const* remote)
+{
+	if (remote->pfoot > 0 && remote->sfoot > 0) return(1);
+	else return(0);
+}
+
+WINLIRC_API int has_toggle_bit_mask(ir_remote const* remote)
+{
+	if (remote->toggle_bit_mask > 0) return(1);
+	else return(0);
+}
+
+WINLIRC_API int has_ignore_mask(ir_remote const* remote)
+{
+	if (remote->ignore_mask > 0) return(1);
+	else return(0);
+}
+
+WINLIRC_API int has_toggle_mask(ir_remote const* remote)
+{
+	if (remote->toggle_mask > 0) return(1);
+	else return(0);
+}
+
+WINLIRC_API lirc_t min_gap(ir_remote const* remote)
+{
+	if (remote->gap2 != 0 && remote->gap2 < remote->gap)
+	{
+		return remote->gap2;
+	}
+	else
+	{
+		return remote->gap;
+	}
+}
+
+WINLIRC_API lirc_t max_gap(ir_remote const* remote)
+{
+	if (remote->gap2 > remote->gap)
+	{
+		return remote->gap2;
+	}
+	else
+	{
+		return remote->gap;
+	}
+}
+
+WINLIRC_API ir_code gen_mask(int bits)
+{
+	int i;
+	ir_code mask;
+
+	mask = 0;
+	for (i = 0; i < bits; i++)
+	{
+		mask <<= 1;
+		mask |= 1;
+	}
+	return(mask);
+}
+
+WINLIRC_API ir_code gen_ir_code(ir_remote const* remote, ir_code pre, ir_code code, ir_code post)
+{
+	ir_code all;
+
+	all = (pre & gen_mask(remote->pre_data_bits));
+	all <<= remote->bits;
+	all |= is_raw(remote) ? code : (code & gen_mask(remote->bits));
+	all <<= remote->post_data_bits;
+	all |= post & gen_mask(remote->post_data_bits);
+
+	return all;
+}
+
+WINLIRC_API int match_ir_code(ir_remote const* remote, ir_code a, ir_code b)
+{
+	return ((remote->ignore_mask | a) == (remote->ignore_mask | b) || (remote->ignore_mask | a) == (remote->ignore_mask | (b ^ remote->toggle_bit_mask)));
+}
+
+WINLIRC_API int expect(ir_remote const* remote, lirc_t delta, lirc_t exdelta)
+{
+	int aeps = remote->aeps;
+
+	if (abs(exdelta - delta) <= exdelta * remote->eps / 100 ||
+		abs(exdelta - delta) <= aeps)
+		return 1;
+	return 0;
+}
+
+WINLIRC_API int expect_at_least(ir_remote const* remote,
+	lirc_t delta, lirc_t exdelta)
+{
+	int aeps = remote->aeps;
+
+	if (delta + exdelta * remote->eps / 100 >= exdelta ||
+		delta + aeps >= exdelta)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+WINLIRC_API int expect_at_most(ir_remote const* remote,
+	lirc_t delta, lirc_t exdelta)
+{
+	int aeps = remote->aeps;
+
+	if (delta <= exdelta + exdelta * remote->eps / 100 ||
+		delta <= exdelta + aeps)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+WINLIRC_API unsigned get_freq(ir_remote const* remote)
+{
+	return remote->freq;
+}
+
+WINLIRC_API void set_freq(ir_remote* remote, unsigned freq)
+{
+	remote->freq = freq;
+}
+
+WINLIRC_API unsigned get_duty_cycle(ir_remote const* remote)
+{
+	return remote->duty_cycle;
+}
+
+WINLIRC_API void set_duty_cycle(ir_remote* remote, unsigned duty_cycle)
+{
+	remote->duty_cycle = duty_cycle;
 }

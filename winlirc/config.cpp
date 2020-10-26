@@ -1,15 +1,4 @@
-/*      $Id$      */
-
-/****************************************************************************
- ** config_file.c ***********************************************************
- ****************************************************************************
- *
- * config_file.c - parses the config file of lircd
- *
- * Copyright (C) 1998 Pablo d'Angelo <pablo@ag-trek.allgaeu.org>
- *
- */
-
+#include <winlirc/winlirc_api.h>
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -91,47 +80,6 @@ static char* s_strdup(winlirc::istring_view string)
     memcpy(ptr, string.data(), string.size());
     ptr[string.size()] = 0;
     return ptr;
-}
-
-/* my very own strtouq */
-unsigned __int64 strtouq(const char *val, char **endptr, int base)
-{
-	while(*val=='\t' || *val==' ') val++;
-	if(base==0)
-		if(val[0]=='0')
-			if(val[1]=='x' || val[1]=='X')
-			{
-				base=16;
-				val+=2;
-			}
-			else
-			{
-				val++;
-				base=8;
-			}
-		else
-			base=10;
-	
-	char convert[256];
-	for(int i=0;i<255;i++)
-	{
-		if(i>='0' && i<='9') convert[i]=i-'0';
-		else if(i>='a' && i<='f') convert[i]=(i-'a')+10;
-		else if(i>='A' && i<='F') convert[i]=(i-'A')+10;
-		else convert[i]=-1;
-	}
-
-	unsigned __int64 result=0;
-	while(*val && convert[*val]!=-1)
-	{
-		result*=base;
-		result+=convert[*val];
-		val++;
-	}
-
-	*endptr=(char*)val;
-
-	return result;
 }
 
 template <typename Int, typename Char, typename CharTraits>
