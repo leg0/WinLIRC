@@ -58,7 +58,7 @@ bool CIRConfig::readConfig() {
 	FILE *file;
 	//========================================
 
-	if(remoteConfig=="" || (file=_tfopen(remoteConfig,_T("r")))==nullptr)	
+	if (remoteConfig == std::filesystem::path{} || (file = _wfopen(remoteConfig.wstring().c_str(), L"r")) == nullptr)
 		return false;
 
 	if(global_remotes!=nullptr) {
@@ -67,7 +67,7 @@ bool CIRConfig::readConfig() {
 	}
 	
 	USES_CONVERSION;
-	global_remotes = read_config(file,T2A(remoteConfig.GetBuffer()));
+	global_remotes = read_config(file,remoteConfig.string().c_str());
 
 	fclose(file);
 
@@ -115,8 +115,8 @@ bool CIRConfig::writeINIFile() {
 	tempPath += path;
 	tempPath += _T("\\WinLIRC.ini");
 
-	WritePrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),remoteConfig,tempPath);
-	WritePrivateProfileString(_T("WinLIRC"),_T("Plugin"),plugin.c_str(),tempPath);
+	WritePrivateProfileStringW(L"WinLIRC", L"RemoteConfig", remoteConfig.c_str(), tempPath);
+	WritePrivateProfileStringW(L"WinLIRC", L"Plugin", plugin.c_str(), tempPath);
 
 	_sntprintf(tempIni,_countof(tempIni),_T("%i"),disableRepeats);
 	WritePrivateProfileString(_T("WinLIRC"),_T("DisableKeyRepeats"),tempIni,tempPath);

@@ -2,3 +2,5 @@ ms-gsl:x86-windows
 wtl:x86-windows
 gtest:x86-windows
 tinyxml2:x86-windows
+taocpp-json:x86-windows
+mongoose:x86-windows

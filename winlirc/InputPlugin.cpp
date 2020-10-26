@@ -167,7 +167,7 @@ void InputPlugin::OnBnClickedOk() {
 		}
 	}
 
-	config.remoteConfig = confPath;
+	config.remoteConfig = static_cast<LPCTSTR>(confPath);
 
 	config.plugin = m_plugins[m_cboxInputPlugin.GetCurSel()];
 
@@ -269,7 +269,7 @@ BOOL InputPlugin::OnInitDialog() {
 
 	listDllFiles();
 
-	m_configPath.SetWindowText(config.remoteConfig);
+	m_configPath.SetWindowTextW(config.remoteConfig.wstring().c_str());
 
 	temp.Format(_T("%i"),config.disableFirstKeyRepeats);
 	m_disableFirstRepeats.SetWindowText(temp);

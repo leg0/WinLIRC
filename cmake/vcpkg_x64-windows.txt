@@ -2,3 +2,5 @@ ms-gsl:x64-windows
 wtl:x64-windows
 gtest:x64-windows
 tinyxml2:x64-windows
+taocpp-json:x64-windows
+mongoose:x64-windows

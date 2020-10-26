@@ -17,19 +17,35 @@ echo Build directory      %build_dir%
 git submodule update --init
 
 pushd vcpkg
-call bootstrap-vcpkg.bat
+if not exist vcpkg.exe (call bootstrap-vcpkg.bat)
 vcpkg install @%source_dir%\cmake\vcpkg_%arch%-windows.txt 
 popd
 
 mkdir %build_dir%
 
-for /f "usebackq tokens=*" %%a in (`where /R . cmake.exe`) do (set cmake=%%a; goto endfor)
-:endfor
+if "%cmake%" == "" (goto detect_cmake) else (goto run_cmake)
+
+:detect_cmake
+for /f "usebackq tokens=*" %%a in (`where /R . cmake.exe`) do (
+	set cmake=%%a
+	goto endfor1)
+:endfor1
+
+if "%cmake%" == "" goto try_programfiles
+goto run_cmake
+
+:try_programfiles
+for /f "usebackq tokens=*" %%a in (`where /R "c:\program files\cmake" cmake.exe`) do (
+	set cmake=%%a
+	goto endfor 2)
+:endfor2
 
 if "%cmake%" == "" (
 	echo CMake not found. You should install it.
 	goto end)
-%cmake% -S %source_dir% -B %build_dir% -A %vs_arch% -DCMAKE_TOOLCHAIN_FILE=%source_dir%\vcpkg\scripts\buildsystems\vcpkg.cmake
+
+:run_cmake
+"%cmake%" -S %source_dir% -B %build_dir% -A %vs_arch% -DCMAKE_TOOLCHAIN_FILE=%source_dir%\vcpkg\scripts\buildsystems\vcpkg.cmake
 
 :end
 popd

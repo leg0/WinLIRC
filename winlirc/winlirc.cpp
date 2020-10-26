@@ -1,31 +1,17 @@
-/* 
- * This file is part of the WinLIRC package, which was derived from
- * LIRC (Linux Infrared Remote Control) 0.5.4pre9.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * Copyright (C) 1999 Jim Paris <jim@jtan.com>
- */
-
 #include "stdafx.h"
 #include "winlirc.h"
 #include "drvdlg.h"
 #include "server.h"
 #include "guicon.h"
+
+#include <tao/json.hpp>
+#include <tao/json/contrib/traits.hpp>
+
+#include <algorithm>
 #include <filesystem>
+#include <iterator>
 #include <string_view>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -41,6 +27,100 @@ static fs::path getModuleFileName()
 fs::path getPluginsDirectory()
 {
 	return absolute(getModuleFileName().replace_filename(L"plugins"));
+}
+
+fs::path getConfigsDirectory()
+{
+	return absolute(getModuleFileName().replace_filename(L"configs"));
+}
+
+std::vector<fs::path> listPlugins()
+{
+	std::vector<fs::path> plugins;
+	auto pluginsDir = getPluginsDirectory();
+	for (auto& p : fs::directory_iterator(pluginsDir))
+	{
+		auto path = p.path();
+		if (path.extension() == L".dll")
+		{
+			Plugin plugin{ path };
+			if (plugin.hasValidInterface())
+				plugins.push_back(absolute(path));
+		}
+	}
+	return plugins;
+}
+
+std::vector<fs::path> listConfigs()
+{
+	std::vector<fs::path> configs;
+	auto configsDir = getConfigsDirectory();
+	for (auto& p : fs::directory_iterator(configsDir))
+	{
+		auto path = p.path();
+		if (path.extension() == L".conf" || path.extension() == L".cf")
+		{
+			configs.push_back(absolute(path));
+		}
+	}
+	return configs;
+}
+
+static winlirc::WebServer::response get_plugins()
+{
+	auto plugins = listPlugins();
+	std::vector<tao::json::value> pluginNames;
+	std::transform(begin(plugins), end(plugins), std::back_inserter(pluginNames), [](auto& path) {
+			return path.filename().replace_extension().string();
+		});
+	tao::json::value val{ { "plugins", pluginNames } };
+	winlirc::WebServer::response r{};
+	r.body = to_string(val);
+	r.mimeType = "text/json";
+
+	return r;
+}
+
+static winlirc::WebServer::response get_settings()
+{
+	tao::json::value val{ {"settings", {
+			{"config", config.remoteConfig.filename().replace_extension().string()},
+			{"plugin", config.plugin.filename().replace_extension().string()},
+			{"disable_repeats", config.disableRepeats != 0},
+			{"disable_first_repeats", config.disableFirstKeyRepeats},
+			{"server_port", config.serverPort},
+			{"local_connections_only", config.localConnectionsOnly != 0},
+			{"show_tray_icon", config.showTrayIcon != 0},
+			{"exit_on_error", config.exitOnError != 0}
+		} } };
+
+	winlirc::WebServer::response r{};
+	r.body = to_string(val);
+	r.mimeType = "text/json";
+	return r;
+}
+
+static winlirc::WebServer::response put_settings(winlirc::IHttpMessage const& request)
+{
+	auto body = request.body();
+
+	auto j = tao::json::from_string(body);
+	return { };
+}
+
+static winlirc::WebServer::response get_configs()
+{
+	auto configs = listConfigs();
+	std::vector<tao::json::value> configNames;
+	std::transform(begin(configs), end(configs), std::back_inserter(configNames), [](auto& path) {
+			return path.filename().replace_extension().string();
+		});
+	tao::json::value val{ { "configs", configNames } };
+
+	winlirc::WebServer::response r{};
+	r.body = to_string(val);
+	r.mimeType = "text/json";
+	return r;
 }
 
 BOOL Cwinlirc::InitInstance() {
@@ -116,11 +196,31 @@ BOOL Cwinlirc::InitInstance() {
 	dlg->UpdateWindow();
 	m_pMainWnd = dlg.get();
 	
+	webServer = std::make_unique<winlirc::WebServer>(8766);
+	webServer->RegisterEndpoint(
+		"GET",
+		"/api/v1/plugins",
+		[](winlirc::svmatch const&, winlirc::IHttpMessagePtr) { return get_plugins(); });
+	webServer->RegisterEndpoint(
+		"GET",
+		"/api/v1/configs",
+		[](winlirc::svmatch const&, winlirc::IHttpMessagePtr) { return get_configs(); });
+	webServer->RegisterEndpoint(
+		"GET",
+		"/api/v1/settings",
+		[](winlirc::svmatch const&, winlirc::IHttpMessagePtr) { return get_settings(); });
+	webServer->RegisterEndpoint(
+		"PUT",
+		"/api/v1/settings",
+		[](winlirc::svmatch const&, winlirc::IHttpMessagePtr request) { return put_settings(*request); });
+	webServer->Start();
+
 	return TRUE;
 }
 
 int Cwinlirc::ExitInstance()
 {
 	dlg.reset();
+	webServer.reset();
 	return CWinApp::ExitInstance();
 }

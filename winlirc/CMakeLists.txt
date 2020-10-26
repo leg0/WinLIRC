@@ -3,6 +3,12 @@ cmake_minimum_required (VERSION 2.8)
 project(WinLIRC)
 
 find_package(Microsoft.GSL CONFIG REQUIRED)
+find_package(unofficial-mongoose CONFIG REQUIRED)
+find_package(taocpp-json CONFIG REQUIRED)
+
+# taocpp-json wants C++17, but we want more recent. Don't let it downgrade this project.
+set_target_properties(taocpp::json PROPERTIES INTERFACE_COMPILE_FEATURES "")
+
 
 # Use MFC in a shared DLL.
 set(CMAKE_MFC_FLAG 2)
@@ -13,45 +19,53 @@ set (PUBLIC_API_FILES
 
 add_executable(winlirc WIN32
 	config.cpp
+	config.h
+	constants.h
+	dll.h
 	drvdlg.cpp
+	drvdlg.h
 	globals.cpp
+	globals.h
 	guicon.cpp
+	guicon.h
 	InputPlugin.cpp
+	InputPlugin.h
 	irconfig.cpp
+	irconfig.h
 	irdriver.cpp
-	IRRemote.cpp
-	Plugin.cpp
-	Receive.cpp
-	Send.cpp
-	server.cpp
-	trayicon.cpp
-	winlirc.cpp
-	wl_string.cpp
-
-    winlirc.rc
-
-    config.h
-    dll.h
-    drvdlg.h
-    globals.h
-    guicon.h
-    InputPlugin.h
-    irconfig.h
-    irdriver.h
-	Plugin.h
-    remote.h
-    resource.h
-    server.h
-    stdafx.h
-    trayicon.h
-    version.h
-    winlirc.h
-	wl_string.h
+	irdriver.h
 	ir_remote.cpp
 	ir_remote.h
-	constants.h
+	IRRemote.cpp
+	Plugin.cpp
+	Plugin.h
+	Receive.cpp
+	remote.h
+	resource.h
+	Send.cpp
+	server.cpp
+	server.h
+	stdafx.h
+	trayicon.cpp
+	trayicon.h
+	version.h
+	web_server.cpp
+	web_server.h
+	winlirc.cpp
+	winlirc.h
+	winlirc.rc
+	wl_string.cpp
+	wl_string.h
 	${PUBLIC_API_FILES}
 	)
+set(UI_FILES
+	ui/bootstrap.min.css
+	ui/winlirc.css
+	ui/index.html
+	ui/bootstrap.bundle-4.5.3.min.js
+	ui/jquery-3.5.1.min.js
+	ui/knockout-3.5.1.min.js
+	ui/winlirc.js)
 
 source_group(Common FILES ${COMMON_SOURCES})
 source_group("Public API" FILES ${PUBLIC_API_FILES})
@@ -76,7 +90,9 @@ target_compile_definitions(winlirc
 
 target_link_libraries(winlirc PRIVATE
 	Microsoft.GSL::GSL
-	winlirc-common)
+	winlirc-common
+	taocpp::json
+	unofficial::mongoose::mongoose)
 
 target_include_directories(winlirc
 	PRIVATE
@@ -84,11 +100,14 @@ target_include_directories(winlirc
 	INTERFACE
 		${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+
 install(TARGETS winlirc 
 	DESTINATION .
 	ARCHIVE DESTINATION plugin_sdk/lib
 	PUBLIC_HEADER DESTINATION plugin_sdk/include/winlirc
-	RESOURCE DESTINATION configs
-)
+	RESOURCE DESTINATION configs)
+
+install(FILES ${UI_FILES}
+	DESTINATION ./ui)
 
 add_subdirectory(tests)
