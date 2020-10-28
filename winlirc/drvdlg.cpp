@@ -26,12 +26,14 @@
 #include "drvdlg.h"
 #include "resource.h"
 #include "remote.h"
-#include "globals.h"
 #include "server.h" //so we can send SIGHUP
 #include "InputPlugin.h"
+#include "version.h"
 #include <string>
 
 using namespace std::string_literals;
+
+#define WM_TRAY (WM_USER+34)
 
 /////////////////////////////////////////////////////////////////////////////
 // Cdrvdlg dialog

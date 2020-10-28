@@ -19,12 +19,14 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
+#include "constants.h"
+#include "ir_remote.h"
 #include <winlirc/winlirc_api.h>
-#include "../DLL/Common/LIRCDefines.h"
 #include <winlirc/WLPluginAPI.h>
+#include <chrono>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
-#include <limits.h>
 
 #pragma warning( disable : 4018 )
 

@@ -1,6 +1,6 @@
 #include "Opengl.h"
 #include <stdio.h>
-#include "../../DLL/Common/LIRCDefines.h"
+#include <winlirc/winlirc_api.h>
 
 Opengl::Opengl() {
 

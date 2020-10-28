@@ -1,7 +1,7 @@
 #pragma once
 
+#include "ir_remote.h"
 #include <winlirc/winlirc_api.h>
-#include "globals.h"
 
 #include <sys/types.h>
 #include <string.h>

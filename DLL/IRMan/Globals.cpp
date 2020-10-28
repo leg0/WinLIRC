@@ -21,7 +21,6 @@
 
 #include <Windows.h>
 #include "Globals.h"
-#include "../Common/LircDefines.h"
 
 Settings settings;
 

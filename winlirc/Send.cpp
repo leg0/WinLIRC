@@ -1,6 +1,8 @@
+#include "constants.h"
+#include "ir_remote.h"
 #include <winlirc/winlirc_api.h>
-#include <Windows.h>
-#include "../DLL/Common/LIRCDefines.h"
+#include <algorithm>
+#include <string.h>
 
 #define LIRCD_EXACT_GAP_THRESHOLD 10000
 
@@ -383,7 +385,7 @@ WINLIRC_API int winlirc_init_send(sbuf* psend_buffer, ir_remote *remote, ir_ncod
 		send_buffer.is_biphase=1;
 	}
 
-	remote->repeat_countdown = max(remote->min_repeat,repeats);
+	remote->repeat_countdown = std::max(remote->min_repeat,repeats);
 	
  init_send_loop:
 	if(repeat && has_repeat(remote))

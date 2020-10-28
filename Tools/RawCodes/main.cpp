@@ -2,8 +2,8 @@
 #include <tchar.h>
 #include "irdriver.h"
 #include "Settings.h"
-#include "../../DLL/Common/LIRCDefines.h"
 #include <winlirc/WLPluginAPI.h>
+#include <winlirc/winlirc_api.h>
 #include <conio.h>
 
 void main()

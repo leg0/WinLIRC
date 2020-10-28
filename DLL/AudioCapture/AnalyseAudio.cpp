@@ -22,7 +22,7 @@
 #include "AnalyseAudio.h"
 #include <Math.h>
 #include "Globals.h"
-#include "../Common/LIRCDefines.h"
+#include <winlirc/winlirc_api.h>
 
 #define MAX_SPACE 10000	// this should work with 90%+ of remote protocols
 

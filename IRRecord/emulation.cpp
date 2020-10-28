@@ -1,11 +1,13 @@
-#include <stdio.h>
-#include <sys/timeb.h>
-#include <string.h>
-#include "../Dll/Common/LIRCDefines.h"
+#include "../winlirc/ir_remote.h"
+#include "../winlirc/constants.h"
+
 #include <winlirc/WLPluginAPI.h>
 
 #include <chrono>
 #include <limits.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/timeb.h>
 
 using namespace std::chrono;
 
@@ -1255,11 +1257,7 @@ int receive_decode(struct ir_remote *remote,
  			lirc_t sum;
 			ir_code decoded = rec_buffer.decoded;
 
-#                       ifdef LONG_IR_CODE
 			//LOGPRINTF(1,"decoded: %llx", decoded);
-#                       else
-			LOGPRINTF(1,"decoded: %lx", decoded);
-#                       endif
 			if((hw.rec_mode==LIRC_MODE_CODE &&
 			    hw.code_length<bit_count(remote))
 			   ||
@@ -1304,11 +1302,7 @@ int receive_decode(struct ir_remote *remote,
 					//LOGPRINTF(1,"failed on pre");
 					return(0);
 				}
-#                               ifdef LONG_IR_CODE
 				//LOGPRINTF(1,"pre: %llx",pre);
-#                               else
-				LOGPRINTF(1,"pre: %lx",pre);
-#                               endif
 			}
 			
 			code=get_data(remote,remote->bits,
@@ -1318,11 +1312,7 @@ int receive_decode(struct ir_remote *remote,
 				//LOGPRINTF(1,"failed on code");
 				return(0);
 			}
-#                       ifdef LONG_IR_CODE
 			//LOGPRINTF(1,"code: %llx",code);
-#                       else
-			LOGPRINTF(1,"code: %lx",code);
-#                       endif
 			
 			if(has_post(remote))
 			{
@@ -1332,11 +1322,7 @@ int receive_decode(struct ir_remote *remote,
 					//LOGPRINTF(1,"failed on post");
 					return(0);
 				}
-#                               ifdef LONG_IR_CODE
 				//LOGPRINTF(1,"post: %llx",post);
-#                               else
-				LOGPRINTF(1,"post: %lx",post);
-#                               endif
 			}
 			if(!get_trail(remote))
 			{
@@ -1460,11 +1446,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 		if((pre|pre_mask)!=(remote->pre_data|pre_mask))
 		{
 			//LOGPRINTF(1,"bad pre data");
-#                       ifdef LONG_IR_CODE
 			//LOGPRINTF(2,"%llx %llx",pre,remote->pre_data);
-#                       else
-			LOGPRINTF(2,"%lx %lx",pre,remote->pre_data);
-#                       endif
 			return(0);
 		}
 		//LOGPRINTF(1,"pre");
@@ -1475,11 +1457,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 		if((post|post_mask)!=(remote->post_data|post_mask))
 		{
 			//LOGPRINTF(1,"bad post data");
-#                       ifdef LONG_IR_CODE
 			//LOGPRINTF(2,"%llx %llx",post,remote->post_data);
-#                       else
-			LOGPRINTF(2,"%lx %lx",post,remote->post_data);
-#                       endif
 			return(0);
 		}
 		//LOGPRINTF(1,"post");

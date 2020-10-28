@@ -47,6 +47,9 @@ add_executable(winlirc WIN32
     version.h
     winlirc.h
 	wl_string.h
+	ir_remote.cpp
+	ir_remote.h
+	constants.h
 	${PUBLIC_API_FILES}
 	)
 
@@ -65,7 +68,11 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set_target_properties( winlirc PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/${CFG} )
 endforeach()
 
-target_compile_definitions(winlirc PRIVATE UNICODE _UNICODE)
+target_compile_definitions(winlirc
+	PRIVATE
+		UNICODE
+		_UNICODE
+		NOMINMAX)
 
 target_link_libraries(winlirc PRIVATE
 	Microsoft.GSL::GSL

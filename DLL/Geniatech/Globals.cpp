@@ -1,5 +1,4 @@
 #include "Globals.h"
-#include "../Common/LircDefines.h"
 
 HANDLE	threadExitEvent	= NULL;
 HANDLE	dataReadyEvent	= NULL;

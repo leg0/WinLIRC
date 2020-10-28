@@ -9,7 +9,6 @@ add_library(winlirc-common STATIC
 	DebugOutput.h
 	enumSerialPorts.h
 	fifo.h
-	LIRCDefines.h
 	UniqueHandle.h
 	Win32Helpers.cpp
 	Win32Helpers.h)

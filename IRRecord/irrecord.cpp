@@ -1,15 +1,3 @@
-/*      $Id: irrecord.c,v 5.95 2009/08/29 07:47:31 lirc Exp $      */
-
-/****************************************************************************
-** irrecord.c **************************************************************
-****************************************************************************
-*
-* irrecord -  application for recording IR-codes for usage with lircd
-*
-* Copyright (C) 1998,99 Christoph Bartelmus <lirc@bartelmus.de>
-*
-*/
-
 #pragma warning(disable: 4018)	// disable signed/unsigned mismatch
 
 #include <stdio.h>
@@ -38,8 +26,9 @@
 #include <signal.h>
 #include <chrono>
 
-#include "../DLL/Common/LIRCDefines.h"
 #include "../winlirc/config.h"
+#include "../winlirc/ir_remote.h"
+#include <winlirc/winlirc_api.h>
 #include "dump_config.h"
 #include "irdriver.h"
 #include "emulation.h"
@@ -1132,11 +1121,7 @@ void get_pre_data(struct ir_remote *remote)
 		codes++;
 	}
 	count=0;
-#ifdef LONG_IR_CODE
 	while(mask&0x8000000000000000LL)
-#else
-	while(mask&0x80000000L)
-#endif
 	{
 		count++;
 		mask=mask<<1;

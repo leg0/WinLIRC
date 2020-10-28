@@ -1,5 +1,7 @@
 #pragma once
 
+#include "constants.h"
+#include <stdio.h>
 #include <sys/types.h>
 
 struct flaglist
@@ -58,6 +60,8 @@ inline void * get_void_array(struct void_array *ar);
 /* some safer functions */
 void * s_malloc(size_t size);
 
+struct ir_remote;
+
 int checkMode(int is_mode, int c_mode, char *error);
-struct ir_remote *read_config(FILE *f, const char *name);
-void free_config(struct ir_remote *remotes);
+ir_remote *read_config(FILE *f, const char *name);
+void free_config(ir_remote *remotes);

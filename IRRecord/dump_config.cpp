@@ -25,9 +25,9 @@
 # endif
 #endif
 
-#include "../DLL/Common/LIRCDefines.h"
 #include "dump_config.h"
 #include "../winlirc/config.h"
+#include "../winlirc/ir_remote.h"
 #include <winlirc/WLPluginAPI.h>
 
 #define VERSION "0.9.0"
@@ -161,20 +161,12 @@ void fprint_remote_head(FILE* f, ir_remote const* rem)
 		if(rem->pre_data_bits>0)
 		{
 			fprintf(f, "  pre_data_bits   %d\n",rem->pre_data_bits);
-#                       ifdef LONG_IR_CODE
 			fprintf(f, "  pre_data       0x%llX\n",rem->pre_data);
-#                       else
-			fprintf(f, "  pre_data       0x%lX\n",rem->pre_data);
-#                       endif
 		}
 		if(rem->post_data_bits>0)
 		{
 			fprintf(f, "  post_data_bits  %d\n",rem->post_data_bits);
-#                       ifdef LONG_IR_CODE
 			fprintf(f, "  post_data      0x%llX\n",rem->post_data);
-#                       else
-			fprintf(f, "  post_data      0x%lX\n",rem->post_data);
-#                       endif
 		}
 		if(rem->pre_p!=0 && rem->pre_s!=0)
 		{
@@ -206,42 +198,22 @@ void fprint_remote_head(FILE* f, ir_remote const* rem)
 			fprintf(f, "  min_code_repeat %d\n",
 				rem->min_code_repeat);
 		}
-#               ifdef LONG_IR_CODE
 		fprintf(f, "  toggle_bit_mask 0x%llX\n",
 			rem->toggle_bit_mask);
-#               else
-		fprintf(f, "  toggle_bit_mask 0x%lX\n",
-			rem->toggle_bit_mask);
-#               endif
 		if(has_toggle_mask(rem))
 		{
-#                       ifdef LONG_IR_CODE
 			fprintf(f, "  toggle_mask    0x%llX\n",
 				rem->toggle_mask);
-#                       else
-			fprintf(f, "  toggle_mask    0x%lX\n",
-				rem->toggle_mask);
-#                       endif
 		}
 		if(rem->rc6_mask!=0)
 		{
-#                       ifdef LONG_IR_CODE
 			fprintf(f, "  rc6_mask    0x%llX\n",
 				rem->rc6_mask);
-#                       else
-			fprintf(f, "  rc6_mask    0x%lX\n",
-				rem->rc6_mask);
-#                       endif
 		}
 		if(has_ignore_mask(rem))
 		{
-#                       ifdef LONG_IR_CODE
 			fprintf(f, "  ignore_mask 0x%llX\n",
 				rem->ignore_mask);
-#                       else
-			fprintf(f, "  ignore_mask 0x%lX\n",
-				rem->ignore_mask);
-#                       endif
 		}
 		if(is_serial(rem))
 		{
@@ -293,13 +265,8 @@ void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes)
 		char format[30];
 		ir_code_node* loop;
 		
-#               ifdef LONG_IR_CODE
 		sprintf(format,	"          %%-24s 0x%%0%dllX",
 			(rem->bits+3)/4);
-#               else
-		sprintf(format, "          %%-24s 0x%%0%dlX",
-			(rem->bits+3)/4);
-#               endif
 		fprintf(f, format, codes->name, codes->code);
 		sprintf(format, " 0x%%0%dlX", (rem->bits+3)/4);
 		for(loop=codes->next; loop!=NULL; loop=loop->next)

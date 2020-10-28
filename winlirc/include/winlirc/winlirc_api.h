@@ -18,8 +18,12 @@
 #define WINLIRC_API WINLIRC_EXTERNC __declspec(dllimport)
 #endif
 
+#define PULSE_BIT		(0x01000000)
+#define PULSE_MASK		(0x00FFFFFF)
 #define RBUF_SIZE		(256)
 #define WBUF_SIZE		(2048)
+#define REC_SYNC		(8)
+#define DEFAULT_FREQ	(38000)
 
 typedef struct ir_remote ir_remote;
 typedef struct ir_ncode ir_ncode;

@@ -22,9 +22,9 @@
 #include "stdafx.h"
 #include "server.h"
 #include "remote.h"
-#include <atlbase.h> //password stuff
 #include "winlirc.h"
 #include "drvdlg.h"
+#include "version.h"
 
 #include <algorithm>
 #include <string>
@@ -318,8 +318,8 @@ std::pair<bool, std::string> Cserver::parseSendString(char const* string)
     if (codes->name == nullptr)
         return { false, "DATA\n1\ncode not found\n"s };
 
-    repeats = max(repeats, sender->min_repeat);
-    repeats = min(repeats, 10);	// sanity check
+    repeats = std::max(repeats, sender->min_repeat);
+    repeats = std::min(repeats, 10);	// sanity check
 
     // reset toggle masks
 

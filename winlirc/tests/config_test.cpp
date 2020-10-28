@@ -1,5 +1,5 @@
-#include "../../DLL/Common/LIRCDefines.h"
 #include "../config.h"
+#include "../ir_remote.h"
 
 #include <Windows.h>
 #include <cstdio>

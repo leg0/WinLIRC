@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <winlirc/winlirc_api.h>
 #include "../Common/DebugOutput.h"
-#include "../Common/LIRCDefines.h"
 #include "../Common/Win32Helpers.h"
 
 sbuf send_buffer;

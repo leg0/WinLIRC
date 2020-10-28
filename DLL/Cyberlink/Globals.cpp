@@ -21,7 +21,6 @@
  */
 
 #include <Windows.h>
-#include "../Common/LircDefines.h"
 #include "Globals.h"
 
 HANDLE	threadExitEvent	= nullptr;
