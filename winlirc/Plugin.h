@@ -29,6 +29,7 @@ struct Plugin
 	explicit operator bool() const noexcept { return static_cast<bool>(dllFile_); }
 
 	bool hasValidInterface() const noexcept;
+	bool canRecord() const noexcept;
 
 	plugin_interface interface_ = { 0 };
 	Dll dllFile_;

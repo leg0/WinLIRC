@@ -15,8 +15,6 @@
 
 namespace fs = std::filesystem;
 
-static bool checkRecording(Plugin const& file) noexcept;
-
 IMPLEMENT_DYNAMIC(InputPlugin, CDialog)
 
 InputPlugin::InputPlugin(CWnd* pParent /*=nullptr*/)
@@ -60,13 +58,8 @@ void InputPlugin::listDllFiles()
 	m_cboxInputPlugin.SetCurSel(std::distance(begin(plugins), currentPlugin));
 
 	loadDll(*currentPlugin);
-	enableWindows(checkRecording(m_plugin));
+	enableWindows(m_plugin.canRecord());
 	m_plugins = std::move(plugins);
-}
-
-static bool checkRecording(Plugin const& plugin) noexcept
-{
-	return plugin && (plugin.interface_.hardware || plugin.interface_.getHardware);
 }
 
 void InputPlugin::enableWindows(bool canRecord) {
@@ -135,7 +128,7 @@ void InputPlugin::OnCbnSelchangeInputPlugin()
 	if (plugin.hasValidInterface())
 	{
 		m_plugin = std::move(plugin);
-		enableWindows(checkRecording(m_plugin));
+		enableWindows(m_plugin.canRecord());
 	}
 	else
 	{

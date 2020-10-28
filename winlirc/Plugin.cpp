@@ -43,3 +43,8 @@ bool Plugin::hasValidInterface() const noexcept
 	else
 		return false;
 }
+
+bool Plugin::canRecord() const noexcept
+{
+	return *this && (interface_.hardware || interface_.getHardware);
+}
