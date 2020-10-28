@@ -53,8 +53,11 @@ std::vector<fs::path> listPlugins()
 
 std::vector<fs::path> listConfigs()
 {
-	std::vector<fs::path> configs;
 	auto configsDir = getConfigsDirectory();
+	if (!is_directory(configsDir))
+		return { };
+
+	std::vector<fs::path> configs;
 	for (auto& p : fs::directory_iterator(configsDir))
 	{
 		auto path = p.path();
@@ -69,13 +72,17 @@ std::vector<fs::path> listConfigs()
 static winlirc::WebServer::response get_plugins()
 {
 	auto plugins = listPlugins();
-	std::vector<tao::json::value> pluginNames;
-	std::transform(begin(plugins), end(plugins), std::back_inserter(pluginNames), [](auto& path) {
-			return path.filename().replace_extension().string();
-		});
-	tao::json::value val{ { "plugins", pluginNames } };
+	std::vector<tao::json::value> jsplugins;
+	std::transform(begin(plugins), end(plugins), std::back_inserter(jsplugins), [](auto& path) {
+		Plugin plugin{ path };
+		return tao::json::value {
+			{ "name", path.filename().replace_extension().string() },
+			{ "canRecord", plugin.canRecord() }
+		};
+	});
+
 	winlirc::WebServer::response r{};
-	r.body = to_string(val);
+	r.body = to_string(tao::json::value{ { "plugins", jsplugins } });
 	r.mimeType = "text/json";
 
 	return r;
