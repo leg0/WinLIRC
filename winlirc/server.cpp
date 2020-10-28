@@ -295,7 +295,7 @@ void Cserver::ThreadProc()
 
 std::pair<bool, std::string> Cserver::parseSendString(char const* string)
 {
-    CSingleLock lock(&CS_global_remotes, TRUE);
+    std::lock_guard lock{ CS_global_remotes };
 
     char remoteName[128] = "";
     char keyName[128] = "";
@@ -350,7 +350,7 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
     struct ir_remote* all;
     //====================
 
-    CSingleLock lock(&CS_global_remotes, TRUE);
+    std::lock_guard lock{ CS_global_remotes };
 
     remoteName = strtok(nullptr, " \t\r");
     codeName = strtok(nullptr, " \t\r");

@@ -345,14 +345,14 @@ BOOL Cdrvdlg::OnInitDialog()
 	return TRUE;
 }
 
-void Cdrvdlg::OnSendcode() 
+void Cdrvdlg::OnSendcode()
 {
 	EnableWindow(FALSE);
 	UpdateData(TRUE);
 
 	//=======================
-	struct ir_ncode *codes;
-	struct ir_remote *sender;
+	ir_ncode* codes;
+	ir_remote* sender;
 	//=======================
 
 	m_remote_edit.TrimRight();
@@ -360,7 +360,7 @@ void Cdrvdlg::OnSendcode()
 	m_remote_edit.TrimLeft();
 	m_ircode_edit.TrimLeft();
 
-	CSingleLock lock(&CS_global_remotes,TRUE);
+	std::lock_guard lock{ CS_global_remotes };
 
 	USES_CONVERSION;
 	const char *remoteName	= T2A(m_remote_edit);
@@ -427,7 +427,7 @@ void Cdrvdlg::UpdateRemoteComboLists()
 	m_remote_DropDown.ResetContent();
 
 	//Fill remote combo box
-	struct ir_remote* sender=global_remotes;
+	ir_remote* sender=global_remotes;
 	while (sender!=nullptr)
 	{
 		m_remote_DropDown.AddString(A2T(sender->name));
@@ -450,7 +450,7 @@ void Cdrvdlg::UpdateIrCodeComboLists()
 	UpdateData(TRUE);
 	
 	//Retrieve pointer to remote by name
-	struct ir_remote* selected_remote = get_remote_by_name(global_remotes,T2A(m_remote_edit.GetBuffer()));
+	ir_remote* selected_remote = get_remote_by_name(global_remotes,T2A(m_remote_edit.GetBuffer()));
 
 	m_IrCodeEditCombo.ResetContent();
 

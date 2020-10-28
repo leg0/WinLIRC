@@ -23,7 +23,6 @@
 #include "globals.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "afxmt.h"
 #include <stdarg.h>
 #include "irconfig.h"
 
@@ -49,9 +48,9 @@ void winlirc_debug(const char *file, int line, char *format, ...)
 
 /* End of Debugging stuff */
 
-struct ir_remote *global_remotes=nullptr;
+ir_remote* global_remotes = nullptr;
 
-CCriticalSection CS_global_remotes;
+std::mutex CS_global_remotes;
 
 CIRConfig config;
 

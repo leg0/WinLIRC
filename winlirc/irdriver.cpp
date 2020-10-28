@@ -60,8 +60,8 @@ BOOL CIRDriver::loadPlugin(std::wstring plugin) {
     //make sure we have cleaned up first
     //
 
-    CSingleLock l(&m_dllLock);
-    unloadPlugin();
+	std::lock_guard lock{ m_dllLock };
+	unloadPlugin();
 
 	Plugin p { plugin };
     if (p.hasValidInterface())
@@ -127,7 +127,7 @@ void CIRDriver::deinit() {
 
 int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeats) {
 
-	CSingleLock l(&m_dllLock);
+	std::lock_guard lock{ m_dllLock };
 	if (auto pluginSendIr = m_dll.interface_.sendIR) {
 		return pluginSendIr(remote, code, repeats);
 	}
@@ -137,7 +137,7 @@ int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeat
 
 int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
 
-	CSingleLock l(&m_dllLock);
+	std::lock_guard lock{ m_dllLock };
 	if(auto pluginDecodeIr = m_dll.interface_.decodeIR) {
 		return pluginDecodeIr(remote,out, out_size);
 	}
@@ -147,7 +147,7 @@ int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
 
 int	CIRDriver::setTransmitters(unsigned int transmitterMask) {
 
-	CSingleLock l(&m_dllLock);
+	std::lock_guard lock{ m_dllLock };
 	if(auto pluginSetTransmitters = m_dll.interface_.setTransmitters) {
 		return pluginSetTransmitters(transmitterMask);
 	}
@@ -166,13 +166,18 @@ void CIRDriver::DaemonThreadProc(void) const {
 	char message[PACKET_SIZE+1];
 	//==========================
 
-	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {
+	auto decodeIr = [&]() {
+		std::lock_guard lock{ m_dllLock };
+		std::lock_guard lock2{ CS_global_remotes };
 
-		CSingleLock l(&m_dllLock);
 		auto pluginDecodeIr = m_dll.interface_.decodeIR;
 		ASSERT(pluginDecodeIr != nullptr);
-		if(pluginDecodeIr(global_remotes,message, sizeof(message))) {
-			l.Unlock();
+		return pluginDecodeIr(global_remotes, message, sizeof(message));
+	};
+
+	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {
+
+		if(decodeIr()) {
 
 			//======================
 			UINT64	keyCode;
