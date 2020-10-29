@@ -75,6 +75,8 @@ void winlirc::WebServer::RegisterEndpoint(std::string_view method, std::string_v
 {
     if (method == "GET")
         get_handlers.emplace_back(std::regex{ begin(regex), end(regex) }, std::move(fn));
+    else if (method == "PUT")
+        put_handlers.emplace_back(std::regex{ begin(regex), end(regex) }, std::move(fn));
 }
 
 void winlirc::WebServer::ev_handler(mg_connection* nc, int ev, void* ev_data)
@@ -83,11 +85,13 @@ void winlirc::WebServer::ev_handler(mg_connection* nc, int ev, void* ev_data)
     static_cast<WebServer*>(nc->mgr->user_data)->EventHandler(nc, ev, static_cast<http_message*>(ev_data));
 }
 
-bool winlirc::WebServer::ApiGetHandler(mg_connection* nc, http_message* hm)
+static bool ApiMethodHandler(
+    std::vector<std::pair<std::regex, winlirc::WebServer::RouteHandlerFn>> const& handlers,
+    mg_connection* nc, http_message* hm)
 {
     auto uri = sv(hm->uri);
     std::match_results<std::string_view::const_iterator> m;
-    for (auto& [re, handler] : get_handlers)
+    for (auto& [re, handler] : handlers)
     {
         if (std::regex_match(begin(uri), end(uri), m, re))
         {
@@ -111,10 +115,16 @@ bool winlirc::WebServer::ApiGetHandler(mg_connection* nc, http_message* hm)
     return false;
 }
 
+bool winlirc::WebServer::ApiGetHandler(mg_connection* nc, http_message* hm)
+{
+    return ApiMethodHandler(get_handlers, nc, hm);
+}
+
 bool winlirc::WebServer::ApiPutHandler(mg_connection* nc, http_message* hm)
 {
-    return false;
+    return ApiMethodHandler(put_handlers, nc, hm);
 }
+
 bool winlirc::WebServer::ApiPostHandler(mg_connection* nc, http_message* hm)
 {
     return false;

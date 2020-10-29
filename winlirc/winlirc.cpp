@@ -88,6 +88,52 @@ static winlirc::WebServer::response get_plugins()
 	return r;
 }
 
+static winlirc::WebServer::response get_plugin_data(winlirc::svmatch const& m)
+{
+	winlirc::WebServer::response r{};
+	auto pluginName = m[1];
+	auto plugins = listPlugins();
+
+	auto pluginPath = std::find_if(begin(plugins), end(plugins), [&](auto& p) {
+		return p.filename().replace_extension().string() == pluginName;
+	});
+	if (pluginPath == end(plugins))
+	{
+		r.status = 404;
+		r.body = "Plugin Not found";
+		return r;
+	}
+
+	auto cmd = m[2];
+	Plugin p{ *pluginPath };
+	auto const get_ = [&]() {
+		if (cmd == "config")
+			return p.interface_.getSetup;
+		else if (cmd == "config_params")
+			return p.interface_.getSetupParameters;
+		else
+			return decltype(p.interface_.getSetup){};
+	}();
+
+	if (get_)
+	{
+		std::string setup;
+		setup.resize(10000);
+		auto actualSize = get_(&setup[0], setup.size());
+		setup.resize(actualSize);
+		r.status = 200;
+		r.body = setup;
+		r.mimeType = "text/json";
+		return r;
+	}
+	else
+	{
+		r.status = 404;
+		r.body = "Not found";
+		return r;
+	}
+}
+
 static winlirc::WebServer::response get_settings()
 {
 	tao::json::value val{ {"settings", {
@@ -110,9 +156,10 @@ static winlirc::WebServer::response get_settings()
 static winlirc::WebServer::response put_settings(winlirc::IHttpMessage const& request)
 {
 	auto body = request.body();
-
 	auto j = tao::json::from_string(body);
-	return { };
+	winlirc::WebServer::response r{ };
+	r.status = 204;
+	return r;
 }
 
 static winlirc::WebServer::response get_configs()
@@ -208,6 +255,10 @@ BOOL Cwinlirc::InitInstance() {
 		"GET",
 		"/api/v1/plugins",
 		[](winlirc::svmatch const&, winlirc::IHttpMessagePtr) { return get_plugins(); });
+	webServer->RegisterEndpoint(
+		"GET",
+		"/api/v1/plugins/([^/]+)/([^/]+)",
+		[](winlirc::svmatch const& m, winlirc::IHttpMessagePtr) { return get_plugin_data(m); });
 	webServer->RegisterEndpoint(
 		"GET",
 		"/api/v1/configs",

@@ -41,6 +41,37 @@ struct plugin_interface
 	int	(*setTransmitters)(uint32_t transmitterMask);
 	hardware const* (*getHardware)(void);
 	hardware const* hardware;
+
+	// Should write a string containing JSON into out. Must not
+	// perform buffer overrun or other nasty stuff
+	/*
+	[
+		{
+			"label": "label to display next to field",
+			"name": "name of the parameter",
+			"type": "checkbox|text|number|select",
+			"selectOptions": [ // options for select, if type is select. otherwise not needed
+				{ "value" : option_value, "name": "name to be displayed" },
+				{ "value" : option_value, "name": "name to be displayed" },
+				{ "value" : option_value, "name": "name to be displayed" }
+			]
+		}
+	]
+	*/
+	// @param out - write the string in this buffer
+	// @param out_size - number of chars available for writing in out
+	// @param return actual size of the string, regardless if data was written to out or not.
+	size_t(*getSetupParameters)(char* out, size_t out_size);
+
+	// Must write the setup values to out:
+	/*
+	[
+		{ "name": "name of parameter", "value" : value_of_parameter },
+		...
+		{ "name": "name of parameter", "value" : value_of_parameter }
+	]
+	*/
+	size_t(*getSetup)(char* out, size_t out_size);
 };
 
 struct hardware

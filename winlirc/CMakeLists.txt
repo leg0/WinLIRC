@@ -17,6 +17,15 @@ set (PUBLIC_API_FILES
 	include/winlirc/winlirc_api.h
 	include/winlirc/WLPluginApi.h)
 
+set (UI_FILES
+	ui/bootstrap.bundle-4.5.3.min.js
+	ui/bootstrap.min.css
+	ui/index.html
+	ui/jquery-3.5.1.min.js
+	ui/knockout-3.5.1.min.js
+	ui/winlirc.css
+	ui/winlirc.js)
+
 add_executable(winlirc WIN32
 	config.cpp
 	config.h
@@ -57,18 +66,12 @@ add_executable(winlirc WIN32
 	wl_string.cpp
 	wl_string.h
 	${PUBLIC_API_FILES}
+	${UI_FILES}
 	)
-set(UI_FILES
-	ui/bootstrap.min.css
-	ui/winlirc.css
-	ui/index.html
-	ui/bootstrap.bundle-4.5.3.min.js
-	ui/jquery-3.5.1.min.js
-	ui/knockout-3.5.1.min.js
-	ui/winlirc.js)
 
 source_group(Common FILES ${COMMON_SOURCES})
 source_group("Public API" FILES ${PUBLIC_API_FILES})
+source_group("UI" FILES ${UI_FILES})
 
 set_target_properties(winlirc PROPERTIES
 	ENABLE_EXPORTS on

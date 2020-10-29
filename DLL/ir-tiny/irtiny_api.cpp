@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "ConfigDialog.h"
 #include "irdriver.h"
-
+#include "../DLL/Common/enumSerialPorts.h"
 #include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
+#include <filesystem>
 
 static std::unique_ptr<irtiny::CIRDriver> irDriver;
 
@@ -84,18 +85,50 @@ extern "C" hardware const* irtiny_getHardware()
     return &irtiny_hardware;
 }
 
-static plugin_interface const irtiny_plugin_interface
+extern "C" size_t irtiny_getSetupParameters(char* out, size_t out_size)
 {
-    winlirc_plugin_api_version,
-    irtiny_init,
-    irtiny_deinit,
-    irtiny_hasGui,
-    irtiny_loadSetupGui,
-    nullptr, // sendIR
-    irtiny_decodeIR,
-    nullptr, // setTransmitters
-    irtiny_getHardware,
-    &irtiny_hardware
+    std::string setupParameters = R"([{"label":"Serial port", "name": "port", "type":"select", "selectOptions":[)";
+    char const* sep = "";
+    enumSerialPorts<char>([&](char const* s) {
+        setupParameters.append(sep).append(R"__({"name":")__").append(s).append(R"__(","value":"\\\\.\\)__").append(s).append("\"}");
+        sep = ",";
+    });
+    setupParameters += "]}]";
+    if (setupParameters.size() <= out_size)
+        memcpy(out, setupParameters.data(), setupParameters.size());
+    return setupParameters.size();
+}
+
+
+extern "C" size_t irtiny_getSetup(char* out, size_t out_size)
+{
+    wchar_t fn[MAX_PATH];
+    DWORD fnSize= GetModuleFileNameW(nullptr, fn, std::size(fn));
+    auto iniFile = std::filesystem::path { fn, fn + fnSize }.remove_filename().append(L"WinLIRC.ini");
+    char portName[64];
+    GetPrivateProfileStringA("SerialDevice", "Port", R"(\\.\COM1)", portName, std::size(portName) - 1, iniFile.string().c_str());
+    std::string setup = R"__({"name":"port", "value":")__";
+    setup.append(portName).append(R"__("})__");
+
+    if (setup.size() <= out_size)
+        memcpy(out, setup.data(), setup.size());
+    return setup.size();
+}
+
+static constexpr plugin_interface irtiny_plugin_interface
+{
+    .plugin_api_version = winlirc_plugin_api_version,
+    .init               = irtiny_init,
+    .deinit             = irtiny_deinit,
+    .hasGui             = irtiny_hasGui,
+    .loadSetupGui       = irtiny_loadSetupGui,
+    .sendIR             = nullptr,
+    .decodeIR           = irtiny_decodeIR,
+    .setTransmitters    = nullptr,
+    .getHardware        = irtiny_getHardware,
+    .hardware           = &irtiny_hardware,
+    .getSetupParameters = irtiny_getSetupParameters,
+    .getSetup           = irtiny_getSetup,
 };
 
 WL_API plugin_interface const* getPluginInterface()

@@ -4,19 +4,16 @@
 
 namespace irtiny
 {
-    namespace
+    std::wstring getCurrentDirectory()
     {
-        std::wstring getCurrentDirectory()
-        {
-            wchar_t currentDirectory[MAX_PATH + 1] = { 0 };
-            GetCurrentDirectory(MAX_PATH, currentDirectory);
-            return currentDirectory;
-        }
+        wchar_t currentDirectory[MAX_PATH + 1] = { 0 };
+        GetCurrentDirectory(MAX_PATH, currentDirectory);
+        return currentDirectory;
+    }
 
-        std::wstring getIniFilePath()
-        {
-            return getCurrentDirectory() + L"\\WinLIRC.ini";
-        }
+    std::wstring getIniFilePath()
+    {
+        return getCurrentDirectory() + L"\\WinLIRC.ini";
     }
 
     std::wstring const Settings::s_defaultPort = L"\\\\.\\COM1";
