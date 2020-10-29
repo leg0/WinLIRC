@@ -2,8 +2,8 @@
 #include "Plugin.h"
 #include <cassert>
 
-Plugin::Plugin(wchar_t const* path) noexcept
-	: dllFile_ { LoadLibrary(path) }
+Plugin::Plugin(std::wstring const& path) noexcept
+	: dllFile_ { LoadLibrary(path.c_str()) }
 {
 	if (Dll& d = dllFile_)
 	{
@@ -24,12 +24,8 @@ Plugin::Plugin(wchar_t const* path) noexcept
 	}
 }
 
-Plugin::Plugin(std::wstring const& path) noexcept
-	: Plugin{ path.c_str() }
-{ }
-
 Plugin::Plugin(std::filesystem::path const& path) noexcept
-	: Plugin{ path.wstring().c_str() }
+	: Plugin{ path.wstring() }
 { }
 
 bool Plugin::hasValidInterface() const noexcept

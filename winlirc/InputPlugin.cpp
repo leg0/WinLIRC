@@ -71,9 +71,9 @@ void InputPlugin::enableWindows(bool canRecord) {
 	m_browseButton.EnableWindow(canRecord);
 }
 
-void InputPlugin::loadDll(std::wstring const& file)
+void InputPlugin::loadDll(std::filesystem::path const& file)
 {
-	if (Plugin plugin{ file.c_str() })
+	if (Plugin plugin{ file })
 		m_plugin = std::move(plugin);
 }
 

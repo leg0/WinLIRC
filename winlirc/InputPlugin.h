@@ -18,7 +18,7 @@ public:
 private:
 	void	listDllFiles	();
 	void	enableWindows	(bool canRecord);					// enable windows based upon selection
-	void	loadDll			(std::wstring const& file);
+	void	loadDll			(std::filesystem::path const& file);
 	void	unloadDll		();
 	bool	getStartup		();
 	void	setStartup		(bool start);

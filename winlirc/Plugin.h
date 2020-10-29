@@ -20,7 +20,7 @@ struct Plugin
 	Plugin() = default;
 	Plugin(Plugin const&) = delete;
 	Plugin(Plugin&&) = default;
-	explicit Plugin(wchar_t const* path) noexcept;
+	Plugin(wchar_t const* path) = delete;
 	explicit Plugin(std::wstring const& path) noexcept;
 	explicit Plugin(std::filesystem::path const& path) noexcept;
 	Plugin& operator=(Plugin const&) = delete;
