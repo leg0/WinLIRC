@@ -4,18 +4,23 @@
 // This file contains the API that winlirc exposes to plugins to use.
 //
 
+#include <intrin.h>
 #include <stdint.h>
 
 #if defined(__cplusplus)
-#define WINLIRC_EXTERNC extern "C"
+	#define WINLIRC_EXTERNC extern "C"
+	#define WINLIRC_CONSTEXPR constexpr
+	#define WINLIRC_NOEXCEPT noexcept
 #else
-#define WINLIRC_EXTERNC
+	#define WINLIRC_EXTERNC
+	#define WINLIRC_CONSTEXPR
+	#define WINLIRC_NOEXCEPT
 #endif
 
 #if defined(winlirc_EXPORTS)
-#define WINLIRC_API WINLIRC_EXTERNC __declspec(dllexport)
+	#define WINLIRC_API WINLIRC_EXTERNC __declspec(dllexport)
 #else
-#define WINLIRC_API WINLIRC_EXTERNC __declspec(dllimport)
+	#define WINLIRC_API WINLIRC_EXTERNC __declspec(dllimport)
 #endif
 
 #define PULSE_BIT		(0x01000000)
@@ -82,10 +87,26 @@ WINLIRC_API bool winlirc_decodeCommand(
 WINLIRC_API ir_code get_ir_code(ir_ncode* ncode, ir_code_node* node);
 WINLIRC_API ir_code_node* get_next_ir_code_node(ir_ncode* ncode, ir_code_node* node);
 WINLIRC_API int bit_count(ir_remote const* remote);
-WINLIRC_API int bits_set(ir_code data);
-WINLIRC_API ir_code reverse(ir_code data, int bits);
-WINLIRC_API int is_pulse(lirc_t data);
-WINLIRC_API int is_space(lirc_t data);
+inline int bits_set(ir_code data) WINLIRC_NOEXCEPT
+{
+#if defined(_M_X64)
+	return __popcnt64(data);
+#else
+	return __popcnt(data >> 32) + __popcnt(data & 0xFFFF'FFFF);
+#endif
+}
+WINLIRC_CONSTEXPR inline ir_code reverse(ir_code data, int bits) WINLIRC_NOEXCEPT
+{
+	data = data << (64 - bits);
+	ir_code res = 0;
+	for (int i = 0; i < bits; ++i)
+	{
+		res |= ((data >> (63 - i)) & 1) << i;
+	}
+	return res;
+}
+WINLIRC_CONSTEXPR inline bool is_pulse(lirc_t data) WINLIRC_NOEXCEPT { return (data & PULSE_BIT) == PULSE_BIT; }
+WINLIRC_CONSTEXPR inline bool is_space(lirc_t data) WINLIRC_NOEXCEPT { return !is_pulse(data); }
 WINLIRC_API int has_repeat(ir_remote const* remote);
 WINLIRC_API void set_protocol(ir_remote* remote, int protocol);
 WINLIRC_API int is_raw(ir_remote const* remote);
@@ -111,7 +132,7 @@ WINLIRC_API int has_ignore_mask(ir_remote const* remote);
 WINLIRC_API int has_toggle_mask(ir_remote const* remote);
 WINLIRC_API lirc_t min_gap(ir_remote const* remote);
 WINLIRC_API lirc_t max_gap(ir_remote const* remote);
-WINLIRC_API ir_code gen_mask(int bits);
+WINLIRC_CONSTEXPR inline ir_code gen_mask(int bits) WINLIRC_NOEXCEPT { return ~0ULL & (1ULL << bits) - 1; }
 WINLIRC_API ir_code gen_ir_code(ir_remote const* remote, ir_code pre, ir_code code, ir_code post);
 WINLIRC_API int match_ir_code(ir_remote const* remote, ir_code a, ir_code b);
 WINLIRC_API int expect(ir_remote const* remote, lirc_t delta, lirc_t exdelta);

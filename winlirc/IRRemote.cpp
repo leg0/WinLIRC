@@ -473,41 +473,6 @@ WINLIRC_API int bit_count(ir_remote const* remote)
 		remote->post_data_bits;
 }
 
-WINLIRC_API int bits_set(ir_code data)
-{
-	int ret = 0;
-	while (data)
-	{
-		if (data & 1) ret++;
-		data >>= 1;
-	}
-	return ret;
-}
-
-WINLIRC_API ir_code reverse(ir_code data, int bits)
-{
-	int i;
-	ir_code c;
-
-	c = 0;
-	for (i = 0; i < bits; i++)
-	{
-		c |= (ir_code)(((data & (((ir_code)1) << i)) ? 1 : 0))
-			<< (bits - 1 - i);
-	}
-	return(c);
-}
-
-WINLIRC_API int is_pulse(lirc_t data)
-{
-	return(data & PULSE_BIT ? 1 : 0);
-}
-
-WINLIRC_API int is_space(lirc_t data)
-{
-	return(!is_pulse(data));
-}
-
 WINLIRC_API int has_repeat(ir_remote const* remote)
 {
 	if (remote->prepeat > 0 && remote->srepeat > 0) return(1);
@@ -669,20 +634,6 @@ WINLIRC_API lirc_t max_gap(ir_remote const* remote)
 	{
 		return remote->gap;
 	}
-}
-
-WINLIRC_API ir_code gen_mask(int bits)
-{
-	int i;
-	ir_code mask;
-
-	mask = 0;
-	for (i = 0; i < bits; i++)
-	{
-		mask <<= 1;
-		mask |= 1;
-	}
-	return(mask);
 }
 
 WINLIRC_API ir_code gen_ir_code(ir_remote const* remote, ir_code pre, ir_code code, ir_code post)
