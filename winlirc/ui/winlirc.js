@@ -36,6 +36,43 @@ function AppViewModel() {
 	self.serverPort = ko.observable(1111);
 	self.enableTray = ko.observable(true);
 	self.enableAutoStart = ko.observable(false);
+	self.pluginConfigParams = ko.observableArray([
+		{
+			label: 'Audio recording device',
+			name: 'audiodevice',
+			type: 'select',
+			selectOptions: [
+				{ name: 'Realtek', value: 1},
+				{ name: 'USB audio', value: 2}
+			]
+		},
+		{
+			label: 'Channel',
+			name: 'channel',
+			type: 'select',
+			selectOptions: [
+				{ name: 'left', value: 1},
+				{ name: 'right', value: 2},
+				{ name: 'auto', value: 3}
+			]
+		},
+		{
+			label: 'Polarity',
+			name: 'polarity',
+			type: 'select',
+			selectOptions: [
+				{ name: 'positive', value: 1 },
+				{ name: 'negative', value: 2 },
+				{ name: 'auto detect', value: 3 }
+			]
+		},
+		{
+			label: 'Noise offset',
+			name: 'noise_offset',
+			type: 'number',
+			range: { min: 0, max: 127 }
+		}
+	]);
 
 	self.version = "1.0";
 	self.activePluginCanRecord = ko.computed(function() {

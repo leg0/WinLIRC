@@ -7,100 +7,127 @@
 <body>
 <div class="container">
     <h4>WinLIRC <span data-bind="text: version"></span> config</h4>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Plugin settings</h5>
-            <div class="input-group mb-2">
-                <div class="input-group-prepend">
-                    <label for="cmbPlugins" class="input-group-text">Input plugin</label>
-                </div>
-                <select class="custom-select" id="cmbPlugins"
-                        data-bind="
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Plugin settings</h5>
+                    <div class="input-group mb-2">
+                        <div class="input-group-prepend">
+                            <label for="cmbPlugins" class="input-group-text">Input plugin</label>
+                        </div>
+                        <select class="custom-select" id="cmbPlugins"
+                                data-bind="
                         options: plugins,
                         optionsText: 'name',
                         value: activePlugin">
-                </select>
-            </div>
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <label for="cmbConfigs" class="input-group-text">Remote configuration</label>
-                </div>
-                <select class="custom-select" id="cmbConfigs"
-                        data-bind="
+                        </select>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label for="cmbConfigs" class="input-group-text">Remote configuration</label>
+                        </div>
+                        <select class="custom-select" id="cmbConfigs"
+                                data-bind="
                         options: configs,
                         optionsText: 'name',
                         value: activeConfig,
                         enable: activePluginCanRecord">
-                </select>
-                <!-- ko with: activePlugin -->
-                <!--<span data-bind="text: canRecord"></span>
-    <span data-bind="text: name"></span>-->
-                <!-- /ko -->
-            </div>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Repeats</h5>
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="chkDisableAllRepeats"
-                       data-bind="checked: disableAllRepeats">
-                <label class="form-check-label" for="chkDisableAllRepeats">
-                    Disable all repeats
-                </label>
-            </div>
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Disable first</span>
-                </div>
-                <input type="number" class="form-control" id="disableFirstNRepeats" placeholder="N"
-                       data-bind="value: disableFirstNRepeats">
-                <div class="input-group-append">
-                    <span class="input-group-text">repeats</span>
+                        </select>
+                        <!-- ko with: activePlugin -->
+                        <!--<span data-bind="text: canRecord"></span>
+                    <span data-bind="text: name"></span>-->
+                        <!-- /ko -->
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Server options</h5>
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="chkLocalConnectionsOnly"
-                       data-bind="checked: enableLocalConnectionsOnly">
-                <label class="form-check-label" for="chkLocalConnectionsOnly">
-                    Allow local connections only
-                </label>
-            </div>
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">Port</span>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Repeats</h5>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="chkDisableAllRepeats"
+                               data-bind="checked: disableAllRepeats">
+                        <label class="form-check-label" for="chkDisableAllRepeats">
+                            Disable all repeats
+                        </label>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Disable first</span>
+                        </div>
+                        <input type="number" class="form-control" id="disableFirstNRepeats" placeholder="N"
+                               data-bind="value: disableFirstNRepeats">
+                        <div class="input-group-append">
+                            <span class="input-group-text">repeats</span>
+                        </div>
+                    </div>
                 </div>
-                <input type="number" class="form-control" id="winlircPort" placeholder="Port (default=8765)"
-                       data-bind="value: serverPort">
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Server options</h5>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="chkLocalConnectionsOnly"
+                               data-bind="checked: enableLocalConnectionsOnly">
+                        <label class="form-check-label" for="chkLocalConnectionsOnly">
+                            Allow local connections only
+                        </label>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Port</span>
+                        </div>
+                        <input type="number" class="form-control" id="winlircPort" placeholder="Port (default=8765)"
+                               data-bind="value: serverPort">
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Other options</h5>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="chkEnableTray"
+                               data-bind="checked: enableTray">
+                        <label class="form-check-label" for="chkEnableTray">
+                            Enable tray icon
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="chkStartWithWindows"
+                               data-bind="checked: enableAutoStart">
+                        <label class="form-check-label" for="chkStartWithWindows">
+                            Automatically start with windows
+                        </label>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Other options</h5>
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="chkEnableTray"
-                       data-bind="checked: enableTray">
-                <label class="form-check-label" for="chkEnableTray">
-                    Enable tray icon
-                </label>
-            </div>
-            <div class="form-check">
-                <input type="checkbox" class="form-check-input" id="chkStartWithWindows"
-                       data-bind="checked: enableAutoStart">
-                <label class="form-check-label" for="chkStartWithWindows">
-                    Automatically start with windows
-                </label>
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <!-- ko with: activePlugin -->
+                        <h5 class="card-title" data-bind="text: name()+' settings'"></h5>
+                        <!-- ko ifnot: $parent.pluginConfigParams -->
+                        This plugin has no configurable settings.
+                        <!-- /ko -->
+                        <!-- ko foreach: $parent.pluginConfigParams -->
+                        <div data-bind="text: label"></div>
+                        <!-- ko if: type=='select' -->
+                        <select data-bind="options: selectOptions, optionsText: 'name'"></select>
+                        <!-- /ko -->
+                        <!-- ko if: type=='number' -->
+                        <input type="number" 
+                               data-bind="attr: { min: range.min, max: range.max }" />
+                        <!-- /ko-->
+                        <!-- /ko-->
+                    <!-- /ko -->
+                </div>
             </div>
         </div>
     </div>
     <button type="button" class="btn btn-primary btn-block" data-bind="saveConfig">Save</button>
 </div>
+
 <script src="jquery-3.5.1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 <script src="bootstrap.bundle-4.5.3.min.js"></script>
