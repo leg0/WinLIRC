@@ -5,7 +5,7 @@
 struct DllTraits
 {
 	using HandleType = HMODULE;
-	static HandleType invalidValue() noexcept
+	static constexpr HandleType invalidValue() noexcept
 	{
 		return nullptr;
 	}

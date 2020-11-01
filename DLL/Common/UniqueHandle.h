@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <utility>
 
 namespace winlirc
 {
@@ -64,9 +65,7 @@ namespace winlirc
         /// @post get() == nullptr
         HandleType release() noexcept
         {
-            HandleType const res = handle_;
-            handle_ = Traits::invalidValue();
-            return res;
+            return std::exchange(handle_, Traits::invalidValue());
         }
 
         /// Give up ownership of the current handle, assume ownership of replacement.

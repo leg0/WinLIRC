@@ -15,8 +15,8 @@
 struct HwndTraits
 {
     typedef HWND HandleType;
-    static HandleType invalidValue() { return nullptr; }
-    static void close(HandleType h) { ::DestroyWindow(h); }
+    constexpr static HandleType invalidValue() noexcept { return nullptr; }
+    static void close(HandleType h) noexcept { ::DestroyWindow(h); }
 };
 
 using Window = winlirc::UniqueHandle<HwndTraits>;

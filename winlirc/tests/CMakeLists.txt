@@ -4,16 +4,16 @@ add_executable(winlirc_tests
 	test.cpp
 	config_test.cpp
 	remote_test.cpp
+	unique_handle_test.cpp
 	../config.cpp
 	../wl_string.cpp)
 
 target_link_libraries(winlirc_tests
 	PRIVATE
 		winlirc
-		#GTest::gmock
-		GTest::gtest
-		#GTest::gmock_main
-		GTest::gtest_main)
+		winlirc-common
+		#GTest::gmock GTest::gmock_main)
+		GTest::gtest GTest::gtest_main)
 
 add_test(
 	NAME winlirc_tests 
