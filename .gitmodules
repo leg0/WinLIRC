@@ -1,3 +1,6 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = git@github.com:microsoft/vcpkg.git
+[submodule "configs"]
+	path = configs
+	url = git@github.com:leg0/winlirc-configs.git
