@@ -109,11 +109,6 @@ lirc_t emulation_readdata(lirc_t timeout)
 	return data;
 }
 
-inline lirc_t lirc_t_max(lirc_t a,lirc_t b)
-{
-	return(a>b ? a:b);
-}
-
 inline void set_pending_pulse(lirc_t deltap)
 {
 	//LOGPRINTF(5, "pending pulse: %lu", deltap);
@@ -1274,7 +1269,7 @@ int receive_decode(struct ir_remote *remote,
 			
 			current = steady_clock::now();
 			sum=remote->phead+remote->shead+
-				lirc_t_max(remote->pone+remote->sone,
+				std::max(remote->pone+remote->sone,
 					   remote->pzero+remote->szero)*
 				bit_count(remote)+
 				remote->plead+

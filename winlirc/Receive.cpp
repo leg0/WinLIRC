@@ -37,11 +37,6 @@ extern struct ir_remote *last_remote;
 extern struct ir_remote *repeat_remote;
 extern struct ir_ncode *repeat_code;
 
-inline lirc_t lirc_t_max(lirc_t a,lirc_t b)
-{
-	return(a>b ? a:b);
-}
-
 inline void set_pending_pulse(rbuf& rec_buffer, lirc_t deltap)
 {
 	rec_buffer.pendingp=deltap;
@@ -1153,7 +1148,7 @@ WINLIRC_API int winlirc_receive_decode(
 			
 			current = steady_clock::now();
 			sum=remote->phead+remote->shead+
-				lirc_t_max(remote->pone+remote->sone,
+				std::max(remote->pone+remote->sone,
 					   remote->pzero+remote->szero)*
 				bit_count(remote)+
 				remote->plead+
