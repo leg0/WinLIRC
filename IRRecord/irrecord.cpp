@@ -690,8 +690,7 @@ int main(int argc,char **argv)
 						else
 						{
 							ncode.name=buffer;
-							ncode.length=count-1;
-							ncode.signals=signals;
+							ncode.signals = void_array<lirc_t>{ .ptr = signals, .nr_items = count - 1 };
 							fprint_remote_signal(fout,
 								&remote,
 								&ncode);

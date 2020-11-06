@@ -55,7 +55,7 @@ lirc_t emulation_readdata(lirc_t timeout)
 				progname, emulation_data->name);
 			data = 0;
 		}
-		if(current_index >= current_code->length)
+		if(current_index >= current_code->length())
 		{
 			if(next_code)
 			{
@@ -1213,7 +1213,7 @@ int receive_decode(struct ir_remote *remote,
 		while(codes->name!=NULL && found==NULL)
 		{
 			found=codes;
-			for(i=0;i<codes->length;)
+			for(i=0;i<codes->length();)
 			{
 				if(!expectpulse(remote,codes->signals[i++]))
 				{
@@ -1222,7 +1222,7 @@ int receive_decode(struct ir_remote *remote,
 					sync_rec_buffer(remote);
 					break;
 				}
-				if(i<codes->length &&
+				if(i<codes->length() &&
 				   !expectspace(remote,codes->signals[i++]))
 				{
 					found=NULL;

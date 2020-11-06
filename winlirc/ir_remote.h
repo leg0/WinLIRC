@@ -4,6 +4,28 @@
 
 #include <chrono>
 
+template <typename T>
+struct void_array
+{
+	T* ptr;
+	size_t nr_items;
+	size_t chunk_size;
+
+	T& operator[](size_t idx) { return ptr[idx]; }
+	T const& operator[](size_t idx) const { return ptr[idx]; }
+};
+
+template <typename T> void init_void_array(void_array<T>& ar, size_t chunk_size);
+template <typename T> int add_void_array(void_array<T>& ar, T const& data);
+template <typename T> T* get_void_array(void_array<T>& ar);
+template <typename T> void free_void_array(void_array<T>& ar)
+{
+	if (ar.ptr != nullptr)
+		free(ar.ptr);
+	ar.ptr = nullptr;
+	ar.nr_items = 0;
+}
+
 struct ir_code_node
 {
 	ir_code code;
@@ -14,8 +36,8 @@ struct ir_ncode
 {
 	char* name;
 	ir_code code;
-	int length;
-	lirc_t* signals;
+	size_t length() const { return signals.nr_items; }
+	void_array<lirc_t> signals;
 	ir_code_node *next;
 	ir_code_node *current;
 	ir_code_node *transmit_state;

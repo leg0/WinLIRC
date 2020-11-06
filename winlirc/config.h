@@ -38,25 +38,6 @@ static constexpr flaglist all_flags[]=
 
 enum directive {ID_none,ID_remote,ID_codes,ID_raw_codes,ID_raw_name};
 
-struct ptr_array
-{
-        void **ptr;
-        size_t nr_items;
-        size_t chunk_size;
-};
-
-struct void_array
-{
-        void *ptr;
-        size_t item_size;
-        size_t nr_items;
-        size_t chunk_size;
-};
-
-void **init_void_array(struct void_array *ar,size_t chunk_size, size_t item_size);
-int add_void_array(struct void_array *ar, void * data);
-inline void * get_void_array(struct void_array *ar);
-
 /* some safer functions */
 void * s_malloc(size_t size);
 
