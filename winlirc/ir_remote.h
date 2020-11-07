@@ -7,17 +7,25 @@
 template <typename T>
 struct void_array
 {
+	using iterator = T*;
+	using const_iterator = T const*;
 	T* ptr;
 	size_t nr_items;
 	size_t chunk_size;
 
-	T& operator[](size_t idx) { return ptr[idx]; }
-	T const& operator[](size_t idx) const { return ptr[idx]; }
+	size_t size() const noexcept { return nr_items; }
+	T& back() noexcept { return ptr[nr_items - 1]; }
+	T const& back() const noexcept { return ptr[nr_items - 1]; }
+	T& operator[](size_t idx) noexcept { return ptr[idx]; }
+	T const& operator[](size_t idx) const noexcept { return ptr[idx]; }
 };
 
+template <typename T> auto begin(void_array<T>& ar) noexcept { return ar.ptr; }
+template <typename T> auto end(void_array<T>& ar) noexcept { return ar.ptr + ar.nr_items; }
+template <typename T> T const* begin(void_array<T> const& ar) noexcept { return ar.ptr; }
+template <typename T> T const* end(void_array<T> const& ar) noexcept { return ar.ptr + ar.nr_items; }
 template <typename T> void init_void_array(void_array<T>& ar, size_t chunk_size);
 template <typename T> int add_void_array(void_array<T>& ar, T const& data);
-template <typename T> T* get_void_array(void_array<T>& ar);
 template <typename T> void free_void_array(void_array<T>& ar)
 {
 	if (ar.ptr != nullptr)
@@ -46,7 +54,7 @@ struct ir_ncode
 struct ir_remote
 {
 	char* name;                 /* name of remote control */
-	ir_ncode* codes;
+	void_array<ir_ncode> codes;
 	int bits;                   /* bits (length of code) */
 	int flags;                  /* flags */
 	int eps;                    /* eps (_relative_ tolerance) */

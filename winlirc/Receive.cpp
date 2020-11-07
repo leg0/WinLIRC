@@ -1086,28 +1086,27 @@ WINLIRC_API int winlirc_receive_decode(
 
 	if(is_raw(remote))
 	{
-		struct ir_ncode *codes,*found;
 		int i;
 
 		if(hw.rec_mode==LIRC_MODE_LIRCCODE)
 			return(0);
 
-		codes=remote->codes;
-		found=nullptr;
-		while(codes->name!=nullptr && found==nullptr)
+		ir_ncode* found=nullptr;
+		for (auto& c : remote->codes)
 		{
-			found=codes;
-			for(i=0;i<codes->length();)
+			if (found) break;
+			found=&c;
+			for(i=0;i<c.length();)
 			{
-				if(!expectpulse(rec_buffer, hw,remote,codes->signals[i++]))
+				if(!expectpulse(rec_buffer, hw,remote,c.signals[i++]))
 				{
 					found=nullptr;
 					rewind_rec_buffer(rec_buffer);
 					sync_rec_buffer(rec_buffer, hw,remote);
 					break;
 				}
-				if(i<codes->length() &&
-				   !expectspace(rec_buffer, hw, remote, codes->signals[i++]))
+				if(i<c.length() &&
+				   !expectspace(rec_buffer, hw, remote, c.signals[i++]))
 				{
 					found = nullptr;
 					rewind_rec_buffer(rec_buffer);
@@ -1115,7 +1114,6 @@ WINLIRC_API int winlirc_receive_decode(
 					break;
 				}
 			}
-			codes++;
 			if (found != nullptr)
 			{
 				if (!get_gap(rec_buffer, hw,remote,

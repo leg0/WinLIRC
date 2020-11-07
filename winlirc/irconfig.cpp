@@ -83,7 +83,7 @@ bool CIRConfig::readConfig() {
 	struct ir_remote *sr;
 	for(sr=global_remotes;sr!=nullptr;sr=sr->next)
 	{
-		if(sr->codes==nullptr)
+		if(sr->codes.ptr==nullptr)
 		{
 			WL_DEBUG("read_config returned remote with null codes\n");
 			free_config(global_remotes);

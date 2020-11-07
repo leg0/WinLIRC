@@ -102,8 +102,8 @@ TEST_F(ConfigParseTest, 1)
     EXPECT_EQ(107991, cfg->gap);
     EXPECT_EQ(0, cfg->toggle_bit_mask);
 
-    EXPECT_EQ(4, count(cfg->codes));
-    auto code = cfg->codes;
+    EXPECT_EQ(4, cfg->codes.size());
+    auto code = begin(cfg->codes);
     EXPECT_EQ("1"s, code->name);
     EXPECT_EQ(0x20DF, code->code);
     ++code;

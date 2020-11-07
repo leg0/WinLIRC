@@ -56,21 +56,14 @@ int add_void_array(void_array<T>& ar, T const& dataptr)
 	return 1;
 }
 
-template <typename T>
-T* get_void_array(void_array<T>& ar)
-{
-	return ar.ptr;
-}
-
 void *s_malloc(size_t size)
 {
-	void *ptr;
-	if((ptr=malloc(size))==nullptr){
+	void *ptr = calloc(1, size);
+	if(ptr==nullptr){
 		parse_error=1;
 		return(nullptr);
 	}
-	memset(ptr, 0, size);
-	return (ptr);
+	return ptr;
 }
 
 static char* s_strdup(winlirc::istring_view string)
@@ -403,7 +396,6 @@ int defineRemote(winlirc::istring_view key, winlirc::istring_view val, winlirc::
 
 static int sanityChecks(struct ir_remote *rem)
 {
-	struct ir_ncode *codes;
 	struct ir_code_node *node;
 
 	if (!rem->name)
@@ -429,13 +421,13 @@ static int sanityChecks(struct ir_remote *rem)
 	{
 		rem->post_data &= gen_mask(rem->post_data_bits);
 	}
-	for(codes = rem->codes; codes->name != nullptr; codes++)
+	for (auto& c : rem->codes)
 	{
-		if((codes->code&gen_mask(rem->bits)) != codes->code)
+		if((c.code&gen_mask(rem->bits)) != c.code)
 		{
-			codes->code &= gen_mask(rem->bits);
+			c.code &= gen_mask(rem->bits);
 		}
-		for(node = codes->next; node != nullptr; node = node->next)
+		for(node = c.next; node != nullptr; node = node->next)
 		{
 			if((node->code&gen_mask(rem->bits)) != node->code)
 			{
@@ -607,7 +599,7 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 
 					if (!checkMode(mode, ID_remote,
 						"begin codes")) break;
-					if (rem->codes){
+					if (rem->codes.ptr){
 						parse_error=1;
 						break;
 					}
@@ -619,7 +611,7 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 
 					if(!checkMode(mode, ID_remote,
 						"begin raw_codes")) break;
-					if (rem->codes){
+					if (rem->codes.ptr){
 
 						parse_error=1;
 						break;
@@ -665,7 +657,7 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 					/* end Codes mode */
 					if (!checkMode(mode, ID_codes,
 						"end codes")) break;
-					rem->codes=get_void_array(codes_list);
+					rem->codes=codes_list;
 					mode=ID_remote;     /* switch back */
 
 				}else if("raw_codes" == val){
@@ -684,7 +676,7 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 					}
 					if(!checkMode(mode,ID_raw_codes,
 						"end raw_codes")) break;
-					rem->codes=get_void_array(raw_codes);
+					rem->codes=raw_codes;
 					mode=ID_remote;     /* switch back */
 				}else if("remote" == val){
 					/* end remote mode */
@@ -794,14 +786,13 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 			if(raw_code.name!=nullptr)
 			{
 				free(raw_code.name);
-				if(get_void_array(signals)!=nullptr)
-					free(get_void_array(signals));
+				free_void_array(signals);
 			}
 		case ID_raw_codes:
-			rem->codes=get_void_array(raw_codes);
+			rem->codes=raw_codes;
 			break;
 		case ID_codes:
-			rem->codes=get_void_array(codes_list);
+			rem->codes=codes_list;
 			break;
 		}
 		if(!parse_error)
@@ -827,8 +818,6 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 	{
 		if((!is_raw(rem)) && rem->flags&REVERSE)
 		{
-			struct ir_ncode *codes;
-
 			if(has_pre(rem))
 			{
 				rem->pre_data=reverse(rem->pre_data,
@@ -839,11 +828,9 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 				rem->post_data=reverse(rem->post_data,
 					rem->post_data_bits);
 			}
-			codes=rem->codes;
-			while(codes->name!=nullptr)
+			for (auto& c : rem->codes)
 			{
-				codes->code=reverse(codes->code,rem->bits);
-				codes++;
+				c.code = reverse(c.code, rem->bits);
 			}
 			rem->flags=rem->flags&(~REVERSE);
 			rem->flags=rem->flags|COMPAT_REVERSE;
@@ -872,9 +859,9 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 		}
 		if(has_toggle_bit_mask(rem))
 		{
-			if(!is_raw(rem) && rem->codes)
+			if(!is_raw(rem) && rem->codes.ptr)
 			{
-				rem->toggle_bit_mask_state = (rem->codes->code & rem->toggle_bit_mask);
+				rem->toggle_bit_mask_state = (rem->codes.ptr->code & rem->toggle_bit_mask);
 				if(rem->toggle_bit_mask_state)
 				{
 					/* start with state set to 0 for backwards compatibility */
@@ -924,32 +911,29 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 void free_config(struct ir_remote *remotes)
 {
 	struct ir_remote *next;
-	struct ir_ncode *codes;
 
 	while(remotes!=nullptr)
 	{
 		next=remotes->next;
 
 		if(remotes->name!=nullptr) free(remotes->name);
-		if(remotes->codes!=nullptr)
+		if(remotes->codes.ptr!=nullptr)
 		{
-			codes=remotes->codes;
-			while(codes->name!=nullptr)
+			for (auto& c : remotes->codes)
 			{
 				struct ir_code_node *node,*next_node;
 
-				free(codes->name);
-				free_void_array(codes->signals);
-				node=codes->next;
+				free(c.name);
+				free_void_array(c.signals);
+				node=c.next;
 				while(node)
 				{
 					next_node=node->next;
 					free(node);
 					node=next_node;
 				}
-				codes++;
 			}
-			free(remotes->codes);
+			free_void_array(remotes->codes);
 		}
 		free(remotes);
 		remotes=next;

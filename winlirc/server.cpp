@@ -394,23 +394,15 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
 
     if (remoteName && !codeName)
     {
-        ir_ncode* allcodes = all->codes;
-        while (allcodes->name)
-        {
-            n++;
-            allcodes++;
-        }
+        n = all->codes.size();
         std::string response;
         if (n != 0)
         {
             response = "DATA\n"s + std::to_string(n) + "\n";
-            allcodes = all->codes;
-
-            while (allcodes->name)
+            for (auto& code : all->codes)
             {
-                response += allcodes->name;
+                response += code.name;
                 response += "\n";
-                allcodes++;
             }
         }
         return { true, std::move(response) };

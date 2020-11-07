@@ -456,11 +456,9 @@ void Cdrvdlg::UpdateIrCodeComboLists()
 
 	if (selected_remote)
 	{
-		ir_ncode* codes = selected_remote->codes;
-		while (codes && codes->name!=nullptr)
+		for (auto& code : selected_remote->codes)
 		{
-			m_IrCodeEditCombo.AddString(A2T(codes->name));
-			codes++;
+			m_IrCodeEditCombo.AddString(A2T(code.name));
 		}
 	}
 

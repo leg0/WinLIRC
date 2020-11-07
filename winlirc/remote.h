@@ -3,6 +3,7 @@
 #include "ir_remote.h"
 #include <winlirc/winlirc_api.h>
 
+#include <algorithm>
 #include <sys/types.h>
 #include <string.h>
 #include <math.h>
@@ -22,11 +23,9 @@ static inline ir_remote* get_remote_by_name(ir_remote* remotes, const char *name
 	return remotes;
 }
 
-static inline ir_ncode* get_code_by_name(ir_ncode*codes, const char *name)
+static inline ir_ncode* get_code_by_name(void_array<ir_ncode>& codes, const char *name)
 {
-	while (codes->name!=nullptr&& _stricmp(name,codes->name)) {
-		codes++;
-	}
-
-	return codes;
+	return std::find_if(begin(codes), end(codes), [=](ir_ncode& code) {
+		return _stricmp(name, code.name) == 0;
+	});
 }

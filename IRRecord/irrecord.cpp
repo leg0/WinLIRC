@@ -377,7 +377,7 @@ int main(int argc,char **argv)
 
 		remote=*remotes;
 		remote.name=NULL;
-		remote.codes=NULL;
+		remote.codes = {};
 		remote.last_code=NULL;
 		remote.next=NULL;
 		if(remote.pre_p==0 && remote.pre_s==0 &&
@@ -923,21 +923,18 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 	int found;
 	char message[PACKET_SIZE+1];
 
-	struct ir_ncode *codes;
-	if(remote->codes)
+	if (remote->codes.ptr)
 	{
-		codes=remote->codes;
-		while(codes->name!=NULL)
+		for (auto& c : remote->codes)
 		{
-			if(codes->next)
+			if (c.next)
 			{
 				/* asume no toggle bit mask when key
 				sequences are used */
 				return 1;
 			}
-			codes++;
 		}
-	} 
+	}
 
 	printf("Checking for toggle bit mask.\n");
 	printf(
@@ -1057,10 +1054,9 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 void set_toggle_bit_mask(struct ir_remote *remote,ir_code xor)
 {
 	ir_code mask;
-	struct ir_ncode *codes;
 	int bits;
 
-	if(!remote->codes) return;
+	if(!remote->codes.ptr) return;
 
 	bits=bit_count(remote);
 	mask=((ir_code) 1)<<(bits-1);
@@ -1072,12 +1068,9 @@ void set_toggle_bit_mask(struct ir_remote *remote,ir_code xor)
 	if(mask)
 	{
 		remote->toggle_bit_mask = xor;
-
-		codes=remote->codes;
-		while(codes->name!=NULL)
+		for (auto& c : remote->codes)
 		{
-			codes->code&=~xor;
-			codes++;
+			c.code &= ~xor;
 		}
 	}
 	/* Sharp, Denon and some others use a toggle_mask */
@@ -1093,31 +1086,26 @@ void set_toggle_bit_mask(struct ir_remote *remote,ir_code xor)
 
 void get_pre_data(struct ir_remote *remote)
 {
-	struct ir_ncode *codes;
 	ir_code mask,last;
 	int count,i;
 
 	if(remote->bits==0) return;
 
 	mask=(-1);
-	codes=remote->codes;
-	if(codes->name==NULL) return; /* at least 2 codes needed */
+	auto codes=begin(remote->codes);
+	if (codes == end(remote->codes)) return; /* at least 2 codes needed */
 	last=codes->code;
-	codes++;
-	if(codes->name==NULL) return; /* at least 2 codes needed */
-	while(codes->name!=NULL)
+	++codes;
+	if (codes == end(remote->codes)) return; /* at least 2 codes needed */
+	for (; codes != end(remote->codes); ++codes)
 	{
-		struct ir_code_node *loop;
-
-		mask&=~(last^codes->code);
-		last=codes->code;
-		for(loop=codes->next; loop!=NULL; loop=loop->next)
+		mask &= ~(last ^ codes->code);
+		last = codes->code;
+		for (ir_code_node* loop = codes->next; loop != NULL; loop = loop->next)
 		{
-			mask&=~(last^loop->code);
-			last=loop->code;
+			mask &= ~(last ^ loop->code);
+			last = loop->code;
 		}
-
-		codes++;
 	}
 	count=0;
 	while(mask&0x8000000000000000LL)
@@ -1145,47 +1133,39 @@ void get_pre_data(struct ir_remote *remote)
 		remote->pre_data_bits=count;
 		remote->pre_data=(last&mask)>>(remote->bits);
 
-		codes=remote->codes;
-		while(codes->name!=NULL)
+		for (auto& c : remote->codes)
 		{
-			struct ir_code_node *loop;
-
-			codes->code&=~mask;
-			for(loop=codes->next; loop!=NULL; loop=loop->next)
+			c.code &= ~mask;
+			for (ir_code_node* loop = c.next; loop != NULL; loop = loop->next)
 			{
-				loop->code&=~mask;
+				loop->code &= ~mask;
 			}
-			codes++;
 		}
 	}
 }
 
 void get_post_data(struct ir_remote *remote)
 {
-	struct ir_ncode *codes;
 	ir_code mask,last;
 	int count,i;
 
 	if(remote->bits==0) return;
 
 	mask=(-1);
-	codes=remote->codes;
-	if(codes->name==NULL) return; /* at least 2 codes needed */
+	auto codes=begin(remote->codes);
+	if (codes == end(remote->codes)) return; /* at least 2 codes needed */
 	last=codes->code;
 	codes++;
-	if(codes->name==NULL) return; /* at least 2 codes needed */
-	while(codes->name!=NULL)
+	if (codes == end(remote->codes)) return; /* at least 2 codes needed */
+	for (; codes != end(remote->codes); ++codes)
 	{
-		struct ir_code_node *loop;
-
-		mask&=~(last^codes->code);
-		last=codes->code;
-		for(loop=codes->next; loop!=NULL; loop=loop->next)
+		mask &= ~(last ^ codes->code);
+		last = codes->code;
+		for (ir_code_node* loop = codes->next; loop != NULL; loop = loop->next)
 		{
-			mask&=~(last^loop->code);
-			last=loop->code;
+			mask &= ~(last ^ loop->code);
+			last = loop->code;
 		}
-		codes++;
 	}
 	count=0;
 	while(mask&0x1)
@@ -1210,17 +1190,13 @@ void get_post_data(struct ir_remote *remote)
 		remote->post_data_bits=count;
 		remote->post_data=last&mask;
 
-		codes=remote->codes;
-		while(codes->name!=NULL)
+		for (auto& c : remote->codes)
 		{
-			struct ir_code_node *loop;
-
-			codes->code=codes->code>>count;
-			for(loop=codes->next; loop!=NULL; loop=loop->next)
+			c.code = c.code >> count;
+			for (ir_code_node* loop = c.next; loop != NULL; loop = loop->next)
 			{
-				loop->code=loop->code>>count;
+				loop->code = loop->code >> count;
 			}
-			codes++;
 		}
 	}
 }
@@ -1239,13 +1215,11 @@ void for_each_remote(struct ir_remote *remotes, remote_func func)
 
 void analyse_remote(struct ir_remote *raw_data)
 {
-	struct ir_ncode *codes;
 	ir_code pre, code, code2, post;
 	int repeat_flag;
 	lirc_t min_remaining_gap, max_remaining_gap;
-	struct ir_ncode *new_codes;
+	void_array<ir_ncode> new_codes;
 	size_t new_codes_count = 100;
-	int new_index = 0;
 	int ret;
 
 	if(!is_raw(raw_data))
@@ -1273,21 +1247,19 @@ void analyse_remote(struct ir_remote *raw_data)
 	remote.name = raw_data->name;
 	remote.freq = raw_data->freq;
 
-	new_codes = (ir_ncode*)malloc(new_codes_count * sizeof(*new_codes));
-	if(new_codes == NULL)
+	init_void_array(new_codes, new_codes_count);
+	if(new_codes.ptr == nullptr)
 	{
 		fprintf(stderr, "%s: out of memory\n",
 			progname);
 		return;
 	}
-	memset(new_codes, 0 , new_codes_count * sizeof(*new_codes));
-	codes = raw_data->codes;
-	while(codes->name!=NULL)
+	for (auto& c : raw_data->codes)
 	{
-		//printf("decoding %s\n", codes->name);
+		//printf("decoding %s\n", c.name);
 		current_code = NULL;
 		current_index = 0;
-		next_code = codes;
+		next_code = &c;
 
 		init_rec_buffer();
 
@@ -1299,27 +1271,10 @@ void analyse_remote(struct ir_remote *raw_data)
 		if(!ret)
 		{
 			fprintf(stderr, "%s: decoding of %s failed\n",
-				progname, codes->name);
+				progname, c.name);
 		}
 		else
 		{
-			if(new_index+1 >= new_codes_count)
-			{
-				struct ir_ncode *renew_codes;
-
-				new_codes_count *= 2;
-				renew_codes = (ir_ncode*)realloc(new_codes,new_codes_count * sizeof(*new_codes));
-				if(renew_codes == NULL)
-				{
-					fprintf(stderr, "%s: out of memory\n",
-						progname);
-					free(new_codes);
-					return;
-				}
-				memset(&new_codes[new_codes_count/2], 0 , new_codes_count/2 * sizeof(*new_codes));
-				new_codes = renew_codes;
-			}
-
 			clear_rec_buffer();
 
 			ret = receive_decode(&remote,
@@ -1329,24 +1284,21 @@ void analyse_remote(struct ir_remote *raw_data)
 				&max_remaining_gap);
 			if(ret && code2 != code)
 			{
-				new_codes[new_index].next = (ir_code_node*)malloc(sizeof(*(new_codes[new_index].next)));
-				if(new_codes[new_index].next)
+				add_void_array(new_codes, ir_ncode{});
+				new_codes.back().next = (ir_code_node*)calloc(1, sizeof(*new_codes.back().next));
+				if (new_codes.back().next)
 				{
-					memset(new_codes[new_index].next, 0, sizeof(*(new_codes[new_index].next)));
-					new_codes[new_index].next->code = code2;
+					new_codes.back().next->code = code2;
 				}
 			}
-			new_codes[new_index].name = codes->name;
-			new_codes[new_index].code = code;			
-			new_index++;
+			new_codes.back().name = c.name;
+			new_codes.back().code = code;
 		}
-		codes++;
 	}
-	new_codes[new_index].name = NULL;
 	remote.codes = new_codes;
 	fprint_remotes(stdout, &remote);
-	remote.codes = NULL;
-	free(new_codes);
+	remote.codes = {};
+	free_void_array(new_codes);
 }
 
 
