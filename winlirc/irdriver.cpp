@@ -1,26 +1,3 @@
-/* 
- * This file is part of the WinLIRC package, which was derived from
- * LIRC (Linux Infrared Remote Control) 0.5.4pre9.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * Copyright (C) 1999 Jim Paris <jim@jtan.com>
- * Modifications Copyright (C) 2000 Scott Baily <baily@uiuc.edu>
- * RX device, some other stuff Copyright (C) 2002 Alexander Nesterovsky <Nsky@users.sourceforge.net>
- */
-
 #include "stdafx.h"
 #include "irdriver.h"
 #include "irconfig.h"
@@ -29,32 +6,19 @@
 #include "server.h"
 #include "winlirc.h"
 
-unsigned int DaemonThread(void* drv) {
-    static_cast<CIRDriver*>(drv)->DaemonThreadProc();
-    return 0;
-}
-	
 CIRDriver::CIRDriver()
-{
-	m_daemonThreadHandle = nullptr;
-	m_daemonThreadEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-}
+	: m_daemonThreadEvent{ CreateEvent(nullptr, TRUE, FALSE, nullptr) }
+{ }
 
 CIRDriver::~CIRDriver()
 {
 	unloadPlugin();
-
-	if(m_daemonThreadEvent) {
+	ASSERT(!m_daemonThreadHandle.joinable());
+	if(m_daemonThreadEvent)
 		CloseHandle(m_daemonThreadEvent);
-		m_daemonThreadEvent = nullptr;
-	}
-
-	if(m_daemonThreadHandle) {
-		m_daemonThreadHandle = nullptr;
-	}
 }
 
-BOOL CIRDriver::loadPlugin(std::wstring plugin) {
+BOOL CIRDriver::loadPlugin(std::filesystem::path plugin) {
 
     //
     //make sure we have cleaned up first
@@ -67,7 +31,6 @@ BOOL CIRDriver::loadPlugin(std::wstring plugin) {
     if (p.hasValidInterface())
 	{
         m_dll = std::move(p);
-        m_loadedPlugin = std::move(plugin);
         return TRUE;
     }
 
@@ -82,29 +45,28 @@ void CIRDriver::unloadPlugin() {
 	deinit();
 
 	// daemon thread should not be dead now.
-	ASSERT(m_daemonThreadHandle == nullptr);
-	m_loadedPlugin = L"";
+	ASSERT(!m_daemonThreadHandle.joinable());
 	m_dll = Plugin{ };
 }
 
-BOOL CIRDriver::init() {
-
-	//
-	// safe to call deinit first
-	//
+BOOL CIRDriver::init()
+{
 	deinit();
 
 	// daemon thread should be dead now.
-	ASSERT(m_daemonThreadHandle == nullptr);
+	ASSERT(!m_daemonThreadHandle.joinable());
 
-	if(auto pluginInit = m_dll.interface_.init) {
-		if(pluginInit(reinterpret_cast<WLEventHandle>(m_daemonThreadEvent))) {
+	if (auto pluginInit = m_dll.interface_.init)
+	{
+		if (pluginInit(reinterpret_cast<WLEventHandle>(m_daemonThreadEvent)))
+		{
+			m_daemonThreadHandle = std::thread{ [&]() {
+				::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_IDLE);
+				this->DaemonThreadProc();
+			} };
 
-			m_daemonThreadHandle = AfxBeginThread(DaemonThread, this, THREAD_PRIORITY_IDLE);
-
-			if(m_daemonThreadHandle) {
+			if (m_daemonThreadHandle.joinable())
 				return TRUE;
-			}
 		}
 		else {
 			deinit();
@@ -116,9 +78,7 @@ BOOL CIRDriver::init() {
 
 void CIRDriver::deinit() {
 
-	KillThread2(&m_daemonThreadHandle,m_daemonThreadEvent);
-	// daemon thread should be dead now.
-	ASSERT(m_daemonThreadHandle == nullptr);
+	stopDaemonThread();
 
 	if(auto pluginDeinit = m_dll.interface_.deinit) {
 		pluginDeinit();
@@ -214,3 +174,14 @@ void CIRDriver::DaemonThreadProc(void) const {
 	}
 }
 
+void CIRDriver::stopDaemonThread()
+{
+	if (m_daemonThreadHandle.joinable())
+	{
+		::SetEvent(m_daemonThreadEvent);
+		m_daemonThreadHandle.join();
+	}
+
+	// daemon thread should be dead now.
+	ASSERT(!m_daemonThreadHandle.joinable());
+}

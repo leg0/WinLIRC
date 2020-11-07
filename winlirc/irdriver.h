@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Plugin.h"
+#include <filesystem>
 #include <mutex>
 #include <string>
+#include <thread>
 
 struct ir_remote;
 struct ir_ncode;
@@ -13,7 +15,7 @@ public:
 	CIRDriver();
 	~CIRDriver();
 
-	BOOL	loadPlugin		(std::wstring plugin);
+	BOOL	loadPlugin		(std::filesystem::path plugin);
 	void	unloadPlugin	();
 	BOOL	init			();
 	void	deinit			();
@@ -25,14 +27,15 @@ public:
 
 private:
 
+	void stopDaemonThread();
+
 	/// Protects access to the functions imported from plug-in dll, and the
 	/// DLL handle.
 	mutable std::mutex m_dllLock;
 
 	//===============================
 	Plugin		m_dll;
-	std::wstring m_loadedPlugin;
-	HANDLE m_daemonThreadEvent;
-	CWinThread*	m_daemonThreadHandle;
+	HANDLE const m_daemonThreadEvent;
+	std::thread m_daemonThreadHandle;
 	//===============================
 };

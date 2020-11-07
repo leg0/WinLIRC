@@ -75,28 +75,3 @@ void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
 		}
 	}
 }
-
-void KillThread2(CWinThread **ThreadHandle, HANDLE ThreadEvent)
-{
-	while(*ThreadHandle!=nullptr)
-	{
-		DWORD result=0;
-		if(GetExitCodeThread((*ThreadHandle)->m_hThread,&result)==0) 
-		{
-			WL_DEBUG("GetExitCodeThread failed, error=%d\n",GetLastError());
-			WL_DEBUG("(the thread may have already been terminated)\n");
-			return;
-		}
-		if(result==STILL_ACTIVE)
-		{
-			//printf("still active\n");
-			SetEvent(ThreadEvent);
-			if(WaitForSingleObject((*ThreadHandle)->m_hThread, 5000) == WAIT_TIMEOUT) {
-				// The plug-in does not seem to respect the exitEvent. Kill it!
-				TerminateThread((*ThreadHandle)->m_hThread, 999);
-			}
-			ResetEvent(ThreadEvent);
-			*ThreadHandle=nullptr;
-		}
-	}
-}
