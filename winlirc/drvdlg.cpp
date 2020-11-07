@@ -245,7 +245,7 @@ bool Cdrvdlg::DoInitializeDaemon()
 	AllowTrayNotification=false;
 	for(;;)
 	{
-		if(InitializeDaemon()==true)
+		if(InitializeDaemon())
 		{
 			AllowTrayNotification=true;
 			return true;
@@ -322,7 +322,7 @@ void Cdrvdlg::OnConfig()
 	KillTimer(1);
 	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Disabled During Configuration"));
 
-	if(DoInitializeDaemon()==false)
+	if(!DoInitializeDaemon())
 		OnCancel();
 
 	UpdateRemoteComboLists();

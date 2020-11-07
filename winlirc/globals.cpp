@@ -30,20 +30,23 @@
 
 void winlirc_debug(const char *file, int line, char *format, ...)
 {
-	//=========
-	CStringA s;
-	CStringA t;
-	//=========
 
 	va_list args;
 	va_start(args,format);
 
-	s.Format("%s(%i) : ",file,line);
+	CStringA s;
+	s.Format("(%i): ",line);
+	CStringA t;
 	t.FormatV(format,args);
 
-	s += t;
+	auto const hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	printf(s);
+	static std::mutex debugOutputMutex;
+	std::lock_guard g{ debugOutputMutex };
+	WriteConsoleA(hStdOut, file, strlen(file), nullptr, nullptr);
+	WriteConsoleA(hStdOut, static_cast<char const*>(s), s.GetLength(), nullptr, nullptr);
+	WriteConsoleA(hStdOut, static_cast<char const*>(t), t.GetLength(), nullptr, nullptr);
+	WriteConsoleA(hStdOut, "\n", 1, nullptr, nullptr);
 }
 
 /* End of Debugging stuff */
@@ -53,25 +56,3 @@ ir_remote* global_remotes = nullptr;
 std::mutex CS_global_remotes;
 
 CIRConfig config;
-
-void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent)
-{
-	while(*ThreadHandle!=nullptr)
-	{
-		DWORD result=0;
-		if(GetExitCodeThread((*ThreadHandle)->m_hThread,&result)==0) 
-		{
-			WL_DEBUG("GetExitCodeThread failed, error=%d\n",GetLastError());
-			WL_DEBUG("(the thread may have already been terminated)\n");
-			return;
-		}
-		if(result==STILL_ACTIVE)
-		{
-			//printf("still active\n");
-			ThreadEvent->SetEvent();
-			if(WAIT_TIMEOUT==WaitForSingleObject((*ThreadHandle)->m_hThread,250)) break; //maybe we just need to give it some time to quit
-			ThreadEvent->ResetEvent();
-			*ThreadHandle=nullptr;
-		}
-	}
-}

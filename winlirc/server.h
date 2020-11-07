@@ -24,6 +24,7 @@
 #include "../DLL/Common/Socket.h"
 #include <array>
 #include <string_view>
+#include <thread>
 
 using winlirc::Socket;
 
@@ -47,7 +48,6 @@ public:
 
 private:
     void ThreadProc();
-    static UINT ServerThread(void* srv);
 
     static void sendData(Socket const& socket, std::string_view s) noexcept;
     void reply(const char* command, int client, bool success, std::string_view data) const;
@@ -56,7 +56,7 @@ private:
     std::array<Socket, MAX_CLIENTS> m_clients;
 
     int			m_tcp_port = 8765;		//tcp port for server
-    CWinThread* m_serverThreadHandle = nullptr;
+    std::thread m_serverThreadHandle;
     CEvent		m_serverThreadEvent;
     int			m_winsockStart;
 };

@@ -36,12 +36,6 @@ using namespace std::string_view_literals;
 constexpr int LISTENQ = 4;        // listen queue size
 constexpr size_t MAX_DATA = 1024; // longest message a client can send
 
-UINT Cserver::ServerThread(void* srv)
-{
-    static_cast<Cserver*>(srv)->ThreadProc();
-    return 0;
-}
-
 Cserver::Cserver()
 {
     WSADATA data;
@@ -103,9 +97,12 @@ bool Cserver::startServer()
 
     // THREAD_PRIORITY_IDLE combined with the HIGH_PRIORITY_CLASS
     // of this program still results in a really high priority. (16 out of 31)
-    m_serverThreadHandle = AfxBeginThread(ServerThread, this, THREAD_PRIORITY_IDLE);
-    if (m_serverThreadHandle == nullptr) {
-        WL_DEBUG("AfxBeginThread failed\n");
+    m_serverThreadHandle = std::thread{ [this]() {
+        ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_IDLE);
+        this->ThreadProc();
+    } };
+    if (!m_serverThreadHandle.joinable()) {
+        WL_DEBUG("starting server thread failed\n");
         return false;
     }
     return true;
@@ -113,7 +110,11 @@ bool Cserver::startServer()
 
 void Cserver::stopServer()
 {
-    KillThread(&m_serverThreadHandle, &m_serverThreadEvent);
+    if (m_serverThreadHandle.joinable())
+    {
+        m_serverThreadEvent.SetEvent();
+        m_serverThreadHandle.join();
+    }
 
     for (auto& client : m_clients)
     {

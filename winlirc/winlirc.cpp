@@ -23,7 +23,6 @@
 #include "winlirc.h"
 #include "drvdlg.h"
 #include "server.h"
-#include "guicon.h"
 #include <filesystem>
 #include <string_view>
 
@@ -45,11 +44,13 @@ fs::path getPluginsDirectory()
 
 BOOL Cwinlirc::InitInstance() {
 
+#ifdef _DEBUG
+	AllocConsole();
+#endif
+
+	WL_DEBUG("Winlirc starting");
 	AfxInitRichEdit();
 
-#ifdef _DEBUG
-	RedirectIOToConsole();
-#endif
 
 	// set current directory for plugins from exe path
 	fs::current_path(getPluginsDirectory());

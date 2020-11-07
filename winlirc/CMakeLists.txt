@@ -15,7 +15,6 @@ add_executable(winlirc WIN32
 	config.cpp
 	drvdlg.cpp
 	globals.cpp
-	guicon.cpp
 	InputPlugin.cpp
 	irconfig.cpp
 	irdriver.cpp
@@ -34,7 +33,6 @@ add_executable(winlirc WIN32
     dll.h
     drvdlg.h
     globals.h
-    guicon.h
     InputPlugin.h
     irconfig.h
     irdriver.h
