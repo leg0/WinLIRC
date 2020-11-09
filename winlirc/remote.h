@@ -15,7 +15,7 @@ struct ir_remote;
 
 static inline ir_remote* get_remote_by_name(ir_remote* remotes, const char *name)
 {
-	while (remotes!=nullptr&& _stricmp(name,remotes->name)) {
+	while (remotes!=nullptr&& _stricmp(name,remotes->name.c_str())) {
 		remotes = remotes->next;
 	}
 

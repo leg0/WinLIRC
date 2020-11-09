@@ -376,7 +376,7 @@ int main(int argc,char **argv)
 		using_template = 1;
 
 		remote=*remotes;
-		remote.name=NULL;
+		remote.name.clear();
 		remote.codes=NULL;
 		remote.last_code=NULL;
 		remote.next=NULL;

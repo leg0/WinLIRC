@@ -3,6 +3,7 @@
 #include <winlirc/winlirc_api.h>
 
 #include <chrono>
+#include <string>
 
 struct ir_code_node
 {
@@ -23,7 +24,7 @@ struct ir_ncode
 
 struct ir_remote
 {
-	char* name;                 /* name of remote control */
+	std::string name;                 /* name of remote control */
 	ir_ncode* codes;
 	int bits;                   /* bits (length of code) */
 	int flags;                  /* flags */

@@ -428,7 +428,7 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 			}
 			
 			len = write_message(out, out_size,
-					    remote->name,
+					    remote->name.c_str(),
 					    remote->last_code->name, "", code,
 					    remote->reps-(ncode->next ? 1:0));
 			decoding=nullptr;

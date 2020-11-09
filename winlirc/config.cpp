@@ -23,7 +23,7 @@ static constexpr char whitespace[] = " \t";
 static int line;
 static int parse_error;
 
-static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth);
+static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth);
 
 void **init_void_array(struct void_array *ar,size_t chunk_size, size_t item_size)
 {
@@ -211,9 +211,7 @@ int parseFlags(winlirc::istring_view val)
 int defineRemote(winlirc::istring_view key, winlirc::istring_view val, winlirc::istring_view val2, ir_remote *rem)
 {
 	if ("name" == key){
-		if(rem->name!=nullptr) free(rem->name);
-		rem->name=s_strdup(val);
-	
+		rem->name.assign(val.begin(), val.end());	
 		return(1);
 	}
 	else if ("bits" == key){
@@ -402,22 +400,14 @@ int defineRemote(winlirc::istring_view key, winlirc::istring_view val, winlirc::
 	return(0);
 }
 
-static int sanityChecks(struct ir_remote *rem)
+static int sanityChecks(ir_remote *rem)
 {
 	struct ir_ncode *codes;
 	struct ir_code_node *node;
 
-	if (!rem->name)
+	if (rem->name.empty())
 	{
 		return 0;
-	}
-	if(rem->gap == 0)
-	{
-
-	}
-	if(has_repeat_gap(rem) && is_const(rem))
-	{
-
 	}
 
 	if(is_raw(rem)) return 1;
@@ -448,9 +438,9 @@ static int sanityChecks(struct ir_remote *rem)
 	return 1;
 }
 
-struct ir_remote *sort_by_bit_count(struct ir_remote *remotes)
+ir_remote *sort_by_bit_count(ir_remote *remotes)
 {
-	struct ir_remote *top, *rem, *next, *prev, *scan;
+	ir_remote *top, *rem, *next, *prev, *scan;
 
 	rem = remotes;
 	top = nullptr;
@@ -513,17 +503,17 @@ static winlirc::istring lirc_parse_relative(winlirc::istring_view child, winlirc
 	return cur.string().c_str();
 }
 
-struct ir_remote * read_config(FILE *f, const char *name)
+ir_remote * read_config(FILE *f, const char *name)
 {
 	return read_config_recursive(f, name, 0);
 }
 
-static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth)
+static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth)
 {
     char bufx[LINE_LEN + 1];
 	winlirc::istring_view key, val, val2;
 	int argc;
-	struct ir_remote *top_rem=nullptr,*rem=nullptr;
+	ir_remote *top_rem=nullptr,*rem=nullptr;
 	struct void_array codes_list,raw_codes,signals;
 	struct ir_ncode raw_code={nullptr,0,0,nullptr};
 	struct ir_ncode name_code={nullptr,0,0,nullptr};
@@ -637,11 +627,11 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 					if (!top_rem){
 						/* create first remote */
 						
-						rem=top_rem=(ir_remote*)s_malloc(sizeof(struct ir_remote));
+						rem = top_rem = new ir_remote{};
 					}else{
 						/* create new remote */
 						
-						rem->next=(ir_remote*)s_malloc(sizeof(struct ir_remote));;
+						rem->next = new ir_remote{};
 						rem=rem->next;
 					}
 				}else if(mode==ID_codes){
@@ -923,38 +913,36 @@ static struct ir_remote * read_config_recursive(FILE *f, winlirc::istring_view n
 	return (top_rem);
 }
 
-void free_config(struct ir_remote *remotes)
+void free_config(ir_remote *remotes)
 {
-	struct ir_remote *next;
-	struct ir_ncode *codes;
-
-	while(remotes!=nullptr)
+	while (remotes!=nullptr)
 	{
-		next=remotes->next;
-
-		if(remotes->name!=nullptr) free(remotes->name);
+		ir_remote* const next=remotes->next;
 		if(remotes->codes!=nullptr)
 		{
-			codes=remotes->codes;
-			while(codes->name!=nullptr)
+			ir_ncode* codes=remotes->codes;
+			if (codes)
 			{
-				struct ir_code_node *node,*next_node;
-
-				free(codes->name);
-				if(codes->signals!=nullptr)
-					free(codes->signals);
-				node=codes->next;
-				while(node)
+				while (codes->name != nullptr)
 				{
-					next_node=node->next;
-					free(node);
-					node=next_node;
+					ir_code_node* node, * next_node;
+
+					free(codes->name);
+					if (codes->signals != nullptr)
+						free(codes->signals);
+					node = codes->next;
+					while (node)
+					{
+						next_node = node->next;
+						free(node);
+						node = next_node;
+					}
+					codes++;
 				}
-				codes++;
+				free(remotes->codes);
 			}
-			free(remotes->codes);
 		}
-		free(remotes);
+		delete remotes;
 		remotes=next;
 	}
 }

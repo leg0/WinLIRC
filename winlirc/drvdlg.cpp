@@ -430,7 +430,7 @@ void Cdrvdlg::UpdateRemoteComboLists()
 	ir_remote* sender=global_remotes;
 	while (sender!=nullptr)
 	{
-		m_remote_DropDown.AddString(A2T(sender->name));
+		m_remote_DropDown.AddString(A2T(sender->name.c_str()));
 		sender=sender->next;
 	}
 	//Set selected item
