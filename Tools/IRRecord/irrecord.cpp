@@ -25,9 +25,9 @@
 #include <limits.h>
 #include <signal.h>
 #include <chrono>
-
-#include "../winlirc/config.h"
-#include "../winlirc/ir_remote.h"
+#include <filesystem>
+#include "../../winlirc/config.h"
+#include "../../winlirc/ir_remote.h"
 #include <winlirc/winlirc_api.h>
 #include "dump_config.h"
 #include "irdriver.h"
@@ -252,7 +252,12 @@ int main(int argc,char **argv)
 		exit(0);
 	}
 
-	SetCurrentDirectory(_T(".\\plugins\\"));
+	{
+		wchar_t fn[MAX_PATH];
+		DWORD const fsz = ::GetModuleFileNameW(nullptr, fn, MAX_PATH);
+		auto p = std::filesystem::path{ fn, fn + fsz }.remove_filename().append("plugins");
+		std::filesystem::current_path(p);
+	}
 
 	//
 	// simple command line processing, could throw errors, who knows
@@ -1231,7 +1236,7 @@ void analyse_remote(struct ir_remote *raw_data)
 	if(!is_raw(raw_data))
 	{
 		fprintf(stderr, "%s: remote %s not in raw mode, ignoring\n",
-			progname, raw_data->name);
+			progname, raw_data->name.c_str());
 		return;
 	}
 	aeps = raw_data->aeps;

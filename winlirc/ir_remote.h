@@ -17,7 +17,7 @@ struct ir_ncode
 {
 	char* name;
 	ir_code code;
-	size_t length() const { return signals.size(); }
+	size_t length() const noexcept { return signals.size(); }
 	std::vector<lirc_t> signals;
 	std::unique_ptr<ir_code_node> next;
 	ir_code_node *current;

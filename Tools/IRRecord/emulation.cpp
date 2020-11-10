@@ -1,5 +1,5 @@
-#include "../winlirc/ir_remote.h"
-#include "../winlirc/constants.h"
+#include "../../winlirc/ir_remote.h"
+#include "../../winlirc/constants.h"
 
 #include <winlirc/WLPluginAPI.h>
 
@@ -52,7 +52,7 @@ lirc_t emulation_readdata(lirc_t timeout)
 		if(current_code->name == NULL)
 		{
 			fprintf(stderr, "%s: %s no data found\n",
-				progname, emulation_data->name);
+				progname, emulation_data->name.c_str());
 			data = 0;
 		}
 		if(current_index >= current_code->length())
@@ -109,13 +109,13 @@ lirc_t emulation_readdata(lirc_t timeout)
 	return data;
 }
 
-inline void set_pending_pulse(lirc_t deltap)
+inline void set_pending_pulse(lirc_t deltap) noexcept
 {
 	//LOGPRINTF(5, "pending pulse: %lu", deltap);
 	rec_buffer.pendingp=deltap;
 }
 
-inline void set_pending_space(lirc_t deltas)
+inline void set_pending_space(lirc_t deltas) noexcept
 {
 	//LOGPRINTF(5, "pending space: %lu", deltas);
 	rec_buffer.pendings=deltas;
@@ -133,9 +133,7 @@ lirc_t get_next_rec_buffer(lirc_t maxusec)
 	{
 		if(rec_buffer.wptr<RBUF_SIZE)
 		{
-			lirc_t data;
-			
-			data=emulation_readdata(2*maxusec<100000 ? 100000:2*maxusec);
+			lirc_t const data = emulation_readdata(2*maxusec<100000 ? 100000:2*maxusec);
 			if(!data)
 			{
 				return 0;
@@ -158,12 +156,12 @@ lirc_t get_next_rec_buffer(lirc_t maxusec)
 	return(0);
 }
 
-void init_rec_buffer(void)
+void init_rec_buffer() noexcept
 {
 	memset(&rec_buffer,0,sizeof(rec_buffer));
 }
 
-void rewind_rec_buffer(void)
+void rewind_rec_buffer() noexcept
 {
 	rec_buffer.rptr=0;
 	rec_buffer.too_long=0;
@@ -172,7 +170,7 @@ void rewind_rec_buffer(void)
 	rec_buffer.sum=0;
 }
 
-int clear_rec_buffer(void) {
+int clear_rec_buffer() noexcept {
 	
 	if(hw.rec_mode==LIRC_MODE_LIRCCODE || hw.rec_mode==LIRC_MODE_CODE) {
 
@@ -210,7 +208,7 @@ int clear_rec_buffer(void) {
 	return(1);
 }
 
-inline void unget_rec_buffer(int count)
+inline void unget_rec_buffer(int count) noexcept
 {
 	//LOGPRINTF(5, "unget: %d", count);
 	if(count==1 || count==2)
@@ -260,7 +258,7 @@ inline lirc_t get_next_space(lirc_t maxusec)
 	return(data);
 }
 
-inline int sync_pending_pulse(struct ir_remote *remote)
+inline int sync_pending_pulse(ir_remote const* remote)
 {
 	if(rec_buffer.pendingp>0)
 	{
@@ -290,13 +288,12 @@ inline int sync_pending_space(struct ir_remote *remote)
 
 int expectpulse(struct ir_remote *remote,int exdelta)
 {
-	lirc_t deltap;
 	int retval;
 	
 	//LOGPRINTF(5, "expecting pulse: %lu", exdelta);
 	if(!sync_pending_space(remote)) return 0;
 	
-	deltap=get_next_pulse(rec_buffer.pendingp+exdelta);
+	auto const deltap=get_next_pulse(rec_buffer.pendingp+exdelta);
 	if(deltap==0) return(0);
 	if(rec_buffer.pendingp>0)
 	{
@@ -312,15 +309,14 @@ int expectpulse(struct ir_remote *remote,int exdelta)
 	return(retval);
 }
 
-int expectspace(struct ir_remote *remote,int exdelta)
+int expectspace(ir_remote const* remote,int exdelta)
 {
-	lirc_t deltas;
 	int retval;
 
 	//LOGPRINTF(5, "expecting space: %lu", exdelta);
 	if(!sync_pending_pulse(remote)) return 0;
 	
-	deltas=get_next_space(rec_buffer.pendings+exdelta);
+	auto const deltas=get_next_space(rec_buffer.pendings+exdelta);
 	if(deltas==0) return(0);
 	if(rec_buffer.pendings>0)
 	{
@@ -341,9 +337,8 @@ inline int expectone(struct ir_remote *remote,int bit)
 	if(is_biphase(remote))
 	{
 		int all_bits = bit_count(remote);
-		ir_code mask;
 		
-		mask=((ir_code) 1)<<(all_bits-1-bit);
+		ir_code mask=((ir_code) 1)<<(all_bits-1-bit);
 		if(mask&remote->rc6_mask)
 		{
 			if(remote->sone>0 &&
@@ -405,10 +400,8 @@ inline int expectzero(struct ir_remote *remote,int bit)
 {
 	if(is_biphase(remote))
 	{
-		int all_bits = bit_count(remote);
-		ir_code mask;
-		
-		mask=((ir_code) 1)<<(all_bits-1-bit);
+		int const all_bits = bit_count(remote);
+		ir_code const mask=((ir_code) 1)<<(all_bits-1-bit);
 		if(mask&remote->rc6_mask)
 		{
 			if(!expectpulse(remote,2*remote->pzero))
@@ -466,11 +459,8 @@ inline int expectzero(struct ir_remote *remote,int bit)
 
 inline lirc_t sync_rec_buffer(struct ir_remote *remote)
 {
-	int count;
-	lirc_t deltas,deltap;
-	
-	count=0;
-	deltas=get_next_space(1000000);
+	int count=0;
+	lirc_t deltas=get_next_space(1000000);
 	if(deltas==0) return(0);
 	
 	if(last_remote!=NULL && !is_rcmm(remote))
@@ -478,7 +468,7 @@ inline lirc_t sync_rec_buffer(struct ir_remote *remote)
 		while(!expect_at_least(last_remote, deltas,
 				       last_remote->min_remaining_gap))
 		{
-			deltap=get_next_pulse(1000000);
+			lirc_t const deltap=get_next_pulse(1000000);
 			if(deltap==0) return(0);
 			deltas=get_next_space(1000000);
 			if(deltas==0) return(0);
@@ -604,12 +594,10 @@ inline int get_trail(struct ir_remote *remote)
 	return(1);
 }
 
-inline int get_gap(struct ir_remote *remote,lirc_t gap)
+inline int get_gap(ir_remote const *remote, lirc_t gap)
 {
-	lirc_t data;
-	
 	//LOGPRINTF(2,"sum: %d",rec_buffer.sum);
-	data=get_next_rec_buffer(gap-gap*remote->eps/100);
+	lirc_t const data=get_next_rec_buffer(gap-gap*remote->eps/100);
 	if(data==0) return(1);
 	if(!is_space(data))
 	{
@@ -649,10 +637,7 @@ inline int get_repeat(struct ir_remote *remote)
 
 ir_code get_data(struct ir_remote *remote,int bits,int done)
 {
-	ir_code code;
-	int i;
-	
-	code=0;
+	ir_code code=0;
 	
 	if(is_rcmm(remote))
 	{
@@ -663,7 +648,7 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 			return((ir_code) -1);
 		}
 		if(!sync_pending_space(remote)) return 0;
-		for(i=0;i<bits;i+=2)
+		for(int i=0;i<bits;i+=2)
 		{
 			code<<=2;
 			deltap=get_next_pulse(remote->pzero+remote->pone+
@@ -714,7 +699,8 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 			return((ir_code) -1);
 		}
 		if(!sync_pending_pulse(remote)) return ((ir_code) -1);
-		for(laststate=state=-1,i=0;i<bits;)
+		int i = 0;
+		for(laststate=state=-1;i<bits;)
 		{
 			deltas=get_next_space(remote->szero+remote->sone+
 					      remote->stwo+remote->sthree);
@@ -940,7 +926,7 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 		lirc_t pzero,szero;
 		lirc_t pone,sone;
 		
-		for(i=0; i<bits; i++)
+		for(int i=0; i<bits; i++)
 		{
 			code<<=1;
 			deltap=get_next_pulse(remote->pzero+remote->pone+
@@ -1002,7 +988,7 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 			return((ir_code) -1);
 		}
 		if(!sync_pending_space(remote)) return 0;
-		for(i=0;i<bits;i+=4)
+		for(int i=0;i<bits;i+=4)
 		{
 			code<<=4;
 			deltap=get_next_pulse(remote->pzero);
@@ -1026,7 +1012,7 @@ ir_code get_data(struct ir_remote *remote,int bits,int done)
 		return code;
 	}
 	
-	for(i=0;i<bits;i++)
+	for(int i=0;i<bits;i++)
 	{
 		code=code<<1;
 		if(is_goldstar(remote))

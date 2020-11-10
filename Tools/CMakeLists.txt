@@ -4,6 +4,7 @@ macro(add_tool tool_name)
 endmacro()
 
 add_tool(Graph)
+add_tool(IRRecord)
 add_tool(RawCodes)
 add_tool(RawMessages)
 add_tool(Transmit)

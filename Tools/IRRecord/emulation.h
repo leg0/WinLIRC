@@ -7,8 +7,8 @@ extern struct ir_ncode *current_code;
 extern int current_index;
 extern int current_rep;
 
-void init_rec_buffer(void);
-int clear_rec_buffer(void);
+void init_rec_buffer() noexcept;
+int clear_rec_buffer() noexcept;
 int receive_decode(struct ir_remote *remote,
 		   ir_code *prep,ir_code *codep,ir_code *postp,
 		   int *repeat_flagp,

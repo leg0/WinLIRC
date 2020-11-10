@@ -55,7 +55,6 @@ add_subdirectory(winlirc)
 
 add_subdirectory(DLL)
 
-add_subdirectory(IRRecord)
 add_subdirectory(Tools)
 
 install(DIRECTORY configs DESTINATION .)

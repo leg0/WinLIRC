@@ -26,20 +26,17 @@
 #endif
 
 #include "dump_config.h"
-#include "../winlirc/config.h"
-#include "../winlirc/ir_remote.h"
+#include "../../winlirc/config.h"
+#include "../../winlirc/ir_remote.h"
 #include <winlirc/WLPluginAPI.h>
 
 #define VERSION "0.9.0"
 extern hardware hw;
 
-void fprint_comment(FILE* f, ir_remote const* rem)
+void fprint_comment(FILE* f, ir_remote const* rem) noexcept
 {
-	time_t timet;
-	tm *tmp;
-
-	timet=time(NULL);
-	tmp=localtime(&timet);
+	time_t timet=time(NULL);
+	tm* tmp=localtime(&timet);
 	fprintf(f,
 		"#\n"
 		"# this config file was automatically generated\n"
@@ -50,16 +47,15 @@ void fprint_comment(FILE* f, ir_remote const* rem)
 		"# brand:                       %s\n"
 		"# model no. of remote control: \n"
 		"# devices being controlled by this remote:\n"
-		"#\n\n",VERSION,hw.name,asctime(tmp),
-		rem->name);
+		"#\n\n", VERSION, &hw.name[0], asctime(tmp),
+		rem->name.c_str());
 }
 
-void fprint_flags(FILE* f, int flags)
+void fprint_flags(FILE* f, int flags) noexcept
 {
-	int i;
 	int begin=0;
 
-	for(i=0;all_flags[i].flag;i++)
+	for(int i=0;all_flags[i].flag;i++)
 	{
 		if(flags&all_flags[i].flag)
 		{
@@ -83,7 +79,7 @@ void fprint_remotes(FILE* f, ir_remote const* all) {
 	}
 }
 
-void fprint_remote_gap(FILE* f, ir_remote const* rem)
+void fprint_remote_gap(FILE* f, ir_remote const* rem) noexcept
 {
 	if(rem->gap2 != 0)
 	{
@@ -93,14 +89,14 @@ void fprint_remote_gap(FILE* f, ir_remote const* rem)
 	}
 	else
 	{
-		fprintf(f, "  gap          %lu\n", (unsigned long) rem->gap);
+		fprintf(f, "  gap          %lu\n", static_cast<unsigned long>(rem->gap));
 	}
 }
 
 void fprint_remote_head(FILE* f, ir_remote const* rem)
 {
 	fprintf(f, "begin remote\n\n");
-	fprintf(f, "  name  %s\n",rem->name);
+	fprintf(f, "  name  %s\n",rem->name.c_str());
 	if(!is_raw(rem))
 	{
 		fprintf(f, "  bits        %5d\n",rem->bits);
@@ -195,7 +191,7 @@ void fprint_remote_head(FILE* f, ir_remote const* rem)
 	{
 		if(rem->min_code_repeat>0)
 		{
-			fprintf(f, "  min_code_repeat %d\n",
+			fprintf(f, "  min_code_repeat %u\n",
 				rem->min_code_repeat);
 		}
 		fprintf(f, "  toggle_bit_mask 0x%llX\n",
@@ -217,8 +213,8 @@ void fprint_remote_head(FILE* f, ir_remote const* rem)
 		}
 		if(is_serial(rem))
 		{
-			fprintf(f, "  baud            %d\n",rem->baud);
-			fprintf(f, "  serial_mode     %dN%d%s\n",
+			fprintf(f, "  baud            %u\n",rem->baud);
+			fprintf(f, "  serial_mode     %uN%u%s\n",
 				rem->bits_in_byte,
 				rem->stop_bits/2,
 				rem->stop_bits%2 ? ".5":"");
@@ -248,7 +244,7 @@ void fprint_remote_signal_head(FILE* f, ir_remote const* rem)
 		fprintf(f, "      begin raw_codes\n\n");
 }
 
-void fprint_remote_signal_foot(FILE* f, ir_remote const* rem)
+void fprint_remote_signal_foot(FILE* f, ir_remote const* rem) noexcept
 {
 	if(!is_raw(rem))
 		fprintf(f, "      end codes\n\n");
@@ -256,7 +252,7 @@ void fprint_remote_signal_foot(FILE* f, ir_remote const* rem)
 		fprintf(f, "      end raw_codes\n\n");
 }
 
-void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes)
+void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes) noexcept
 {
 	int i,j;
 
@@ -281,13 +277,13 @@ void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes)
 		for(i=0;i<codes->length();i++){
 			if (j==0){
 				fprintf(f, "          %7lu",
-					(unsigned long) codes->signals[i]);
+					static_cast<unsigned long>(codes->signals[i]));
 			}else if (j<5){
 				fprintf(f, " %7lu",
-					(unsigned long) codes->signals[i]);
+					static_cast<unsigned long>(codes->signals[i]));
 			}else{
 				fprintf(f, " %7lu\n",
-					(unsigned long) codes->signals[i]);
+					static_cast<unsigned long>(codes->signals[i]));
 				j=-1;
 			}
 			j++;
@@ -306,11 +302,9 @@ void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes)
 
 void fprint_remote_signals(FILE* f, ir_remote const* rem)
 {
-        ir_ncode* codes;
-	
 	fprint_remote_signal_head(f,rem);
-	codes=rem->codes;
-	while(codes->name!=NULL)
+	ir_ncode* codes=rem->codes;
+	while(codes->name!=nullptr)
 	{
 		fprint_remote_signal(f,rem,codes);
 		codes++;
