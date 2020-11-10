@@ -1097,7 +1097,7 @@ WINLIRC_API int winlirc_receive_decode(
 		while(codes->name!=nullptr && found==nullptr)
 		{
 			found=codes;
-			for(i=0;i<codes->length;)
+			for(i=0;i<codes->length();)
 			{
 				if(!expectpulse(rec_buffer, hw,remote,codes->signals[i++]))
 				{
@@ -1106,7 +1106,7 @@ WINLIRC_API int winlirc_receive_decode(
 					sync_rec_buffer(rec_buffer, hw,remote);
 					break;
 				}
-				if(i<codes->length &&
+				if(i<codes->length() &&
 				   !expectspace(rec_buffer, hw, remote, codes->signals[i++]))
 				{
 					found = nullptr;

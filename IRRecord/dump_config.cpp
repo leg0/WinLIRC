@@ -278,7 +278,7 @@ void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes)
 	{
 		fprintf(f, "          name %s\n",codes->name);
 		j=0;
-		for(i=0;i<codes->length;i++){
+		for(i=0;i<codes->length();i++){
 			if (j==0){
 				fprintf(f, "          %7lu",
 					(unsigned long) codes->signals[i]);

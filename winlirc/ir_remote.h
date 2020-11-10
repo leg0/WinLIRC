@@ -5,6 +5,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <vector>
 
 struct ir_code_node
 {
@@ -16,8 +17,8 @@ struct ir_ncode
 {
 	char* name;
 	ir_code code;
-	int length;
-	lirc_t* signals;
+	size_t length() const { return signals.size(); }
+	std::vector<lirc_t> signals;
 	std::unique_ptr<ir_code_node> next;
 	ir_code_node *current;
 	ir_code_node *transmit_state;

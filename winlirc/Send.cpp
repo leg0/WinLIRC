@@ -361,13 +361,11 @@ static void send_code(sbuf& send_buffer, ir_remote *remote,ir_code code, int rep
 	}
 }
 
-static void send_signals(sbuf& send_buffer, lirc_t *signals, int n)
+static void send_signals(sbuf& send_buffer, std::vector<lirc_t> const& signals)
 {
-	int i;
-	
-	for(i=0; i<n; i++)
+	for (auto& signal : signals)
 	{
-		add_send_buffer(send_buffer, signals[i]);
+		add_send_buffer(send_buffer, signal);
 	}
 }
 
@@ -424,12 +422,12 @@ WINLIRC_API int winlirc_init_send(sbuf* psend_buffer, ir_remote *remote, ir_ncod
 		}
 		else
 		{
-			if(code->signals==nullptr)
+			if(code->signals.empty())
 			{
 				return 0;
 			}
 			
-			send_signals(send_buffer, code->signals, code->length);
+			send_signals(send_buffer, code->signals);
 		}
 	}
 	sync_send_buffer(send_buffer);

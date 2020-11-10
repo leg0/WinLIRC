@@ -33,6 +33,7 @@
 #include "irdriver.h"
 #include "emulation.h"
 #include "atlstr.h"
+#include <vector>
 
 using namespace std::chrono;
 
@@ -99,9 +100,8 @@ struct ir_ncode ncode;
 
 /* the longest signal I've seen up to now was 48-bit signal with header */
 
-#define MAX_SIGNALS 512
-
-lirc_t signals[MAX_SIGNALS];
+constexpr size_t MAX_SIGNALS = 512;
+std::vector<lirc_t> g_signals(MAX_SIGNALS);
 
 unsigned int eps = 30;
 lirc_t aeps = 100;
@@ -630,10 +630,8 @@ int main(int argc,char **argv)
 
 		if(is_raw(&remote))
 		{
-			lirc_t data,sum;
-			unsigned int count;
-
-			count=0;sum=0;
+			lirc_t data,sum = 0;
+			unsigned int count = 0;
 			while(count<MAX_SIGNALS)
 			{
 				unsigned long timeout;
@@ -689,15 +687,14 @@ int main(int argc,char **argv)
 						else
 						{
 							ncode.name=buffer;
-							ncode.length=count-1;
-							ncode.signals=signals;
+							ncode.signals.assign(g_signals.begin(), g_signals.begin()+count-1);
 							fprint_remote_signal(fout,
 								&remote,
 								&ncode);
 							break;
 						}
 					}
-					signals[count-1]=data&PULSE_MASK;
+					g_signals[count-1]=data&PULSE_MASK;
 					sum+=data&PULSE_MASK;
 				}
 				count++;
@@ -1503,7 +1500,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 		{
 			if(count<=MAX_SIGNALS)
 			{
-				signals[count-1]=data&PULSE_MASK;
+				g_signals[count-1]=data&PULSE_MASK;
 			}
 			else
 			{
@@ -1533,29 +1530,29 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 					if(count==4)
 					{
 						count_3repeats++;
-						add_length(&first_repeatp,signals[0]);
+						add_length(&first_repeatp,g_signals[0]);
 						merge_lengths(first_repeatp);
-						add_length(&first_repeats,signals[1]);
+						add_length(&first_repeats,g_signals[1]);
 						merge_lengths(first_repeats);
-						add_length(&first_trail,signals[2]);
+						add_length(&first_trail,g_signals[2]);
 						merge_lengths(first_trail);
-						add_length(&first_repeat_gap,signals[3]);
+						add_length(&first_repeat_gap,g_signals[3]);
 						merge_lengths(first_repeat_gap);
 					}
 					else if(count==6)
 					{
 						count_5repeats++;
-						add_length(&first_headerp,signals[0]);
+						add_length(&first_headerp,g_signals[0]);
 						merge_lengths(first_headerp);
-						add_length(&first_headers,signals[1]);
+						add_length(&first_headers,g_signals[1]);
 						merge_lengths(first_headers);
-						add_length(&first_repeatp,signals[2]);
+						add_length(&first_repeatp,g_signals[2]);
 						merge_lengths(first_repeatp);
-						add_length(&first_repeats,signals[3]);
+						add_length(&first_repeats,g_signals[3]);
 						merge_lengths(first_repeats);
-						add_length(&first_trail,signals[4]);
+						add_length(&first_trail,g_signals[4]);
 						merge_lengths(first_trail);
-						add_length(&first_repeat_gap,signals[5]);
+						add_length(&first_repeat_gap,g_signals[5]);
 						merge_lengths(first_repeat_gap);
 					}
 					else if(count>6)
@@ -1567,22 +1564,22 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 							printf(".");fflush(stdout);
 						}
 						count_signals++;
-						add_length(&first_1lead,signals[0]);
+						add_length(&first_1lead,g_signals[0]);
 						merge_lengths(first_1lead);
 						for(i=2;i<count-2;i++)
 						{
 							if(i%2)
 							{
-								add_length(&first_space,signals[i]);
+								add_length(&first_space,g_signals[i]);
 								merge_lengths(first_space);
 							}
 							else
 							{
-								add_length(&first_pulse,signals[i]);
+								add_length(&first_pulse,g_signals[i]);
 								merge_lengths(first_pulse);
 							}
 						}
-						add_length(&first_trail,signals[count-2]);
+						add_length(&first_trail,g_signals[count-2]);
 						merge_lengths(first_trail);
 						lengths[count-2]++;
 						add_length(&first_signal_length,sum-data);
@@ -1591,18 +1588,18 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 							(first_length>2 &&
 							first_length-2!=count-2))
 						{
-							add_length(&first_3lead,signals[2]);
+							add_length(&first_3lead,g_signals[2]);
 							merge_lengths(first_3lead);
-							add_length(&first_headerp,signals[0]);
+							add_length(&first_headerp,g_signals[0]);
 							merge_lengths(first_headerp);
-							add_length(&first_headers,signals[1]);
+							add_length(&first_headers,g_signals[1]);
 							merge_lengths(first_headers);
 						}
 						if(first_signal==1)
 						{
 							first_lengths++;
 							first_length=count-2;
-							header=signals[0]+signals[1];
+							header=g_signals[0]+g_signals[1];
 						}
 						else if(first_signal==0 &&
 							first_length-2==count-2)

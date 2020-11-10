@@ -145,13 +145,11 @@ int checkMode(int is_mode, int c_mode, char *error)
 	return(1);
 }
 
-int addSignal(void_array *signals, winlirc::istring_view val)
+int addSignal(std::vector<lirc_t>& signals, winlirc::istring_view val)
 {
 	auto t=s_strtolirc_t(val);
 	if(parse_error) return(0);
-	if(!add_void_array(signals, &t)){
-		return(0);
-	}
+	signals.push_back(t);
 	return(1);
 }
 
@@ -435,14 +433,14 @@ static int sanityChecks(ir_remote *rem)
 	return 1;
 }
 
-ir_remote *sort_by_bit_count(ir_remote *remotes)
+ir_remote* sort_by_bit_count(ir_remote *remotes)
 {
 	std::vector<ir_remote*> v;
 	for (auto rem = remotes; rem != nullptr; rem = rem->next.get())
 	{
 		v.push_back(rem);
 	}
-	std::sort(v.begin(), v.end(), [](auto& a, auto& b) { return bit_count(a) <= bit_count(b); });
+	std::sort(v.begin(), v.end(), [](auto& a, auto& b) { return bit_count(a) < bit_count(b); });
 	for (ir_remote* rem : v)
 	{
 		rem->next.release();
@@ -491,10 +489,11 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 	winlirc::istring_view key, val, val2;
 	int argc;
 	ir_remote *top_rem=nullptr,*rem=nullptr;
-	struct void_array codes_list,raw_codes,signals;
-	struct ir_ncode raw_code={nullptr,0,0,nullptr};
-	struct ir_ncode name_code={nullptr,0,0,nullptr};
-	struct ir_ncode *code;
+	void_array codes_list,raw_codes;
+	std::vector<lirc_t> signals;
+	ir_ncode raw_code{};
+	ir_ncode name_code{};
+	ir_ncode *code;
 	int mode=ID_none;
 
 	line=0;
@@ -636,9 +635,8 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 
 
 					if(mode==ID_raw_name){
-						raw_code.signals=(lirc_t*)get_void_array(&signals);
-						raw_code.length=signals.nr_items;
-						if(raw_code.length%2==0)
+						raw_code.signals=signals;
+						if(raw_code.length()%2==0)
 						{
 							parse_error=1;
 						}
@@ -669,10 +667,8 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					code=defineCode(key, val, &name_code);
 					while(!parse_error && !val2.empty())
 					{
-						struct ir_code_node *node;
-
 						if(val2[0]=='#') break; /* comment */
-						node=defineNode(code, val2);
+						ir_code_node* node=defineNode(code, val2);
 						val2=strtok(buf, whitespace);
 					}
 					code->current=nullptr;
@@ -689,10 +685,8 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		code=defineCode(key, val, &name_code);
 		while(!parse_error && !val2.empty())
 		{
-			struct ir_code_node *node;
-
 			if(val2[0]=='#') break; /* comment */
-			node=defineNode(code, val2);
+			ir_code_node* node=defineNode(code, val2);
 			val2=strtok(buf, whitespace);
 		}
 		code->current=nullptr;
@@ -703,9 +697,8 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		if("name" == key){
 			if(mode==ID_raw_name)
 			{
-				raw_code.signals=(lirc_t*)get_void_array(&signals);
-				raw_code.length=signals.nr_items;
-				if(raw_code.length%2==0)
+				raw_code.signals=signals;
+				if(raw_code.length()%2==0)
 				{
 					parse_error=1;
 				}
@@ -716,7 +709,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				break;
 			}
 			raw_code.code++;
-			init_void_array(&signals,50,sizeof(lirc_t));
+			signals.reserve(50);
 			mode=ID_raw_name;
 		}else{
 			if(mode==ID_raw_codes)
@@ -724,23 +717,23 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				parse_error=1;
 				break;
 			}
-			if(!addSignal(&signals, key)) break;
-			if(!addSignal(&signals, val)) break;
+			if(!addSignal(signals, key)) break;
+			if(!addSignal(signals, val)) break;
 			if (!val2.empty()){
-				if (!addSignal(&signals, val2)){
+				if (!addSignal(signals, val2)){
 					break;
 				}
 			}
 			while (true){
 				auto val=strtok(buf, whitespace);
-				if (val.empty() || !addSignal(&signals, val)) break;
+				if (val.empty() || !addSignal(signals, val)) break;
 			}
 		}
 		break;
 				}
 			}
 		}else if(mode==ID_raw_name){
-			if(!addSignal(&signals, key)){
+			if(!addSignal(signals, key)){
 				break;
 			}
 		}else{
@@ -759,8 +752,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 			if(raw_code.name!=nullptr)
 			{
 				free(raw_code.name);
-				if(get_void_array(&signals)!=nullptr)
-					free(get_void_array(&signals));
+				signals.clear();
 			}
 		case ID_raw_codes:
 			rem->codes=(ir_ncode *)get_void_array(&raw_codes);
@@ -792,8 +784,6 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 	{
 		if((!is_raw(rem)) && rem->flags&REVERSE)
 		{
-			struct ir_ncode *codes;
-
 			if(has_pre(rem))
 			{
 				rem->pre_data=reverse(rem->pre_data,
@@ -804,7 +794,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				rem->post_data=reverse(rem->post_data,
 					rem->post_data_bits);
 			}
-			codes=rem->codes;
+			ir_ncode* codes=rem->codes;
 			while(codes->name!=nullptr)
 			{
 				codes->code=reverse(codes->code,rem->bits);
@@ -826,10 +816,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		{
 			int all_bits=bit_count(rem);
 
-			if(has_toggle_bit_mask(rem))
-			{
-			}
-			else
+			if(!has_toggle_bit_mask(rem))
 			{
 				rem->toggle_bit_mask=((ir_code) 1)<<(all_bits-rem->toggle_bit);
 			}
@@ -849,11 +836,9 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		}
 		if(is_serial(rem))
 		{
-			lirc_t base;
-
 			if(rem->baud>0)
 			{
-				base=1000000/rem->baud;
+				lirc_t base=1000000/rem->baud;
 				if(rem->pzero==0 && rem->szero==0)
 				{
 					rem->pzero=base;
@@ -896,8 +881,6 @@ void free_config(ir_remote* remotes)
 			while (codes->name != nullptr)
 			{
 				free(codes->name);
-				if (codes->signals != nullptr)
-					free(codes->signals);
 				codes->next.reset();
 				codes++;
 			}
