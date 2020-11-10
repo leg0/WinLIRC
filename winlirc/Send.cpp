@@ -467,14 +467,14 @@ WINLIRC_API int winlirc_init_send(sbuf* psend_buffer, ir_remote *remote, ir_ncod
 	{
 		if(code->transmit_state == nullptr)
 		{
-			code->transmit_state = code->next;
+			code->transmit_state = code->next.get();
 		}
 		else
 		{
-			code->transmit_state = code->transmit_state->next;
+			code->transmit_state = code->transmit_state->next.get();
 			if(is_xmp(remote) && code->transmit_state == nullptr)
 			{
-				code->transmit_state = code->next;
+				code->transmit_state = code->next.get();
 			}
 		}
 	}

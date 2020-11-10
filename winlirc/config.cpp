@@ -164,27 +164,24 @@ ir_ncode* defineCode(winlirc::istring_view key, winlirc::istring_view val, ir_nc
 	return(code);
 }
 
-struct ir_code_node *defineNode(struct ir_ncode *code, winlirc::istring_view val)
+ir_code_node* defineNode(ir_ncode* code, winlirc::istring_view val)
 {
-	struct ir_code_node *node;
-
-	node=(ir_code_node*)s_malloc(sizeof(*node));
-	if(node==nullptr) return nullptr;
-
+	auto node = std::make_unique<ir_code_node>();
+	auto const res = node.get();
 	node->code=s_strtocode(val);
 	node->next=nullptr;
 
-	if(code->current==nullptr)
+	if (code->current == nullptr)
 	{
-		code->next=node;
-		code->current=node;
+		code->current = node.get();
+		code->next = std::move(node);
 	}
 	else
 	{
-		code->current->next=node;
-		code->current=node;
+		code->current = node.get();
+		code->current->next = std::move(node);
 	}
-	return node;
+	return res;
 }
 
 int parseFlags(winlirc::istring_view val)
@@ -426,7 +423,7 @@ static int sanityChecks(ir_remote *rem)
 		{
 			codes->code &= gen_mask(rem->bits);
 		}
-		for(node = codes->next; node != nullptr; node = node->next)
+		for(node = codes->next.get(); node != nullptr; node = node->next.get())
 		{
 			if((node->code&gen_mask(rem->bits)) != node->code)
 			{
@@ -925,18 +922,10 @@ void free_config(ir_remote *remotes)
 			{
 				while (codes->name != nullptr)
 				{
-					ir_code_node* node, * next_node;
-
 					free(codes->name);
 					if (codes->signals != nullptr)
 						free(codes->signals);
-					node = codes->next;
-					while (node)
-					{
-						next_node = node->next;
-						free(node);
-						node = next_node;
-					}
+					codes->next.reset();
 					codes++;
 				}
 				free(remotes->codes);

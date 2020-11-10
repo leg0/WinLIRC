@@ -188,12 +188,11 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 				{
 					if(codes->current==nullptr)
 					{
-						codes->current=codes->next;
+						codes->current=codes->next.get();
 					}
 					else
 					{
-						codes->current=
-							codes->current->next;
+						codes->current=codes->current->next.get();
 					}
 				}
 				if(!have_code)
@@ -210,23 +209,21 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 				/* find longest matching sequence */
 				struct ir_code_node *search;
 				
-				search = codes->next;
-				if(search == nullptr ||
-					(codes->next != nullptr && codes->current == nullptr))
+				search = codes->next.get();
+				if (search == nullptr ||
+					codes->next != nullptr && codes->current == nullptr)
 				{
-					codes->current=nullptr;
+					codes->current = nullptr;
 				}
 				else
 				{
 					int sequence_match = 0;
 					
-					while(search != codes->current->next)
+					while(search != codes->current->next.get())
 					{
-						struct ir_code_node *prev, *next;
 						int flag = 1;
-						
-						prev = nullptr; /* means codes->code */
-						next = search;
+						ir_code_node* prev = nullptr; /* means codes->code */
+						ir_code_node* next = search;
 						while(next != codes->current)
 						{
 							if(get_ir_code(codes, prev) != get_ir_code(codes, next))
@@ -254,7 +251,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 								break;
 							}
 						}
-						search = search->next;
+						search = search->next.get();
 					}
 					if(!sequence_match) codes->current = nullptr;
 				}
@@ -424,7 +421,7 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 			}
 			if(is_xmp(remote))
 			{
-				remote->last_code->current = remote->last_code->next;
+				remote->last_code->current = remote->last_code->next.get();
 			}
 			
 			len = write_message(out, out_size,
@@ -460,10 +457,10 @@ WINLIRC_API ir_code get_ir_code(struct ir_ncode* ncode, struct ir_code_node* nod
 	return ncode->code;
 }
 
-WINLIRC_API struct ir_code_node* get_next_ir_code_node(struct ir_ncode* ncode, struct ir_code_node* node)
+WINLIRC_API ir_code_node* get_next_ir_code_node(ir_ncode* ncode, ir_code_node* node)
 {
-	if (node == nullptr) return ncode->next;
-	return node->next;
+	if (node == nullptr) return ncode->next.get();
+	return node->next.get();
 }
 
 WINLIRC_API int bit_count(ir_remote const* remote)

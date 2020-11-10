@@ -3,12 +3,13 @@
 #include <winlirc/winlirc_api.h>
 
 #include <chrono>
+#include <memory>
 #include <string>
 
 struct ir_code_node
 {
 	ir_code code;
-	ir_code_node *next;
+	std::unique_ptr<ir_code_node> next;
 };
 
 struct ir_ncode
@@ -17,7 +18,7 @@ struct ir_ncode
 	ir_code code;
 	int length;
 	lirc_t* signals;
-	ir_code_node *next;
+	std::unique_ptr<ir_code_node> next;
 	ir_code_node *current;
 	ir_code_node *transmit_state;
 };

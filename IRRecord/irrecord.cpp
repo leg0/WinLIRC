@@ -738,12 +738,11 @@ int main(int argc,char **argv)
 			}
 			if(flag)
 			{
-				ir_code code2;
-
 				ncode.name=buffer;
 				ncode.code=code;
 
-				irDriver.decodeIR(NULL,NULL,0);
+				irDriver.decodeIR(nullptr, nullptr, 0);
+				ir_code code2;
 				if(hw.decode_func(&rec_buffer, &hw,&remote,&pre,&code2,&post,
 					&repeat_flag,
 					&min_remaining_gap,
@@ -751,22 +750,14 @@ int main(int argc,char **argv)
 				{
 					if(code != code2)
 					{
-						ncode.next = (ir_code_node *)malloc(sizeof(*(ncode.next)));
-						if(ncode.next)
-						{
-							 memset(ncode.next, 0, sizeof(*(ncode.next)));
-							 ncode.next->code = code2;
-						}
+						ncode.next.reset(new ir_code_node{});
+						ncode.next->code = code2;
 					}
 				}
 
-				fprint_remote_signal(fout,&remote,&ncode);
+				fprint_remote_signal(fout, &remote, &ncode);
 
-				if(ncode.next)
-				{
-					 free(ncode.next);
-					 ncode.next = NULL;
-				}
+				ncode.next.reset();
 				break;
 			}
 			else
@@ -1106,16 +1097,16 @@ void get_pre_data(struct ir_remote *remote)
 	last=codes->code;
 	codes++;
 	if(codes->name==NULL) return; /* at least 2 codes needed */
-	while(codes->name!=NULL)
+	while(codes->name!=nullptr)
 	{
 		struct ir_code_node *loop;
 
 		mask&=~(last^codes->code);
 		last=codes->code;
-		for(loop=codes->next; loop!=NULL; loop=loop->next)
+		for (loop = codes->next.get(); loop != nullptr; loop = loop->next.get())
 		{
-			mask&=~(last^loop->code);
-			last=loop->code;
+			mask &= ~(last ^ loop->code);
+			last = loop->code;
 		}
 
 		codes++;
@@ -1149,12 +1140,10 @@ void get_pre_data(struct ir_remote *remote)
 		codes=remote->codes;
 		while(codes->name!=NULL)
 		{
-			struct ir_code_node *loop;
-
 			codes->code&=~mask;
-			for(loop=codes->next; loop!=NULL; loop=loop->next)
+			for(ir_code_node* loop=codes->next.get(); loop!=NULL; loop=loop->next.get())
 			{
-				loop->code&=~mask;
+				loop->code &= ~mask;
 			}
 			codes++;
 		}
@@ -1177,14 +1166,12 @@ void get_post_data(struct ir_remote *remote)
 	if(codes->name==NULL) return; /* at least 2 codes needed */
 	while(codes->name!=NULL)
 	{
-		struct ir_code_node *loop;
-
 		mask&=~(last^codes->code);
 		last=codes->code;
-		for(loop=codes->next; loop!=NULL; loop=loop->next)
+		for (ir_code_node* loop = codes->next.get(); loop != nullptr; loop = loop->next.get())
 		{
-			mask&=~(last^loop->code);
-			last=loop->code;
+			mask &= ~(last ^ loop->code);
+			last = loop->code;
 		}
 		codes++;
 	}
@@ -1214,12 +1201,10 @@ void get_post_data(struct ir_remote *remote)
 		codes=remote->codes;
 		while(codes->name!=NULL)
 		{
-			struct ir_code_node *loop;
-
 			codes->code=codes->code>>count;
-			for(loop=codes->next; loop!=NULL; loop=loop->next)
+			for (ir_code_node* loop = codes->next.get(); loop != nullptr; loop = loop->next.get())
 			{
-				loop->code=loop->code>>count;
+				loop->code = loop->code >> count;
 			}
 			codes++;
 		}
@@ -1306,18 +1291,13 @@ void analyse_remote(struct ir_remote *raw_data)
 		{
 			if(new_index+1 >= new_codes_count)
 			{
-				struct ir_ncode *renew_codes;
-
-				new_codes_count *= 2;
-				renew_codes = (ir_ncode*)realloc(new_codes,new_codes_count * sizeof(*new_codes));
-				if(renew_codes == NULL)
+				ir_ncode* renew_codes = new ir_ncode[new_codes_count * 2]{};
+				for (ir_ncode *p = new_codes, *q = renew_codes;
+					p != new_codes + new_codes_count;
+					++p, ++q)
 				{
-					fprintf(stderr, "%s: out of memory\n",
-						progname);
-					free(new_codes);
-					return;
+					*q = std::move(*p);
 				}
-				memset(&new_codes[new_codes_count/2], 0 , new_codes_count/2 * sizeof(*new_codes));
 				new_codes = renew_codes;
 			}
 
@@ -1330,15 +1310,11 @@ void analyse_remote(struct ir_remote *raw_data)
 				&max_remaining_gap);
 			if(ret && code2 != code)
 			{
-				new_codes[new_index].next = (ir_code_node*)malloc(sizeof(*(new_codes[new_index].next)));
-				if(new_codes[new_index].next)
-				{
-					memset(new_codes[new_index].next, 0, sizeof(*(new_codes[new_index].next)));
-					new_codes[new_index].next->code = code2;
-				}
+				new_codes[new_index].next.reset(new ir_code_node{});
+				new_codes[new_index].next->code = code2;
 			}
 			new_codes[new_index].name = codes->name;
-			new_codes[new_index].code = code;			
+			new_codes[new_index].code = code;
 			new_index++;
 		}
 		codes++;

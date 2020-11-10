@@ -1482,12 +1482,11 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 				{
 					if(codes->current==NULL)
 					{
-						codes->current=codes->next;
+						codes->current=codes->next.get();
 					}
 					else
 					{
-						codes->current=
-							codes->current->next;
+						codes->current = codes->current->next.get();
 					}
 				}
 				if(!have_code)
@@ -1504,23 +1503,21 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 				/* find longest matching sequence */
 				struct ir_code_node *search;
 				
-				search = codes->next;
-				if(search == NULL ||
-					(codes->next != NULL && codes->current == NULL))
+				search = codes->next.get();
+				if(search == nullptr ||
+					codes->next != nullptr && codes->current == nullptr)
 				{
-					codes->current=NULL;
+					codes->current = nullptr;
 				}
 				else
 				{
 					int sequence_match = 0;
-					
-					while(search != codes->current->next)
+					while(search != codes->current->next.get())
 					{
-						struct ir_code_node *prev, *next;
 						int flag = 1;
 						
-						prev = NULL; /* means codes->code */
-						next = search;
+						ir_code_node* prev = nullptr; /* means codes->code */
+						ir_code_node* next = search;
 						while(next != codes->current)
 						{
 							if(get_ir_code(codes, prev) != get_ir_code(codes, next))
@@ -1545,9 +1542,9 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 								break;
 							}
 						}
-						search = search->next;
+						search = search->next.get();
 					}
-					if(!sequence_match) codes->current = NULL;
+					if (!sequence_match) codes->current = nullptr;
 				}
 			}
 			codes++;
