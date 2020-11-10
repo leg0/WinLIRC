@@ -431,7 +431,7 @@ void Cdrvdlg::UpdateRemoteComboLists()
 	while (sender!=nullptr)
 	{
 		m_remote_DropDown.AddString(A2T(sender->name.c_str()));
-		sender=sender->next;
+		sender=sender->next.get();
 	}
 	//Set selected item
 	if (m_remote_DropDown.SelectString(-1,m_remote_edit) == CB_ERR)

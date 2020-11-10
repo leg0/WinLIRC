@@ -412,7 +412,7 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 				return(nullptr);
 			}
 
-			for(scan = decoding; scan != nullptr; scan = scan->next)
+			for(scan = decoding; scan != nullptr; scan = scan->next.get())
 			{
 				for( scan_ncode = scan->codes; scan_ncode->name != nullptr; scan_ncode++)
 				{
@@ -443,7 +443,7 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 			//LOGPRINTF(1,"failed \"%s\" remote",remote->name);
 		}
 		remote->toggle_mask_state=0;
-		remote=remote->next;
+		remote=remote->next.get();
 	}
 	decoding=nullptr;
 	last_remote=nullptr;

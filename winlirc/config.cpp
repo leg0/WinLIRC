@@ -437,42 +437,22 @@ static int sanityChecks(ir_remote *rem)
 
 ir_remote *sort_by_bit_count(ir_remote *remotes)
 {
-	ir_remote *top, *rem, *next, *prev, *scan;
-
-	rem = remotes;
-	top = nullptr;
-	while(rem!=nullptr)
+	std::vector<ir_remote*> v;
+	for (auto rem = remotes; rem != nullptr; rem = rem->next.get())
 	{
-		next = rem->next;
-
-		scan = top;
-		prev = nullptr;
-		while(scan && bit_count(scan)<=bit_count(rem))
-		{
-			prev = scan;
-			scan = scan->next;
-		}
-		if(prev)
-		{
-			prev->next = rem;
-		}
-		else
-		{
-			top = rem;
-		}
-		if(scan)
-		{
-			rem->next = scan;
-		}
-		else
-		{
-			rem->next = nullptr;
-		}
-
-		rem = next;
+		v.push_back(rem);
 	}
-
-	return top;
+	std::sort(v.begin(), v.end(), [](auto& a, auto& b) { return bit_count(a) <= bit_count(b); });
+	for (ir_remote* rem : v)
+	{
+		rem->next.release();
+	}
+	for (size_t i = 1; i < v.size(); ++i)
+	{
+		v[i - 1]->next.reset(v[i]);
+	}
+	v.back()->next.reset();
+	return v[0];
 }
 
 static winlirc::istring_view lirc_parse_include(winlirc::istring_view s)
@@ -578,12 +558,8 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					}else{
 						/* create new remote */
 
-						rem->next=read_config_recursive(childFile, fullPath, depth + 1);
-						if(rem->next != (void *) -1 && rem->next != nullptr) {
-							rem=rem->next;
-						} else {
-							rem->next = nullptr;
-						}
+						rem->next.reset(read_config_recursive(childFile, fullPath, depth + 1));
+						rem=rem->next.get();
 					}
 					fclose(childFile);
 					line = save_line;
@@ -628,8 +604,8 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					}else{
 						/* create new remote */
 						
-						rem->next = new ir_remote{};
-						rem=rem->next;
+						rem->next.reset(new ir_remote{});
+						rem=rem->next.get();
 					}
 				}else if(mode==ID_codes){
 					code=defineCode(key, val, &name_code);
@@ -900,7 +876,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				rem->min_code_repeat = 0;
 			}
 		}
-		rem=rem->next;
+		rem=rem->next.get();
 	}
 
 	top_rem = sort_by_bit_count(top_rem);
@@ -910,28 +886,23 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 	return (top_rem);
 }
 
-void free_config(ir_remote *remotes)
+void free_config(ir_remote* remotes)
 {
-	while (remotes!=nullptr)
+	if (remotes->codes != nullptr)
 	{
-		ir_remote* const next=remotes->next;
-		if(remotes->codes!=nullptr)
+		ir_ncode* codes = remotes->codes;
+		if (codes)
 		{
-			ir_ncode* codes=remotes->codes;
-			if (codes)
+			while (codes->name != nullptr)
 			{
-				while (codes->name != nullptr)
-				{
-					free(codes->name);
-					if (codes->signals != nullptr)
-						free(codes->signals);
-					codes->next.reset();
-					codes++;
-				}
-				free(remotes->codes);
+				free(codes->name);
+				if (codes->signals != nullptr)
+					free(codes->signals);
+				codes->next.reset();
+				codes++;
 			}
+			free(remotes->codes);
 		}
-		delete remotes;
-		remotes=next;
 	}
+	delete remotes;
 }

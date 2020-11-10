@@ -15,7 +15,7 @@ namespace fs = std::filesystem;
 template <typename LinkedList>
 size_t count_tail(size_t total, LinkedList const* l)
 {
-    return (l == nullptr) ? total : count_tail(total + 1, l->next);
+    return (l == nullptr) ? total : count_tail(total + 1, l->next.get());
 };
 
 template <typename LinkedList>

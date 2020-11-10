@@ -73,14 +73,14 @@ void fprint_flags(FILE* f, int flags)
 	if(begin==1) fprintf(f,"\n");
 }
 
-void fprint_remotes(FILE* f, ir_remote const* all){
+void fprint_remotes(FILE* f, ir_remote const* all) {
 
-    	while(all)
+	while (all)
 	{
-                fprint_remote(f, all);
-                fprintf(f, "\n\n");
-                all=all->next;
-        }
+		fprint_remote(f, all);
+		fprintf(f, "\n\n");
+		all = all->next.get();
+	}
 }
 
 void fprint_remote_gap(FILE* f, ir_remote const* rem)

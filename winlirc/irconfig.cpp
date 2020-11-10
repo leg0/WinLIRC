@@ -81,7 +81,7 @@ bool CIRConfig::readConfig() {
 	/* ??? bad input causes codes to be null, but no */
 	/* error is returned from read_config. */
 	struct ir_remote *sr;
-	for(sr=global_remotes;sr!=nullptr;sr=sr->next)
+	for(sr=global_remotes;sr!=nullptr;sr=sr->next.get())
 	{
 		if(sr->codes==nullptr)
 		{

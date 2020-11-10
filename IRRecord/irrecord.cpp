@@ -201,7 +201,6 @@ int main(int argc,char **argv)
 	int disable_namespace = 0;
 	int retries;
 	int no_data = 0;
-	struct ir_remote *remotes=NULL;
 	char *device=NULL;
 	int using_template = 0;
 	int analyse = 0;
@@ -347,7 +346,7 @@ int main(int argc,char **argv)
 				progname, filename, progname);
 			exit(EXIT_FAILURE);
 		}
-		remotes=read_config(fin, filename);
+		auto remotes=read_config(fin, filename);
 		fclose(fin);
 		if(remotes==(void *) -1 || remotes==NULL)	//return (void*)-1 why would you do this ???
 		{
@@ -375,11 +374,11 @@ int main(int argc,char **argv)
 		}
 		using_template = 1;
 
-		remote=*remotes;
+		remote=std::move(*remotes);
 		remote.name.clear();
 		remote.codes=NULL;
 		remote.last_code=NULL;
-		remote.next=NULL;
+		remote.next.reset();
 		if(remote.pre_p==0 && remote.pre_s==0 &&
 			remote.post_p==0 && remote.post_s==0)
 		{
@@ -387,7 +386,7 @@ int main(int argc,char **argv)
 			remote.pre_data_bits=0;
 			remote.post_data_bits=0;
 		}
-		if(remotes->next!=NULL)
+		if(remote.next!=NULL)
 		{
 			fprintf(stderr,
 				"%s: only first remote definition "
@@ -816,9 +815,9 @@ int main(int argc,char **argv)
 		irDriver.deinit();
 		exit(EXIT_FAILURE);
 	}
-	remotes=read_config(fin,filename);
+	auto remotes=read_config(fin,filename);
 	fclose(fin);
-	if(remotes==NULL)
+	if(remotes==nullptr)
 	{
 		fprintf(stderr,"%s: config file contains no valid "
 			"remote control definition\n",progname);
@@ -1211,15 +1210,13 @@ void get_post_data(struct ir_remote *remote)
 	}
 }
 
-void for_each_remote(struct ir_remote *remotes, remote_func func)
+void for_each_remote(ir_remote* remotes, remote_func func)
 {
-	struct ir_remote *remote;
-
-	remote=remotes;
-	while(remote!=NULL)
+	ir_remote* remote = remotes;
+	while (remote != nullptr)
 	{
 		func(remote);
-		remote=remote->next;
+		remote = remote->next.get();
 	}
 }
 

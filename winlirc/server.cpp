@@ -363,7 +363,7 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
         while (all)
         {
             n++;
-            all = all->next;
+            all = all->next.get();
         }
 
         std::string response;
@@ -376,7 +376,7 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
             {
                 response += all->name;
                 response += "\n";
-                all = all->next;
+                all = all->next.get();
             }
         }
 
