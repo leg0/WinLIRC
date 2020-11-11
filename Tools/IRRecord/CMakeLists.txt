@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 add_executable(IRRecord
 	../../winlirc/config.cpp
 	../../winlirc/config.h
+	../../winlirc/Plugin.cpp
+	../../winlirc/Plugin.h
 	../../winlirc/wl_string.cpp
 	../../winlirc/wl_string.h
 	dump_config.cpp

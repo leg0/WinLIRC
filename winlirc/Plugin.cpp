@@ -1,9 +1,9 @@
-#include "stdafx.h"
+#include <Windows.h>
 #include "Plugin.h"
 #include <cassert>
 
 Plugin::Plugin(std::wstring const& path) noexcept
-	: dllFile_ { LoadLibrary(path.c_str()) }
+	: dllFile_ { LoadLibraryW(path.c_str()) }
 {
 	if (Dll& d = dllFile_)
 	{
