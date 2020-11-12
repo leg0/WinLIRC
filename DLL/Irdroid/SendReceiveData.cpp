@@ -44,7 +44,7 @@ SendReceiveData::SendReceiveData() {
 	exitEvent		= nullptr;
 	overlappedEvent	= nullptr;
 
-	memset(&overlapped,0,sizeof(OVERLAPPED));
+	overlapped = OVERLAPPED{};
 }
 
 bool SendReceiveData::init() {

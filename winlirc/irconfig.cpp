@@ -43,10 +43,8 @@ CIRConfig::~CIRConfig()
 		
 	std::lock_guard lock{ CS_global_remotes };
 
-	if(global_remotes!=nullptr) {
-		free_config(global_remotes);
-		global_remotes = nullptr;
-	}
+	delete global_remotes;
+	global_remotes = nullptr;
 	
 	WL_DEBUG("~CIRConfig done\n");
 }
@@ -61,10 +59,8 @@ bool CIRConfig::readConfig() {
 	if(remoteConfig=="" || (file=_tfopen(remoteConfig,_T("r")))==nullptr)	
 		return false;
 
-	if(global_remotes!=nullptr) {
-		free_config(global_remotes);
-		global_remotes = nullptr;
-	}
+	delete global_remotes;
+	global_remotes = nullptr;
 	
 	USES_CONVERSION;
 	global_remotes = read_config(file,T2A(remoteConfig.GetBuffer()));
@@ -83,10 +79,10 @@ bool CIRConfig::readConfig() {
 	struct ir_remote *sr;
 	for(sr=global_remotes;sr!=nullptr;sr=sr->next.get())
 	{
-		if(sr->codes==nullptr)
+		if(sr->codes.empty())
 		{
 			WL_DEBUG("read_config returned remote with null codes\n");
-			free_config(global_remotes);
+			delete global_remotes;
 			global_remotes = nullptr;
 
 			return false;

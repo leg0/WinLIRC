@@ -106,7 +106,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 {
 	ir_code pre_mask,code_mask,post_mask,toggle_bit_mask_state,all;
 	int found_code, have_code;
-	struct ir_ncode *codes,*found;
+	struct ir_ncode *found;
 	
 	pre_mask=code_mask=post_mask=0;
 
@@ -171,15 +171,13 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 	found=nullptr;
 	found_code=0;
 	have_code=0;
-	codes=remote->codes;
-	if(codes!=nullptr)
+	auto codes=remote->codes.begin();
+	if(codes!= remote->codes.end())
 	{
-		while(codes->name!=nullptr)
+		while (codes->name != std::nullopt)
 		{
-			ir_code next_all;
-
-			next_all = gen_ir_code(remote, remote->pre_data,
-					       get_ir_code(codes, codes->current),
+			ir_code next_all = gen_ir_code(remote, remote->pre_data,
+					       get_ir_code(&*codes, codes->current),
 					       remote->post_data);
 			if(match_ir_code(remote, next_all, all))
 			{
@@ -197,7 +195,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 				}
 				if(!have_code)
 				{
-					found=codes;
+					found=&*codes;
 					if(codes->current==nullptr)
 					{
 						have_code=1;
@@ -207,9 +205,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 			else
 			{
 				/* find longest matching sequence */
-				struct ir_code_node *search;
-				
-				search = codes->next.get();
+				ir_code_node* search = codes->next.get();
 				if (search == nullptr ||
 					codes->next != nullptr && codes->current == nullptr)
 				{
@@ -226,27 +222,27 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 						ir_code_node* next = search;
 						while(next != codes->current)
 						{
-							if(get_ir_code(codes, prev) != get_ir_code(codes, next))
+							if(get_ir_code(&*codes, prev) != get_ir_code(&*codes, next))
 							{
 								flag = 0;
 								break;
 							}
-							prev = get_next_ir_code_node(codes, prev);
-							next = get_next_ir_code_node(codes, next);
+							prev = get_next_ir_code_node(&*codes, prev);
+							next = get_next_ir_code_node(&*codes, next);
 						}
 						if(flag == 1)
 						{
 							next_all = gen_ir_code(remote, remote->pre_data,
-									       get_ir_code(codes, prev),
+									       get_ir_code(&*codes, prev),
 									       remote->post_data);
 							if(match_ir_code(remote, next_all, all))
 							{
-								codes->current = get_next_ir_code_node(codes, prev);
+								codes->current = get_next_ir_code_node(&*codes, prev);
 								sequence_match = 1;
 								found_code=1;
 								if(!have_code)
 								{
-									found=codes;
+									found = &*codes;
 								}
 								break;
 							}
@@ -386,7 +382,6 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 	ir_code toggle_bit_mask_state;
 	lirc_t min_remaining_gap, max_remaining_gap;
 	struct ir_remote *scan;
-	struct ir_ncode *scan_ncode;
 	
 	/* use remotes carefully, it may be changed on SIGHUP */
 	decoding=remote=remotes;
@@ -409,14 +404,14 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 			   ncode->current!=nullptr)
 			{
 				decoding=nullptr;
-				return(nullptr);
+				return false;
 			}
 
 			for(scan = decoding; scan != nullptr; scan = scan->next.get())
 			{
-				for( scan_ncode = scan->codes; scan_ncode->name != nullptr; scan_ncode++)
+				for (auto& scan_ncode : scan->codes)
 				{
-					scan_ncode->current = nullptr;
+					scan_ncode.current = nullptr;
 				}
 			}
 			if(is_xmp(remote))
@@ -426,7 +421,7 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 			
 			len = write_message(out, out_size,
 					    remote->name.c_str(),
-					    remote->last_code->name, "", code,
+					    remote->last_code->name->c_str(), "", code,
 					    remote->reps-(ncode->next ? 1:0));
 			decoding=nullptr;
 			if(len>=PACKET_SIZE+1)

@@ -230,7 +230,7 @@ void CKeymapDlg::SetupListControl()
 	lvColumn.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
 	lvColumn.fmt = LVCFMT_LEFT;
 	lvColumn.cx = 100;
-	lvColumn.pszText = _T("XBMC Action");
+	lvColumn.pszText = const_cast<LPTSTR>(_T("XBMC Action"));
 
 	m_listCtrl.InsertColumn(0, &lvColumn);
 
@@ -246,7 +246,7 @@ void CKeymapDlg::SetupListControl()
 	lvColumn.mask = LVCF_FMT | LVCF_TEXT | LVCF_WIDTH;
 	lvColumn.fmt = LVCFMT_LEFT;
 	lvColumn.cx = 100;
-	lvColumn.pszText = _T("LIRC Key");
+	lvColumn.pszText = const_cast<LPTSTR>(_T("LIRC Key"));
 
 	m_listCtrl.InsertColumn(1, &lvColumn);
 

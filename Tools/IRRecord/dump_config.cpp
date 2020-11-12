@@ -303,11 +303,9 @@ void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes) n
 void fprint_remote_signals(FILE* f, ir_remote const* rem)
 {
 	fprint_remote_signal_head(f,rem);
-	ir_ncode* codes=rem->codes;
-	while(codes->name!=nullptr)
+	for (auto& c : rem->codes)
 	{
-		fprint_remote_signal(f,rem,codes);
-		codes++;
+		fprint_remote_signal(f, rem, &c);
 	}
 	fprint_remote_signal_foot(f,rem);
 }

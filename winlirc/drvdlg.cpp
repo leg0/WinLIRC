@@ -350,11 +350,6 @@ void Cdrvdlg::OnSendcode()
 	EnableWindow(FALSE);
 	UpdateData(TRUE);
 
-	//=======================
-	ir_ncode* codes;
-	ir_remote* sender;
-	//=======================
-
 	m_remote_edit.TrimRight();
 	m_ircode_edit.TrimRight();
 	m_remote_edit.TrimLeft();
@@ -366,16 +361,16 @@ void Cdrvdlg::OnSendcode()
 	const char *remoteName	= T2A(m_remote_edit);
 	const char *codeName	= T2A(m_ircode_edit);
 
-	sender = get_remote_by_name(global_remotes, remoteName);
+	ir_remote* sender = get_remote_by_name(global_remotes, remoteName);
 
 	if (sender==nullptr) {
 		MessageBox(_T("No match found for remote!"));
 	}
 	else {
 
-		codes = get_code_by_name(sender->codes,codeName);
+		auto codes = get_code_by_name(sender->codes, codeName);
 
-		if (codes==nullptr || codes->name==nullptr) {
+		if (codes == end(sender->codes)) {
 			MessageBox(_T("No match found for ircode!"));
 		}
 		else {
@@ -397,7 +392,7 @@ void Cdrvdlg::OnSendcode()
 
 			//send code
 
-			if(driver.sendIR(sender,codes,m_reps_edit)) {
+			if (driver.sendIR(sender, &*codes, m_reps_edit)) {
 				GoBlue();
 			}
 			else {
@@ -456,11 +451,9 @@ void Cdrvdlg::UpdateIrCodeComboLists()
 
 	if (selected_remote)
 	{
-		ir_ncode* codes = selected_remote->codes;
-		while (codes && codes->name!=nullptr)
+		for (auto& c : selected_remote->codes)
 		{
-			m_IrCodeEditCombo.AddString(A2T(codes->name));
-			codes++;
+			m_IrCodeEditCombo.AddString(A2T(c.name->c_str()));
 		}
 	}
 

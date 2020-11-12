@@ -23,7 +23,7 @@ Receive::~Receive() {
 	deinit();
 }
 
-char* gnt_ids[] = {
+char const* gnt_ids[] = {
 	"USB\\VID_0572&PID_8695",
 	"USB\\VID_0572&PID_8696",
 	"USB\\VID_0572&PID_8698",
@@ -60,7 +60,7 @@ int Receive::init() {
 	int rc=DLL_ERROR;
 	for (int i=0; i < _countof(gnt_ids); i++)
 	{
-		rc = LWEXT_OpenEx(gnt_ids[i]);
+		rc = LWEXT_OpenEx(const_cast<char*>(gnt_ids[i]));
 		if (rc==DLL_OK)
 		{
 			OutputDebugString("\nGeniatech device ID: ");

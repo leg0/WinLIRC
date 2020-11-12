@@ -25,55 +25,6 @@ static int parse_error;
 
 static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth);
 
-void **init_void_array(struct void_array *ar,size_t chunk_size, size_t item_size)
-{
-	ar->chunk_size=chunk_size;
-	ar->item_size=item_size;
-	ar->nr_items=0;
-	if(!(ar->ptr=calloc(chunk_size, ar->item_size))){
-
-		parse_error=1;
-		return(nullptr);
-	}
-	return((void **)(ar->ptr));
-}
-
-int add_void_array (struct void_array *ar, void * dataptr)
-{
-	void *ptr;
-
-	if ((ar->nr_items%ar->chunk_size)==(ar->chunk_size)-1){
-		/* I hope this works with the right alignment,
-		if not we're screwed */
-		if (!(ptr=realloc(ar->ptr,ar->item_size*((ar->nr_items)+(ar->chunk_size+1))))){
-
-			parse_error=1;
-			return(0);
-		}
-		ar->ptr=ptr;
-	}
-	memcpy((char *)(ar->ptr)+(ar->item_size*ar->nr_items), dataptr, ar->item_size);
-	ar->nr_items=(ar->nr_items)+1;
-	memset((char *)(ar->ptr)+(ar->item_size*ar->nr_items), 0, ar->item_size);
-	return(1);
-}
-
-inline void *get_void_array(struct void_array *ar)
-{
-	return(ar->ptr);
-}
-
-void *s_malloc(size_t size)
-{
-	void *ptr;
-	if((ptr=malloc(size))==nullptr){
-		parse_error=1;
-		return(nullptr);
-	}
-	memset(ptr, 0, size);
-	return (ptr);
-}
-
 static char* s_strdup(winlirc::istring_view string)
 {
     char* ptr = new char[string.size()+1];
@@ -135,7 +86,7 @@ static lirc_t s_strtolirc_t(std::basic_string_view<Char, CharTraits> val)
     return s_str_to_int<lirc_t>(val);
 }
 
-int checkMode(int is_mode, int c_mode, char *error)
+int checkMode(int is_mode, int c_mode, char const* error)
 {
 	if (is_mode!=c_mode)
 	{
@@ -397,9 +348,6 @@ int defineRemote(winlirc::istring_view key, winlirc::istring_view val, winlirc::
 
 static int sanityChecks(ir_remote *rem)
 {
-	struct ir_ncode *codes;
-	struct ir_code_node *node;
-
 	if (rem->name.empty())
 	{
 		return 0;
@@ -415,15 +363,15 @@ static int sanityChecks(ir_remote *rem)
 	{
 		rem->post_data &= gen_mask(rem->post_data_bits);
 	}
-	for(codes = rem->codes; codes->name != nullptr; codes++)
+	for (auto codes = rem->codes.begin(); codes != rem->codes.end(); codes++)
 	{
-		if((codes->code&gen_mask(rem->bits)) != codes->code)
+		if ((codes->code & gen_mask(rem->bits)) != codes->code)
 		{
 			codes->code &= gen_mask(rem->bits);
 		}
-		for(node = codes->next.get(); node != nullptr; node = node->next.get())
+		for (auto node = codes->next.get(); node != nullptr; node = node->next.get())
 		{
-			if((node->code&gen_mask(rem->bits)) != node->code)
+			if ((node->code & gen_mask(rem->bits)) != node->code)
 			{
 				node->code &= gen_mask(rem->bits);
 			}
@@ -489,7 +437,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 	winlirc::istring_view key, val, val2;
 	int argc;
 	ir_remote *top_rem=nullptr,*rem=nullptr;
-	void_array codes_list,raw_codes;
+	std::vector<ir_ncode> codes_list,raw_codes;
 	std::vector<lirc_t> signals;
 	ir_ncode raw_code{};
 	ir_ncode name_code{};
@@ -569,26 +517,28 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 
 					if (!checkMode(mode, ID_remote,
 						"begin codes")) break;
-					if (rem->codes){
+					if (!rem->codes.empty()){
 						parse_error=1;
 						break;
 					}
 
-					init_void_array(&codes_list,30, sizeof(struct ir_ncode));
+					codes_list.clear();
+					codes_list.reserve(30);
 					mode=ID_codes;
 				}else if("raw_codes" == val){
 					/* init raw_codes mode */
 
 					if(!checkMode(mode, ID_remote,
 						"begin raw_codes")) break;
-					if (rem->codes){
+					if (!rem->codes.empty()){
 
 						parse_error=1;
 						break;
 					}
 					set_protocol(rem, RAW_CODES);
 					raw_code.code=0;
-					init_void_array(&raw_codes,30, sizeof(struct ir_ncode));
+					raw_codes.clear();
+					raw_codes.reserve(30);
 					mode=ID_raw_codes;
 				}else if("remote" == val){
 					/* create new remote */
@@ -617,7 +567,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 						val2=strtok(buf, whitespace);
 					}
 					code->current=nullptr;
-					add_void_array(&codes_list, code);
+					codes_list.push_back(std::move(*code));
 				}else{
 					parse_error=1;
 				}
@@ -627,7 +577,8 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					/* end Codes mode */
 					if (!checkMode(mode, ID_codes,
 						"end codes")) break;
-					rem->codes=(ir_ncode*)get_void_array(&codes_list);
+					rem->codes = std::move(codes_list);
+					codes_list.clear();
 					mode=ID_remote;     /* switch back */
 
 				}else if("raw_codes" == val){
@@ -640,13 +591,13 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 						{
 							parse_error=1;
 						}
-						if(!add_void_array(&raw_codes, &raw_code))
-							break;
+						raw_codes.push_back(std::move(raw_code));
 						mode=ID_raw_codes;
 					}
 					if(!checkMode(mode,ID_raw_codes,
 						"end raw_codes")) break;
-					rem->codes=(ir_ncode *)get_void_array(&raw_codes);
+					rem->codes = std::move(raw_codes);
+					raw_codes.clear();
 					mode=ID_remote;     /* switch back */
 				}else if("remote" == val){
 					/* end remote mode */
@@ -672,7 +623,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 						val2=strtok(buf, whitespace);
 					}
 					code->current=nullptr;
-					add_void_array(&codes_list, code);
+					codes_list.push_back(std::move(*code));
 				}else{
 					parse_error=1;
 				}
@@ -690,7 +641,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 			val2=strtok(buf, whitespace);
 		}
 		code->current=nullptr;
-		add_void_array(&codes_list, code);
+		codes_list.push_back(std::move(*code));
 		break;
 	case ID_raw_codes:
 	case ID_raw_name:
@@ -702,8 +653,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				{
 					parse_error=1;
 				}
-				if(!add_void_array(&raw_codes, &raw_code))
-					break;
+				raw_codes.push_back(std::move(raw_code));
 			}
 			if(!(raw_code.name=s_strdup(val))){
 				break;
@@ -749,16 +699,16 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		switch(mode)
 		{
 		case ID_raw_name:
-			if(raw_code.name!=nullptr)
+			if (raw_code.name != std::nullopt)
 			{
-				free(raw_code.name);
+				raw_code.name->clear();
 				signals.clear();
 			}
 		case ID_raw_codes:
-			rem->codes=(ir_ncode *)get_void_array(&raw_codes);
+			rem->codes = std::move(raw_codes);
 			break;
 		case ID_codes:
-			rem->codes=(ir_ncode *)get_void_array(&codes_list);
+			rem->codes = std::move(codes_list);
 			break;
 		}
 		if(!parse_error)
@@ -772,9 +722,9 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		if(print_error) {
 
 		}
-		free_config(top_rem);
+		delete top_rem;
 		if(depth == 0) print_error = 1;
-		return(nullptr);
+		return nullptr;
 	}
 	/* kick reverse flag */
 	/* handle RC6 flag to be backwards compatible: previous RC-6
@@ -794,11 +744,9 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				rem->post_data=reverse(rem->post_data,
 					rem->post_data_bits);
 			}
-			ir_ncode* codes=rem->codes;
-			while(codes->name!=nullptr)
+			for (auto& c : rem->codes)
 			{
-				codes->code=reverse(codes->code,rem->bits);
-				codes++;
+				c.code = reverse(c.code, rem->bits);
 			}
 			rem->flags=rem->flags&(~REVERSE);
 			rem->flags=rem->flags|COMPAT_REVERSE;
@@ -824,9 +772,9 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		}
 		if(has_toggle_bit_mask(rem))
 		{
-			if(!is_raw(rem) && rem->codes)
+			if(!is_raw(rem) && !rem->codes.empty())
 			{
-				rem->toggle_bit_mask_state = (rem->codes->code & rem->toggle_bit_mask);
+				rem->toggle_bit_mask_state = (rem->codes[0].code & rem->toggle_bit_mask);
 				if(rem->toggle_bit_mask_state)
 				{
 					/* start with state set to 0 for backwards compatibility */
@@ -869,23 +817,4 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 	/*fprint_remotes(stderr, top_rem);*/
 #       endif
 	return (top_rem);
-}
-
-void free_config(ir_remote* remotes)
-{
-	if (remotes->codes != nullptr)
-	{
-		ir_ncode* codes = remotes->codes;
-		if (codes)
-		{
-			while (codes->name != nullptr)
-			{
-				free(codes->name);
-				codes->next.reset();
-				codes++;
-			}
-			free(remotes->codes);
-		}
-	}
-	delete remotes;
 }

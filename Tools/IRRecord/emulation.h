@@ -1,9 +1,8 @@
-#ifndef EMULATION_H
-#define EMULATION_H
+#pragma once
 
 extern struct ir_remote *emulation_data;
-extern struct ir_ncode *next_code;
-extern struct ir_ncode *current_code;
+extern std::vector<ir_ncode>::iterator next_code;
+extern std::vector<ir_ncode>::iterator current_code;
 extern int current_index;
 extern int current_rep;
 
@@ -14,5 +13,3 @@ int receive_decode(struct ir_remote *remote,
 		   int *repeat_flagp,
 		   lirc_t *min_remaining_gapp, lirc_t *max_remaining_gapp);
 lirc_t emulation_readdata(lirc_t timeout);
-
-#endif

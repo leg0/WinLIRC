@@ -42,7 +42,7 @@ int resethw(void);
 int waitfordata(unsigned long maxusec);
 int availabledata(void);
 int get_toggle_bit_mask(struct ir_remote *remote);
-void set_toggle_bit_mask(struct ir_remote *remote,ir_code xor);
+void set_toggle_bit_mask(ir_remote* remote, ir_code xor_);
 void get_pre_data(struct ir_remote *remote);
 void get_post_data(struct ir_remote *remote);
 typedef void (*remote_func)(struct ir_remote *remotes);
@@ -126,12 +126,12 @@ int debug=10;
 #else
 int debug=0;
 #endif
-FILE *lf=NULL;
-char *hostname="";
+FILE *lf=nullptr;
+char const* hostname="";
 int daemonized=0;
 
 
-static int i_printf(int interactive, char *format_str, ...)
+static int i_printf(int interactive, char const* format_str, ...)
 {
 	va_list ap;
 	int ret = 0;
@@ -147,7 +147,7 @@ static int i_printf(int interactive, char *format_str, ...)
 	return ret;
 }
 
-void logprintf(int prio,char *format_str, ...)
+void logprintf(int prio, char const* format_str, ...)
 {
 	va_list ap;  
 
@@ -381,8 +381,8 @@ int main(int argc,char **argv)
 
 		remote=std::move(*remotes);
 		remote.name.clear();
-		remote.codes=NULL;
-		remote.last_code=NULL;
+		remote.codes.clear();
+		remote.last_code = nullptr;
 		remote.next.reset();
 		if(remote.pre_p==0 && remote.pre_s==0 &&
 			remote.post_p==0 && remote.post_s==0)
@@ -857,12 +857,12 @@ int main(int argc,char **argv)
 		fprintf(stderr,"%s: could not open file \"%s\"\n",progname,
 			filename);
 		perror(progname);
-		free_config(remotes);
+		delete remotes;
 		return(EXIT_FAILURE);
 	}
 	fprint_copyright(fout);
 	fprint_remotes(fout,remotes);
-	free_config(remotes);
+	delete remotes;
 	printf("Successfully written config file.\n");
 	return(EXIT_SUCCESS);
 }
@@ -916,21 +916,15 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 	int found;
 	char message[PACKET_SIZE+1];
 
-	struct ir_ncode *codes;
-	if(remote->codes)
+	for (auto& c : remote->codes)
 	{
-		codes=remote->codes;
-		while(codes->name!=NULL)
+		if (c.next)
 		{
-			if(codes->next)
-			{
-				/* asume no toggle bit mask when key
-				sequences are used */
-				return 1;
-			}
-			codes++;
+			/* asume no toggle bit mask when key
+			sequences are used */
+			return 1;
 		}
-	} 
+	}
 
 	printf("Checking for toggle bit mask.\n");
 	printf(
@@ -1047,64 +1041,54 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 	return(found);
 }
 
-void set_toggle_bit_mask(struct ir_remote *remote,ir_code xor)
+void set_toggle_bit_mask(ir_remote *remote, ir_code xor_)
 {
-	ir_code mask;
-	struct ir_ncode *codes;
-	int bits;
+	if (remote->codes.empty())
+		return;
 
-	if(!remote->codes) return;
-
-	bits=bit_count(remote);
-	mask=((ir_code) 1)<<(bits-1);
+	int bits = bit_count(remote);
+	ir_code mask = ((ir_code)1) << (bits - 1);
 	while(mask)
 	{
-		if(mask==xor) break;
+		if(mask==xor_) break;
 		mask=mask>>1;
 	}
 	if(mask)
 	{
-		remote->toggle_bit_mask = xor;
+		remote->toggle_bit_mask = xor_;
 
-		codes=remote->codes;
-		while(codes->name!=NULL)
+		for (auto& c : remote->codes)
 		{
-			codes->code&=~xor;
-			codes++;
+			c.code &= ~xor_;
 		}
 	}
 	/* Sharp, Denon and some others use a toggle_mask */
-	else if(bits==15 && xor==0x3ff)
+	else if(bits==15 && xor_==0x3ff)
 	{
-		remote->toggle_mask=xor;
+		remote->toggle_mask=xor_;
 	}
 	else
 	{
-		remote->toggle_bit_mask = xor;
+		remote->toggle_bit_mask = xor_;
 	}
 }
 
 void get_pre_data(struct ir_remote *remote)
 {
-	struct ir_ncode *codes;
-	ir_code mask,last;
-	int count,i;
+	if (remote->bits == 0)
+		return;
 
-	if(remote->bits==0) return;
-
-	mask=(-1);
-	codes=remote->codes;
-	if(codes->name==NULL) return; /* at least 2 codes needed */
-	last=codes->code;
+	ir_code mask = -1;
+	auto codes = remote->codes.begin();
+	if (codes == remote->codes.end()) return; /* at least 2 codes needed */
+	ir_code last = codes->code;
 	codes++;
-	if(codes->name==NULL) return; /* at least 2 codes needed */
-	while(codes->name!=nullptr)
+	if (codes == remote->codes.end()) return; /* at least 2 codes needed */
+	while (codes != remote->codes.end())
 	{
-		struct ir_code_node *loop;
-
 		mask&=~(last^codes->code);
 		last=codes->code;
-		for (loop = codes->next.get(); loop != nullptr; loop = loop->next.get())
+		for (ir_code_node* loop = codes->next.get(); loop != nullptr; loop = loop->next.get())
 		{
 			mask &= ~(last ^ loop->code);
 			last = loop->code;
@@ -1112,7 +1096,7 @@ void get_pre_data(struct ir_remote *remote)
 
 		codes++;
 	}
-	count=0;
+	int count = 0;
 	while(mask&0x8000000000000000LL)
 	{
 		count++;
@@ -1128,47 +1112,42 @@ void get_pre_data(struct ir_remote *remote)
 	if(count>0)
 	{
 		mask=0;
-		for(i=0;i<count;i++)
+		for (int i = 0; i < count; i++)
 		{
-			mask=mask<<1;
-			mask|=1;
+			mask = mask << 1;
+			mask |= 1;
 		}
 		remote->bits-=count;
 		mask=mask<<(remote->bits);
 		remote->pre_data_bits=count;
 		remote->pre_data=(last&mask)>>(remote->bits);
 
-		codes=remote->codes;
-		while(codes->name!=NULL)
+		for (auto& c : remote->codes)
 		{
-			codes->code&=~mask;
-			for(ir_code_node* loop=codes->next.get(); loop!=NULL; loop=loop->next.get())
+			c.code &= ~mask;
+			for (ir_code_node* loop = c.next.get(); loop != nullptr; loop = loop->next.get())
 			{
 				loop->code &= ~mask;
 			}
-			codes++;
 		}
 	}
 }
 
-void get_post_data(struct ir_remote *remote)
+void get_post_data(ir_remote* remote)
 {
-	struct ir_ncode *codes;
-	ir_code mask,last;
-	int count,i;
+	if (remote->bits == 0)
+		return;
 
-	if(remote->bits==0) return;
-
-	mask=(-1);
-	codes=remote->codes;
-	if(codes->name==NULL) return; /* at least 2 codes needed */
-	last=codes->code;
+	ir_code mask = -1;;
+	auto codes = remote->codes.begin();
+	if (codes == remote->codes.end()) return; /* at least 2 codes needed */
+	ir_code last = codes->code;
 	codes++;
-	if(codes->name==NULL) return; /* at least 2 codes needed */
-	while(codes->name!=NULL)
+	if (codes == remote->codes.end()) return; /* at least 2 codes needed */
+	while (codes != remote->codes.end())
 	{
-		mask&=~(last^codes->code);
-		last=codes->code;
+		mask &= ~(last ^ codes->code);
+		last = codes->code;
 		for (ir_code_node* loop = codes->next.get(); loop != nullptr; loop = loop->next.get())
 		{
 			mask &= ~(last ^ loop->code);
@@ -1176,7 +1155,7 @@ void get_post_data(struct ir_remote *remote)
 		}
 		codes++;
 	}
-	count=0;
+	int count = 0;
 	while(mask&0x1)
 	{
 		count++;
@@ -1190,7 +1169,7 @@ void get_post_data(struct ir_remote *remote)
 	if(count>0)
 	{
 		mask=0;
-		for(i=0;i<count;i++)
+		for(int i=0;i<count;i++)
 		{
 			mask=mask<<1;
 			mask|=1;
@@ -1199,15 +1178,13 @@ void get_post_data(struct ir_remote *remote)
 		remote->post_data_bits=count;
 		remote->post_data=last&mask;
 
-		codes=remote->codes;
-		while(codes->name!=NULL)
+		for (auto& c : remote->codes)
 		{
-			codes->code=codes->code>>count;
-			for (ir_code_node* loop = codes->next.get(); loop != nullptr; loop = loop->next.get())
+			c.code = c.code >> count;
+			for (ir_code_node* loop = c.next.get(); loop != nullptr; loop = loop->next.get())
 			{
 				loop->code = loop->code >> count;
 			}
-			codes++;
 		}
 	}
 }
@@ -1224,13 +1201,10 @@ void for_each_remote(ir_remote* remotes, remote_func func)
 
 void analyse_remote(struct ir_remote *raw_data)
 {
-	struct ir_ncode *codes;
 	ir_code pre, code, code2, post;
 	int repeat_flag;
 	lirc_t min_remaining_gap, max_remaining_gap;
-	struct ir_ncode *new_codes;
 	size_t new_codes_count = 100;
-	int new_index = 0;
 	int ret;
 
 	if(!is_raw(raw_data))
@@ -1242,8 +1216,8 @@ void analyse_remote(struct ir_remote *raw_data)
 	aeps = raw_data->aeps;
 	eps = raw_data->eps;
 	emulation_data = raw_data;
-	next_code = NULL;
-	current_code = NULL;
+	next_code = std::vector<ir_ncode>::iterator{};
+	current_code = std::vector<ir_ncode>::iterator{};
 	current_index = 0;
 	memset(&remote, 0, sizeof(remote));
 	get_lengths(&remote, 0, 0 /* not interactive */ );
@@ -1258,21 +1232,13 @@ void analyse_remote(struct ir_remote *raw_data)
 	remote.name = raw_data->name;
 	remote.freq = raw_data->freq;
 
-	new_codes = (ir_ncode*)malloc(new_codes_count * sizeof(*new_codes));
-	if(new_codes == NULL)
+	std::vector<ir_ncode> new_codes;
+	for (auto c = begin(raw_data->codes); c != end(raw_data->codes); ++c)
 	{
-		fprintf(stderr, "%s: out of memory\n",
-			progname);
-		return;
-	}
-	memset(new_codes, 0 , new_codes_count * sizeof(*new_codes));
-	codes = raw_data->codes;
-	while(codes->name!=NULL)
-	{
-		//printf("decoding %s\n", codes->name);
-		current_code = NULL;
+		//printf("decoding %s\n", c.name);
+		current_code = std::vector<ir_ncode>::iterator{};
 		current_index = 0;
-		next_code = codes;
+		next_code = c;
 
 		init_rec_buffer();
 
@@ -1284,22 +1250,10 @@ void analyse_remote(struct ir_remote *raw_data)
 		if(!ret)
 		{
 			fprintf(stderr, "%s: decoding of %s failed\n",
-				progname, codes->name);
+				progname, c->name->c_str());
 		}
 		else
 		{
-			if(new_index+1 >= new_codes_count)
-			{
-				ir_ncode* renew_codes = new ir_ncode[new_codes_count * 2]{};
-				for (ir_ncode *p = new_codes, *q = renew_codes;
-					p != new_codes + new_codes_count;
-					++p, ++q)
-				{
-					*q = std::move(*p);
-				}
-				new_codes = renew_codes;
-			}
-
 			clear_rec_buffer();
 
 			ret = receive_decode(&remote,
@@ -1309,20 +1263,17 @@ void analyse_remote(struct ir_remote *raw_data)
 				&max_remaining_gap);
 			if(ret && code2 != code)
 			{
-				new_codes[new_index].next.reset(new ir_code_node{});
-				new_codes[new_index].next->code = code2;
+				auto& x = new_codes.emplace_back();
+				x.next.reset(new ir_code_node{});
+				x.next->code = code2;
 			}
-			new_codes[new_index].name = codes->name;
-			new_codes[new_index].code = code;
-			new_index++;
+			new_codes.back().name = c->name;
+			new_codes.back().code = code;
 		}
-		codes++;
 	}
-	new_codes[new_index].name = NULL;
-	remote.codes = new_codes;
+	remote.codes = std::move(new_codes);
 	fprint_remotes(stdout, &remote);
-	remote.codes = NULL;
-	free(new_codes);
+	remote.codes = std::vector<ir_ncode>{};
 }
 
 

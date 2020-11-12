@@ -28,7 +28,7 @@
 
 /* Debugging stuff */
 
-void winlirc_debug(const char *file, int line, char *format, ...)
+void winlirc_debug(const char* file, int line, char const* format, ...)
 {
 
 	va_list args;

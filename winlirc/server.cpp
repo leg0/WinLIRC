@@ -314,9 +314,9 @@ std::pair<bool, std::string> Cserver::parseSendString(char const* string)
     if (sender == nullptr)
         return { false, "DATA\n1\nremote not found\n"s };
 
-    ir_ncode* const codes = get_code_by_name(sender->codes, keyName);
+    auto codes = get_code_by_name(sender->codes, keyName);
 
-    if (codes->name == nullptr)
+    if (codes == end(sender->codes))
         return { false, "DATA\n1\ncode not found\n"s };
 
     repeats = std::max(repeats, sender->min_repeat);
@@ -332,7 +332,7 @@ std::pair<bool, std::string> Cserver::parseSendString(char const* string)
         sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state ^ sender->toggle_bit_mask);
     }
 
-    BOOL const success = app.dlg->driver.sendIR(sender, codes, repeats);
+    BOOL const success = app.dlg->driver.sendIR(sender, &*codes, repeats);
 
     if (!success)
         return { false, "DATA\n1\nsend failed/not supported\n"s };
@@ -394,23 +394,15 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
 
     if (remoteName && !codeName)
     {
-        ir_ncode* allcodes = all->codes;
-        while (allcodes->name)
-        {
-            n++;
-            allcodes++;
-        }
         std::string response;
-        if (n != 0)
+        if (!all->codes.empty())
         {
-            response = "DATA\n"s + std::to_string(n) + "\n";
-            allcodes = all->codes;
+            response = "DATA\n"s + std::to_string(all->codes.size()) + "\n";
 
-            while (allcodes->name)
+            for (auto& c : all->codes)
             {
-                response += allcodes->name;
+                response += *c.name;
                 response += "\n";
-                allcodes++;
             }
         }
         return { true, std::move(response) };
@@ -418,11 +410,11 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
 
     if (remoteName && codeName)
     {
-        ir_ncode* const code = get_code_by_name(all->codes, codeName);
-        if (code)
+        auto code = get_code_by_name(all->codes, codeName);
+        if (code != end(all->codes))
         {
             char buf[100];
-            sprintf(buf, "DATA\n1\n%016llX %s\n", code->code, code->name);
+            sprintf(buf, "DATA\n1\n%016llX %s\n", code->code, code->name->c_str());
             return { true, buf };
         }
         else

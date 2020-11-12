@@ -4,30 +4,62 @@
 
 #include <chrono>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
 struct ir_code_node
 {
+	~ir_code_node() noexcept
+	{
+		next.reset();
+	}
+	ir_code_node() = default;
+	ir_code_node(ir_code_node const&) = delete;
+	ir_code_node& operator=(ir_code_node const&) = delete;
+	ir_code_node(ir_code_node&&) = default;
+	ir_code_node& operator=(ir_code_node&&) = default;
+
 	ir_code code;
 	std::unique_ptr<ir_code_node> next;
 };
 
 struct ir_ncode
 {
-	char* name;
-	ir_code code;
+	~ir_ncode() noexcept
+	{
+		next.reset();
+	}
+	ir_ncode() = default;
+	ir_ncode(ir_ncode const&) = delete;
+	ir_ncode& operator=(ir_ncode const&) = delete;
+	ir_ncode(ir_ncode&&) = default;
+	ir_ncode& operator=(ir_ncode&&) = default;
+
+	std::optional<std::string> name;
+	ir_code code = 0;
 	size_t length() const noexcept { return signals.size(); }
 	std::vector<lirc_t> signals;
 	std::unique_ptr<ir_code_node> next;
-	ir_code_node *current;
-	ir_code_node *transmit_state;
+	ir_code_node* current;
+	ir_code_node* transmit_state;
 };
 
 struct ir_remote
 {
+	~ir_remote() noexcept
+	{
+		codes.clear();
+		next.reset();
+	}
+	ir_remote() = default;
+	ir_remote(ir_remote const&) = delete;
+	ir_remote& operator=(ir_remote const&) = delete;
+	ir_remote(ir_remote&&) = default;
+	ir_remote& operator=(ir_remote&&) = default;
+
 	std::string name;                 /* name of remote control */
-	ir_ncode* codes;
+	std::vector<ir_ncode> codes;
 	int bits;                   /* bits (length of code) */
 	int flags;                  /* flags */
 	int eps;                    /* eps (_relative_ tolerance) */

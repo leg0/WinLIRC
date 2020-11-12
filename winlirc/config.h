@@ -53,15 +53,8 @@ struct void_array
         size_t chunk_size;
 };
 
-void **init_void_array(struct void_array *ar,size_t chunk_size, size_t item_size);
-int add_void_array(struct void_array *ar, void * data);
-inline void * get_void_array(struct void_array *ar);
-
 /* some safer functions */
-void * s_malloc(size_t size);
-
 struct ir_remote;
 
-int checkMode(int is_mode, int c_mode, char *error);
+int checkMode(int is_mode, int c_mode, char const* error);
 ir_remote *read_config(FILE *f, const char *name);
-void free_config(ir_remote *remotes);
