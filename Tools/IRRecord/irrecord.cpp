@@ -1216,10 +1216,10 @@ void analyse_remote(struct ir_remote *raw_data)
 	aeps = raw_data->aeps;
 	eps = raw_data->eps;
 	emulation_data = raw_data;
-	next_code = std::vector<ir_ncode>::iterator{};
-	current_code = std::vector<ir_ncode>::iterator{};
+	next_code = std::nullopt;
+	current_code = std::nullopt;
 	current_index = 0;
-	memset(&remote, 0, sizeof(remote));
+	remote = ir_remote{};
 	get_lengths(&remote, 0, 0 /* not interactive */ );
 
 	if(is_rc6(&remote) && remote.bits >= 5)
@@ -1236,7 +1236,7 @@ void analyse_remote(struct ir_remote *raw_data)
 	for (auto c = begin(raw_data->codes); c != end(raw_data->codes); ++c)
 	{
 		//printf("decoding %s\n", c.name);
-		current_code = std::vector<ir_ncode>::iterator{};
+		current_code = std::nullopt;
 		current_index = 0;
 		next_code = c;
 
@@ -1261,14 +1261,14 @@ void analyse_remote(struct ir_remote *raw_data)
 				&repeat_flag,
 				&min_remaining_gap,
 				&max_remaining_gap);
-			if(ret && code2 != code)
+			auto& x = new_codes.emplace_back();
+			if (ret && code2 != code)
 			{
-				auto& x = new_codes.emplace_back();
 				x.next.reset(new ir_code_node{});
 				x.next->code = code2;
 			}
-			new_codes.back().name = c->name;
-			new_codes.back().code = code;
+			x.name = c->name;
+			x.code = code;
 		}
 	}
 	remote.codes = std::move(new_codes);
@@ -1330,7 +1330,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 	first_length=0;
 	first_lengths = 0;
 	second_lengths = 0;
-	memset(lengths, 0, sizeof(lengths));
+	std::fill(std::begin(lengths), std::end(lengths), 0);
 	while(1)
 	{
 		data=hw.readdata(10000000);

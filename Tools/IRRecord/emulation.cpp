@@ -23,8 +23,8 @@ ir_ncode *repeat_code;
 
 //=========================================================================================
 ir_remote *emulation_data;
-std::vector<ir_ncode>::iterator next_code;
-std::vector<ir_ncode>::iterator current_code;
+std::optional<std::vector<ir_ncode>::iterator> next_code = std::nullopt;
+std::optional<std::vector<ir_ncode>::iterator> current_code = std::nullopt;
 int current_index = 0;
 int current_rep = 0;
 
@@ -33,10 +33,10 @@ lirc_t emulation_readdata(lirc_t timeout)
 	static lirc_t sum = 0;
 	lirc_t data = 0;
 
-	if (current_code == std::vector<ir_ncode>::iterator{})
+	if (current_code == std::nullopt)
 	{
 		data = 1000000;
-		if (next_code != std::vector<ir_ncode>::iterator{})
+		if (next_code != std::nullopt)
 		{
 			current_code = next_code;
 		}
@@ -55,9 +55,9 @@ lirc_t emulation_readdata(lirc_t timeout)
 				progname, emulation_data->name.c_str());
 			data = 0;
 		}
-		if(current_index >= current_code->length())
+		if(current_index >= (*current_code)->length())
 		{
-			if (next_code != std::vector<ir_ncode>::iterator{})
+			if (next_code != std::nullopt)
 			{
 				current_code = next_code;
 			}
@@ -66,15 +66,15 @@ lirc_t emulation_readdata(lirc_t timeout)
 				current_rep++;
 				if(current_rep > 2)
 				{
-					current_code++;
+					(*current_code)++;
 					current_rep = 0;
 					data = 1000000;
 				}
 			}
 			current_index = 0;
-			if (current_code->name == std::nullopt)
+			if (current_code == emulation_data->codes.end())
 			{
-				current_code = std::vector<ir_ncode>::iterator{};
+				current_code = std::nullopt;
 				return emulation_readdata(timeout);
 			}
 			if(data == 0)
@@ -93,7 +93,7 @@ lirc_t emulation_readdata(lirc_t timeout)
 		}
 		else
 		{
-			data = current_code->signals[current_index];
+			data = (*current_code)->signals[current_index];
 			if((current_index % 2) == 0)
 			{
 				data |= PULSE_BIT;

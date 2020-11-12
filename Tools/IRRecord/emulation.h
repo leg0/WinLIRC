@@ -1,8 +1,11 @@
 #pragma once
 
+#include <optional>
+#include <vector>
+
 extern struct ir_remote *emulation_data;
-extern std::vector<ir_ncode>::iterator next_code;
-extern std::vector<ir_ncode>::iterator current_code;
+extern std::optional<std::vector<ir_ncode>::iterator> next_code;
+extern std::optional<std::vector<ir_ncode>::iterator> current_code;
 extern int current_index;
 extern int current_rep;
 

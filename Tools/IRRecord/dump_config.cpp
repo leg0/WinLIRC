@@ -259,11 +259,10 @@ void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes) n
 	if(!is_raw(rem))
 	{
 		char format[30];
-		sprintf(format,	"          %%-24s 0x%%0%dllX",
-			(rem->bits+3)/4);
-		fprintf(f, format, codes->name, codes->code);
+		sprintf(format,	"          %%-24s 0x%%0%dllX", (rem->bits+3)/4);
+		fprintf(f, format, codes->name->c_str(), codes->code);
 		sprintf(format, " 0x%%0%dlX", (rem->bits+3)/4);
-		for(ir_code_node* loop=codes->next.get(); loop!=NULL; loop=loop->next.get())
+		for (ir_code_node* loop = codes->next.get(); loop != nullptr; loop = loop->next.get())
 		{
 			fprintf(f, format, loop->code);
 		}
@@ -272,7 +271,7 @@ void fprint_remote_signal(FILE* f,ir_remote const* rem, ir_ncode const* codes) n
 	}
 	else
 	{
-		fprintf(f, "          name %s\n",codes->name);
+		fprintf(f, "          name %s\n",codes->name->c_str());
 		j=0;
 		for(i=0;i<codes->length();i++){
 			if (j==0){
