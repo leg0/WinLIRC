@@ -2,15 +2,16 @@
 #include "ir_remote.h"
 #include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
+#include <algorithm>
 #include <stdio.h>
 #include <sys/timeb.h>
 #include <string.h>
 #include <limits.h>
 
-struct ir_remote *decoding		= nullptr;
-struct ir_remote *last_remote	= nullptr;
-struct ir_remote *repeat_remote	= nullptr;
-struct ir_ncode *repeat_code	= nullptr;
+ir_remote *decoding		= nullptr;
+ir_remote *last_remote	= nullptr;
+ir_remote *repeat_remote	= nullptr;
+ir_ncode *repeat_code	= nullptr;
 
 WINLIRC_API int winlirc_map_code(struct ir_remote *remote,
 	     ir_code *prep,ir_code *codep,ir_code *postp,
@@ -371,17 +372,16 @@ static int write_message(char *buffer, size_t size, const char *remote_name,
 WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
 {
     auto& hw = *phw;
-	struct ir_remote *remote;
 	ir_code pre,code,post;
-	struct ir_ncode *ncode;
+	ir_ncode *ncode;
 	int repeat_flag;
 	ir_code toggle_bit_mask_state;
 	lirc_t min_remaining_gap, max_remaining_gap;
-	struct ir_remote *scan;
 	
 	/* use remotes carefully, it may be changed on SIGHUP */
-	decoding=remote=remotes;
-	while(remote)
+	ir_remote* remote = remotes;
+	decoding = remotes;
+	while (remote)
 	{
 		//LOGPRINTF(1,"trying \"%s\" remote",remote->name);
 		
@@ -403,7 +403,7 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 				return false;
 			}
 
-			for(scan = decoding; scan != nullptr; scan = scan->next.get())
+			for(auto scan = decoding; scan != nullptr; scan = scan->next.get())
 			{
 				for (auto& scan_ncode : scan->codes)
 				{
@@ -442,16 +442,20 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 	return false;
 }
 
-WINLIRC_API ir_code get_ir_code(struct ir_ncode* ncode, struct ir_code_node* node)
+WINLIRC_API ir_code get_ir_code(ir_ncode* ncode, ir_code_node* node)
 {
-	if (ncode->next && node != nullptr) return node->code;
-	return ncode->code;
+	if (ncode->next && node != nullptr)
+		return node->code;
+	else
+		return ncode->code;
 }
 
 WINLIRC_API ir_code_node* get_next_ir_code_node(ir_ncode* ncode, ir_code_node* node)
 {
-	if (node == nullptr) return ncode->next.get();
-	return node->next.get();
+	if (node == nullptr)
+		return ncode->next.get();
+	else
+		return node->next.get();
 }
 
 WINLIRC_API int bit_count(ir_remote const* remote)
@@ -461,10 +465,9 @@ WINLIRC_API int bit_count(ir_remote const* remote)
 		remote->post_data_bits;
 }
 
-WINLIRC_API int has_repeat(ir_remote const* remote)
+WINLIRC_API bool has_repeat(ir_remote const* remote)
 {
-	if (remote->prepeat > 0 && remote->srepeat > 0) return(1);
-	else return(0);
+	return remote->prepeat > 0 && remote->srepeat > 0;
 }
 
 WINLIRC_API void set_protocol(ir_remote* remote, int protocol)
@@ -473,209 +476,159 @@ WINLIRC_API void set_protocol(ir_remote* remote, int protocol)
 	remote->flags |= protocol;
 }
 
-WINLIRC_API int is_raw(ir_remote const* remote)
+WINLIRC_API bool is_raw(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == RAW_CODES) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == RAW_CODES;
 }
 
-WINLIRC_API int is_space_enc(ir_remote const* remote)
+WINLIRC_API bool is_space_enc(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == SPACE_ENC) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == SPACE_ENC;
 }
 
-WINLIRC_API int is_space_first(ir_remote const* remote)
+WINLIRC_API bool is_space_first(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == SPACE_FIRST) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == SPACE_FIRST;
 }
 
-WINLIRC_API int is_rc5(ir_remote const* remote)
+WINLIRC_API bool is_rc5(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == RC5) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == RC5;
 }
 
-WINLIRC_API int is_rc6(ir_remote const* remote)
+WINLIRC_API bool is_rc6(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == RC6 ||
-		remote->rc6_mask) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == RC6 || remote->rc6_mask;
 }
 
-WINLIRC_API int is_biphase(ir_remote const* remote)
+WINLIRC_API bool is_biphase(ir_remote const* remote)
 {
-	if (is_rc5(remote) || is_rc6(remote)) return(1);
-	else return(0);
+	return is_rc5(remote) || is_rc6(remote);
 }
 
-WINLIRC_API int is_rcmm(ir_remote const* remote)
+WINLIRC_API bool is_rcmm(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == RCMM) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == RCMM;
 }
 
-WINLIRC_API int is_goldstar(ir_remote const* remote)
+WINLIRC_API bool is_goldstar(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == GOLDSTAR) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == GOLDSTAR;
 }
 
-WINLIRC_API int is_grundig(ir_remote const* remote)
+WINLIRC_API bool is_grundig(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == GRUNDIG) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == GRUNDIG;
 }
 
-WINLIRC_API int is_bo(ir_remote const* remote)
+WINLIRC_API bool is_bo(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == BO) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == BO;
 }
 
-WINLIRC_API int is_serial(ir_remote const* remote)
+WINLIRC_API bool is_serial(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == SERIAL) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == SERIAL;
 }
 
-WINLIRC_API int is_xmp(ir_remote const* remote)
+WINLIRC_API bool is_xmp(ir_remote const* remote)
 {
-	if ((remote->flags & IR_PROTOCOL_MASK) == XMP) return(1);
-	else return(0);
+	return (remote->flags & IR_PROTOCOL_MASK) == XMP;
 }
 
-WINLIRC_API int is_const(ir_remote const* remote)
+WINLIRC_API bool is_const(ir_remote const* remote)
 {
-	if (remote->flags & CONST_LENGTH) return(1);
-	else return(0);
+	return (remote->flags & CONST_LENGTH) == CONST_LENGTH;
 }
 
-WINLIRC_API int has_repeat_gap(ir_remote const* remote)
+WINLIRC_API bool has_repeat_gap(ir_remote const* remote)
 {
-	if (remote->repeat_gap > 0) return(1);
-	else return(0);
+	return remote->repeat_gap > 0;
 }
 
-WINLIRC_API int has_pre(ir_remote const* remote)
+WINLIRC_API bool has_pre(ir_remote const* remote)
 {
-	if (remote->pre_data_bits > 0) return(1);
-	else return(0);
+	return remote->pre_data_bits > 0;
 }
 
-WINLIRC_API int has_post(ir_remote const* remote)
+WINLIRC_API bool has_post(ir_remote const* remote)
 {
-	if (remote->post_data_bits > 0) return(1);
-	else return(0);
+	return remote->post_data_bits > 0;
 }
 
-WINLIRC_API int has_header(ir_remote const* remote)
+WINLIRC_API bool has_header(ir_remote const* remote)
 {
-	if (remote->phead > 0 && remote->shead > 0) return(1);
-	else return(0);
+	return remote->phead > 0 && remote->shead > 0;
 }
 
-WINLIRC_API int has_foot(ir_remote const* remote)
+WINLIRC_API bool has_foot(ir_remote const* remote)
 {
-	if (remote->pfoot > 0 && remote->sfoot > 0) return(1);
-	else return(0);
+	return remote->pfoot > 0 && remote->sfoot > 0;
 }
 
-WINLIRC_API int has_toggle_bit_mask(ir_remote const* remote)
+WINLIRC_API bool has_toggle_bit_mask(ir_remote const* remote)
 {
-	if (remote->toggle_bit_mask > 0) return(1);
-	else return(0);
+	return remote->toggle_bit_mask > 0;
 }
 
-WINLIRC_API int has_ignore_mask(ir_remote const* remote)
+WINLIRC_API bool has_ignore_mask(ir_remote const* remote)
 {
-	if (remote->ignore_mask > 0) return(1);
-	else return(0);
+	return remote->ignore_mask > 0;
 }
 
-WINLIRC_API int has_toggle_mask(ir_remote const* remote)
+WINLIRC_API bool has_toggle_mask(ir_remote const* remote)
 {
-	if (remote->toggle_mask > 0) return(1);
-	else return(0);
+	return remote->toggle_mask > 0;
 }
 
 WINLIRC_API lirc_t min_gap(ir_remote const* remote)
 {
-	if (remote->gap2 != 0 && remote->gap2 < remote->gap)
-	{
-		return remote->gap2;
-	}
-	else
-	{
+	if (remote->gap2 == 0)
 		return remote->gap;
-	}
+	else
+		return std::min(remote->gap, remote->gap2);
 }
 
 WINLIRC_API lirc_t max_gap(ir_remote const* remote)
 {
-	if (remote->gap2 > remote->gap)
-	{
-		return remote->gap2;
-	}
-	else
-	{
-		return remote->gap;
-	}
+	return std::max(remote->gap2, remote->gap);
 }
 
 WINLIRC_API ir_code gen_ir_code(ir_remote const* remote, ir_code pre, ir_code code, ir_code post)
 {
-	ir_code all;
-
-	all = (pre & gen_mask(remote->pre_data_bits));
+	ir_code all = (pre & gen_mask(remote->pre_data_bits));
 	all <<= remote->bits;
 	all |= is_raw(remote) ? code : (code & gen_mask(remote->bits));
 	all <<= remote->post_data_bits;
 	all |= post & gen_mask(remote->post_data_bits);
-
 	return all;
 }
 
-WINLIRC_API int match_ir_code(ir_remote const* remote, ir_code a, ir_code b)
+WINLIRC_API bool match_ir_code(ir_remote const* remote, ir_code a, ir_code b)
 {
-	return ((remote->ignore_mask | a) == (remote->ignore_mask | b) || (remote->ignore_mask | a) == (remote->ignore_mask | (b ^ remote->toggle_bit_mask)));
+	return ((remote->ignore_mask | a) == (remote->ignore_mask | b)
+		|| (remote->ignore_mask | a) == (remote->ignore_mask | (b ^ remote->toggle_bit_mask)));
 }
 
-WINLIRC_API int expect(ir_remote const* remote, lirc_t delta, lirc_t exdelta)
+WINLIRC_API bool expect(ir_remote const* remote, lirc_t delta, lirc_t exdelta)
 {
-	int aeps = remote->aeps;
-
-	if (abs(exdelta - delta) <= exdelta * remote->eps / 100 ||
-		abs(exdelta - delta) <= aeps)
-		return 1;
-	return 0;
+	int const aeps = remote->aeps;
+	return abs(exdelta - delta) <= exdelta * remote->eps / 100
+		|| abs(exdelta - delta) <= aeps;
 }
 
-WINLIRC_API int expect_at_least(ir_remote const* remote,
-	lirc_t delta, lirc_t exdelta)
+WINLIRC_API bool expect_at_least(ir_remote const* remote, lirc_t delta, lirc_t exdelta)
 {
-	int aeps = remote->aeps;
-
-	if (delta + exdelta * remote->eps / 100 >= exdelta ||
-		delta + aeps >= exdelta)
-	{
-		return 1;
-	}
-	return 0;
+	int const aeps = remote->aeps;
+	return delta + exdelta * remote->eps / 100 >= exdelta
+		|| delta + aeps >= exdelta;
 }
 
-WINLIRC_API int expect_at_most(ir_remote const* remote,
-	lirc_t delta, lirc_t exdelta)
+WINLIRC_API bool expect_at_most(ir_remote const* remote, lirc_t delta, lirc_t exdelta)
 {
 	int aeps = remote->aeps;
-
-	if (delta <= exdelta + exdelta * remote->eps / 100 ||
-		delta <= exdelta + aeps)
-	{
-		return 1;
-	}
-	return 0;
+	return delta <= exdelta + exdelta * remote->eps / 100
+		|| delta <= exdelta + aeps;
 }
 
 WINLIRC_API unsigned get_freq(ir_remote const* remote)
