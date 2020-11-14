@@ -25,14 +25,6 @@ static int parse_error;
 
 static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth);
 
-static char* s_strdup(winlirc::istring_view string)
-{
-    char* ptr = new char[string.size()+1];
-    memcpy(ptr, string.data(), string.size());
-    ptr[string.size()] = 0;
-    return ptr;
-}
-
 template <typename Int, typename Char, typename CharTraits>
 requires(std::is_integral_v<Int>)
 static Int s_str_to_int(std::basic_string_view<Char, CharTraits> s)
@@ -106,11 +98,10 @@ int addSignal(std::vector<lirc_t>& signals, winlirc::istring_view val)
 
 ir_ncode* defineCode(winlirc::istring_view key, winlirc::istring_view val, ir_ncode* code)
 {
-	memset(code, 0, sizeof(*code));
-	code->name=s_strdup(key);
-	code->code=s_strtocode(val);
-
-	return(code);
+	*code = ir_ncode{};
+	code->name = std::string{ begin(key), end(key) };
+	code->code = s_strtocode(val);
+	return code;
 }
 
 ir_code_node* defineNode(ir_ncode* code, winlirc::istring_view val)
@@ -650,17 +641,16 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		if("name" == key){
 			if(mode==ID_raw_name)
 			{
-				raw_code.signals=signals;
+				raw_code.signals = std::move(signals);
 				if(raw_code.length()%2==0)
 				{
 					parse_error=1;
 				}
 				raw_codes.push_back(std::move(raw_code));
 			}
-			if(!(raw_code.name=s_strdup(val))){
-				break;
-			}
+			raw_code.name = std::string{ begin(val), end(val) };
 			raw_code.code++;
+			signals.clear();
 			signals.reserve(50);
 			mode=ID_raw_name;
 		}else{
