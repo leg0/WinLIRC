@@ -18,38 +18,31 @@ CIRDriver::~CIRDriver()
 		CloseHandle(m_daemonThreadEvent);
 }
 
-BOOL CIRDriver::loadPlugin(std::filesystem::path plugin) {
-
-    //
-    //make sure we have cleaned up first
-    //
-
+bool CIRDriver::loadPlugin(std::filesystem::path plugin)
+{
 	std::lock_guard lock{ m_dllLock };
-	unloadPlugin();
+	unloadPlugin(); // make sure we have cleaned up first
 
-	Plugin p { plugin };
-    if (p.hasValidInterface())
+	Plugin p{ plugin };
+	if (p.hasValidInterface())
 	{
-        m_dll = std::move(p);
-        return TRUE;
-    }
+		m_dll = std::move(p);
+		return true;
+	}
 
-    return FALSE;
+	return false;
 }
 
-void CIRDriver::unloadPlugin() {
-
-	//
-	// make sure we have cleaned up
-	//
-	deinit();
+void CIRDriver::unloadPlugin()
+{
+	deinit(); // make sure we have cleaned up
 
 	// daemon thread should not be dead now.
 	ASSERT(!m_daemonThreadHandle.joinable());
 	m_dll = Plugin{ };
 }
 
-BOOL CIRDriver::init()
+bool CIRDriver::init()
 {
 	deinit();
 
@@ -66,66 +59,57 @@ BOOL CIRDriver::init()
 			} };
 
 			if (m_daemonThreadHandle.joinable())
-				return TRUE;
+				return true;
 		}
-		else {
+		else
+		{
 			deinit();
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
-void CIRDriver::deinit() {
-
+void CIRDriver::deinit()
+{
 	stopDaemonThread();
 
-	if(auto pluginDeinit = m_dll.interface_.deinit) {
+	if(auto pluginDeinit = m_dll.interface_.deinit)
 		pluginDeinit();
-	}
 }
 
-int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeats) {
-
+int CIRDriver::sendIR(ir_remote* remote, ir_ncode* code, int repeats) const
+{
 	std::lock_guard lock{ m_dllLock };
-	if (auto pluginSendIr = m_dll.interface_.sendIR) {
+	if (auto pluginSendIr = m_dll.interface_.sendIR)
 		return pluginSendIr(remote, code, repeats);
-	}
-
 	return 0;
 }
 
-int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
-
+int CIRDriver::decodeIR(ir_remote* remote, char* out, size_t out_size) const
+{
 	std::lock_guard lock{ m_dllLock };
-	if(auto pluginDecodeIr = m_dll.interface_.decodeIR) {
+	if(auto pluginDecodeIr = m_dll.interface_.decodeIR)
 		return pluginDecodeIr(remote,out, out_size);
-	}
-
 	return 0;
 }
 
-int	CIRDriver::setTransmitters(unsigned int transmitterMask) {
-
+int CIRDriver::setTransmitters(unsigned int transmitterMask) const
+{
 	std::lock_guard lock{ m_dllLock };
-	if(auto pluginSetTransmitters = m_dll.interface_.setTransmitters) {
+	if(auto pluginSetTransmitters = m_dll.interface_.setTransmitters)
 		return pluginSetTransmitters(transmitterMask);
-	}
-
 	return 0;
 }
 
-void CIRDriver::DaemonThreadProc(void) const {
+void CIRDriver::DaemonThreadProc() const {
 
 	/* Accept client connections,		*/
 	/* and watch the data buffer.		*/
 	/* When data comes in, decode it	*/
 	/* and send the result to clients.	*/
 
-	//==========================
 	char message[PACKET_SIZE+1];
-	//==========================
-
 	auto decodeIr = [&]() {
 		std::lock_guard lock{ m_dllLock };
 		std::lock_guard lock2{ CS_global_remotes };
