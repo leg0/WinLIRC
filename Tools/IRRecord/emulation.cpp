@@ -223,7 +223,7 @@ inline void unget_rec_buffer(int count) noexcept
 	}
 }
 
-inline void unget_rec_buffer_delta(lirc_t delta)
+inline void unget_rec_buffer_delta(lirc_t delta) noexcept
 {
 	rec_buffer.rptr--;
 	rec_buffer.sum-=delta&(PULSE_MASK);
@@ -1372,9 +1372,9 @@ int receive_decode(struct ir_remote *remote,
 	return(1);
 }
 
-struct ir_ncode *get_code(struct ir_remote *remote,
+ir_ncode *get_code(ir_remote *remote,
 			  ir_code pre,ir_code code,ir_code post,
-			  ir_code *toggle_bit_mask_statep)
+			  ir_code *toggle_bit_mask_statep) noexcept
 {
 	ir_code pre_mask,code_mask,post_mask,toggle_bit_mask_state,all;
 	

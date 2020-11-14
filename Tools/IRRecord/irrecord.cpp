@@ -574,7 +574,7 @@ int main(int argc,char **argv)
 	printf("Now enter the names for the buttons.\n");
 
 	fprint_copyright(fout);
-	fprint_comment(fout,&remote);
+	fprint_comment(fout,&remote, hw);
 	fprint_remote_head(fout,&remote);
 	fprint_remote_signal_head(fout,&remote);
 	while(1)
@@ -861,7 +861,7 @@ int main(int argc,char **argv)
 		return(EXIT_FAILURE);
 	}
 	fprint_copyright(fout);
-	fprint_remotes(fout,remotes);
+	fprint_remotes(fout,remotes, hw);
 	delete remotes;
 	printf("Successfully written config file.\n");
 	return(EXIT_SUCCESS);
@@ -1272,7 +1272,7 @@ void analyse_remote(struct ir_remote *raw_data)
 		}
 	}
 	remote.codes = std::move(new_codes);
-	fprint_remotes(stdout, &remote);
+	fprint_remotes(stdout, &remote, hw);
 	remote.codes = std::vector<ir_ncode>{};
 }
 

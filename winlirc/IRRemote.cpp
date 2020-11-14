@@ -361,15 +361,11 @@ static int write_message(char *buffer, size_t size, const char *remote_name,
 		  const char *button_name, const char *button_suffix,
 		  ir_code code, int reps)
 {
-	int len;
-	
-	len=_snprintf(buffer, size, "%016llx %02x %s%s %s\n",
+	return _snprintf(buffer, size, "%016llx %02x %s%s %s\n",
 		     code,
 		     reps,
 		     button_name, button_suffix,
 		     remote_name);
-
-	return len;
 }
 
 WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)

@@ -490,8 +490,10 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					break;
 				}
 
-				auto childFile = fopen(fullPath.c_str(), "r");
-				if (childFile != nullptr){
+				FILE* childFile;
+				auto const openResult = fopen_s(&childFile, fullPath.c_str(), "r");
+				if (childFile != nullptr)
+				{
 					int save_line = line;
 
 					if (!top_rem){

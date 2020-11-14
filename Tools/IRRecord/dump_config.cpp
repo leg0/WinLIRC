@@ -30,10 +30,11 @@
 #include "../../winlirc/ir_remote.h"
 #include <winlirc/WLPluginAPI.h>
 
-#define VERSION "0.9.0"
-extern hardware hw;
+#include <algorithm>
 
-void fprint_comment(FILE* f, ir_remote const* rem) noexcept
+#define VERSION "0.9.0"
+
+void fprint_comment(FILE* f, ir_remote const* rem, hardware const& hw) noexcept
 {
 	time_t timet=time(NULL);
 	tm* tmp=localtime(&timet);
@@ -53,27 +54,26 @@ void fprint_comment(FILE* f, ir_remote const* rem) noexcept
 
 void fprint_flags(FILE* f, int flags) noexcept
 {
-	int begin=0;
-
-	for(int i=0;all_flags[i].flag;i++)
+	auto it = std::find_if(std::begin(all_flags), std::end(all_flags), [=](auto& x) {
+		return (x.flag & flags) == x.flag;
+	});
+	if (it != std::end(all_flags))
 	{
-		if(flags&all_flags[i].flag)
+		fprintf(f, "  flags %s", it->name);
+		for (++it; it != std::end(all_flags); ++it)
 		{
-			flags&=(~all_flags[i].flag);
-			if(begin==0) fprintf(f, "  flags ");
-			else if(begin==1) fprintf(f,"|");
-			fprintf(f,"%s",all_flags[i].name);
-			begin=1;
+			if ((it->flag & flags) == it->flag)
+				fprintf(f, "|%s", it->name);
 		}
+		fprintf(f, "\n");
 	}
-	if(begin==1) fprintf(f,"\n");
 }
 
-void fprint_remotes(FILE* f, ir_remote const* all) {
+void fprint_remotes(FILE* f, ir_remote const* all, hardware const& hw) {
 
 	while (all)
 	{
-		fprint_remote(f, all);
+		fprint_remote(f, all, hw);
 		fprintf(f, "\n\n");
 		all = all->next.get();
 	}
@@ -310,9 +310,9 @@ void fprint_remote_signals(FILE* f, ir_remote const* rem)
 }
 
 
-void fprint_remote(FILE* f, ir_remote const* rem)
+void fprint_remote(FILE* f, ir_remote const* rem, hardware const& hw)
 {	
-	fprint_comment(f,rem);
+	fprint_comment(f,rem, hw);
 	fprint_remote_head(f,rem);
 	fprint_remote_signals(f,rem);
 	fprint_remote_foot(f,rem);
