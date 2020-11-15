@@ -11,7 +11,6 @@
 
 #include "remote.h"
 #include "config.h"
-#include "globals.h"
 
 #include "wl_string.h"
 #include <charconv>

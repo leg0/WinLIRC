@@ -23,6 +23,8 @@
 #include "winlirc.h"
 #include "drvdlg.h"
 #include "server.h"
+#include "wl_debug.h"
+
 #include <filesystem>
 #include <string_view>
 

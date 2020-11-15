@@ -14,7 +14,6 @@ set (PUBLIC_API_FILES
 add_executable(winlirc WIN32
 	config.cpp
 	drvdlg.cpp
-	globals.cpp
 	InputPlugin.cpp
 	irconfig.cpp
 	irdriver.cpp
@@ -32,7 +31,6 @@ add_executable(winlirc WIN32
     config.h
     dll.h
     drvdlg.h
-    globals.h
     InputPlugin.h
     irconfig.h
     irdriver.h
@@ -48,6 +46,8 @@ add_executable(winlirc WIN32
 	ir_remote.cpp
 	ir_remote.h
 	constants.h
+	wl_debug.cpp
+	wl_debug.h
 	${PUBLIC_API_FILES}
 	)
 

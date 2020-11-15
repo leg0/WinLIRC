@@ -25,6 +25,7 @@
 #include "winlirc.h"
 #include "drvdlg.h"
 #include "version.h"
+#include "wl_debug.h"
 
 #include <algorithm>
 #include <string>

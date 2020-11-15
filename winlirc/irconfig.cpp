@@ -26,8 +26,12 @@
 #include <atlbase.h>
 #include "config.h"
 #include "remote.h"
-#include "globals.h"
 #include "config.h"
+#include "wl_debug.h"
+
+ir_remote* global_remotes = nullptr;
+std::mutex CS_global_remotes;
+CIRConfig config;
 
 CIRConfig::CIRConfig() {
 
@@ -56,14 +60,14 @@ bool CIRConfig::readConfig() {
 	FILE *file;
 	//========================================
 
-	if(remoteConfig=="" || (file=_tfopen(remoteConfig,_T("r")))==nullptr)	
+	if(remoteConfig.empty() || (file=_tfopen(remoteConfig.c_str(),_T("r")))==nullptr)	
 		return false;
 
 	delete global_remotes;
 	global_remotes = nullptr;
 	
 	USES_CONVERSION;
-	global_remotes = read_config(file,T2A(remoteConfig.GetBuffer()));
+	global_remotes = read_config(file,T2A(remoteConfig.c_str()));
 
 	fclose(file);
 
@@ -111,7 +115,7 @@ bool CIRConfig::writeINIFile() {
 	tempPath += path;
 	tempPath += _T("\\WinLIRC.ini");
 
-	WritePrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),remoteConfig,tempPath);
+	WritePrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),remoteConfig.c_str(),tempPath);
 	WritePrivateProfileString(_T("WinLIRC"),_T("Plugin"),plugin.c_str(),tempPath);
 
 	_sntprintf(tempIni,_countof(tempIni),_T("%i"),disableRepeats);

@@ -269,7 +269,7 @@ BOOL InputPlugin::OnInitDialog() {
 
 	listDllFiles();
 
-	m_configPath.SetWindowText(config.remoteConfig);
+	m_configPath.SetWindowText(config.remoteConfig.c_str());
 
 	temp.Format(_T("%i"),config.disableFirstKeyRepeats);
 	m_disableFirstRepeats.SetWindowText(temp);

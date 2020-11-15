@@ -1,11 +1,9 @@
 #pragma once
 
-#include "globals.h"
-
-#include "stdafx.h"
 #include "irdriver.h"
 #include <filesystem>
 #include <mutex>
+#include <string>
 
 class CIRConfig
 {
@@ -18,14 +16,14 @@ public:
 	bool readINIFile();
 
 	//=============================
-	CString remoteConfig;
+	std::wstring remoteConfig;
 	std::filesystem::path plugin;
-	BOOL	disableRepeats;
-	INT		disableFirstKeyRepeats;
-	INT		serverPort;
-	BOOL	localConnectionsOnly;
-	BOOL	showTrayIcon;
-	BOOL	exitOnError;
+	bool	disableRepeats;
+	int		disableFirstKeyRepeats;
+	int		serverPort;
+	bool	localConnectionsOnly;
+	bool	showTrayIcon;
+	bool	exitOnError;
 	//=============================
 };
 

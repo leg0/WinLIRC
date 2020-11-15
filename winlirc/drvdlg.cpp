@@ -29,6 +29,8 @@
 #include "server.h" //so we can send SIGHUP
 #include "InputPlugin.h"
 #include "version.h"
+#include "wl_debug.h"
+
 #include <string>
 
 using namespace std::string_literals;
@@ -278,8 +280,8 @@ bool Cdrvdlg::InitializeDaemon() {
 	CWaitCursor foo;
 	//==============
 
-	if(config.remoteConfig!="") {
-
+	if (!config.remoteConfig.empty())
+	{
 		if(!config.readConfig()) {
 
 			if(!config.exitOnError) MessageBox(	_T("Error loading config file."),_T("Configuration Error"));
