@@ -310,7 +310,7 @@ std::pair<bool, std::string> Cserver::parseSendString(char const* string)
     if (result < 2)
         return { false, "DATA\n1\nremote or code missing\n"s };
 
-    ir_remote* const sender = get_remote_by_name(global_remotes, remoteName);
+    ir_remote* const sender = get_remote_by_name(global_remotes.get(), remoteName);
 
     if (sender == nullptr)
         return { false, "DATA\n1\nremote not found\n"s };
@@ -357,7 +357,7 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
     remoteName = strtok(nullptr, " \t\r");
     codeName = strtok(nullptr, " \t\r");
     n = 0;
-    all = global_remotes;
+    all = global_remotes.get();
 
     if (!remoteName)
     {
@@ -371,7 +371,7 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
         if (n != 0)
         {
             response = "DATA\n"s + std::to_string(n) + "\n";
-            all = global_remotes;
+            all = global_remotes.get();
 
             while (all)
             {

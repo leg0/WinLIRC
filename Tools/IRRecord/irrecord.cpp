@@ -353,28 +353,28 @@ int main(int argc,char **argv)
 		}
 		auto remotes=read_config(fin, filename);
 		fclose(fin);
-		if(remotes==(void *) -1 || remotes==NULL)	//return (void*)-1 why would you do this ???
+		if (remotes == nullptr)
 		{
 			fprintf(stderr,
 				"%s: file \"%s\" does not contain valid "
-				"data\n",progname,filename);
+				"data\n", progname, filename);
 			exit(EXIT_FAILURE);
 		}
 		if(analyse)
 		{
 			hw.code_length		= 0;
-			hw.data_ready		= NULL;
-			hw.decode_func		= NULL;
-			strcpy(hw.device,"default");
+			hw.data_ready		= nullptr;
+			hw.decode_func		= nullptr;
+			strcpy(hw.device, "default");
 			hw.features			= LIRC_CAN_REC_MODE2;
-			strcpy(hw.name,"emulation");
+			strcpy(hw.name, "emulation");
 			hw.readdata			= &emulation_readdata;
 			hw.rec_mode			= LIRC_MODE_MODE2;
-			hw.resolution		 = 0;
-			hw.send_mode		= NULL;
-			hw.wait_for_data	= NULL;
+			hw.resolution		= 0;
+			hw.send_mode		= 0;
+			hw.wait_for_data	= nullptr;
 
-			for_each_remote(remotes, analyse_remote);
+			for_each_remote(remotes.get(), analyse_remote);
 			return EXIT_SUCCESS;
 		}
 		using_template = 1;
@@ -827,28 +827,20 @@ int main(int argc,char **argv)
 		irDriver.deinit();
 		exit(EXIT_FAILURE);
 	}
-	if(remotes==(void *) -1)
-	{
-		fprintf(stderr,"%s: reading of config file failed\n",
-			progname);
-		fprintf(stderr,"%s: this shouldn't ever happen!\n",progname);
-		irDriver.deinit();
-		exit(EXIT_FAILURE);
-	}
 
-	if(!has_toggle_bit_mask(remotes))
+	if(!has_toggle_bit_mask(&*remotes))
 	{
 		if(!using_template &&
 			strcmp(hw.name, "devinput") != 0)
-			get_toggle_bit_mask(remotes);
+			get_toggle_bit_mask(&*remotes);
 	}
 	else
 	{
-		set_toggle_bit_mask(remotes, remotes->toggle_bit_mask);
+		set_toggle_bit_mask(&*remotes, remotes->toggle_bit_mask);
 	}
 	irDriver.deinit();
-	get_pre_data(remotes);
-	get_post_data(remotes);
+	get_pre_data(&*remotes);
+	get_post_data(&*remotes);
 
 	/* write final config file */
 	fout=fopen(filename,"w");
@@ -857,12 +849,10 @@ int main(int argc,char **argv)
 		fprintf(stderr,"%s: could not open file \"%s\"\n",progname,
 			filename);
 		perror(progname);
-		delete remotes;
 		return(EXIT_FAILURE);
 	}
 	fprint_copyright(fout);
-	fprint_remotes(fout,remotes, hw);
-	delete remotes;
+	fprint_remotes(fout, &*remotes, hw);
 	printf("Successfully written config file.\n");
 	return(EXIT_SUCCESS);
 }

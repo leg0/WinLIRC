@@ -2,6 +2,7 @@
 
 #include "irdriver.h"
 #include <filesystem>
+#include <memory>
 #include <mutex>
 #include <string>
 
@@ -28,6 +29,6 @@ public:
 };
 
 /* Change this stuff */
-extern ir_remote* global_remotes;
+extern std::unique_ptr<ir_remote> global_remotes;
 extern std::mutex CS_global_remotes;
 extern class CIRConfig config;

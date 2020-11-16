@@ -86,7 +86,7 @@ TEST_F(ConfigParseTest, 1)
     auto cfg = read_config(f, "my-config.txt");
     fclose(f);
 
-    EXPECT_EQ(1, count(cfg));
+    EXPECT_EQ(1, count(cfg.get()));
     EXPECT_EQ("remote-name"s, cfg->name);
     EXPECT_EQ(16, cfg->bits);
     EXPECT_EQ(SPACE_ENC | CONST_LENGTH, cfg->flags);
@@ -117,6 +117,4 @@ TEST_F(ConfigParseTest, 1)
     EXPECT_EQ(0x10EF, code->code);
     ++code;
     EXPECT_EQ(end(cfg->codes), code);
-
-    delete cfg;
 }

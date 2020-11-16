@@ -116,7 +116,7 @@ void CIRDriver::DaemonThreadProc() const {
 
 		auto pluginDecodeIr = m_dll.interface_.decodeIR;
 		ASSERT(pluginDecodeIr != nullptr);
-		return pluginDecodeIr(global_remotes, message, sizeof(message));
+		return pluginDecodeIr(global_remotes.get(), message, sizeof(message));
 	};
 
 	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {

@@ -29,7 +29,7 @@
 #include "config.h"
 #include "wl_debug.h"
 
-ir_remote* global_remotes = nullptr;
+std::unique_ptr<ir_remote> global_remotes;
 std::mutex CS_global_remotes;
 CIRConfig config;
 
@@ -37,7 +37,7 @@ CIRConfig::CIRConfig() {
 
 	std::lock_guard lock{ CS_global_remotes };
 	
-	global_remotes=nullptr;
+	global_remotes.reset();
 	exitOnError = FALSE;
 }
 
@@ -47,8 +47,7 @@ CIRConfig::~CIRConfig()
 		
 	std::lock_guard lock{ CS_global_remotes };
 
-	delete global_remotes;
-	global_remotes = nullptr;
+	global_remotes.reset();
 	
 	WL_DEBUG("~CIRConfig done\n");
 }
@@ -63,37 +62,26 @@ bool CIRConfig::readConfig() {
 	if(remoteConfig.empty() || (file=_tfopen(remoteConfig.c_str(),_T("r")))==nullptr)	
 		return false;
 
-	delete global_remotes;
-	global_remotes = nullptr;
+	global_remotes.reset();
 	
 	USES_CONVERSION;
 	global_remotes = read_config(file,T2A(remoteConfig.c_str()));
 
 	fclose(file);
 
-	if(global_remotes==(struct ir_remote *)-1)
-	{
-		global_remotes=nullptr;
-		WL_DEBUG("read_config returned -1\n");
-		return false;
-	}
-
 	/* ??? bad input causes codes to be null, but no */
 	/* error is returned from read_config. */
-	struct ir_remote *sr;
-	for(sr=global_remotes;sr!=nullptr;sr=sr->next.get())
+	for (auto sr = global_remotes.get(); sr != nullptr; sr = sr->next.get())
 	{
-		if(sr->codes.empty())
+		if (sr->codes.empty())
 		{
 			WL_DEBUG("read_config returned remote with null codes\n");
-			delete global_remotes;
-			global_remotes = nullptr;
-
+			global_remotes.reset();
 			return false;
 		}
 	}
 
-	if(global_remotes==nullptr)
+	if (global_remotes == nullptr)
 	{
 		WL_DEBUG("read_config returned null\n");
 		return false;
