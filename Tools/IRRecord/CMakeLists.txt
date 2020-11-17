@@ -18,6 +18,7 @@ add_executable(IRRecord
 
 configure_tool(IRRecord "Tools")
 
+target_compile_definitions(IRRecord PRIVATE NOMINMAX)
 target_link_libraries(IRRecord PRIVATE winlirc)
 
 add_subdirectory(tests)

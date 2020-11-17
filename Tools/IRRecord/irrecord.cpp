@@ -1,19 +1,8 @@
-#pragma warning(disable: 4018)	// disable signed/unsigned mismatch
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
-#ifdef TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
-#else
-# ifdef HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
-#endif
+#include <time.h>
 
 #include <sys/timeb.h>
 #include <sys/types.h>
@@ -32,7 +21,7 @@
 #include "dump_config.h"
 #include "irdriver.h"
 #include "emulation.h"
-#include "atlstr.h"
+#include <algorithm>
 #include <vector>
 
 using namespace std::chrono;
@@ -1355,7 +1344,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 					/* this should be a gap */
 				{
 					struct lengths *scan;
-					int maxcount;
+					unsigned maxcount;
 					static int lastmaxcount=0;
 					int i;
 
@@ -1369,8 +1358,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 					scan=first_sum;
 					while(scan)
 					{
-						maxcount=max(maxcount,
-							scan->count);
+						maxcount = std::max(maxcount, scan->count);
 						if(scan->count>SAMPLES)
 						{
 							remote->gap=calc_signal(scan);
@@ -1385,8 +1373,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 						scan=first_gap;
 						while(scan)
 						{
-							maxcount=max(maxcount,
-								scan->count);
+							maxcount = std::max(maxcount, scan->count);
 							if(scan->count>SAMPLES)
 							{
 								remote->gap=calc_signal(scan);
@@ -1647,8 +1634,8 @@ int add_length(struct lengths **first,lirc_t length)
 		{
 			l->count++;
 			l->sum+=length;
-			l->min=min(l->min,length);
-			l->max=max(l->max,length);
+			l->min=std::min(l->min,length);
+			l->max=std::max(l->max,length);
 			return(1);
 		}
 		last=l;
@@ -1702,12 +1689,10 @@ void merge_lengths(struct lengths *first)
 			{
 				l->sum=new_sum;
 				l->count=new_count;
-				l->upper_bound=max(l->upper_bound,
-					inner->upper_bound);
-				l->lower_bound=min(l->lower_bound,
-					inner->lower_bound);
-				l->min=min(l->min,inner->min);
-				l->max=max(l->max,inner->max);
+				l->upper_bound = std::max(l->upper_bound, inner->upper_bound);
+				l->lower_bound = std::min(l->lower_bound, inner->lower_bound);
+				l->min = std::min(l->min, inner->min);
+				l->max = std::max(l->max, inner->max);
 
 				last->next=inner->next;
 				free(inner);
@@ -2143,8 +2128,8 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				s1=calc_signal(max_slength);
 				s2=calc_signal(max2_slength);
 
-				remote->pone=(min(p1,p2)+max(p1,p2)/2)/2;
-				remote->sone=(min(s1,s2)+max(s1,s2)/2)/2;
+				remote->pone = (std::min(p1, p2) + std::max(p1, p2) / 2) / 2;
+				remote->sone = (std::min(s1, s2) + std::max(s1, s2) / 2) / 2;
 				remote->pzero=remote->pone;
 				remote->szero=remote->sone;
 			}
@@ -2167,9 +2152,9 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				{
 					p2=calc_signal(max2_plength);
 					i_printf(interactive, "Signals are pulse encoded.\n");
-					remote->pone=max(p1,p2);
+					remote->pone = std::max(p1, p2);
 					remote->sone=s1;
-					remote->pzero=min(p1,p2);
+					remote->pzero = std::min(p1, p2);
 					remote->szero=s1;
 					if(expect(remote,remote->ptrail,p1) ||
 						expect(remote,remote->ptrail,p2))
@@ -2182,9 +2167,9 @@ int get_data_length(struct ir_remote *remote, int interactive)
 					s2=calc_signal(max2_slength);
 					i_printf(interactive, "Signals are space encoded.\n");
 					remote->pone=p1;
-					remote->sone=max(s1,s2);
+					remote->sone = std::max(s1, s2);
 					remote->pzero=p1;
-					remote->szero=min(s1,s2);
+					remote->szero = std::min(s1, s2);
 				}
 			}
 			if(has_header(remote) &&
@@ -2251,7 +2236,7 @@ int get_gap_length(struct ir_remote *remote)
 	steady_clock::time_point start,end,last;
 	int count,flag;
 	struct lengths *scan;
-	int maxcount,lastmaxcount;
+	unsigned maxcount, lastmaxcount;
 	lirc_t gap;
 
 	remote->eps=eps;
@@ -2285,8 +2270,7 @@ int get_gap_length(struct ir_remote *remote)
 			scan=gaps;
 			while(scan)
 			{
-				maxcount=max(maxcount,
-					scan->count);
+				maxcount = std::max(maxcount, scan->count);
 				if(scan->count>SAMPLES)
 				{
 					remote->gap=calc_signal(scan);
