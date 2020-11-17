@@ -1,3 +1,4 @@
+#include "lengths.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -45,13 +46,7 @@ void invert_data(struct ir_remote *remote);
 void remove_trail(struct ir_remote *remote);
 #endif
 int get_lengths(struct ir_remote *remote, int force, int interactive);
-struct lengths *new_length(lirc_t length);
-int add_length(struct lengths **first,lirc_t length);
-void free_lengths(struct lengths **firstp);
-void merge_lengths(struct lengths *first);
 void get_scheme(struct ir_remote *remote, int interactive);
-struct lengths *get_max_length(struct lengths *first,unsigned int *sump);
-void unlink_length(struct lengths **first,struct lengths *remove);
 int get_trail_length(struct ir_remote *remote, int interactive);
 int get_lead_length(struct ir_remote *remote, int interactive);
 int get_repeat_length(struct ir_remote *remote, int interactive);
@@ -1258,13 +1253,6 @@ void analyse_remote(struct ir_remote *raw_data)
 
 /* analyse stuff */
 
-struct lengths
-{
-	unsigned int count;
-	lirc_t sum,upper_bound,lower_bound,min,max;
-	struct lengths *next;
-};
-
 enum analyse_mode {MODE_GAP,MODE_HAVE_GAP};
 
 struct lengths *first_space=NULL,*first_pulse=NULL;
@@ -1276,11 +1264,6 @@ struct lengths *first_repeatp=NULL,*first_repeats=NULL;
 unsigned long lengths[MAX_SIGNALS];
 unsigned long first_length,first_lengths,second_lengths;
 unsigned int count,count_spaces,count_3repeats,count_5repeats,count_signals;
-
-inline lirc_t calc_signal(struct lengths *len)
-{
-	return((lirc_t) (len->sum/len->count));
-}
 
 int get_lengths(struct ir_remote *remote, int force, int interactive)
 {
@@ -1349,9 +1332,9 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 					int i;
 
 					add_length(&first_sum,sum);
-					merge_lengths(first_sum);
+					merge_lengths(first_sum, aeps, eps);
 					add_length(&first_gap,data);
-					merge_lengths(first_gap);
+					merge_lengths(first_gap, aeps, eps);
 					sum=0;count_spaces=0;average=0;maxspace=0;
 
 					maxcount=0;
@@ -1464,29 +1447,29 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 					{
 						count_3repeats++;
 						add_length(&first_repeatp,g_signals[0]);
-						merge_lengths(first_repeatp);
+						merge_lengths(first_repeatp, aeps, eps);
 						add_length(&first_repeats,g_signals[1]);
-						merge_lengths(first_repeats);
+						merge_lengths(first_repeats, aeps, eps);
 						add_length(&first_trail,g_signals[2]);
-						merge_lengths(first_trail);
+						merge_lengths(first_trail, aeps, eps);
 						add_length(&first_repeat_gap,g_signals[3]);
-						merge_lengths(first_repeat_gap);
+						merge_lengths(first_repeat_gap, aeps, eps);
 					}
 					else if(count==6)
 					{
 						count_5repeats++;
 						add_length(&first_headerp,g_signals[0]);
-						merge_lengths(first_headerp);
+						merge_lengths(first_headerp, aeps, eps);
 						add_length(&first_headers,g_signals[1]);
-						merge_lengths(first_headers);
+						merge_lengths(first_headers, aeps, eps);
 						add_length(&first_repeatp,g_signals[2]);
-						merge_lengths(first_repeatp);
+						merge_lengths(first_repeatp, aeps, eps);
 						add_length(&first_repeats,g_signals[3]);
-						merge_lengths(first_repeats);
+						merge_lengths(first_repeats, aeps, eps);
 						add_length(&first_trail,g_signals[4]);
-						merge_lengths(first_trail);
+						merge_lengths(first_trail, aeps, eps);
 						add_length(&first_repeat_gap,g_signals[5]);
-						merge_lengths(first_repeat_gap);
+						merge_lengths(first_repeat_gap, aeps, eps);
 					}
 					else if(count>6)
 					{
@@ -1498,35 +1481,35 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 						}
 						count_signals++;
 						add_length(&first_1lead,g_signals[0]);
-						merge_lengths(first_1lead);
+						merge_lengths(first_1lead, aeps, eps);
 						for(i=2;i<count-2;i++)
 						{
 							if(i%2)
 							{
 								add_length(&first_space,g_signals[i]);
-								merge_lengths(first_space);
+								merge_lengths(first_space, aeps, eps);
 							}
 							else
 							{
 								add_length(&first_pulse,g_signals[i]);
-								merge_lengths(first_pulse);
+								merge_lengths(first_pulse, aeps, eps);
 							}
 						}
 						add_length(&first_trail,g_signals[count-2]);
-						merge_lengths(first_trail);
+						merge_lengths(first_trail, aeps, eps);
 						lengths[count-2]++;
 						add_length(&first_signal_length,sum-data);
-						merge_lengths(first_signal_length);
+						merge_lengths(first_signal_length, aeps, eps);
 						if(first_signal==1 ||
 							(first_length>2 &&
 							first_length-2!=count-2))
 						{
 							add_length(&first_3lead,g_signals[2]);
-							merge_lengths(first_3lead);
+							merge_lengths(first_3lead, aeps, eps);
 							add_length(&first_headerp,g_signals[0]);
-							merge_lengths(first_headerp);
+							merge_lengths(first_headerp, aeps, eps);
 							add_length(&first_headers,g_signals[1]);
-							merge_lengths(first_headers);
+							merge_lengths(first_headers, aeps, eps);
 						}
 						if(first_signal==1)
 						{
@@ -1601,120 +1584,6 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 }
 
 /* handle lengths */
-
-struct lengths *new_length(lirc_t length)
-{
-	struct lengths *l;
-
-	l= (struct lengths *)malloc(sizeof(struct lengths));
-	if(l==NULL) return(NULL);
-	l->count=1;
-	l->sum=length;
-	l->lower_bound=length/100*100;
-	l->upper_bound=length/100*100+99;
-	l->min=l->max=length;
-	l->next=NULL;
-	return(l);
-}
-
-int add_length(struct lengths **first,lirc_t length)
-{
-	struct lengths *l,*last;
-
-	if(*first==NULL)
-	{
-		*first=new_length(length);
-		if(*first==NULL) return(0);
-		return(1);
-	}
-	l=*first;
-	while(l!=NULL)
-	{
-		if(l->lower_bound<=length && length<=l->upper_bound)
-		{
-			l->count++;
-			l->sum+=length;
-			l->min=std::min(l->min,length);
-			l->max=std::max(l->max,length);
-			return(1);
-		}
-		last=l;
-		l=l->next;
-	}
-	last->next=new_length(length);
-	if(last->next==NULL) return(0);
-	return(1);
-}
-
-void free_lengths(struct lengths **firstp)
-{
-	struct lengths *first, *next;
-
-	first = *firstp;
-	if(first == NULL) return;
-	while(first!=NULL)
-	{
-		next = first->next;
-		free(first);
-		first=next;
-	}
-	*firstp = NULL;
-}
-
-void merge_lengths(struct lengths *first)
-{
-	struct lengths *l,*inner,*last;
-	unsigned long new_sum;
-	int new_count;
-
-	l=first;
-	while(l!=NULL)
-	{
-		last=l;
-		inner=l->next;
-		while(inner!=NULL)
-		{
-			new_sum=l->sum+inner->sum;
-			new_count=l->count+inner->count;
-
-			if((l->max<=new_sum/new_count+aeps &&
-				l->min+aeps>=new_sum/new_count &&
-				inner->max<=new_sum/new_count+aeps &&
-				inner->min+aeps>=new_sum/new_count)
-				||
-				(l->max<=new_sum/new_count*(100+eps) &&
-				l->min>=new_sum/new_count*(100-eps) &&
-				inner->max<=new_sum/new_count*(100+eps) &&
-				inner->min>=new_sum/new_count*(100-eps)))
-			{
-				l->sum=new_sum;
-				l->count=new_count;
-				l->upper_bound = std::max(l->upper_bound, inner->upper_bound);
-				l->lower_bound = std::min(l->lower_bound, inner->lower_bound);
-				l->min = std::min(l->min, inner->min);
-				l->max = std::max(l->max, inner->max);
-
-				last->next=inner->next;
-				free(inner);
-				inner=last;
-			}
-			last=inner;
-			inner=inner->next;
-		}
-		l=l->next;
-	}
-#       ifdef DEBUG
-	l=first;
-	while(l!=NULL)
-	{
-		printf("%d x %lu [%lu,%lu]\n",l->count,
-			(unsigned long) calc_signal(l),
-			(unsigned long) l->min,
-			(unsigned long) l->max);
-		l=l->next;
-	}
-#       endif
-}
 
 void get_scheme(struct ir_remote *remote, int interactive)
 {
@@ -1801,37 +1670,6 @@ void get_scheme(struct ir_remote *remote, int interactive)
 	/* this is not yet the number of bits */
 	remote->bits=length;
 	set_protocol(remote, SPACE_ENC);
-}
-
-struct lengths *get_max_length(struct lengths *first,unsigned int *sump)
-{
-	unsigned int sum;
-	struct lengths *scan,*max_length;
-
-	if(first==NULL) return(NULL);
-	max_length=first;
-	sum=first->count;
-
-#       ifdef DEBUG
-	if(first->count>0) printf("%u x %lu\n", first->count,
-		(unsigned long) calc_signal(first));
-#       endif
-	scan=first->next;
-	while(scan)
-	{
-		if(scan->count>max_length->count)
-		{
-			max_length=scan;
-		}
-		sum+=scan->count;
-#               ifdef DEBUG
-		if(scan->count>0) printf("%u x %lu\n",scan->count,
-			(unsigned long) calc_signal(scan));
-#               endif
-		scan=scan->next;
-	}
-	if(sump!=NULL) *sump=sum;
-	return(max_length);
 }
 
 int get_trail_length(struct ir_remote *remote, int interactive)
@@ -2020,35 +1858,6 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 	i_printf(interactive, "No repeat header found.\n");
 	return(1);
 
-}
-
-void unlink_length(struct lengths **first,struct lengths *remove)
-{
-	struct lengths *last,*scan;
-
-	if(remove==*first)
-	{
-		*first=remove->next;
-		remove->next=NULL;
-		return;
-	}
-	else
-	{
-		scan=(*first)->next;
-		last=*first;
-		while(scan)
-		{
-			if(scan==remove)
-			{
-				last->next=remove->next;
-				remove->next=NULL;
-				return;
-			}
-			last=scan;
-			scan=scan->next;
-		}
-	}
-	printf("unlink_length(): report this bug!\n");
 }
 
 int get_data_length(struct ir_remote *remote, int interactive)
@@ -2265,7 +2074,7 @@ int get_gap_length(struct ir_remote *remote)
 		{
 			gap=duration_cast<microseconds>(start - last).count();
 			add_length(&gaps,gap);
-			merge_lengths(gaps);
+			merge_lengths(gaps, aeps, eps);
 			maxcount=0;
 			scan=gaps;
 			while(scan)

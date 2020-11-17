@@ -14,6 +14,8 @@ add_executable(IRRecord
 	irdriver.cpp
 	irdriver.h
 	irrecord.cpp
+	lengths.cpp
+	lengths.h
 	)
 
 configure_tool(IRRecord "Tools")
