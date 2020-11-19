@@ -21,7 +21,9 @@
 
 #pragma once
 
+#include "../DLL/Common/Event.h"
 #include "../DLL/Common/Socket.h"
+
 #include <array>
 #include <string_view>
 #include <thread>
@@ -57,6 +59,6 @@ private:
 
     int			m_tcp_port = 8765;		//tcp port for server
     std::thread m_serverThreadHandle;
-    CEvent		m_serverThreadEvent;
+    winlirc::Event m_serverThreadEvent;
     int			m_winsockStart;
 };

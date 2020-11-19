@@ -26,6 +26,7 @@
 #include "drvdlg.h"
 #include "version.h"
 #include "wl_debug.h"
+#include <Event.h>
 
 #include <algorithm>
 #include <string>
@@ -38,6 +39,7 @@ constexpr int LISTENQ = 4;        // listen queue size
 constexpr size_t MAX_DATA = 1024; // longest message a client can send
 
 Cserver::Cserver()
+    : m_serverThreadEvent{ winlirc::Event::autoResetEvent() }
 {
     WSADATA data;
     m_winsockStart = WSAStartup(MAKEWORD(2, 0), &data);
@@ -113,7 +115,7 @@ void Cserver::stopServer()
 {
     if (m_serverThreadHandle.joinable())
     {
-        m_serverThreadEvent.SetEvent();
+        m_serverThreadEvent.setEvent();
         m_serverThreadHandle.join();
     }
 
@@ -164,14 +166,14 @@ void Cserver::ThreadProc()
 
     //=========================================
     int		i;
-    CEvent	serverEvent;
-    CEvent	clientEvent[MAX_CLIENTS];
+    winlirc::Event serverEvent;
+    winlirc::Event clientEvent[MAX_CLIENTS];
     char	clientData[MAX_CLIENTS][MAX_DATA];
     char	toparse[MAX_DATA];
     HANDLE	events[MAX_CLIENTS + 2];
     //=========================================
 
-    WSAEventSelect(m_server.get(), serverEvent, FD_ACCEPT);
+    WSAEventSelect(m_server.get(), serverEvent.get(), FD_ACCEPT);
 
     for (i = 0; i < MAX_CLIENTS; i++)
     {
@@ -181,12 +183,12 @@ void Cserver::ThreadProc()
     for (;;)
     {
         int count = 0;
-        events[count++] = m_serverThreadEvent;	// exit event
-        events[count++] = serverEvent;
+        events[count++] = m_serverThreadEvent.get(); // exit event
+        events[count++] = serverEvent.get();
 
         for (i = 0; i < MAX_CLIENTS; i++) {
             if (m_clients[i]) {
-                events[count++] = clientEvent[i];
+                events[count++] = clientEvent[i].get();
             }
         }
 
@@ -218,8 +220,8 @@ void Cserver::ThreadProc()
             }
             m_clients[i] = std::move(tempSocket);
 
-            WSAEventSelect(m_clients[i].get(), clientEvent[i], FD_CLOSE | FD_READ);
-            clientEvent[i].ResetEvent();
+            WSAEventSelect(m_clients[i].get(), clientEvent[i].get(), FD_CLOSE | FD_READ);
+            clientEvent[i].resetEvent();
             clientData[i][0] = '\0';
             WL_DEBUG("Client connection %d accepted\n", i);
         }

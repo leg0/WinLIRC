@@ -8,6 +8,7 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 add_library(winlirc-common STATIC
 	DebugOutput.h
 	enumSerialPorts.h
+	Event.h
 	fifo.h
 	UniqueHandle.h
 	Win32Helpers.cpp

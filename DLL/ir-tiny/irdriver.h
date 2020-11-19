@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Common/Event.h"
 #include "Common/fifo.h"
 
 namespace irtiny
@@ -72,85 +73,7 @@ namespace irtiny
         HANDLE handle_;
     };
 
-    class Event
-    {
-        Event(Event const&);
-        void operator=(Event const&);
-
-        Event(HANDLE hEvent)
-            : handle_(hEvent)
-        { }
-
-    public:
-        static Event fromHandle(HANDLE hEvent)
-        {
-            return Event(hEvent);
-        }
-
-        static Event manualResetEvent()
-        {
-            return fromHandle(::CreateEvent(nullptr, TRUE, FALSE, nullptr));
-        }
-
-        static Event autoResetEvent()
-        {
-            return fromHandle(::CreateEvent(nullptr, FALSE, FALSE, nullptr));
-        }
-
-        Event(Event&& src)
-            : handle_(src.release())
-        { }
-
-        ~Event()
-        {
-            reset();
-        }
-
-        Event& operator=(Event&& src)
-        {
-            if (&src != this)
-                reset(src.release());
-            return *this;
-        }
-
-        explicit operator bool() const
-        {
-            return handle_ != nullptr;
-        }
-
-        HANDLE release()
-        {
-            HANDLE res = handle_;
-            handle_ = nullptr;
-            return res;
-        }
-
-        HANDLE get() const { return handle_; }
-
-        void reset(HANDLE newHandle = nullptr)
-        {
-            if (newHandle != handle_)
-            {
-                if (*this)
-                    ::CloseHandle(handle_);
-                handle_ = newHandle;
-            }
-        }
-
-        bool setEvent() const
-        {
-            return ::SetEvent(handle_) != FALSE;
-        }
-
-        bool resetEvent() const
-        {
-            return ::ResetEvent(handle_) != FALSE;
-        }
-
-    private:
-
-        HANDLE handle_;
-    };
+    using Event = winlirc::Event;
 
     class CIRDriver
     {
