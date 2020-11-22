@@ -21,4 +21,4 @@ add_definitions(
 configure_tool(RawCodes "Tools")
 set_target_properties(RawCodes PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
 
-target_link_libraries(RawCodes PRIVATE winlirc)
+target_link_libraries(RawCodes PRIVATE winlirc_api)

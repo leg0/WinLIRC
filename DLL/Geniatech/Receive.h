@@ -2,7 +2,7 @@
 #define RECEIVE_H
 
 #include <windows.h>
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginAPI.h>
 
 class Receive {
 

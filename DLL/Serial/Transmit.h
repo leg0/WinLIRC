@@ -1,7 +1,7 @@
 #ifndef _TRANSMIT_H_
 #define _TRANSMIT_H_
 
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 
 #define HARDCARRIER		0x0001		/* the transmitter generates its own carrier modulation */
 #define TXTRANSMITTER	0x0002		/* the transmitter uses the TX pin */

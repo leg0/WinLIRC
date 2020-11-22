@@ -1,4 +1,8 @@
-#include <winlirc/winlirc_api.h>
+#include "config.h"
+#include "IRRemote.h"
+#include "remote.h"
+#include "wl_string.h"
+
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -9,10 +13,6 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-#include "remote.h"
-#include "config.h"
-
-#include "wl_string.h"
 #include <charconv>
 #include <filesystem>
 

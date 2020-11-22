@@ -24,20 +24,21 @@
 #include "SerialDialog.h"
 #include "irdriver.h"
 
-#include <winlirc/winlirc_api.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 #include "Transmit.h"
 
 void initHardwareStruct();
 extern hardware hw;
 extern rbuf rec_buffer;
+winlirc_interface winlirc;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_interface const* wl) {
 
-	threadExitEvent	= reinterpret_cast<HANDLE>(exitEvent);
+	winlirc = *wl;
+	threadExitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
 	initHardwareStruct();
-	winlirc_init_rec_buffer(&rec_buffer);
+	winlirc.init_rec_buffer(&rec_buffer);
 
 	irDriver = new CIRDriver();
 	if(irDriver->InitPort()) return 1;
@@ -81,9 +82,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 		}
 	}
 
-	winlirc_clear_rec_buffer(&rec_buffer, &hw);
+	winlirc.clear_rec_buffer(&rec_buffer, &hw);
 
-	if(winlirc_decodeCommand(&rec_buffer, &hw, remotes, out, out_size)) {
+	if(winlirc.decodeCommand(&rec_buffer, &hw, remotes, out, out_size)) {
 		return 1;
 	}
 	

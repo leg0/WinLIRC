@@ -1,5 +1,5 @@
 #pragma once
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 
 struct lengths
 {

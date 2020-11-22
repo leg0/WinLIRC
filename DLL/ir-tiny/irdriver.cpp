@@ -12,9 +12,6 @@ irtiny::CIRDriver::~CIRDriver()
 {
     if (thread_.joinable())
         thread_.join();
-
-    // we're not owning that.
-    finishEvent_.release();
 }
 
 bool irtiny::CIRDriver::initPort()

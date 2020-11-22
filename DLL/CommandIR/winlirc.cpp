@@ -2,7 +2,7 @@
 #include "winlirc.h"
 #include "SendReceiveData.h"
 #include "../Common/Win32Helpers.h"
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 
 extern "C" {
 	#include "CommandIRUtils\libcmdir.h"

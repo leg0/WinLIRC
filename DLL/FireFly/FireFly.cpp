@@ -20,17 +20,20 @@
  */
 
 #include <Windows.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include "../Common/Win32Helpers.h"
 #include <stdio.h>
 #include "Globals.h"
 #include <tchar.h>
 #include "resource.h"
 
-WL_API int init(WLEventHandle exitEvent) {
+static winlirc_interface winlirc;
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
-	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
+WL_API int init(winlirc_interface const* wl) {
+
+	winlirc = *wl;
+	threadExitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+	dataReadyEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
 	sendReceiveData = new SendReceiveData();
 

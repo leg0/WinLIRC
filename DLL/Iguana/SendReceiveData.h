@@ -23,7 +23,7 @@
 #define RECEIVEDATA_H
 
 #include "iguanaIR.h"
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 
 #define IGUANA_TRANSMITTER1	1
 #define IGUANA_TRANSMITTER2	2

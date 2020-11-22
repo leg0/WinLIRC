@@ -1,22 +1,24 @@
+#include "Send.h"
 #include "constants.h"
 #include "ir_remote.h"
-#include <winlirc/winlirc_api.h>
+#include "IRRemote.h"
+#include <winlirc/PluginApi.h>
 #include <algorithm>
 #include <string.h>
 
 #define LIRCD_EXACT_GAP_THRESHOLD 10000
 
-WINLIRC_API int winlirc_get_send_buffer_length(sbuf const* send_buffer)
+int winlirc_get_send_buffer_length(sbuf const* send_buffer)
 {
     return send_buffer->wptr;
 }
 
-WINLIRC_API lirc_t const* winlirc_get_send_buffer_data(sbuf const* send_buffer)
+lirc_t const* winlirc_get_send_buffer_data(sbuf const* send_buffer)
 {
     return send_buffer->data;
 }
 
-WINLIRC_API void winlirc_init_send_buffer(sbuf* send_buffer)
+void winlirc_init_send_buffer(sbuf* send_buffer)
 {
 	memset(send_buffer, 0, sizeof(*send_buffer));
 }
@@ -369,7 +371,7 @@ static void send_signals(sbuf& send_buffer, std::vector<lirc_t> const& signals)
 	}
 }
 
-WINLIRC_API int winlirc_init_send(sbuf* psend_buffer, ir_remote *remote, ir_ncode *code, int repeats)
+int winlirc_init_send(sbuf* psend_buffer, ir_remote *remote, ir_ncode *code, int repeats)
 {
 	int repeat=0;
 	auto& send_buffer = *psend_buffer;

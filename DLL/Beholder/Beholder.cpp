@@ -22,20 +22,22 @@
 #include "Globals.h"
 #include <Windows.h>
 
-#include <winlirc/WLPluginAPI.h>
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginAPI.h>
 
 void initHardwareStruct();
 extern hardware hw;
 extern rbuf rec_buffer;
 
-WL_API int init( WLEventHandle exitEvent )
+winlirc_interface Winlirc;
+
+WL_API int init(winlirc_interface const* wl)
 {
+	Winlirc = *wl;
 	initHardwareStruct();
 
 	InitializeCriticalSection(&criticalSection);
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
+	threadExitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 	dataReadyEvent	= CreateEvent( nullptr, TRUE, FALSE, nullptr );
 
 	sendReceiveData = new SendReceiveData();
@@ -89,7 +91,7 @@ WL_API int decodeIR( struct ir_remote *remotes, char *out, size_t out_size )
 			return 0;
 		}
 	   	
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
+		if(Winlirc.decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
 			ResetEvent(dataReadyEvent);
 			return 1;
 		}

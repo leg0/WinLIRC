@@ -6,11 +6,13 @@ add_executable(winlirc_tests
 	remote_test.cpp
 	unique_handle_test.cpp
 	../config.cpp
+	../IRRemote.cpp
+	../IRRemote.h
 	../wl_string.cpp)
 
 target_link_libraries(winlirc_tests
 	PRIVATE
-		winlirc
+		winlirc_api
 		winlirc-common
 		#GTest::gmock GTest::gmock_main)
 		GTest::gtest GTest::gtest_main)

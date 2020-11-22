@@ -1,34 +1,14 @@
-/* 
- * This file is part of the WinLIRC package, which was derived from
- * LIRC (Linux Infrared Remote Control) 0.8.6.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * Copyright (C) 2010 Ian Curtis
- */
-
 #include <windows.h>
 #include "SendReceiveData.h"
 #include "Globals.h"
 #include <stdio.h>
 #include <tchar.h>
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 #include "../Common/Win32Helpers.h"
 #include <iterator>
 
 static sbuf send_buffer;
+extern winlirc_interface winlirc;
 
 DWORD WINAPI Irdroid(void *recieveClass) {
 
@@ -310,7 +290,7 @@ UCHAR SendReceiveData::calcPR2(int frequency) {
 
 int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 
-	if (winlirc_init_send(&send_buffer, remote, code, repeats)) {
+	if (winlirc.init_send(&send_buffer, remote, code, repeats)) {
 
 		//====================
 		USHORT	*irDroidSignals;
@@ -328,13 +308,13 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		serial.SetMask(CSerial::EEventNone);
 		serial.SetupReadTimeouts(CSerial::EReadTimeoutBlocking);
 
-		if(get_freq(remote)) {
+		if(winlirc.get_freq(remote)) {
 
 			//======
 			int pr2;
 			//======
 
-			pr2 = calcPR2(get_freq(remote));
+			pr2 = calcPR2(winlirc.get_freq(remote));
 
 			if(pr2) {
 
@@ -347,8 +327,8 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			}
 		}
 
-		auto length		= winlirc_get_send_buffer_length(&send_buffer)+1;
-		auto const signals		= winlirc_get_send_buffer_data(&send_buffer);
+		auto length = winlirc.get_send_buffer_length(&send_buffer) + 1;
+		auto const signals = winlirc.get_send_buffer_data(&send_buffer);
 		temp[0]		= 0x03;	// transmit mode
 		irDroidSignals= (USHORT*)malloc(sizeof(USHORT) * (length)); // add 1 for 0xFFFF terminator
 		

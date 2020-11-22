@@ -2,7 +2,7 @@
 #define STREAMZAPAPI_H
 
 #include <Windows.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 #include <chrono>
 
 class StreamzapAPI {

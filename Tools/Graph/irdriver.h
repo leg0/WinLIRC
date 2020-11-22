@@ -25,7 +25,7 @@
 
 #include <Windows.h>
 #include <atlstr.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 
 struct ir_remote;
 class CIRDriver {

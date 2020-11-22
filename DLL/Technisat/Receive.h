@@ -2,7 +2,7 @@
 #define RECEIVE_H
 
 #include <windows.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include <Dshow.h>
 #include <initguid.h>
 #include "b2c2_defs.h"

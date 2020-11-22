@@ -23,7 +23,7 @@
 #define RECEIVEDATA_H
 
 #include "Serial.h"
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include <chrono>
 
 class SendReceiveData

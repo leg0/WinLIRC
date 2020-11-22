@@ -25,11 +25,13 @@
 #include "ChinavisionAPI.h"
 
 ChinavisionAPI *chinavisionAPI = nullptr;
+static winlirc_interface winlirc;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_interface const* wl) {
 
+	winlirc = *wl;
 	chinavisionAPI = new ChinavisionAPI();
-	return chinavisionAPI->init(reinterpret_cast<HANDLE>(exitEvent));
+	return chinavisionAPI->init(CreateEvent(nullptr, TRUE, FALSE, nullptr));
 }
 
 WL_API void deinit() {

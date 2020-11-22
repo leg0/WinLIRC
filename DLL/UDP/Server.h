@@ -5,7 +5,7 @@
 #include <winsock2.h>
 #include <Windows.h>
 #include "../Common/Socket.h"
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 #include <chrono>
 
 class Server {

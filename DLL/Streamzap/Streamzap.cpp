@@ -20,23 +20,24 @@
  */
 
 #include <Windows.h>
-#include <winlirc/winlirc_api.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 #include <stdio.h>
 #include "Globals.h"
 
 void initHardwareStruct();
 extern hardware hw;
 extern rbuf rec_buffer;
+winlirc_interface winlirc;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_interface const* wl) {
 
-	winlirc_init_rec_buffer(&rec_buffer);
+	winlirc = *wl;
+	winlirc.init_rec_buffer(&rec_buffer);
 	initHardwareStruct();
 
 	streamzapAPI = new StreamzapAPI();
 
-	return streamzapAPI->init(reinterpret_cast<HANDLE>(exitEvent));
+	return streamzapAPI->init(CreateEvent(nullptr, TRUE, FALSE, nullptr));
 }
 
 WL_API void deinit() {
@@ -70,9 +71,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 			return 0;
 		}
 
-		winlirc_clear_rec_buffer(&rec_buffer, &hw);
+		winlirc.clear_rec_buffer(&rec_buffer, &hw);
 		
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out, out_size)) {
+		if(winlirc.decodeCommand(&rec_buffer, &hw,remotes,out, out_size)) {
 			return 1;
 		}
 	}

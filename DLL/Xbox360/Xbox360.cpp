@@ -21,16 +21,16 @@
 
 #include <Windows.h>
 #include "SendReceive.h"
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 #include <memory>
 
 std::unique_ptr<SendReceive> sendReceive;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_interface const* wl) {
 
 	sendReceive = std::make_unique<SendReceive>();
 
-	return sendReceive->init(reinterpret_cast<HANDLE>(exitEvent));
+	return sendReceive->init(CreateEvent(nullptr, TRUE, FALSE, nullptr));
 }
 
 WL_API void deinit() {

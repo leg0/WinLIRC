@@ -25,7 +25,7 @@
 #include <Windows.h>
 #include "SendReceiveData.h"
 #include "Settings.h"
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include <chrono>
 
 extern Settings settings;

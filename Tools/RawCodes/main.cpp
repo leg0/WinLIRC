@@ -2,8 +2,7 @@
 #include <tchar.h>
 #include "irdriver.h"
 #include "Settings.h"
-#include <winlirc/WLPluginAPI.h>
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 #include <conio.h>
 
 void main()

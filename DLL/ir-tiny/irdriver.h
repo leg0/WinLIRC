@@ -87,6 +87,7 @@ namespace irtiny
         bool dataReady() const;
         bool getData(std::uint32_t *out);
         bool waitTillDataIsReady(std::chrono::microseconds maxUSecs);
+        void signalDone() const { if (finishEvent_) finishEvent_.setEvent(); }
 
     private:
 

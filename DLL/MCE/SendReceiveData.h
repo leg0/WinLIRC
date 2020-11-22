@@ -24,7 +24,7 @@
 
 #include "MCEDefines.h"
 #include "IrDeviceList.h"
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include <chrono>
 
 class SendReceiveData

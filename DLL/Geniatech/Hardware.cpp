@@ -20,30 +20,25 @@
  */
 
 #include "Globals.h"
-#include <winlirc/winlirc_api.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include <chrono>
 
 using namespace std::chrono;
 
 #define CODE_LENGTH 32
 
+extern winlirc_interface winlirc;
+
 int gnt_decode (rbuf* rec_buffer, hardware const*,ir_remote *remote, ir_code *prep, ir_code *codep,
 		 ir_code *postp, int *repeat_flagp,
 		 lirc_t *min_remaining_gapp,
 		 lirc_t *max_remaining_gapp)
 {
-	//==========
-	int success;
-	//==========
-
-	success = 0;
-
-	success = winlirc_map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
+	int success = winlirc.map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
 
 	if(!success) return 0;
 
-	winlirc_map_gap(remote, duration_cast<microseconds>(last-start).count(), 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
+	winlirc.map_gap(remote, duration_cast<microseconds>(last-start).count(), 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
 	
 	return 1;
 }

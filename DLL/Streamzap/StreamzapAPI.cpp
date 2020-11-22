@@ -5,7 +5,7 @@
 #include <setupapi.h>
 #include <tchar.h>
 #include "../Common/Win32Helpers.h"
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 
 DEFINE_GUID(GUID_CLASS_STREAMZAP, 0x990b264a, 0xf1f1, 0x4619, 0x95, 0xe7, 0x0e, 0xc4, 0x1b, 0xff, 0x9f, 0xf8);
 

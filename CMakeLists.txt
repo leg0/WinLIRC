@@ -17,7 +17,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 macro(configure_plugin plugin_name)
   set_target_properties(${plugin_name} PROPERTIES  FOLDER "Plugins")
-  target_link_libraries(${plugin_name} PRIVATE winlirc)
+  target_link_libraries(${plugin_name} PRIVATE winlirc_api)
   foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set (CFG ${OUTPUTCONFIG})
     string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )

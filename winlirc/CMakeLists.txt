@@ -8,8 +8,7 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 set(CMAKE_MFC_FLAG 2)
 
 set (PUBLIC_API_FILES
-	include/winlirc/winlirc_api.h
-	include/winlirc/WLPluginApi.h)
+	include/winlirc/PluginApi.h)
 
 add_executable(winlirc WIN32
 	config.cpp
@@ -51,11 +50,15 @@ add_executable(winlirc WIN32
 	${PUBLIC_API_FILES}
 	)
 
+add_library(winlirc_api INTERFACE)
+target_include_directories(winlirc_api
+	INTERFACE
+		${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 source_group(Common FILES ${COMMON_SOURCES})
 source_group("Public API" FILES ${PUBLIC_API_FILES})
 
 set_target_properties(winlirc PROPERTIES
-	ENABLE_EXPORTS on
 	PUBLIC_HEADER "${PUBLIC_API_FILES}")
 
 
@@ -74,15 +77,10 @@ target_compile_definitions(winlirc
 
 target_link_libraries(winlirc PRIVATE
 	Microsoft.GSL::GSL
+	winlirc_api
 	winlirc-common)
 
-target_include_directories(winlirc
-	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/include
-	INTERFACE
-		${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-install(TARGETS winlirc 
+install(TARGETS winlirc
 	DESTINATION .
 	ARCHIVE DESTINATION plugin_sdk/lib
 	PUBLIC_HEADER DESTINATION plugin_sdk/include/winlirc

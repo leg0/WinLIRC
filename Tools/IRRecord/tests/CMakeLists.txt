@@ -3,11 +3,13 @@ find_package(GTest CONFIG REQUIRED)
 add_executable(irrecord_tests
 	../dump_config.cpp
 	../dump_config.h
+	../../../winlirc/IRRemote.cpp
+	../../../winlirc/IRRemote.h
 	dump_config_test.cpp)
 
 target_link_libraries(irrecord_tests
 	PRIVATE
-		winlirc
+		winlirc_api
 		GTest::gtest GTest::gtest_main)
 
 add_test(

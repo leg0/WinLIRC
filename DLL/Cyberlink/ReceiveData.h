@@ -23,7 +23,7 @@
 #ifndef _RECEIVEDATA_H_
 #define _RECEIVEDATA_H_
 
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include <chrono>
 #include <vector>
 #include <string>

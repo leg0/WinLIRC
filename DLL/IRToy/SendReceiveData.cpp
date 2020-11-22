@@ -24,10 +24,11 @@
 #include "Globals.h"
 #include <stdio.h>
 #include <tchar.h>
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 #include "../Common/Win32Helpers.h"
 
 static sbuf send_buffer;
+extern winlirc_interface winlirc;
 
 DWORD WINAPI IRToy(void *recieveClass) {
 
@@ -295,7 +296,7 @@ UCHAR SendReceiveData::calcPR2(int frequency) {
 
 int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 
-	if (winlirc_init_send(&send_buffer, remote, code, repeats)) {
+	if (winlirc.init_send(&send_buffer, remote, code, repeats)) {
 
 		//====================
 		USHORT	*irToySignals;
@@ -313,13 +314,13 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		serial.SetMask(CSerial::EEventNone);
 		serial.SetupReadTimeouts(CSerial::EReadTimeoutBlocking);
 
-		if(get_freq(remote)) {
+		if(winlirc.get_freq(remote)) {
 
 			//======
 			int pr2;
 			//======
 
-			pr2 = calcPR2(get_freq(remote));
+			pr2 = calcPR2(winlirc.get_freq(remote));
 
 			if(pr2) {
 
@@ -332,8 +333,8 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 			}
 		}
 
-		auto length		= winlirc_get_send_buffer_length(&send_buffer)+1;
-		auto const signals		= winlirc_get_send_buffer_data(&send_buffer);
+		auto length = winlirc.get_send_buffer_length(&send_buffer) + 1;
+		auto const signals = winlirc.get_send_buffer_data(&send_buffer);
 		temp[0]		= 0x03;	// transmit mode
 		irToySignals= (USHORT*)malloc(sizeof(USHORT) * (length)); // add 1 for 0xFFFF terminator
 		

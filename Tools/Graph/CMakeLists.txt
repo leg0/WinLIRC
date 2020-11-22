@@ -22,6 +22,6 @@ add_definitions(
 	-D_UNICODE
 	)
 
-target_link_libraries(Graph PRIVATE winlirc opengl32.lib)
+target_link_libraries(Graph PRIVATE winlirc_api opengl32.lib)
 
 configure_tool(Graph "Tools")

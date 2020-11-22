@@ -1,4 +1,4 @@
-#include <winlirc/winlirc_api.h>
+#include "../IRRemote.h"
 #include <gtest/gtest.h>
 #include <intrin.h>
 

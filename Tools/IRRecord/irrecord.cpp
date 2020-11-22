@@ -18,7 +18,8 @@
 #include <filesystem>
 #include "../../winlirc/config.h"
 #include "../../winlirc/ir_remote.h"
-#include <winlirc/winlirc_api.h>
+#include "../../winlirc/IRRemote.h"
+#include <winlirc/PluginApi.h>
 #include "dump_config.h"
 #include "irdriver.h"
 #include "emulation.h"

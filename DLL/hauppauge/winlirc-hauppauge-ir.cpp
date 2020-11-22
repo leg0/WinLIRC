@@ -24,7 +24,7 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "stdafx.h"
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 #include "irremote.h"
 
 const wchar_t *g_cPluginName = L"hauppauge-irremote";
@@ -68,10 +68,10 @@ bool getLibraryPath(wchar_t *path, size_t maxPathLen)
 // WinLIRC-Interface //
 ///////////////////////
 
-WL_API int init(WLEventHandle exitEvent)
+WL_API int init(winlirc_interface const* wl)
 {
 	trace(L"init");
-	g_exitEvent = reinterpret_cast<HANDLE>(exitEvent);
+	g_exitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
 	try
 	{

@@ -28,7 +28,7 @@
 #include "dump_config.h"
 #include "../../winlirc/config.h"
 #include "../../winlirc/ir_remote.h"
-#include <winlirc/WLPluginAPI.h>
+#include "../../winlirc/IRRemote.h"
 
 #include <algorithm>
 

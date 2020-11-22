@@ -21,11 +21,11 @@
 
 #include <stdio.h>
 #include "Globals.h"
-#include <winlirc/winlirc_api.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 
 hardware hw;
 rbuf rec_buffer;
+extern winlirc_interface winlirc;
 
 lirc_t readdata(lirc_t timeout) {
 
@@ -58,7 +58,7 @@ void wait_for_data(lirc_t uSecs) {
 
 void initHardwareStruct() {
 
-	hw.decode_func	= &winlirc_receive_decode;
+	hw.decode_func	= winlirc.receive_decode;
 	hw.readdata		= &readdata;
 	hw.wait_for_data= &wait_for_data;
 	hw.data_ready	= &data_ready;

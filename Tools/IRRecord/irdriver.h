@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <atlstr.h>
 #include "../../winlirc/Plugin.h"
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 #include <filesystem>
 
 class CIRDriver

@@ -24,12 +24,13 @@
 #include "Settings.h"
 #include "Globals.h"
 #include <stdio.h>
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 
 lirc_t			dataBuffer[256];
 unsigned char	bufferStart;
 unsigned char	bufferEnd;
 sbuf send_buffer;
+extern winlirc_interface winlirc;
 
 bool waitTillDataIsReady(int maxUSecs) {
 
@@ -119,14 +120,14 @@ int send(ir_remote *remote, ir_ncode *code, int repeats) {
 
 	int frequency = 38000;
 	
-	if(get_freq(remote)) {
-		frequency = get_freq(remote);
+	if(winlirc.get_freq(remote)) {
+		frequency = winlirc.get_freq(remote);
 	}
 
-	if (winlirc_init_send(&send_buffer, remote, code,repeats))
+	if (winlirc.init_send(&send_buffer, remote, code,repeats))
 	{
-		auto const length		= winlirc_get_send_buffer_length(&send_buffer);
-		auto const signals		= winlirc_get_send_buffer_data(&send_buffer);
+		auto const length		= winlirc.get_send_buffer_length(&send_buffer);
+		auto const signals		= winlirc.get_send_buffer_data(&send_buffer);
 
 		//
 		// raw array of timing values

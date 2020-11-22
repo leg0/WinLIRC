@@ -2,7 +2,7 @@
 #define RECEIVE_H
 
 #include <windows.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 
 #include "bdaiface.h"
 #include "bdatif.h"

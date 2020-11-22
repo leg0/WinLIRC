@@ -1,6 +1,6 @@
 #pragma once
 
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 #include "dll.h"
 #include <filesystem>
 #include <string>

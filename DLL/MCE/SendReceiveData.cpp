@@ -22,11 +22,12 @@
 #include <windows.h>
 #include "SendReceiveData.h"
 #include "Globals.h"
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 #include "../Common/DebugOutput.h"
 #include "../Common/Win32Helpers.h"
 
 static sbuf send_buffer;
+extern winlirc_interface winlirc;
 
 DWORD WINAPI MCEthread(void *recieveClass) {
 
@@ -409,14 +410,14 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		return 0;			// not set any blaster ports
 	}
 
-	if(get_freq(remote)==0) {
+	if(winlirc.get_freq(remote)==0) {
 		carrierFrequency = 38000;
 	}
 	else {
-		carrierFrequency = get_freq(remote);
+		carrierFrequency = winlirc.get_freq(remote);
 	}
 
-	if (winlirc_init_send(&send_buffer, remote, code, repeats)) {
+	if (winlirc.init_send(&send_buffer, remote, code, repeats)) {
 
 		//====================
 		int		*mceData;
@@ -431,8 +432,8 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 		//
 		KillThread(exitEvent,threadHandle);
 
-		auto const length		= winlirc_get_send_buffer_length(&send_buffer);
-		auto const signals		= winlirc_get_send_buffer_data(&send_buffer);
+		auto const length		= winlirc.get_send_buffer_length(&send_buffer);
+		auto const signals		= winlirc.get_send_buffer_data(&send_buffer);
 
 		mceData		= new int[length];
 

@@ -20,7 +20,7 @@
  */
 
 #include <Windows.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include "../Common/Win32Helpers.h"
 #include <stdio.h>
 #include "Globals.h"
@@ -29,10 +29,10 @@
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_interface const*) {
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
-	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
+	threadExitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+	dataReadyEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
 	sendReceiveData = new SendReceiveData();
 

@@ -1,28 +1,8 @@
-/* 
- * This file is part of the WinLIRC package, which was derived from
- * LIRC (Linux Infrared Remote Control) 0.8.6.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- * Copyright (C) 2010 Ian Curtis
- */
-
+#include "Receive.h"
 #include "constants.h"
 #include "ir_remote.h"
-#include <winlirc/winlirc_api.h>
-#include <winlirc/WLPluginAPI.h>
+#include "IRRemote.h"
+#include <winlirc/PluginApi.h>
 #include <chrono>
 #include <limits.h>
 #include <stdio.h>
@@ -91,7 +71,7 @@ static lirc_t get_next_rec_buffer(rbuf& rec_buffer, hardware const& hw, lirc_t m
 	return get_next_rec_buffer_internal(rec_buffer, hw, maxusec);
 }
 
-WINLIRC_API void winlirc_init_rec_buffer(rbuf* rec_buffer)
+void winlirc_init_rec_buffer(rbuf* rec_buffer)
 {
 	memset(rec_buffer, 0, sizeof(*rec_buffer));
 }
@@ -105,7 +85,7 @@ static void rewind_rec_buffer(rbuf& rec_buffer)
 	rec_buffer.sum=0;
 }
 
-WINLIRC_API int winlirc_clear_rec_buffer(rbuf* prec_buffer, hardware const* phw)
+int winlirc_clear_rec_buffer(rbuf* prec_buffer, hardware const* phw)
 {
     auto& hw = *phw;
 	auto& rec_buffer = *prec_buffer;
@@ -995,7 +975,7 @@ static ir_code get_post(rbuf& rec_buffer, hardware const& hw, struct ir_remote *
 	return(post);
 }
 
-WINLIRC_API int winlirc_receive_decode(
+int winlirc_receive_decode(
 	rbuf* prec_buffer,hardware const* phw, struct ir_remote *remote,
 	ir_code *prep,ir_code *codep,ir_code *postp,
 	int *repeat_flagp,

@@ -21,8 +21,7 @@
 
 #include <winsock2.h>
 #include <Windows.h>
-#include <winlirc/winlirc_api.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginApi.h>
 #include "../Common/Win32Helpers.h"
 #include <stdio.h>
 #include "Globals.h"
@@ -30,23 +29,19 @@
 void initHardwareStruct();
 extern hardware hw;
 extern rbuf rec_buffer;
+winlirc_interface Winlirc;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_interface const* wl) {
 
-	//===========
-	BOOL success;
-	//===========
-
-	winlirc_init_rec_buffer(&rec_buffer);
+	Winlirc = *wl;
+	Winlirc.init_rec_buffer(&rec_buffer);
 	initHardwareStruct();
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
-	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
+	threadExitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+	dataReadyEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
 	server = new Server();
-	success = server->init();
-
-	return success;
+	return server->init();
 }
 
 WL_API void deinit() {
@@ -84,9 +79,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 			return 0;
 		}
 
-		winlirc_clear_rec_buffer(&rec_buffer, &hw);
+		Winlirc.clear_rec_buffer(&rec_buffer, &hw);
 		
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
+		if (Winlirc.decodeCommand(&rec_buffer, &hw, remotes, out, out_size)) {
 			return 1;
 		}
 	}

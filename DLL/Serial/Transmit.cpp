@@ -1,6 +1,6 @@
 #include <windows.h>
 
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 
 #include "Transmit.h"
 
@@ -12,6 +12,7 @@ unsigned long space_width = 13; /* 1000000/freq-pulse_width */
 int pulse_byte_length=78; //usecs per byte (tx soft carrier)
 unsigned transmittertype;
 static sbuf send_buffer;
+extern winlirc_interface winlirc;
 
 #define MAXPULSEBYTES 256
 int pulsedata[MAXPULSEBYTES];
@@ -182,10 +183,10 @@ void SetTransmitPort(HANDLE hCom,unsigned type)  // sets the serial port to tran
 
 bool config_transmitter(ir_remote *rem) //configures the transmitter for the specified remote
 {
-	if (get_freq(rem)==0) set_freq(rem,38000);				//default this should really be elsewhere
-	if (get_duty_cycle(rem)==0) set_duty_cycle(rem,50);		//default this should really be elsewhere
-	pulse_width=(unsigned long) get_duty_cycle(rem)*10000/get_freq(rem);
-	space_width=(unsigned long) 1000000L/get_freq(rem)-pulse_width;
+	if (winlirc.get_freq(rem)==0) winlirc.set_freq(rem,38000);				//default this should really be elsewhere
+	if (winlirc.get_duty_cycle(rem)==0) winlirc.set_duty_cycle(rem,50);		//default this should really be elsewhere
+	pulse_width=(unsigned long) winlirc.get_duty_cycle(rem)*10000/ winlirc.get_freq(rem);
+	space_width=(unsigned long) 1000000L/ winlirc.get_freq(rem)-pulse_width;
 
 	if (transmittertype==TXTRANSMITTER) //tx software carrier
 	{
@@ -199,11 +200,11 @@ bool config_transmitter(ir_remote *rem) //configures the transmitter for the spe
 		dcb.BaudRate=CBR_115200;
 		dcb.Parity=NOPARITY;
 		dcb.StopBits=ONESTOPBIT;
-		if (get_freq(rem)<48000)
+		if (winlirc.get_freq(rem)<48000)
 		{
 			dcb.ByteSize=7;
 			pulse_byte_length=78; // (1+bytesize+parity+stopbits+)/Baudrate*1E6
-			if (get_duty_cycle(rem)<50) for (int i=0;i<MAXPULSEBYTES;i++) pulsedata[i]=0x5b;
+			if (winlirc.get_duty_cycle(rem)<50) for (int i=0;i<MAXPULSEBYTES;i++) pulsedata[i]=0x5b;
 			else for (int i=0;i<MAXPULSEBYTES;i++) pulsedata[i]=0x12;
 		} else {		
 			dcb.ByteSize=8;
@@ -246,10 +247,10 @@ int Transmit(ir_ncode *data,struct ir_remote *rem, int repeats)
 
 	init_timer			();
 
-	if (winlirc_init_send(&send_buffer, rem, data, repeats)) {
+	if (winlirc.init_send(&send_buffer, rem, data, repeats)) {
 
-		auto const length	= winlirc_get_send_buffer_length(&send_buffer);
-		auto const signals	= winlirc_get_send_buffer_data(&send_buffer);
+		auto const length	= winlirc.get_send_buffer_length(&send_buffer);
+		auto const signals	= winlirc.get_send_buffer_data(&send_buffer);
 
 		for(int i=0; i<length; i++) {
 			if(i%2==0)	send_pulse(signals[i]);

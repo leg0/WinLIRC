@@ -20,11 +20,12 @@
  */
 
 #include "Globals.h"
-#include <winlirc/winlirc_api.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include <chrono>
 
 #define CODE_LENGTH 32
+
+extern winlirc_interface Winlirc;
 
 static int beholder_decode(rbuf* rec_buffer, hardware const*, ir_remote *remote, ir_code *prep, ir_code *codep,
 					ir_code *postp, int *repeat_flagp,
@@ -32,13 +33,13 @@ static int beholder_decode(rbuf* rec_buffer, hardware const*, ir_remote *remote,
 					lirc_t *max_remaining_gapp)
 {
 	EnterCriticalSection(&criticalSection);
-	int const success = winlirc_map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
+	int const success = Winlirc.map_code(remote, prep, codep, postp, 0, 0, CODE_LENGTH, irCode, 0, 0);
 	LeaveCriticalSection(&criticalSection);
 
 	if(!success) return 0;
 
 	using namespace std::chrono;
-	winlirc_map_gap(remote, duration_cast<microseconds>(last-start).count(), 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
+	Winlirc.map_gap(remote, duration_cast<microseconds>(last-start).count(), 0, repeat_flagp,min_remaining_gapp, max_remaining_gapp);
 
 	return 1;
 } 

@@ -20,8 +20,7 @@
  */
 
 #include <Windows.h>
-#include <winlirc/winlirc_api.h>
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 #include "../Common/enumSerialPorts.h"
 #include "../Common/Win32Helpers.h"
 
@@ -33,14 +32,16 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();
 extern hardware hw;
 extern rbuf rec_buffer;
+winlirc_interface winlirc;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_interface const* wl) {
 
-	winlirc_init_rec_buffer(&rec_buffer);
+	winlirc = *wl;
+	winlirc.init_rec_buffer(&rec_buffer);
 	initHardwareStruct();
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
-	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
+	threadExitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+	dataReadyEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
 	sendReceiveData = new SendReceiveData();
 
@@ -177,9 +178,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 			return 0;
 		}
 
-		winlirc_clear_rec_buffer(&rec_buffer, &hw);
+		winlirc.clear_rec_buffer(&rec_buffer, &hw);
 
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
+		if(winlirc.decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
 			return 1;
 		}
 	}

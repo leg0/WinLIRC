@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <tchar.h>
 
-#include <winlirc/WLPluginAPI.h>
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 #include "../Common/Win32Helpers.h"
 
 #include "Globals.h"
@@ -19,13 +18,15 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();
 extern hardware hw;
 extern rbuf rec_buffer;
+winlirc_interface winlirc;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_interface const* wl) {
 
+	winlirc = *wl;
 	initHardwareStruct();
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
-	dataReadyEvent	= CreateEvent(nullptr,FALSE,FALSE,nullptr);
+	threadExitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+	dataReadyEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
 	receive = new Receive();
 	return receive->init(settings.getDeviceNumber());
@@ -160,7 +161,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 		receive->getData(&irCode);
 		end = steady_clock::now();
 
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
+		if(winlirc.decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
 			ResetEvent(dataReadyEvent);
 			return 1;
 		}

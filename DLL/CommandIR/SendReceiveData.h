@@ -22,7 +22,7 @@
 #ifndef RECEIVEDATA_H
 #define RECEIVEDATA_H
 
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 
 //
 // extern variables

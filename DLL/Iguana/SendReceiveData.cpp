@@ -25,11 +25,12 @@
 #include "Settings.h"
 #include "Globals.h"
 #include <stdio.h>
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 #include "../Common/DebugOutput.h"
 #include "../Common/Win32Helpers.h"
 
 sbuf send_buffer;
+extern winlirc_interface winlirc;
 
 DWORD WINAPI IGThread(void *recieveClass) {
 
@@ -308,24 +309,24 @@ int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {
 	retval = 0;
 
 	/* set the carrier frequency if necessary */
-	freq = htonl(get_freq(remote));
+	freq = htonl(winlirc.get_freq(remote));
 
-	if (get_freq(remote) != currentCarrier 
-	&& get_freq(remote) >= 25000 && get_freq(remote) <= 100000 
+	if (winlirc.get_freq(remote) != currentCarrier
+	&& winlirc.get_freq(remote) >= 25000 && winlirc.get_freq(remote) <= 100000
 	&& daemonTransaction(IG_DEV_SETCARRIER, &freq, sizeof(freq))) {
 
-		currentCarrier = get_freq(remote);
+		currentCarrier = winlirc.get_freq(remote);
 	}
 
-	if (winlirc_init_send(&send_buffer, remote, code,repeats))
+	if (winlirc.init_send(&send_buffer, remote, code,repeats))
 	{
 		//==================
 		int		x;
 		UINT	*igsignals;
 		//==================
 
-		auto const length		= winlirc_get_send_buffer_length(&send_buffer);
-		auto const signals		= winlirc_get_send_buffer_data(&send_buffer);
+		auto const length = winlirc.get_send_buffer_length(&send_buffer);
+		auto const signals = winlirc.get_send_buffer_data(&send_buffer);
 		igsignals	= (UINT*)malloc(sizeof(UINT) * length);
 
 		if (igsignals != nullptr)

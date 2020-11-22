@@ -1,6 +1,6 @@
 #include "Opengl.h"
+#include <winlirc/PluginApi.h>
 #include <stdio.h>
-#include <winlirc/winlirc_api.h>
 
 Opengl::Opengl() {
 

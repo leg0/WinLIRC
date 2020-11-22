@@ -1,6 +1,6 @@
 #pragma once
 
-#include <winlirc/winlirc_api.h>
+#include <winlirc/PluginApi.h>
 
 #include <chrono>
 #include <memory>

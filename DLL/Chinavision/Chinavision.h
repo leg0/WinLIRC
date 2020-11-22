@@ -22,6 +22,6 @@
 #ifndef CHINAVISION_H
 #define CHINAVISION_H
 
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 
 #endif

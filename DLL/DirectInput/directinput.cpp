@@ -2,7 +2,7 @@
 
 #include <Windows.h>
 #include "../Common/UniqueHandle.h"
-#include <winlirc/WLPluginAPI.h>
+#include <winlirc/PluginAPI.h>
 
 #include <atlbase.h> // CComPtr
 #include <dinput.h>
@@ -27,9 +27,9 @@ Window g_window;
 HANDLE g_exitEvent = INVALID_HANDLE_VALUE;
 bool g_initialized = false;
 
-WL_API int init(WLEventHandle wlExitEvent)
+WL_API int init(winlirc_interface const*)
 {
-    HANDLE const exitEvent = reinterpret_cast<HANDLE>(wlExitEvent);
+    HANDLE const exitEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 
     if (g_initialized || exitEvent == INVALID_HANDLE_VALUE)
         return 0;
