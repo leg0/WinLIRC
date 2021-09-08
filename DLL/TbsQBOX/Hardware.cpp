@@ -42,7 +42,7 @@ static int tbs_decode (rbuf* rec_buffer, hardware const*, ir_remote *remote, ir_
 
 	if(!success) return 0;
 
-	winlirc_map_gap(remote, duration_cast<microseconds>(last - start).count(), 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
+	winlirc_map_gap(remote, duration_cast<microseconds>(::last - start).count(), 0, repeat_flagp, min_remaining_gapp, max_remaining_gapp);
 	
 	return 1;
 }

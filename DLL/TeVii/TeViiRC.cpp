@@ -155,7 +155,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 			return 0;
 		}
 
-		last = end;
+		::last = end;
 		start = steady_clock::now();
 		receive->getData(&irCode);
 		end = steady_clock::now();

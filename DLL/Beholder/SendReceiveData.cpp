@@ -157,7 +157,7 @@ void SendReceiveData::getCode()
 
 		EnterCriticalSection(&criticalSection);
 			start	= tempStart;
-			last	= tempLast;
+			::last	= tempLast;
 			end		= tempEnd;
 			irCode	= tempCode;
 		LeaveCriticalSection(&criticalSection);
