@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 # Use MFC in a shared DLL.
 #set(CMAKE_MFC_FLAG 2)
