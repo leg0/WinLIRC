@@ -1,4 +1,6 @@
 .build*/
+*.aps
+*.bak
 *.exp
 *.ilk
 *.ncb
@@ -12,3 +14,6 @@
 *.obj
 *.idb
 *.idb
+*.tmp
+*.orig
+*.log
