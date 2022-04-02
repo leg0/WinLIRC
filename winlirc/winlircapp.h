@@ -23,7 +23,6 @@
 
 #include "server.h"
 #include "drvdlg.h"
-#include "resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -31,7 +30,7 @@
 
 #include <memory>
 
-class Cwinlirc : public CWinApp
+class WinLircApp : public CWinApp
 {
 public:
 	std::unique_ptr<Cdrvdlg> dlg;
@@ -41,4 +40,4 @@ public:
 	virtual int ExitInstance() override;
 };
 
-extern Cwinlirc app;
+extern WinLircApp app;

@@ -20,7 +20,7 @@
  */
 
 #include "stdafx.h"
-#include "winlirc.h"
+#include "winlircapp.h"
 #include "drvdlg.h"
 #include "server.h"
 #include "wl_debug.h"
@@ -30,7 +30,7 @@
 
 namespace fs = std::filesystem;
 
-Cwinlirc app;
+WinLircApp app;
 
 static fs::path getModuleFileName()
 {
@@ -44,7 +44,7 @@ fs::path getPluginsDirectory()
 	return absolute(getModuleFileName().replace_filename(L"plugins"));
 }
 
-BOOL Cwinlirc::InitInstance() {
+BOOL WinLircApp::InitInstance() {
 
 #ifdef _DEBUG
 	AllocConsole();
@@ -122,7 +122,7 @@ BOOL Cwinlirc::InitInstance() {
 	return TRUE;
 }
 
-int Cwinlirc::ExitInstance()
+int WinLircApp::ExitInstance()
 {
 	dlg.reset();
 	return CWinApp::ExitInstance();

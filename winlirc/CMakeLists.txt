@@ -23,7 +23,7 @@ add_executable(winlirc WIN32
 	Send.cpp
 	server.cpp
 	trayicon.cpp
-	winlirc.cpp
+	winlircapp.cpp
 	wl_string.cpp
 
     winlirc.rc
@@ -41,7 +41,7 @@ add_executable(winlirc WIN32
     stdafx.h
     trayicon.h
     version.h
-    winlirc.h
+    winlircapp.h
 	wl_string.h
 	ir_remote.cpp
 	ir_remote.h

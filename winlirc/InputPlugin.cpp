@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "winlirc.h"
+#include "winlircapp.h"
 #include "InputPlugin.h"
 #include "irconfig.h"
 #include <atlbase.h>

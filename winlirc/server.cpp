@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "server.h"
 #include "remote.h"
-#include "winlirc.h"
+#include "winlircapp.h"
 #include "drvdlg.h"
 #include "version.h"
 #include "wl_debug.h"

@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include <afxpriv.h>
 #include "trayicon.h"
-#include "winlirc.h"
+#include "winlircapp.h"
 #include "wl_debug.h"
 
 #include <iterator>

@@ -4,7 +4,7 @@
 #include "config.h"
 #include "drvdlg.h"
 #include "server.h"
-#include "winlirc.h"
+#include "winlircapp.h"
 
 CIRDriver::CIRDriver()
 	: m_daemonThreadEvent{ CreateEvent(nullptr, TRUE, FALSE, nullptr) }
