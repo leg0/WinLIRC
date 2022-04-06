@@ -130,6 +130,7 @@ void CIRDriver::DaemonThreadProc() const {
 			CHAR	remoteName[128];
 			//======================
 
+			auto& config = *app.config;
 			if(config.disableRepeats) {
 
 				if(sscanf(message,"%I64x %x",&keyCode,&repeat)==2) {

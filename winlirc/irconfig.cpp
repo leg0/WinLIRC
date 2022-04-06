@@ -31,14 +31,12 @@
 
 std::unique_ptr<ir_remote> global_remotes;
 std::mutex CS_global_remotes;
-CIRConfig config;
 
-CIRConfig::CIRConfig() {
-
+CIRConfig::CIRConfig(std::filesystem::path iniFilePath)
+	: iniFilePath{iniFilePath.wstring()}
+{
 	std::lock_guard lock{ CS_global_remotes };
-	
 	global_remotes.reset();
-	exitOnError = FALSE;
 }
 
 CIRConfig::~CIRConfig()
@@ -59,7 +57,7 @@ bool CIRConfig::readConfig() {
 	FILE *file;
 	//========================================
 
-	if(remoteConfig.empty() || (file=_tfopen(remoteConfig.c_str(),_T("r")))==nullptr)	
+	if(remoteConfig.empty() || (file=_wfopen(remoteConfig.c_str(),L"r"))==nullptr)	
 		return false;
 
 	global_remotes.reset();
@@ -90,65 +88,74 @@ bool CIRConfig::readConfig() {
 	return true;
 }
 
-bool CIRConfig::writeINIFile() {
-
-	//=====================
-	TCHAR	path[MAX_PATH];
-	CString tempPath;
-	TCHAR	tempIni[16];
-	//=====================
-
-	GetCurrentDirectory(MAX_PATH,path);
-
-	tempPath += path;
-	tempPath += _T("\\WinLIRC.ini");
-
-	WritePrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),remoteConfig.c_str(),tempPath);
-	WritePrivateProfileString(_T("WinLIRC"),_T("Plugin"),plugin.c_str(),tempPath);
-
-	_sntprintf(tempIni,_countof(tempIni),_T("%i"),disableRepeats);
-	WritePrivateProfileString(_T("WinLIRC"),_T("DisableKeyRepeats"),tempIni,tempPath);
-
-	_sntprintf(tempIni,_countof(tempIni),_T("%i"),disableFirstKeyRepeats);
-	WritePrivateProfileString(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),tempIni,tempPath);
-
-	_sntprintf(tempIni,_countof(tempIni),_T("%i"),localConnectionsOnly);
-	WritePrivateProfileString(_T("WinLIRC"),_T("LocalConnectionsOnly"),tempIni,tempPath);
-
-	_sntprintf(tempIni,_countof(tempIni),_T("%i"),serverPort);
-	WritePrivateProfileString(_T("WinLIRC"),_T("ServerPort"),tempIni,tempPath);
-
-	_sntprintf(tempIni,_countof(tempIni),_T("%i"),showTrayIcon);
-	WritePrivateProfileString(_T("WinLIRC"),_T("ShowTrayIcon"),tempIni,tempPath);
+bool CIRConfig::writeINIFile() const
+{
+	writeString(L"WinLIRC", L"RemoteConfig", remoteConfig.c_str());
+	writeString(L"WinLIRC", L"Plugin",plugin.c_str());
+	writeInt(L"WinLIRC", L"DisableKeyRepeats", disableRepeats);
+	writeInt(L"WinLIRC", L"DisableFirstKeyRepeats", disableFirstKeyRepeats);
+	writeInt(L"WinLIRC", L"LocalConnectionsOnly", localConnectionsOnly);
+	writeInt(L"WinLIRC", L"ServerPort", serverPort);
+	writeInt(L"WinLIRC", L"ShowTrayIcon", showTrayIcon);
 
 	return true;
 }
 
-bool CIRConfig::readINIFile() {
-
-	//=================================
-	TCHAR	path[MAX_PATH];
-	CString tempPath;
-	TCHAR   remoteConfigName[MAX_PATH];
-	TCHAR	pluginName[MAX_PATH];
-	//=================================
-
-	GetCurrentDirectory(MAX_PATH,path);
-
-	tempPath += path;
-	tempPath += _T("\\WinLIRC.ini");
-
-	GetPrivateProfileString(_T("WinLIRC"),_T("RemoteConfig"),nullptr,remoteConfigName,_countof(remoteConfigName),tempPath);
-	GetPrivateProfileString(_T("WinLIRC"),_T("Plugin"),nullptr,pluginName,_countof(pluginName),tempPath);
-
-	disableRepeats			= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableKeyRepeats"),FALSE,tempPath);
-	disableFirstKeyRepeats	= GetPrivateProfileInt(_T("WinLIRC"),_T("DisableFirstKeyRepeats"),FALSE,tempPath);
-	localConnectionsOnly	= GetPrivateProfileInt(_T("WinLIRC"),_T("LocalConnectionsOnly"),TRUE,tempPath);
-	serverPort				= GetPrivateProfileInt(_T("WinLIRC"),_T("ServerPort"),8765,tempPath);
-	showTrayIcon			= GetPrivateProfileInt(_T("WinLIRC"),_T("ShowTrayIcon"),TRUE,tempPath);
-
-	remoteConfig			= remoteConfigName;
-	plugin					= pluginName;
+bool CIRConfig::readINIFile()
+{
+	disableRepeats			= readInt(L"WinLIRC", L"DisableKeyRepeats",FALSE);
+	disableFirstKeyRepeats	= readInt(L"WinLIRC", L"DisableFirstKeyRepeats",FALSE);
+	localConnectionsOnly	= readInt(L"WinLIRC", L"LocalConnectionsOnly",TRUE);
+	serverPort				= readInt(L"WinLIRC", L"ServerPort",8765);
+	showTrayIcon			= readInt(L"WinLIRC", L"ShowTrayIcon",TRUE);
+	remoteConfig			= readString(L"WinLIRC", L"RemoteConfig");
+	plugin					= readString(L"WinLIRC", L"Plugin");
 	
 	return true;
 }
+
+std::wstring CIRConfig::readString(
+	_In_opt_z_ wchar_t const* section,
+	_In_opt_z_ wchar_t const* name,
+	_In_opt_z_ wchar_t const* defaultValue) const
+{
+	std::wstring buffer(4000, L'\0');
+	auto const nChars = readString(section, name, buffer.data(), buffer.size(), defaultValue);
+	buffer.resize(nChars);
+	return buffer;
+}
+
+size_t CIRConfig::readString(
+	_In_opt_z_ wchar_t const* section,
+	_In_opt_z_ wchar_t const* name,
+	_Out_writes_to_opt_(outSize, return +1) wchar_t* out,
+	_In_ size_t outSize,
+	_In_opt_z_ wchar_t const* defaultValue) const
+{
+	return GetPrivateProfileStringW(section, name, defaultValue, out, static_cast<DWORD>(outSize), iniFilePath.c_str());
+}
+
+int CIRConfig::readInt(
+	_In_z_ wchar_t const* section,
+	_In_z_ wchar_t const* name,
+	_In_ int defaultValue) const
+{
+	return GetPrivateProfileIntW(section, name, defaultValue, iniFilePath.c_str());
+}
+
+void CIRConfig::writeString(
+	_In_opt_z_ wchar_t const* section,
+	_In_opt_z_ wchar_t const* name,
+	_In_opt_z_ wchar_t const* value) const
+{
+	WritePrivateProfileStringW(section, name, value, iniFilePath.c_str());
+}
+
+void CIRConfig::writeInt(
+	_In_opt_z_ wchar_t const* section,
+	_In_opt_z_ wchar_t const* name,
+	_In_ int value) const
+{
+	WritePrivateProfileStringW(section, name, std::to_wstring(value).c_str(), iniFilePath.c_str());
+}
+

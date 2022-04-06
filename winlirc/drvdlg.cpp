@@ -148,9 +148,10 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 			//is probably off.
 			break;
 		case PBT_APMRESUMEAUTOMATIC:
-
+		{
 			//system power source has changed, or 
 			//battery life has just got into the near-critical state
+			auto& config = *app.config;
 
 			if(config.showTrayIcon) {
 				ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_INIT),_T("WinLIRC / Initializing"));
@@ -171,6 +172,7 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 
 			retval = TRUE;
 			break;
+		}
 		case PBT_APMPOWERSTATUSCHANGE:
 			retval = TRUE;
 			break;
@@ -213,7 +215,7 @@ void Cdrvdlg::OnHideme()
 
 void Cdrvdlg::GoGreen()
 {
-	if(!config.showTrayIcon) {
+	if(!app.config->showTrayIcon) {
 		return;
 	}
 
@@ -223,7 +225,7 @@ void Cdrvdlg::GoGreen()
 }
 void Cdrvdlg::GoBlue()
 {
-	if(!config.showTrayIcon) {
+	if(!app.config->showTrayIcon) {
 		return;
 	}
 
@@ -256,7 +258,7 @@ bool Cdrvdlg::DoInitializeDaemon()
 			//printf("failed here :(\n");
 		}
 
-		if(config.exitOnError) {
+		if(app.config->exitOnError) {
 			ti.DisableTrayIcon();
 			exit(0);
 		}
@@ -279,6 +281,8 @@ bool Cdrvdlg::InitializeDaemon() {
 	//==============
 	CWaitCursor foo;
 	//==============
+
+	auto& config = *app.config;
 
 	if (!config.remoteConfig.empty())
 	{
@@ -322,7 +326,7 @@ void Cdrvdlg::OnConfig()
 
 	AllowTrayNotification=false;
 	KillTimer(1);
-	if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Disabled During Configuration"));
+	if(app.config->showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Disabled During Configuration"));
 
 	if(!DoInitializeDaemon())
 		OnCancel();

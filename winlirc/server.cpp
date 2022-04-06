@@ -76,6 +76,9 @@ bool Cserver::startServer()
         WL_DEBUG("socket failed, WSAGetLastError=%d\n", WSAGetLastError());
         return false;
     }
+
+    auto& config = *app.config;
+
     sockaddr_in serv_addr = { 0 };
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);

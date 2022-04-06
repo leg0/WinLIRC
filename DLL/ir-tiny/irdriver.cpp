@@ -1,11 +1,10 @@
 #include "stdafx.h"
 #include "irdriver.h"
-#include "Settings.h"
 
-
-irtiny::CIRDriver::CIRDriver(HANDLE finishEvent)
-    : dataReadyEvent_(Event::manualResetEvent())
-    , finishEvent_(Event::fromHandle(finishEvent))
+irtiny::CIRDriver::CIRDriver(HANDLE finishEvent, std::wstring port)
+    : serialPort_{ std::move(port) }
+    , dataReadyEvent_{ Event::manualResetEvent() }
+    , finishEvent_{ Event::fromHandle(finishEvent) }
 { }
 
 irtiny::CIRDriver::~CIRDriver()
@@ -27,11 +26,7 @@ bool irtiny::CIRDriver::initPort()
         thread_.join();
     }
 
-    Settings settings;
-    settings.load();
-
-    SerialPort serialPort = SerialPort(settings.port());
-    if (!serialPort)
+    if (!serialPort_)
         return false;
 
     DCB dcb = { 0 };
@@ -47,13 +42,12 @@ bool irtiny::CIRDriver::initPort()
     dcb.Parity = NOPARITY;
     dcb.StopBits = ONESTOPBIT;
 
-    if (!SetCommState(serialPort.get(), &dcb))
+    if (!SetCommState(serialPort_.get(), &dcb))
         return false;
 
-    PurgeComm(serialPort.get(), PURGE_RXABORT | PURGE_RXCLEAR);
-    ClearCommError(serialPort.get(), nullptr, nullptr);
+    PurgeComm(serialPort_.get(), PURGE_RXABORT | PURGE_RXCLEAR);
+    ClearCommError(serialPort_.get(), nullptr, nullptr);
 
-    serialPort_ = std::move(serialPort);
     thread_ = std::thread([=]() { threadProc(); });
 
     return true;

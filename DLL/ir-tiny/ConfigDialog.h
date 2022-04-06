@@ -1,6 +1,5 @@
 #pragma once
 #include "resource.h"
-#include "Settings.h"
 
 namespace irtiny
 {
@@ -9,8 +8,6 @@ namespace irtiny
         , public CWinDataExchange<ConfigDialog>
     {
     public:
-        ConfigDialog();
-
         enum { IDD = IDD_CONFIG_DIALOG };
 
     private:
@@ -31,7 +28,5 @@ namespace irtiny
 
         CComboBox cmbPort_;
         CString strPortName_;
-
-        Settings settings_;
     };
 }

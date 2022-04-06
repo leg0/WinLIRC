@@ -4,17 +4,24 @@
 // This file contains the API that winlirc exposes to plugins to use.
 //
 
+#include <sal.h>
 #include <intrin.h>
 #include <stdint.h>
 
 #if defined(__cplusplus)
+	#include <gsl/gsl>
+
 	#define WINLIRC_EXTERNC extern "C"
 	#define WINLIRC_CONSTEXPR constexpr
 	#define WINLIRC_NOEXCEPT noexcept
+	#define OWNER(x) gsl::owner<x>
+	#define NOT_NULL(x) gsl::not_null<x>
 #else
 	#define WINLIRC_EXTERNC
 	#define WINLIRC_CONSTEXPR
 	#define WINLIRC_NOEXCEPT
+	#define OWNER(x) x
+	#define NOT_NULL(x) x
 #endif
 
 #if defined(winlirc_EXPORTS)
@@ -87,7 +94,7 @@ WINLIRC_API bool winlirc_decodeCommand(
 WINLIRC_API ir_code get_ir_code(ir_ncode* ncode, ir_code_node* node);
 WINLIRC_API ir_code_node* get_next_ir_code_node(ir_ncode* ncode, ir_code_node* node);
 WINLIRC_API int bit_count(ir_remote const* remote);
-inline int bits_set(ir_code data) WINLIRC_NOEXCEPT
+inline uint64_t bits_set(ir_code data) WINLIRC_NOEXCEPT
 {
 #if defined(_M_X64)
 	return __popcnt64(data);
@@ -159,3 +166,23 @@ WINLIRC_API int winlirc_get_send_buffer_length(sbuf const* send_buffer);
 WINLIRC_API lirc_t const* winlirc_get_send_buffer_data(sbuf const* send_buffer);
 WINLIRC_API void winlirc_init_send_buffer(sbuf* send_buffer);
 WINLIRC_API int winlirc_init_send(sbuf* send_buffer, ir_remote *remote, ir_ncode *code, int repeats);
+
+// Settings
+
+WINLIRC_API int winlirc_settings_get_int(
+	_In_z_ wchar_t const* section,
+	_In_z_ wchar_t const* setting,
+	int defaultValue);
+WINLIRC_API size_t winlirc_settings_get_wstring(
+	_In_z_ wchar_t const* section,
+	_In_z_ wchar_t const* setting,
+	_Out_writes_(outSize) wchar_t* out, size_t outSize,
+	_In_opt_z_ wchar_t const* defaultValue);
+WINLIRC_API void winlirc_settings_set_int(
+	_In_z_ wchar_t const* section,
+	_In_z_ wchar_t const* setting,
+	int value);
+WINLIRC_API void winlirc_settings_set_wstring(
+	_In_z_ wchar_t const* section,
+	_In_z_ wchar_t const* setting,
+	_In_z_ wchar_t const* str);

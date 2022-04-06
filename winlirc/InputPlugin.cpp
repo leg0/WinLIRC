@@ -51,7 +51,7 @@ void InputPlugin::listDllFiles()
 		m_cboxInputPlugin.AddString(filePath.filename().wstring().c_str());
 	}
 
-	auto currentPlugin = std::find(begin(plugins), end(plugins), config.plugin);
+	auto currentPlugin = std::find(begin(plugins), end(plugins), app.config->plugin);
 	if (currentPlugin == end(plugins))
 		currentPlugin = begin(plugins);
 
@@ -167,6 +167,7 @@ void InputPlugin::OnBnClickedOk() {
 		}
 	}
 
+	auto& config = *app.config;
 	config.remoteConfig = confPath;
 
 	config.plugin = m_plugins[m_cboxInputPlugin.GetCurSel()];
@@ -269,6 +270,7 @@ BOOL InputPlugin::OnInitDialog() {
 
 	listDllFiles();
 
+	auto& config = *app.config;
 	m_configPath.SetWindowText(config.remoteConfig.c_str());
 
 	temp.Format(_T("%i"),config.disableFirstKeyRepeats);

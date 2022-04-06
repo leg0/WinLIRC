@@ -78,7 +78,7 @@ namespace irtiny
     class CIRDriver
     {
     public:
-        explicit CIRDriver(HANDLE finishEvent);
+        explicit CIRDriver(HANDLE finishEvent, std::wstring port);
         ~CIRDriver();
 
         bool initPort();

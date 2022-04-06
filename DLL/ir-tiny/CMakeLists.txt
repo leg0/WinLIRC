@@ -8,7 +8,6 @@ add_library(ir-tiny MODULE
     irdriver.cpp
     irtiny_api.cpp
     ConfigDialog.cpp
-    Settings.cpp
 
     irtiny.rc
     irtiny.def
@@ -16,7 +15,6 @@ add_library(ir-tiny MODULE
     irdriver.h
     resource.h
     ConfigDialog.h
-    Settings.h
     stdafx.h
     )
 

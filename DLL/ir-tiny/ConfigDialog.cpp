@@ -1,20 +1,17 @@
 #include "stdafx.h"
 #include "ConfigDialog.h"
 #include "Common/enumSerialPorts.h"
-
-// SerialDialog dialog
-
-irtiny::ConfigDialog::ConfigDialog()
-{ }
+#include "winlirc/winlirc_api.h"
 
 LRESULT irtiny::ConfigDialog::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
     DoDataExchange(FALSE);
 
-    settings_.load();
+    wchar_t port[32] = L"";
+    winlirc_settings_get_wstring(L"ir-tiny", L"port", port, std::size(port) - 1, L"");
 
     ::enumSerialPorts(*this, IDC_PORT);
-    auto const x = cmbPort_.FindStringExact(0, settings_.port().c_str());
+    auto const x = cmbPort_.FindStringExact(0, port);
     cmbPort_.SetCurSel(x == CB_ERR ? 0 : x);
 
     DoDataExchange(FALSE);
@@ -24,8 +21,7 @@ LRESULT irtiny::ConfigDialog::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPA
 LRESULT irtiny::ConfigDialog::OnOK(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
     DoDataExchange(TRUE);
-    settings_.port(static_cast<wchar_t const*>(strPortName_));
-    settings_.save();
+    winlirc_settings_set_wstring(L"ir-tiny", L"port", strPortName_);
 
     EndDialog(wID);
     return 0;

@@ -30,8 +30,9 @@ rbuf rec_buffer;
 
 extern "C" static int irtiny_init(WLEventHandle exitEvent)
 {
-    winlirc_init_rec_buffer(&rec_buffer);
-    irDriver = std::make_unique<irtiny::CIRDriver>(reinterpret_cast<HANDLE>(exitEvent));
+    wchar_t port[32];
+    winlirc_settings_get_wstring(L"ir-tiny", L"port", port, std::size(port), L"");
+    irDriver = std::make_unique<irtiny::CIRDriver>(reinterpret_cast<HANDLE>(exitEvent), port);
     return irDriver->initPort();
 }
 
@@ -52,21 +53,21 @@ extern "C" static void irtiny_loadSetupGui()
 }
 
 // XXX WTF TODO: refactor common so that the functions that are hardcoded to use global variable hw take it as a parameter.
-static hardware const irtiny_hardware =
+static constexpr hardware irtiny_hardware =
 {
-    winlirc_plugin_api_version,
-    "serial ir-tiny",
-    "ir-tiny",
-    LIRC_CAN_REC_MODE2, // features
-    0, // send_mode
-    LIRC_MODE_MODE2, //rec_mode
-    0, // code_length
-    0, // resolution
-    &winlirc_receive_decode, // decode_func 
-    &irtiny_readData, // readdata 
-    &irtiny_waitForData, // wait_for_data 
-    &irtiny_dataReady, // data_ready
-    nullptr // get_ir_code 
+    .plugin_api_version = winlirc_plugin_api_version,
+    .device             = "serial ir-tiny",
+    .name               = "ir-tiny",
+    .features           = LIRC_CAN_REC_MODE2,
+    .send_mode          = 0,
+    .rec_mode           = LIRC_MODE_MODE2,
+    .code_length        = 0,
+    .resolution         = 0,
+    .decode_func        = &winlirc_receive_decode,
+    .readdata           = &irtiny_readData,
+    .wait_for_data      = &irtiny_waitForData,
+    .data_ready         = &irtiny_dataReady,
+    .get_ir_code        = nullptr
 };
 
 extern "C" int static irtiny_decodeIR(ir_remote* remotes, char* out, size_t out_size)
@@ -84,21 +85,20 @@ extern "C" hardware const* irtiny_getHardware()
     return &irtiny_hardware;
 }
 
-static plugin_interface const irtiny_plugin_interface
-{
-    winlirc_plugin_api_version,
-    irtiny_init,
-    irtiny_deinit,
-    irtiny_hasGui,
-    irtiny_loadSetupGui,
-    nullptr, // sendIR
-    irtiny_decodeIR,
-    nullptr, // setTransmitters
-    irtiny_getHardware,
-    &irtiny_hardware
-};
-
 WL_API plugin_interface const* getPluginInterface()
 {
+    static constexpr plugin_interface irtiny_plugin_interface
+    {
+        .plugin_api_version = winlirc_plugin_api_version,
+        .init               = irtiny_init,
+        .deinit             = irtiny_deinit,
+        .hasGui             = irtiny_hasGui,
+        .loadSetupGui       = irtiny_loadSetupGui,
+        .sendIR             = nullptr,
+        .decodeIR           = irtiny_decodeIR,
+        .setTransmitters    = nullptr,
+        .getHardware        = irtiny_getHardware,
+        .hardware           = &irtiny_hardware
+    };
     return &irtiny_plugin_interface;
 }

@@ -56,7 +56,8 @@ BOOL WinLircApp::InitInstance() {
 
 	// set current directory for plugins from exe path
 	fs::current_path(getPluginsDirectory());
-
+	this->config = std::make_unique<CIRConfig>(getPluginsDirectory() / L"WinLIRC.ini");
+	auto& config = *this->config;
 	config.readINIFile();
 
 	//

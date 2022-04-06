@@ -22,6 +22,7 @@ add_executable(winlirc WIN32
 	Receive.cpp
 	Send.cpp
 	server.cpp
+	settings.cpp
 	trayicon.cpp
 	winlircapp.cpp
 	wl_string.cpp
@@ -70,11 +71,18 @@ target_compile_definitions(winlirc
 	PRIVATE
 		UNICODE
 		_UNICODE
-		NOMINMAX)
+		NOMINMAX
+	INTERFACE
+		NOMINMAX
+	)
 
-target_link_libraries(winlirc PRIVATE
-	Microsoft.GSL::GSL
-	winlirc-common)
+target_link_libraries(winlirc
+	PRIVATE
+		Microsoft.GSL::GSL
+		winlirc-common
+	INTERFACE
+		Microsoft.GSL::GSL
+	)
 
 target_include_directories(winlirc
 	PRIVATE

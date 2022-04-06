@@ -23,6 +23,7 @@
 
 #include "server.h"
 #include "drvdlg.h"
+#include "irconfig.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,6 +36,7 @@ class WinLircApp : public CWinApp
 public:
 	std::unique_ptr<Cdrvdlg> dlg;
 	Cserver server;
+	std::unique_ptr<CIRConfig> config;
 
 	virtual BOOL InitInstance() override;
 	virtual int ExitInstance() override;
