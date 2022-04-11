@@ -105,11 +105,8 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 			  ir_code pre,ir_code code,ir_code post,
 			  ir_code *toggle_bit_mask_statep)
 {
-	ir_code pre_mask,code_mask,post_mask,toggle_bit_mask_state,all;
-	int found_code, have_code;
-	struct ir_ncode *found;
-	
-	pre_mask=code_mask=post_mask=0;
+	ir_code pre_mask = 0;
+	ir_code post_mask = 0;
 
 	if(has_toggle_bit_mask(remote))
 	{
@@ -153,7 +150,7 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 	{
 		if((pre|pre_mask)!=(remote->pre_data|pre_mask))
 		{
-			return(0);
+			return nullptr;
 		}
 	}
 	
@@ -161,98 +158,93 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 	{
 		if((post|post_mask)!=(remote->post_data|post_mask))
 		{
-			return(0);
+			return nullptr;
 		}
 	}
 
-	all = gen_ir_code(remote, pre, code, post);
+	auto all = gen_ir_code(remote, pre, code, post);
 
-	toggle_bit_mask_state = all&remote->toggle_bit_mask;
+	auto toggle_bit_mask_state = all&remote->toggle_bit_mask;
 
-	found=nullptr;
-	found_code=0;
-	have_code=0;
-	auto codes=remote->codes.begin();
-	auto const codes_end = remote->codes.end();
-	if (codes != codes_end)
+	ir_ncode* found = nullptr;
+	bool found_code = false;
+	bool have_code = false;
+	for (auto& code : remote->codes)
 	{
-		for(; codes != codes_end; ++codes)
+		ir_code next_all = gen_ir_code(remote, remote->pre_data,
+					    get_ir_code(&code, code.current),
+					    remote->post_data);
+		if(match_ir_code(remote, next_all, all))
 		{
-			ir_code next_all = gen_ir_code(remote, remote->pre_data,
-					       get_ir_code(&*codes, codes->current),
-					       remote->post_data);
-			if(match_ir_code(remote, next_all, all))
+			found_code = true;
+			if(code.next!=nullptr)
 			{
-				found_code=1;
-				if(codes->next!=nullptr)
+				if(code.current==nullptr)
 				{
-					if(codes->current==nullptr)
-					{
-						codes->current=codes->next.get();
-					}
-					else
-					{
-						codes->current=codes->current->next.get();
-					}
-				}
-				if(!have_code)
-				{
-					found=&*codes;
-					if(codes->current==nullptr)
-					{
-						have_code=1;
-					}
-				}
-			}
-			else
-			{
-				/* find longest matching sequence */
-				ir_code_node* search = codes->next.get();
-				if (search == nullptr ||
-					codes->next != nullptr && codes->current == nullptr)
-				{
-					codes->current = nullptr;
+					code.current=code.next.get();
 				}
 				else
 				{
-					int sequence_match = 0;
-					
-					while(search != codes->current->next.get())
-					{
-						int flag = 1;
-						ir_code_node* prev = nullptr; /* means codes->code */
-						ir_code_node* next = search;
-						while(next != codes->current)
-						{
-							if(get_ir_code(&*codes, prev) != get_ir_code(&*codes, next))
-							{
-								flag = 0;
-								break;
-							}
-							prev = get_next_ir_code_node(&*codes, prev);
-							next = get_next_ir_code_node(&*codes, next);
-						}
-						if(flag == 1)
-						{
-							next_all = gen_ir_code(remote, remote->pre_data,
-									       get_ir_code(&*codes, prev),
-									       remote->post_data);
-							if(match_ir_code(remote, next_all, all))
-							{
-								codes->current = get_next_ir_code_node(&*codes, prev);
-								sequence_match = 1;
-								found_code=1;
-								if(!have_code)
-								{
-									found = &*codes;
-								}
-								break;
-							}
-						}
-						search = search->next.get();
-					}
-					if(!sequence_match) codes->current = nullptr;
+					code.current=code.current->next.get();
 				}
+			}
+			if(!have_code)
+			{
+				found=&code;
+				if(code.current==nullptr)
+				{
+					have_code = true;
+				}
+			}
+		}
+		else
+		{
+			/* find longest matching sequence */
+			ir_code_node* search = code.next.get();
+			if (search == nullptr ||
+				code.next != nullptr && code.current == nullptr)
+			{
+				code.current = nullptr;
+			}
+			else
+			{
+				int sequence_match = 0;
+					
+				while(search != code.current->next.get())
+				{
+					int flag = 1;
+					ir_code_node* prev = nullptr; /* means codes->code */
+					ir_code_node* next = search;
+					while(next != code.current)
+					{
+						if(get_ir_code(&code, prev) != get_ir_code(&code, next))
+						{
+							flag = 0;
+							break;
+						}
+						prev = get_next_ir_code_node(&code, prev);
+						next = get_next_ir_code_node(&code, next);
+					}
+					if(flag == 1)
+					{
+						next_all = gen_ir_code(remote, remote->pre_data,
+									    get_ir_code(&code, prev),
+									    remote->post_data);
+						if(match_ir_code(remote, next_all, all))
+						{
+							code.current = get_next_ir_code_node(&code, prev);
+							sequence_match = 1;
+							found_code = true;
+							if(!have_code)
+							{
+								found = &code;
+							}
+							break;
+						}
+					}
+					search = search->next.get();
+				}
+				if(!sequence_match) code.current = nullptr;
 			}
 		}
 	}
