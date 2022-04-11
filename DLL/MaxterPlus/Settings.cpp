@@ -20,9 +20,7 @@
  */
 
 #include "Settings.h"
-#include <tchar.h>
-#include <Windows.h>
-#include <stdio.h>
+#include <winlirc/winlirc_api.h>
 
 Settings::Settings() {
 
@@ -41,41 +39,10 @@ int	Settings::getSettings() {
 
 void Settings::saveSettings() {
 
-	//===============================
-	TCHAR currentDirectory[MAX_PATH];
-	TCHAR temp[8];
-	FILE  *file;	
-	//===============================
-
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	//
-	// if our ini files doesn't exist try and create it
-	//
-	file = _tfopen(currentDirectory,_T("r"));
-
-	if(!file) {
-		file = _tfopen(currentDirectory,_T("w"));
-		if(file) fclose(file);
-	}
-	else {
-		fclose(file);
-	}
-	
-	_sntprintf(temp, _countof(temp), _T("%i"), buttonSettings);
-	WritePrivateProfileString(_T("MaxterPlus"),_T("ButtonSettings"),temp, currentDirectory);
+	winlirc_settings_set_int(L"MaxterPlus",L"ButtonSettings", buttonSettings);
 }
 
 void Settings::loadSettings() {
 
-	//===============================
-	TCHAR currentDirectory[MAX_PATH];
-	//===============================
-
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	buttonSettings = GetPrivateProfileInt(_T("MaxterPlus"),_T("ButtonSettings"),62,currentDirectory);
+	buttonSettings = winlirc_settings_get_int(L"MaxterPlus", L"ButtonSettings", 62);
 }

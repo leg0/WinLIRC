@@ -25,6 +25,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "stdafx.h"
 #include <winlirc/WLPluginAPI.h>
+#include <winlirc/winlirc_api.h>
 #include "irremote.h"
 
 const wchar_t *g_cPluginName = L"hauppauge-irremote";
@@ -36,32 +37,13 @@ HANDLE g_exitEvent = 0;
 
 bool setLibraryPath(const wchar_t *path)
 {
-	wchar_t currentDirectory[MAX_PATH];
-	FILE  *file;
-
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-	wcscat_s(currentDirectory, MAX_PATH - 1, L"\\WinLIRC.ini");
-
-	// if our ini files doesn't exist try and create it
-	_wfopen_s(&file, currentDirectory, L"r");
-
-	if(!file)
-		_wfopen_s(&file, currentDirectory, L"w");
-
-	if(file)
-		fclose(file);
-
-	return WritePrivateProfileString(g_cPluginName, g_cLibPathStr, path, currentDirectory) != FALSE;
+	winlirc_settings_set_wstring(g_cPluginName, g_cLibPathStr, path);
+	return true;
 }
 
 bool getLibraryPath(wchar_t *path, size_t maxPathLen)
 {
-	wchar_t currentDirectory[MAX_PATH];
-
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-	wcscat_s(currentDirectory, MAX_PATH - 1, L"\\WinLIRC.ini");
-
-	return GetPrivateProfileString(g_cPluginName, g_cLibPathStr, NULL, path, maxPathLen, currentDirectory) != FALSE;
+	return winlirc_settings_get_wstring(g_cPluginName, g_cLibPathStr, path, maxPathLen, L"") > 0;
 }
 
 ///////////////////////

@@ -20,9 +20,7 @@
  */
 
 #include "Settings.h"
-#include <tchar.h>
-#include <Windows.h>
-#include <stdio.h>
+#include <winlirc/winlirc_api.h>
 #include "MCEDefines.h"
 
 Settings::Settings() {
@@ -45,41 +43,10 @@ int Settings::getTransmitterChannels() {
 
 void Settings::saveSettings() {
 
-	//===============================
-	TCHAR currentDirectory[MAX_PATH];
-	TCHAR temp[8];
-	FILE  *file;	
-	//===============================
-
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	//
-	// if our ini files doesn't exist try and create it
-	//
-	file = _tfopen(currentDirectory,_T("r"));
-
-	if(!file) {
-		file = _tfopen(currentDirectory,_T("w"));
-		if(file) fclose(file);
-	}
-	else {
-		fclose(file);
-	}
-	
-	_sntprintf(temp, _countof(temp), _T("%i"), transmitterChannels);
-	WritePrivateProfileString(_T("MCEVista"),_T("TransmitterChannels"),temp, currentDirectory);
+	winlirc_settings_set_int(L"MCEVista", L"TransmitterChannels", transmitterChannels);
 }
 
 void Settings::loadSettings() {
 
-	//===============================
-	TCHAR currentDirectory[MAX_PATH];
-	//===============================
-
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	transmitterChannels = GetPrivateProfileInt(_T("MCEVista"),_T("TransmitterChannels"),MCE_BLASTER_BOTH,currentDirectory);
+	transmitterChannels = winlirc_settings_get_int(L"MCEVista", L"TransmitterChannels", MCE_BLASTER_BOTH);
 }

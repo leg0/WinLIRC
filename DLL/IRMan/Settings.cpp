@@ -20,9 +20,9 @@
  */
 
 #include "Settings.h"
+#include <winlirc/winlirc_api.h>
 #include <tchar.h>
 #include <Windows.h>
-#include <stdio.h>
 
 Settings::Settings() {
 
@@ -43,41 +43,15 @@ int Settings::getComPort() {
 
 void Settings::saveSettings() {
 
-	//===============================
-	TCHAR currentDirectory[MAX_PATH];
-	TCHAR temp[8];
-	FILE  *file;	
-	//===============================
-
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	//
-	// if our ini files doesn't exist try and create it
-	//
-	file = _tfopen(currentDirectory,_T("r"));
-
-	if(!file) {
-		file = _tfopen(currentDirectory,_T("w"));
-		if(file) fclose(file);
-	}
-	else {
-		fclose(file);
-	}
-	
-	_sntprintf(temp, _countof(temp), _T("%i"), comPort);
-	WritePrivateProfileString(_T("IRMan"),_T("ComPort"),temp, currentDirectory);
+	winlirc_settings_set_int(L"IRMan", L"ComPort", comPort);
 }
 
 void Settings::loadSettings() {
 
-	//===============================
-	TCHAR currentDirectory[MAX_PATH];
-	//===============================
+	comPort = winlirc_settings_get_int(L"IRMan", L"ComPort", 1);
 
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	comPort = GetPrivateProfileInt(_T("IRMan"),_T("ComPort"),1,currentDirectory);
+	// make sure that comPort is in range 0..255
+	if (comPort < 0 || 255 < comPort) {
+		comPort = 0;
+	}
 }

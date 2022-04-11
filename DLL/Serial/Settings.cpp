@@ -20,7 +20,7 @@
  */
 
 #include "Settings.h"
-#include <stdio.h>
+#include <winlirc/winlirc_api.h>
 
 Settings::Settings() {
 
@@ -29,67 +29,27 @@ Settings::Settings() {
 
 void Settings::saveSettings() {
 
-	//===============================
-	TCHAR currentDirectory[MAX_PATH];
-	TCHAR temp[32];
-	FILE  *file;	
-	//===============================
-
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	//
-	// if our ini files doesn't exist try and create it
-	//
-	file = _tfopen(currentDirectory,_T("r"));
-
-	if(!file) {
-		file = _tfopen(currentDirectory,_T("w"));
-		if(file) fclose(file);
-	}
-	else {
-		fclose(file);
-	}
-
-	WritePrivateProfileString(_T("SerialDevice"),_T("Port"), port, currentDirectory);
-	WritePrivateProfileString(_T("SerialDevice"),_T("Speed"), speed, currentDirectory);
-
-	_sntprintf(temp, _countof(temp), _T("%i"), animax);
-	WritePrivateProfileString(_T("SerialDevice"),_T("Animax"),	temp, currentDirectory);
-	
-	_sntprintf(temp, _countof(temp), _T("%i"), deviceType);
-	WritePrivateProfileString(_T("SerialDevice"),_T("DeviceType"),	temp, currentDirectory);
-
-	_sntprintf(temp, _countof(temp), _T("%i"), virtualPulse);
-	WritePrivateProfileString(_T("SerialDevice"),_T("VirtualPulse"),	temp, currentDirectory);
-
-	_sntprintf(temp, _countof(temp), _T("%i"), sense);
-	WritePrivateProfileString(_T("SerialDevice"),_T("Sense"),	temp, currentDirectory);
-
-	_sntprintf(temp, _countof(temp), _T("%i"), transmitterType);
-	WritePrivateProfileString(_T("SerialDevice"),_T("TransmitterType"),	temp, currentDirectory);
+	winlirc_settings_set_wstring(L"SerialDevice", L"Port", port);
+	winlirc_settings_set_wstring(L"SerialDevice", L"Speed", speed);
+	winlirc_settings_set_int(L"SerialDevice",L"Animax", animax);
+	winlirc_settings_set_int(L"SerialDevice", L"DeviceType", deviceType);
+	winlirc_settings_set_int(L"SerialDevice", L"VirtualPulse", virtualPulse);
+	winlirc_settings_set_int(L"SerialDevice", L"Sense", sense);
+	winlirc_settings_set_int(L"SerialDevice", L"TransmitterType", transmitterType);
 }
 
 void Settings::loadSettings() {
 
-	//===============================
-	TCHAR currentDirectory[MAX_PATH];
-	TCHAR temp[64];
-	//===============================
-
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	GetPrivateProfileString(_T("SerialDevice"),_T("Port"),_T("COM1"),temp,_countof(temp),currentDirectory);
+	wchar_t temp[32];
+	winlirc_settings_get_wstring(L"SerialDevice", L"Port", temp, std::size(temp), L"COM1");
 	port = temp;
 
-	GetPrivateProfileString(_T("SerialDevice"),_T("Speed"),_T("115200"),temp,_countof(temp),currentDirectory);
+	winlirc_settings_get_wstring(L"SerialDevice", L"Speed", temp, std::size(temp), L"115200");
 	speed = temp;
 
-	animax			= GetPrivateProfileInt(_T("SerialDevice"),_T("Animax"),0,currentDirectory);
-	deviceType		= GetPrivateProfileInt(_T("SerialDevice"),_T("DeviceType"),1,currentDirectory);
-	virtualPulse	= GetPrivateProfileInt(_T("SerialDevice"),_T("VirtualPulse"),300,currentDirectory);
-	sense			= GetPrivateProfileInt(_T("SerialDevice"),_T("Sense"),-1,currentDirectory);
-	transmitterType	= GetPrivateProfileInt(_T("SerialDevice"),_T("TransmitterType"),0,currentDirectory);
+	animax			= winlirc_settings_get_int(L"SerialDevice", L"Animax", 0);
+	deviceType		= winlirc_settings_get_int(L"SerialDevice", L"DeviceType", 1);
+	virtualPulse	= winlirc_settings_get_int(L"SerialDevice", L"VirtualPulse", 300);
+	sense			= winlirc_settings_get_int(L"SerialDevice", L"Sense", -1);
+	transmitterType	= winlirc_settings_get_int(L"SerialDevice", L"TransmitterType", 0);
 }
