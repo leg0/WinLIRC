@@ -19,10 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
-
-#include <tchar.h>
+#pragma once
 
 enum SP {
 	SP_POSITIVE		= 0,
@@ -36,8 +33,8 @@ class Settings
 public:
 	Settings();
 
-	void	setAudioDeviceName(TCHAR *name);
-	void	getAudioDeviceName(TCHAR *out);
+	void	setAudioDeviceName(wchar_t *name);
+	void	getAudioDeviceName(wchar_t *out);
 
 	void	setAudioFormat(int format);
 	int		getAudioFormat();
@@ -57,13 +54,10 @@ public:
 private:
 
 	//========================
-	TCHAR	m_deviceName[32];			// 32 is max length
+	wchar_t	m_deviceName[32];			// 32 is max length
 	int		m_audioFormat;
 	bool	m_leftChannel;			// if mono ignore
 	int		m_noiseValue;
 	SP		m_polarity;
 	//========================
 };
-
-#endif
-

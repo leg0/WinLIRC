@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of the WinLIRC package, which was derived from
  * LIRC (Linux Infrared Remote Control) 0.8.6.
  *
@@ -20,8 +20,10 @@
  */
 
 #include "AudioFormats.h"
+#include <Windows.h>
 #include <MMSystem.h>
 #include "StringFunctions.h"
+#include <cstdint>
 
 bool AudioFormats::formatSupported(int format) {
 
@@ -33,72 +35,72 @@ bool AudioFormats::formatSupported(int format) {
 	//if(format & WAVE_FORMAT_1M08) return true;
 	//if(format & WAVE_FORMAT_1S08) return true;
 
-	if(format & WAVE_FORMAT_2M08) return true;
-	if(format & WAVE_FORMAT_2S08) return true;
+	if (format & WAVE_FORMAT_2M08) return true;
+	if (format & WAVE_FORMAT_2S08) return true;
 
-	if(format & WAVE_FORMAT_4M08) return true;
-	if(format & WAVE_FORMAT_4S08) return true;
+	if (format & WAVE_FORMAT_4M08) return true;
+	if (format & WAVE_FORMAT_4S08) return true;
 
-	if(format & WAVE_FORMAT_48M08) return true;
-	if(format & WAVE_FORMAT_48S08) return true;
+	if (format & WAVE_FORMAT_48M08) return true;
+	if (format & WAVE_FORMAT_48S08) return true;
 
-	if(format & WAVE_FORMAT_96M08) return true;
-	if(format & WAVE_FORMAT_96S08) return true;
+	if (format & WAVE_FORMAT_96M08) return true;
+	if (format & WAVE_FORMAT_96S08) return true;
 
 	return false;
 }
 
-void AudioFormats::getFormatString(int format, TCHAR *outString, int noBuffElements) {
+void AudioFormats::getFormatString(int format, wchar_t* outString, int noBuffElements) {
 
-	if(!noBuffElements) return;
+	if (!noBuffElements) return;
 
-	if(format & WAVE_FORMAT_1M08) { _tcscpy_s(outString,noBuffElements,_T("11.025 kHz, Mono, 8-bit")); return; }
-	if(format & WAVE_FORMAT_1S08) { _tcscpy_s(outString,noBuffElements,_T("11.025 kHz, Stereo, 8-bit")); return; }
+	if (format & WAVE_FORMAT_1M08) { wcscpy_s(outString, noBuffElements, L"11.025 kHz, Mono, 8-bit"); return; }
+	if (format & WAVE_FORMAT_1S08) { wcscpy_s(outString, noBuffElements, L"11.025 kHz, Stereo, 8-bit"); return; }
 
-	if(format & WAVE_FORMAT_2M08) { _tcscpy_s(outString,noBuffElements,_T("22.05 kHz, Mono, 8-bit")); return; }
-	if(format & WAVE_FORMAT_2S08) { _tcscpy_s(outString,noBuffElements,_T("22.05 kHz, Stereo, 8-bit")); return; }
+	if (format & WAVE_FORMAT_2M08) { wcscpy_s(outString, noBuffElements, L"22.05 kHz, Mono, 8-bit"); return; }
+	if (format & WAVE_FORMAT_2S08) { wcscpy_s(outString, noBuffElements, L"22.05 kHz, Stereo, 8-bit"); return; }
 
-	if(format & WAVE_FORMAT_4M08) { _tcscpy_s(outString,noBuffElements,_T("44.1 kHz, Mono, 8-bit")); return; }
-	if(format & WAVE_FORMAT_4S08) { _tcscpy_s(outString,noBuffElements,_T("44.1 kHz, Stereo, 8-bit")); return; }
+	if (format & WAVE_FORMAT_4M08) { wcscpy_s(outString, noBuffElements, L"44.1 kHz, Mono, 8-bit"); return; }
+	if (format & WAVE_FORMAT_4S08) { wcscpy_s(outString, noBuffElements, L"44.1 kHz, Stereo, 8-bit"); return; }
 
-	if(format & WAVE_FORMAT_48M08) { _tcscpy_s(outString,noBuffElements,_T("48 kHz, Mono, 8-bit")); return; }
-	if(format & WAVE_FORMAT_48S08) { _tcscpy_s(outString,noBuffElements,_T("48 kHz, Stereo, 8-bit")); return; }
+	if (format & WAVE_FORMAT_48M08) { wcscpy_s(outString, noBuffElements, L"48 kHz, Mono, 8-bit"); return; }
+	if (format & WAVE_FORMAT_48S08) { wcscpy_s(outString, noBuffElements, L"48 kHz, Stereo, 8-bit"); return; }
 
-	if(format & WAVE_FORMAT_96M08) { _tcscpy_s(outString,noBuffElements,_T("96 kHz, Mono, 8-bit")); return; }
-	if(format & WAVE_FORMAT_96S08) { _tcscpy_s(outString,noBuffElements,_T("96 kHz, Stereo, 8-bit")); return; }
+	if (format & WAVE_FORMAT_96M08) { wcscpy_s(outString, noBuffElements, L"96 kHz, Mono, 8-bit"); return; }
+	if (format & WAVE_FORMAT_96S08) { wcscpy_s(outString, noBuffElements, L"96 kHz, Stereo, 8-bit"); return; }
 
-	_tcscpy_s(outString,noBuffElements,_T("Format not supported"));
+	wcscpy_s(outString, noBuffElements, L"Format not supported");
 }
 
-void AudioFormats::getFormatDetails(int format, BOOL *outStereo, int *outFrequency) {
+void AudioFormats::getFormatDetails(int format, bool* outStereo, int* outFrequency) {
 
-	if(format & WAVE_FORMAT_1M08) { *outStereo = FALSE;	*outFrequency = 11025; return; }
-	if(format & WAVE_FORMAT_1S08) { *outStereo = TRUE;	*outFrequency = 11025; return; }
+	if (format & WAVE_FORMAT_1M08) { *outStereo = false;	*outFrequency = 11025; return; }
+	if (format & WAVE_FORMAT_1S08) { *outStereo = true;	*outFrequency = 11025; return; }
 
-	if(format & WAVE_FORMAT_2M08) { *outStereo = FALSE;	*outFrequency = 22050; return; }
-	if(format & WAVE_FORMAT_2S08) { *outStereo = TRUE;	*outFrequency = 22050; return; }
+	if (format & WAVE_FORMAT_2M08) { *outStereo = false;	*outFrequency = 22050; return; }
+	if (format & WAVE_FORMAT_2S08) { *outStereo = true;	*outFrequency = 22050; return; }
 
-	if(format & WAVE_FORMAT_4M08) { *outStereo = FALSE;	*outFrequency = 44100; return; }
-	if(format & WAVE_FORMAT_4S08) { *outStereo = TRUE;	*outFrequency = 44100; return; }
+	if (format & WAVE_FORMAT_4M08) { *outStereo = false;	*outFrequency = 44100; return; }
+	if (format & WAVE_FORMAT_4S08) { *outStereo = true;	*outFrequency = 44100; return; }
 
-	if(format & WAVE_FORMAT_48M08) { *outStereo = FALSE;*outFrequency = 48000; return; }
-	if(format & WAVE_FORMAT_48S08) { *outStereo = TRUE;	*outFrequency = 48000; return; }
+	if (format & WAVE_FORMAT_48M08) { *outStereo = false; *outFrequency = 48000; return; }
+	if (format & WAVE_FORMAT_48S08) { *outStereo = true;	*outFrequency = 48000; return; }
 
-	if(format & WAVE_FORMAT_96M08) { *outStereo = FALSE;*outFrequency = 96000; return; }
-	if(format & WAVE_FORMAT_96S08) { *outStereo = TRUE;	*outFrequency = 96000; return; }
+	if (format & WAVE_FORMAT_96M08) { *outStereo = false; *outFrequency = 96000; return; }
+	if (format & WAVE_FORMAT_96S08) { *outStereo = true;	*outFrequency = 96000; return; }
 }
 
-int AudioFormats::getAudioIndex(TCHAR *audioDeviceName) {
+int AudioFormats::getAudioIndex(wchar_t* audioDeviceName) {
 
-	UINT const numberOfDevices = waveInGetNumDevs();
+	uint32_t const numberOfDevices = waveInGetNumDevs();
 
-	for(UINT i=0; i<numberOfDevices; i++) {
+	for (uint32_t i = 0; i < numberOfDevices; i++) {
 
-		WAVEINCAPS caps;
-		waveInGetDevCaps(i,&caps,sizeof(caps));
+		WAVEINCAPSW caps;
+		waveInGetDevCapsW(i, &caps, sizeof(caps));
 		removeTrailingWhiteSpace(caps.szPname);
 
-		if(! _tcscmp(caps.szPname,audioDeviceName) ) return i;
+		if (!wcscmp(caps.szPname, audioDeviceName)) return i;
 	}
 
 	return -1;	//failed somehow

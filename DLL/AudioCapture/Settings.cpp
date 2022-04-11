@@ -20,23 +20,21 @@
  */
 
 #include "Settings.h"
-#include <tchar.h>
-#include <Windows.h>
-#include <stdio.h>
+#include <winlirc/winlirc_api.h>
 
 Settings::Settings() {
 
 	loadSettings();
 }
 
-void Settings::setAudioDeviceName(TCHAR *name) {
+void Settings::setAudioDeviceName(wchar_t *name) {
 
-	_tcscpy_s(m_deviceName,32,name);
+	wcscpy_s(m_deviceName,32,name);
 }
 
-void Settings::getAudioDeviceName(TCHAR *out) {
+void Settings::getAudioDeviceName(wchar_t *out) {
 
-	_tcscpy_s(out,32,m_deviceName);
+	wcscpy_s(out,32,m_deviceName);
 }
 
 void Settings::setAudioFormat(int format) {
@@ -80,47 +78,17 @@ void Settings::setNoiseValue(int n) {
 }
 
 void Settings::saveSettings() {
-
-	TCHAR currentDirectory[MAX_PATH];
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	//
-	// if our ini files doesn't exist try and create it
-	//
-	auto file = _tfopen(currentDirectory,_T("r"));
-	if(!file)
-		file = _tfopen(currentDirectory,_T("w"));
-	if (file)
-		fclose(file);
-
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"), m_deviceName, currentDirectory);
-
-	TCHAR temp[8];
-	_sntprintf(temp, _countof(temp), _T("%i"), m_audioFormat);
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("AudioFormat"),	temp, currentDirectory);
-	
-	_sntprintf(temp, _countof(temp), _T("%i"), m_leftChannel);
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("LeftChannel"),	temp, currentDirectory);
-
-	_sntprintf(temp, _countof(temp), _T("%i"), m_polarity);
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("Polarity"),	temp, currentDirectory);
-
-	_sntprintf(temp, _countof(temp), _T("%i"), m_noiseValue);
-	WritePrivateProfileString(_T("AudioInputPlugin"),_T("NoiseValue"),	temp, currentDirectory);
+	winlirc_settings_set_wstring(L"AudioInputPlugin",L"AudioDeviceName", m_deviceName);
+	winlirc_settings_set_int(L"AudioInputPlugin",L"AudioFormat", m_audioFormat);
+	winlirc_settings_set_int(L"AudioInputPlugin",L"LeftChannel", m_leftChannel);
+	winlirc_settings_set_int(L"AudioInputPlugin",L"Polarity", m_polarity);
+	winlirc_settings_set_int(L"AudioInputPlugin",L"NoiseValue", m_noiseValue);
 }
 
 void Settings::loadSettings() {
-
-	TCHAR currentDirectory[MAX_PATH];
-	GetCurrentDirectory(MAX_PATH,currentDirectory);
-
-	_tcscat(currentDirectory, _T("\\WinLIRC.ini"));
-
-	GetPrivateProfileString(_T("AudioInputPlugin"),_T("AudioDeviceName"),nullptr,m_deviceName,32,currentDirectory);
-
-	m_audioFormat	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("AudioFormat"),1,currentDirectory);
-	m_leftChannel	= (GetPrivateProfileInt(_T("AudioInputPlugin"),_T("LeftChannel"),1,currentDirectory)!=0);	//to shut the compiler up
-	m_polarity		= (SP)GetPrivateProfileInt(_T("AudioInputPlugin"),_T("Polarity"),(INT)SP_AUTOMATIC,currentDirectory);	//to shut the compiler up
-	m_noiseValue	= GetPrivateProfileInt(_T("AudioInputPlugin"),_T("NoiseValue"),16,currentDirectory);	//to shut the compiler up
+	winlirc_settings_get_wstring(L"AudioInputPlugin", L"AudioDeviceName", m_deviceName, 32, L"");
+	m_audioFormat = winlirc_settings_get_int(L"AudioInputPlugin", L"AudioFormat", 1);
+	m_leftChannel = winlirc_settings_get_int(L"AudioInputPlugin", L"LeftChannel", 1) != 0;
+	m_polarity = (SP)winlirc_settings_get_int(L"AudioInputPlugin", L"Polarity", SP_AUTOMATIC);
+	m_noiseValue = winlirc_settings_get_int(L"AudioInputPlugin", L"NoiseValue", 16);
 }

@@ -46,11 +46,11 @@ Settings	*guiSettings = nullptr;
 WL_API int init(WLEventHandle exitEvent) {
 
 	//=====================
-	TCHAR	deviceName[32];
+	wchar_t	deviceName[32];
 	int		deviceID;
 	int		audioFormat;
 	int		frequency;
-	BOOL	stereo;
+	bool	stereo;
 	bool	left;
 	//=====================
 
@@ -110,20 +110,20 @@ void addAudioDeviceList(HWND hwnd, int item) {
 	if(!numberOfDevices)
 		return;			//no audio devices
 
-	TCHAR audioDeviceName[32];
+	wchar_t audioDeviceName[32];
 	guiSettings->getAudioDeviceName(audioDeviceName);
 
 	BOOL foundDevice = FALSE;
 	UINT foundIndex = FALSE;
 	for(UINT i=0; i<numberOfDevices; i++) {
 
-		WAVEINCAPS caps;
-		waveInGetDevCaps(i, &caps, sizeof(caps));
+		WAVEINCAPSW caps;
+		waveInGetDevCapsW(i, &caps, sizeof(caps));
 		removeTrailingWhiteSpace(caps.szPname);
 
 		SendDlgItemMessage(hwnd,item,CB_ADDSTRING,0,(LPARAM)caps.szPname);
 
-		if(! _tcscmp(caps.szPname,audioDeviceName)) {
+		if(! wcscmp(caps.szPname,audioDeviceName)) {
 			foundDevice		= TRUE;
 			foundIndex		= i;
 		}
@@ -132,11 +132,11 @@ void addAudioDeviceList(HWND hwnd, int item) {
 	//
 	// if we haven't any device listed yet add the first one from the list
 	//
-	if(! _tcscmp(_T(""),audioDeviceName) ) {
+	if(! wcscmp(L"", audioDeviceName) ) {
 
 		SendDlgItemMessage(hwnd,item,CB_SETCURSEL,0,0);	//select first item
-		WAVEINCAPS caps;
-		waveInGetDevCaps(0,&caps,sizeof(caps));
+		WAVEINCAPSW caps;
+		waveInGetDevCapsW(0,&caps,sizeof(caps));
 		removeTrailingWhiteSpace(caps.szPname);
 		guiSettings->setAudioDeviceName(caps.szPname);
 	}
@@ -154,8 +154,8 @@ void addAudioFormats(HWND hwnd, int item) {
 
 	SendDlgItemMessage(hwnd,item,CB_RESETCONTENT,0,0);		//reset content
 
-	TCHAR selectedAudioDevice[32];
-	GetDlgItemText(hwnd,IDC_COMBO1,selectedAudioDevice,32);
+	wchar_t selectedAudioDevice[32];
+	GetDlgItemTextW(hwnd,IDC_COMBO1,selectedAudioDevice,32);
 
 	int const audioIndex = AudioFormats::getAudioIndex(selectedAudioDevice);
 
@@ -175,7 +175,7 @@ void addAudioFormats(HWND hwnd, int item) {
 
 				if(AudioFormats::formatSupported(tempFormat)) {
 
-					TCHAR string[64];
+					wchar_t string[64];
 					AudioFormats::getFormatString(tempFormat,string,64);
 
 					//add string to combo box thing !
@@ -243,7 +243,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 			//
 			// disable / enable CB3
 			//
-			int stereo;
+			bool stereo;
 			int temp;
 			AudioFormats::getFormatDetails(audioFormat,&stereo,&temp);
 
@@ -265,10 +265,10 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 			//
 			// edit box - slider value
 			//
-			TCHAR editText[4];
+			wchar_t editText[4];
 
-			_stprintf_s(editText,_countof(editText),_T("%i"),guiSettings->getNoiseValue());
-			SetWindowText(GetDlgItem(hwnd,IDC_EDIT1),editText);
+			swprintf_s(editText, std::size(editText), L"%i", guiSettings->getNoiseValue());
+			SetWindowTextW(GetDlgItem(hwnd, IDC_EDIT1), editText);
 
 			ShowWindow(hwnd, SW_SHOW);
 
@@ -280,9 +280,9 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 			if(lParam==(LPARAM)GetDlgItem(hwnd,IDC_SLIDER1)) {
 
 				guiSettings->setNoiseValue(SendDlgItemMessage(hwnd,IDC_SLIDER1,TBM_GETPOS,0,0));
-				TCHAR editText[4];
-				_stprintf_s(editText,_countof(editText),_T("%i"),guiSettings->getNoiseValue());
-				SetWindowText(GetDlgItem(hwnd,IDC_EDIT1),editText);
+				wchar_t editText[4];
+				swprintf_s(editText, std::size(editText), L"%i", guiSettings->getNoiseValue());
+				SetWindowTextW(GetDlgItem(hwnd, IDC_EDIT1), editText);
 			}
 		}
 
@@ -314,8 +314,8 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 						// update selected device
 						//
 
-						TCHAR device[32];
-						GetDlgItemText(hwnd,IDC_COMBO1,device,_countof(device));
+						wchar_t device[32];
+						GetDlgItemTextW(hwnd,IDC_COMBO1,device, std::size(device));
 
 						guiSettings->setAudioDeviceName(device);
 
@@ -335,7 +335,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 						//
 						if(AudioFormats::formatSupported(audioFormat)) {
 						
-							int stereo;
+							bool stereo;
 							int temp;
 							AudioFormats::getFormatDetails(audioFormat,&stereo,&temp);
 

@@ -1,8 +1,3 @@
-#ifndef STRINGFUNCTIONS_H
-#define STRINGFUNCTIONS_H
+#pragma once
 
-#include <tchar.h>
-
-void removeTrailingWhiteSpace(TCHAR *string);
-
-#endif
+void removeTrailingWhiteSpace(wchar_t *string);

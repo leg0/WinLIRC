@@ -1,8 +1,9 @@
 #include "StringFunctions.h"
+#include <cstring>
 
-void removeTrailingWhiteSpace(TCHAR *string) {
+void removeTrailingWhiteSpace(wchar_t* string) {
 
-	size_t stringLength = _tcslen(string);
+	size_t stringLength = wcslen(string);
 	while(stringLength>0) {
 
 		if(string[stringLength-1] == ' ') {

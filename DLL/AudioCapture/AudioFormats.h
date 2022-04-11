@@ -19,18 +19,12 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef AUDIOFORMATS_H
-#define AUDIOFORMATS_H
-
-#include <Windows.h>
-#include <tchar.h>
+#pragma once
 
 namespace AudioFormats {
 
 	bool	formatSupported	(int format);
-	void	getFormatString	(int format, TCHAR *outString, int noBuffElements);
-	void	getFormatDetails(int format, BOOL *outStereo, int *outFrequency);
-	int		getAudioIndex	(TCHAR *audioDeviceName);
+	void	getFormatString	(int format, wchar_t *outString, int noBuffElements);
+	void	getFormatDetails(int format, bool *outStereo, int *outFrequency);
+	int		getAudioIndex	(wchar_t *audioDeviceName);
 }
-
-#endif
