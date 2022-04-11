@@ -53,10 +53,14 @@ BOOL WinLircApp::InitInstance() {
 	WL_DEBUG("Winlirc starting");
 	AfxInitRichEdit();
 
+	auto const pluginsDirectory = getPluginsDirectory();
+	if (!fs::exists(pluginsDirectory)) {
+		fs::create_directories(pluginsDirectory);
+	}
 
 	// set current directory for plugins from exe path
-	fs::current_path(getPluginsDirectory());
-	this->config = std::make_unique<CIRConfig>(getPluginsDirectory() / L"WinLIRC.ini");
+	fs::current_path(pluginsDirectory);
+	this->config = std::make_unique<CIRConfig>(pluginsDirectory / L"WinLIRC.ini");
 	auto& config = *this->config;
 	config.readINIFile();
 

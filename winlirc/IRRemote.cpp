@@ -173,9 +173,10 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 	found_code=0;
 	have_code=0;
 	auto codes=remote->codes.begin();
-	if(codes!= remote->codes.end())
+	auto const codes_end = remote->codes.end();
+	if (codes != codes_end)
 	{
-		while (codes->name != std::nullopt)
+		for(; codes != codes_end; ++codes)
 		{
 			ir_code next_all = gen_ir_code(remote, remote->pre_data,
 					       get_ir_code(&*codes, codes->current),
@@ -253,7 +254,6 @@ struct ir_ncode *get_code(struct ir_remote *remote,
 					if(!sequence_match) codes->current = nullptr;
 				}
 			}
-			codes++;
 		}
 	}
 
