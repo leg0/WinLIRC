@@ -6,7 +6,7 @@ Forked from http://winlirc.sourceforge.net/
 
 # Prerequisites
 
-  * [Visual Studio 2019](https://visualstudio.microsoft.com/) (any edition). Make sure you install MFC
+  * [Visual Studio 2022](https://visualstudio.microsoft.com/) (any edition). Make sure you install MFC
   * [CMake](https://cmake.org/download/).
 
 # Building
