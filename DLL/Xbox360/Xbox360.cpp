@@ -55,7 +55,7 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+WL_API int decodeIR(struct ir_remote *remotes, size_t remotes_count, char *out, size_t out_size) {
 
 	if(sendReceive) {
 		using namespace std::chrono_literals;

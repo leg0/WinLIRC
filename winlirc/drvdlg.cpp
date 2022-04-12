@@ -367,7 +367,7 @@ void Cdrvdlg::OnSendcode()
 	const char *remoteName	= T2A(m_remote_edit);
 	const char *codeName	= T2A(m_ircode_edit);
 
-	ir_remote* sender = get_remote_by_name(global_remotes.get(), remoteName);
+	ir_remote* sender = get_remote_by_name(global_remotes, remoteName);
 
 	if (sender==nullptr) {
 		MessageBox(_T("No match found for remote!"));
@@ -428,11 +428,9 @@ void Cdrvdlg::UpdateRemoteComboLists()
 	m_remote_DropDown.ResetContent();
 
 	//Fill remote combo box
-	ir_remote* sender = global_remotes.get();
-	while (sender != nullptr)
+	for (auto& sender : global_remotes)
 	{
-		m_remote_DropDown.AddString(A2T(sender->name.c_str()));
-		sender = sender->next.get();
+		m_remote_DropDown.AddString(A2T(sender.name.c_str()));
 	}
 	//Set selected item
 	if (m_remote_DropDown.SelectString(-1,m_remote_edit) == CB_ERR)
@@ -451,7 +449,7 @@ void Cdrvdlg::UpdateIrCodeComboLists()
 	UpdateData(TRUE);
 	
 	//Retrieve pointer to remote by name
-	ir_remote* selected_remote = get_remote_by_name(global_remotes.get(), T2A(m_remote_edit.GetBuffer()));
+	ir_remote* selected_remote = get_remote_by_name(global_remotes, T2A(m_remote_edit.GetBuffer()));
 
 	m_IrCodeEditCombo.ResetContent();
 

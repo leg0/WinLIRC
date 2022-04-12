@@ -4,6 +4,7 @@
 #include <memory>
 #include <stdio.h>
 #include <sys/types.h>
+#include <vector>
 
 struct flaglist
 {
@@ -43,4 +44,4 @@ enum directive {ID_none,ID_remote,ID_codes,ID_raw_codes,ID_raw_name};
 struct ir_remote;
 
 int checkMode(int is_mode, int c_mode, char const* error);
-std::unique_ptr<ir_remote> read_config(FILE *f, const char *name);
+std::vector<ir_remote> read_config(FILE *f, const char *name);

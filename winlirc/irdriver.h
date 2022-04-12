@@ -20,7 +20,7 @@ public:
 	bool init();
 	void deinit();
 	int  sendIR(ir_remote* remote, ir_ncode* code, int repeats) const;
-	int  decodeIR(ir_remote* remote, char* out, size_t out_size) const;
+	int  decodeIR(ir_remote* remote, size_t remotes_count, char* out, size_t out_size) const;
 	int  setTransmitters(unsigned int transmitterMask) const;
 
 

@@ -23,7 +23,7 @@
 #include "Globals.h"
 #include <stdio.h>
 
-Settings settings;
+irtoy::Settings settings;
 
 HANDLE	threadExitEvent	= nullptr;
 HANDLE	dataReadyEvent	= nullptr;

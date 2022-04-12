@@ -23,20 +23,22 @@
 #include "stdafx.h"
 #include "irconfig.h"
 #include "irdriver.h"
+#include "ir_remote.h"
 #include <atlbase.h>
 #include "config.h"
 #include "remote.h"
 #include "config.h"
 #include "wl_debug.h"
+#include <vector>
 
-std::unique_ptr<ir_remote> global_remotes;
+std::vector<ir_remote> global_remotes;
 std::mutex CS_global_remotes;
 
 CIRConfig::CIRConfig(std::filesystem::path iniFilePath)
 	: iniFilePath{iniFilePath.wstring()}
 {
 	std::lock_guard lock{ CS_global_remotes };
-	global_remotes.reset();
+	global_remotes.clear();
 }
 
 CIRConfig::~CIRConfig()
@@ -45,7 +47,7 @@ CIRConfig::~CIRConfig()
 		
 	std::lock_guard lock{ CS_global_remotes };
 
-	global_remotes.reset();
+	global_remotes.clear();
 	
 	WL_DEBUG("~CIRConfig done\n");
 }
@@ -60,7 +62,7 @@ bool CIRConfig::readConfig() {
 	if(remoteConfig.empty() || (file=_wfopen(remoteConfig.c_str(),L"r"))==nullptr)	
 		return false;
 
-	global_remotes.reset();
+	global_remotes.clear();
 	
 	USES_CONVERSION;
 	global_remotes = read_config(file,T2A(remoteConfig.c_str()));
@@ -69,17 +71,17 @@ bool CIRConfig::readConfig() {
 
 	/* ??? bad input causes codes to be null, but no */
 	/* error is returned from read_config. */
-	for (auto sr = global_remotes.get(); sr != nullptr; sr = sr->next.get())
+	for (auto& sr : global_remotes)
 	{
-		if (sr->codes.empty())
+		if (sr.codes.empty())
 		{
 			WL_DEBUG("read_config returned remote with null codes\n");
-			global_remotes.reset();
+			global_remotes.clear();
 			return false;
 		}
 	}
 
-	if (global_remotes == nullptr)
+	if (global_remotes.empty())
 	{
 		WL_DEBUG("read_config returned null\n");
 		return false;

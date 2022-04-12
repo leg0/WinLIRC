@@ -88,6 +88,7 @@ WINLIRC_API bool winlirc_decodeCommand(
 	rbuf* rec_buffer,
 	hardware const* hw,
 	ir_remote* remotes,
+	size_t remotes_count,
 	char* out,
 	size_t out_size);
 

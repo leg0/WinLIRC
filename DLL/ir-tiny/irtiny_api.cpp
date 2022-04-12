@@ -70,14 +70,14 @@ static constexpr hardware irtiny_hardware =
     .get_ir_code        = nullptr
 };
 
-extern "C" int static irtiny_decodeIR(ir_remote* remotes, char* out, size_t out_size)
+extern "C" int static irtiny_decodeIR(ir_remote* remotes, size_t remotes_count, char* out, size_t out_size)
 {
     using namespace std::chrono_literals;
     if (!irDriver || !irDriver->waitTillDataIsReady(0us))
         return 0;
 
     winlirc_clear_rec_buffer(&rec_buffer, &irtiny_hardware);
-    return winlirc_decodeCommand(&rec_buffer, &irtiny_hardware, remotes, out, out_size);
+    return winlirc_decodeCommand(&rec_buffer, &irtiny_hardware, remotes, remotes_count, out, out_size);
 }
 
 extern "C" hardware const* irtiny_getHardware()

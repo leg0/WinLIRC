@@ -39,7 +39,7 @@ public:
 	BOOL	init		();
 	void	deinit		();
 	int		sendIR		(ir_remote *remote, ir_ncode *code, int repeats);
-	int		decodeIR	(ir_remote *remote, char *out, size_t out_size);
+	int		decodeIR	(ir_remote *remote, size_t remotes_count, char *out, size_t out_size);
 
 	hardware const* getHardware();
 

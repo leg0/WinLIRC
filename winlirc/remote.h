@@ -8,17 +8,21 @@
 #include <sys/types.h>
 #include <string.h>
 #include <math.h>
+#include <vector>
 
 struct ir_ncode;
 struct ir_code_node;
 struct ir_remote;
 
-static inline ir_remote* get_remote_by_name(ir_remote* remotes, const char *name)
+static inline ir_remote* get_remote_by_name(std::vector<ir_remote>& remotes, const char *name)
 {
-	if (remotes == nullptr || _stricmp(name, remotes->name.c_str()) == 0)
-		return remotes;
-	else
-		return get_remote_by_name(remotes->next.get(), name);
+	auto it = std::find_if(begin(remotes), end(remotes), [&](auto& remote)
+		{
+			return _stricmp(name, remote.name.c_str()) == 0;
+		});
+	if (it == end(remotes))
+		return nullptr;
+	return &*it;
 }
 
 static inline auto get_code_by_name(std::vector<ir_ncode>& codes, char const* name)

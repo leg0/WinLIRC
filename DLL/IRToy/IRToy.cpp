@@ -30,14 +30,31 @@
 #include <tchar.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-void initHardwareStruct();
-extern hardware hw;
 extern rbuf rec_buffer;
+
+static lirc_t irtoy_readData(lirc_t timeout);
+static void irtoy_wait_for_data(lirc_t timeout);
+static int irtoy_data_ready();
+
+static constexpr hardware hw = {
+	.plugin_api_version = winlirc_plugin_api_version,
+	.device = "hw",
+	.name = "IRToy",
+	.features = LIRC_CAN_REC_MODE2,
+	.send_mode = 0,
+	.rec_mode = LIRC_MODE_MODE2,
+	.code_length = 0,
+	.resolution = 0,
+	.decode_func = &winlirc_receive_decode,
+	.readdata = &irtoy_readData,
+	.wait_for_data = &irtoy_wait_for_data,
+	.data_ready = &irtoy_data_ready,
+	.get_ir_code = nullptr,
+};
 
 WL_API int init(WLEventHandle exitEvent) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
-	initHardwareStruct();
 
 	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
@@ -138,17 +155,13 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 WL_API void	loadSetupGui() {
 
-	//==============
-	HWND	hDialog;
 	MSG		msg;
-    INT		status;
-	//==============
+	auto const hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),nullptr,dialogProc);
 
-	hDialog = CreateDialog((HINSTANCE)(&__ImageBase),MAKEINTRESOURCE(IDD_DIALOG1),nullptr,dialogProc);
+    while (true) {
 
-    while ((status = GetMessage (& msg, 0, 0, 0)) != 0) {
-
-        if (status == -1) return;
+		auto const status = GetMessage(&msg, 0, 0, 0);
+        if (status <= 0) return;
 
         if (!IsDialogMessage (hDialog, & msg)) {
 
@@ -168,7 +181,7 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+WL_API int decodeIR(struct ir_remote *remotes, size_t remotes_count, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 		using namespace std::chrono_literals;
@@ -178,7 +191,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 		winlirc_clear_rec_buffer(&rec_buffer, &hw);
 
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,remotes_count,out,out_size)) {
 			return 1;
 		}
 	}
@@ -186,8 +199,35 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
+static lirc_t irtoy_readData(lirc_t timeout) {
+
+	if (!sendReceiveData) return 0;
+
+	sendReceiveData->waitTillDataIsReady(std::chrono::microseconds{ timeout });
+
+	lirc_t data = 0;
+	sendReceiveData->getData(&data);
+
+	return data;
+}
+
+static void irtoy_wait_for_data(lirc_t timeout) {
+
+	if (!sendReceiveData) return;
+
+	sendReceiveData->waitTillDataIsReady(std::chrono::microseconds{ timeout });
+}
+
+static int irtoy_data_ready() {
+
+	if (!sendReceiveData) return 0;
+
+	if (sendReceiveData->dataReady()) return 1;
+
+	return 0;
+}
+
 WL_API hardware const* getHardware() {
 
-	initHardwareStruct();
 	return &hw;
 }

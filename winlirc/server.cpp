@@ -315,7 +315,7 @@ std::pair<bool, std::string> Cserver::parseSendString(char const* string)
     if (result < 2)
         return { false, "DATA\n1\nremote or code missing\n"s };
 
-    ir_remote* const sender = get_remote_by_name(global_remotes.get(), remoteName);
+    ir_remote* const sender = get_remote_by_name(global_remotes, remoteName);
 
     if (sender == nullptr)
         return { false, "DATA\n1\nremote not found\n"s };
@@ -350,39 +350,22 @@ std::pair<bool, std::string> Cserver::parseSendString(char const* string)
 
 std::pair<bool, std::string> Cserver::parseListString(const char* string)
 {
-    //====================
-    char* remoteName;
-    char* codeName;
-    int		n;
-    struct ir_remote* all;
-    //====================
-
     std::lock_guard lock{ CS_global_remotes };
 
-    remoteName = strtok(nullptr, " \t\r");
-    codeName = strtok(nullptr, " \t\r");
-    n = 0;
-    all = global_remotes.get();
+    auto const remoteName = strtok(nullptr, " \t\r");
+    auto const codeName = strtok(nullptr, " \t\r");
 
     if (!remoteName)
     {
-        while (all)
-        {
-            n++;
-            all = all->next.get();
-        }
-
         std::string response;
-        if (n != 0)
+        if (!global_remotes.empty())
         {
-            response = "DATA\n"s + std::to_string(n) + "\n";
-            all = global_remotes.get();
+            response = "DATA\n"s + std::to_string(global_remotes.size()) + "\n";
 
-            while (all)
+            for (auto& remote : global_remotes)
             {
-                response += all->name;
+                response += remote.name;
                 response += "\n";
-                all = all->next.get();
             }
         }
 
@@ -390,22 +373,22 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
     }
 
     // find remote name 
-
+    ir_remote* remote = nullptr;
     if (remoteName) {
 
-        all = get_remote_by_name(all, remoteName);
-        if (!all)
+        remote = get_remote_by_name(global_remotes, remoteName);
+        if (!remote)
             return { false, "DATA\n1\nunknown remote: "s + remoteName + "\n" };
     }
 
     if (remoteName && !codeName)
     {
         std::string response;
-        if (!all->codes.empty())
+        if (!remote->codes.empty())
         {
-            response = "DATA\n"s + std::to_string(all->codes.size()) + "\n";
+            response = "DATA\n"s + std::to_string(remote->codes.size()) + "\n";
 
-            for (auto& c : all->codes)
+            for (auto& c : remote->codes)
             {
                 response += *c.name;
                 response += "\n";
@@ -416,8 +399,8 @@ std::pair<bool, std::string> Cserver::parseListString(const char* string)
 
     if (remoteName && codeName)
     {
-        auto code = get_code_by_name(all->codes, codeName);
-        if (code != end(all->codes))
+        auto code = get_code_by_name(remote->codes, codeName);
+        if (code != end(remote->codes))
         {
             char buf[100];
             sprintf(buf, "DATA\n1\n%016llX %s\n", code->code, code->name->c_str());

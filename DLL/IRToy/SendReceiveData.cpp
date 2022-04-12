@@ -35,17 +35,6 @@ DWORD WINAPI IRToy(void *recieveClass) {
 	return 0;
 }
 
-SendReceiveData::SendReceiveData() {
-
-	bufferStart		= 0;
-	bufferEnd		= 0;
-	threadHandle	= nullptr;
-	exitEvent		= nullptr;
-	overlappedEvent	= nullptr;
-
-	memset(&overlapped,0,sizeof(OVERLAPPED));
-}
-
 bool SendReceiveData::init() {
 
 	//===================
@@ -273,24 +262,18 @@ void SendReceiveData::receiveLoop() {
 // sending stuff below
 //======================================================================================
 
-UCHAR SendReceiveData::calcPR2(int frequency) {
+UCHAR SendReceiveData::calcPR2(int frequency) const{
 
-	//======================
-	double	oscillatorPeriod;
-	double	pwmPeriod;
-	int		pr2;
-	//======================
+	double const oscillatorPeriod	= 1.0/48000000.0;
+	double const pwmPeriod			= 1.0/static_cast<double>(frequency);
 
-	oscillatorPeriod	= 1.0/48000000.0;
-	pwmPeriod			= 1.0/(double)frequency;
-
-	pr2 = (int)((pwmPeriod/(16 * oscillatorPeriod))-0.5);
+	int const pr2 = (int)((pwmPeriod/(16 * oscillatorPeriod))-0.5);
 
 	if(pr2==0 || pr2>255) {
 		return 0;	//failed to match a value
 	}
 
-	return (UCHAR)pr2;
+	return static_cast<UCHAR>(pr2);
 }
 
 int SendReceiveData::send(ir_remote *remote, ir_ncode *code, int repeats) {

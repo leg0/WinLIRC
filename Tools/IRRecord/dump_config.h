@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <vector>
 
 struct hardware;
 struct ir_remote;
@@ -9,7 +10,7 @@ struct ir_ncode;
 
 void fprint_comment(FILE* f, ir_remote const* rem, hardware const& hw) noexcept;
 void fprint_flags(FILE* f, int flags) noexcept;
-void fprint_remotes(FILE* f, ir_remote const* all, hardware const& hw);
+void fprint_remotes(FILE* f, ir_remote const* all, size_t remotes_count, hardware const& hw);
 void fprint_remote_gap(FILE* f, ir_remote const* rem) noexcept;
 void fprint_remote_head(FILE* f, ir_remote const* rem);
 void fprint_remote_foot(FILE* f, ir_remote const* rem);

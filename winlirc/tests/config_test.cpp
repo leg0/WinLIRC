@@ -86,24 +86,24 @@ TEST_F(ConfigParseTest, 1)
     auto cfg = read_config(f, "my-config.txt");
     fclose(f);
 
-    EXPECT_EQ(1, count(cfg.get()));
-    EXPECT_EQ("remote-name"s, cfg->name);
-    EXPECT_EQ(16, cfg->bits);
-    EXPECT_EQ(SPACE_ENC | CONST_LENGTH, cfg->flags);
-    EXPECT_EQ(30, cfg->eps);
-    EXPECT_EQ(100, cfg->aeps);
-    EXPECT_EQ(614, cfg->pone);
-    EXPECT_EQ(1626, cfg->sone);
-    EXPECT_EQ(614, cfg->pzero);
-    EXPECT_EQ(506, cfg->szero);
-    EXPECT_EQ(614, cfg->ptrail);
-    EXPECT_EQ(16, cfg->pre_data_bits);
-    EXPECT_EQ(0xE0E0, cfg->pre_data);
-    EXPECT_EQ(107991, cfg->gap);
-    EXPECT_EQ(0, cfg->toggle_bit_mask);
+    EXPECT_EQ(1U, cfg.size());
+    EXPECT_EQ("remote-name"s, cfg[0].name);
+    EXPECT_EQ(16, cfg[0].bits);
+    EXPECT_EQ(SPACE_ENC | CONST_LENGTH, cfg[0].flags);
+    EXPECT_EQ(30, cfg[0].eps);
+    EXPECT_EQ(100, cfg[0].aeps);
+    EXPECT_EQ(614, cfg[0].pone);
+    EXPECT_EQ(1626, cfg[0].sone);
+    EXPECT_EQ(614, cfg[0].pzero);
+    EXPECT_EQ(506, cfg[0].szero);
+    EXPECT_EQ(614, cfg[0].ptrail);
+    EXPECT_EQ(16, cfg[0].pre_data_bits);
+    EXPECT_EQ(0xE0E0, cfg[0].pre_data);
+    EXPECT_EQ(107991, cfg[0].gap);
+    EXPECT_EQ(0, cfg[0].toggle_bit_mask);
 
-    EXPECT_EQ(4U, cfg->codes.size());
-    auto code = cfg->codes.begin();
+    EXPECT_EQ(4U, cfg[0].codes.size());
+    auto code = cfg[0].codes.begin();
     EXPECT_EQ("1"s, code->name);
     EXPECT_EQ(0x20DF, code->code);
     ++code;
@@ -116,5 +116,5 @@ TEST_F(ConfigParseTest, 1)
     EXPECT_EQ("4"s, code->name);
     EXPECT_EQ(0x10EF, code->code);
     ++code;
-    EXPECT_EQ(end(cfg->codes), code);
+    EXPECT_EQ(end(cfg[0].codes), code);
 }

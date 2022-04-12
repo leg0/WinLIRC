@@ -1,12 +1,14 @@
 #pragma once
 
 #include "irdriver.h"
+#include "ir_remote.h"
 #include <sal.h>
 #include <filesystem>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
+#include <vector>
 
 class CIRConfig
 {
@@ -57,5 +59,5 @@ public:
 };
 
 /* Change this stuff */
-extern std::unique_ptr<ir_remote> global_remotes;
+extern std::vector<ir_remote> global_remotes;
 extern std::mutex CS_global_remotes;

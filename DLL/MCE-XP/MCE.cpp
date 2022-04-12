@@ -195,7 +195,7 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+WL_API int decodeIR(struct ir_remote *remotes, size_t remotes_count, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 
@@ -206,7 +206,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 		winlirc_clear_rec_buffer(&rec_buffer, &hw);
 
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,remotes_count,out,out_size)) {
 			return 1;
 		}
 	}

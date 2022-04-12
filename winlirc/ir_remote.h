@@ -47,11 +47,11 @@ struct ir_ncode
 
 struct ir_remote
 {
-	~ir_remote() noexcept
-	{
-		codes.clear();
-		next.reset();
-	}
+	~ir_remote() noexcept = default;
+	//{
+		//codes.clear();
+		//next.reset();
+	//}
 	ir_remote() = default;
 	ir_remote(ir_remote const&) = delete;
 	ir_remote& operator=(ir_remote const&) = delete;
@@ -119,5 +119,5 @@ struct ir_remote
 	std::chrono::steady_clock::time_point last_send;   /* time last_code was received or sent */
 	lirc_t min_remaining_gap;   /* remember gap for CONST_LENGTH remotes */
 	lirc_t max_remaining_gap;   /* gap range */
-	std::unique_ptr<ir_remote> next;
+	std::unique_ptr<ir_remote> next_;
 };

@@ -37,7 +37,7 @@ struct plugin_interface
 	int	(*hasGui)(void);
 	void (*loadSetupGui)(void);
 	int	(*sendIR)(ir_remote* remote, ir_ncode* code, int32_t repeats);
-	int	(*decodeIR)(ir_remote* remotes, char* out, size_t out_size);
+	int	(*decodeIR)(ir_remote* remotes, size_t remotes_count, char* out, size_t out_size);
 	int	(*setTransmitters)(uint32_t transmitterMask);
 	hardware const* (*getHardware)(void);
 	hardware const* hardware;
@@ -76,7 +76,7 @@ WL_API void	deinit			();
 WL_API int	hasGui			();
 WL_API void	loadSetupGui	();
 WL_API int	sendIR			(ir_remote* remote, ir_ncode *code, int repeats);
-WL_API int	decodeIR		(ir_remote* remotes, char* out, size_t out_size);
+WL_API int	decodeIR		(ir_remote* remotes, size_t remotes_count, char* out, size_t out_size);
 WL_API int	setTransmitters	(unsigned int transmitterMask);
 WL_API hardware const* getHardware();							// optional API for IRRecord
 

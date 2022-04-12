@@ -31,6 +31,7 @@
 #include <winlirc/WLPluginAPI.h>
 
 #include <algorithm>
+#include <span>
 
 #define VERSION "0.9.0"
 
@@ -69,13 +70,12 @@ void fprint_flags(FILE* f, int flags) noexcept
 	}
 }
 
-void fprint_remotes(FILE* f, ir_remote const* all, hardware const& hw) {
+void fprint_remotes(FILE* f, ir_remote const* all, size_t remotes_count, hardware const& hw) {
 
-	while (all)
+	for (auto& remote: std::span{all, remotes_count})
 	{
-		fprint_remote(f, all, hw);
+		fprint_remote(f, &remote, hw);
 		fprintf(f, "\n\n");
-		all = all->next.get();
 	}
 }
 

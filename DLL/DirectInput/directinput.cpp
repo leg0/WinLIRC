@@ -112,7 +112,7 @@ WL_API void loadSetupGui() { }
 
 WL_API int sendIR(struct ir_remote*, struct ir_ncode*, int) { return 0; }
 
-WL_API int decodeIR(struct ir_remote*, char *out, size_t out_size)
+WL_API int decodeIR(struct ir_remote*, size_t, char *out, size_t out_size)
 {
     if (!g_initialized)
         return 0;

@@ -86,11 +86,11 @@ int CIRDriver::sendIR(ir_remote* remote, ir_ncode* code, int repeats) const
 	return 0;
 }
 
-int CIRDriver::decodeIR(ir_remote* remote, char* out, size_t out_size) const
+int CIRDriver::decodeIR(ir_remote* remote, size_t remotes_count, char* out, size_t out_size) const
 {
 	std::lock_guard lock{ m_dllLock };
 	if(auto pluginDecodeIr = m_dll.interface_.decodeIR)
-		return pluginDecodeIr(remote,out, out_size);
+		return pluginDecodeIr(remote, remotes_count, out, out_size);
 	return 0;
 }
 
@@ -110,13 +110,13 @@ void CIRDriver::DaemonThreadProc() const {
 	/* and send the result to clients.	*/
 
 	char message[PACKET_SIZE+1];
-	auto decodeIr = [&]() {
+	auto decodeIr = [&]() -> int {
 		std::lock_guard lock{ m_dllLock };
 		std::lock_guard lock2{ CS_global_remotes };
 
 		auto pluginDecodeIr = m_dll.interface_.decodeIR;
 		ASSERT(pluginDecodeIr != nullptr);
-		return pluginDecodeIr(global_remotes.get(), message, sizeof(message));
+		return pluginDecodeIr(global_remotes.data(), global_remotes.size(), message, sizeof message);
 	};
 
 	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {

@@ -21,38 +21,22 @@
 
 #include "Settings.h"
 #include <winlirc/winlirc_api.h>
-#include <tchar.h>
-#include <Windows.h>
-#include <stdio.h>
+#include<algorithm>
 
-Settings::Settings() {
-
-	loadSettings();
-}
+using namespace irtoy;
 
 void Settings::setComPort(int port) {
 
-	comPort = port;
-
-	if(comPort<1) comPort = 1;
+	comPort = std::clamp(port, 1, 255);
 }
 
-int Settings::getComPort() {
+void Settings::saveSettings() const {
 
-	return comPort;
-}
-
-void Settings::saveSettings() {
-
-	winlirc_settings_set_int(L"IRToyPlugin", L"ComPort", comPort);
+	winlirc_settings_set_int(tag, L"ComPort", comPort);
 }
 
 void Settings::loadSettings() {
 
-	comPort = winlirc_settings_get_int(L"IRToyPlugin", L"ComPort", 1);
-
-	// make sure that comPort is in range 0..255
-	if (comPort < 0 || 255 < comPort) {
-		comPort = 0;
-	}
+	// make sure that comPort is in range 1..255
+	comPort = std::clamp(winlirc_settings_get_int(tag, L"ComPort", 1), 1, 255);
 }

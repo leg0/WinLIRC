@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef RECEIVEDATA_H
-#define RECEIVEDATA_H
+#pragma once
 
 #include "Serial.h"
 #include <winlirc/WLPluginAPI.h>
@@ -29,7 +28,7 @@
 class SendReceiveData
 {
 public:
-	SendReceiveData();
+	SendReceiveData() = default;
 
 	bool	init();
 	void	deinit();
@@ -44,18 +43,16 @@ private:
 
 	void	setData(lirc_t data);
 	void	receiveLoop();
-	UCHAR	calcPR2(int frequency);
+	UCHAR	calcPR2(int frequency) const;
 
 	//==========================
 	lirc_t		dataBuffer[256];
-	UCHAR		bufferStart;
-	UCHAR		bufferEnd;
-	HANDLE		threadHandle;
+	UCHAR		bufferStart{ 0 };
+	UCHAR		bufferEnd{ 0 };
+	HANDLE		threadHandle{ nullptr };
 	CSerial		serial;
-	HANDLE		exitEvent;
-	HANDLE		overlappedEvent;
-	OVERLAPPED	overlapped;
+	HANDLE		exitEvent{ nullptr };
+	HANDLE		overlappedEvent{ nullptr };
+	OVERLAPPED	overlapped{ 0 };
 	//==========================
 };
-
-#endif

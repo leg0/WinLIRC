@@ -175,7 +175,7 @@ void logperror(int prio,const char *s)
 
 int main(int argc,char **argv)
 {
-	char *filename = 0;
+	std::string filename;
 	FILE *fout,*fin;
 	int retval=EXIT_SUCCESS;
 	ir_code pre,code,post;
@@ -321,10 +321,10 @@ int main(int argc,char **argv)
 		exit(EXIT_FAILURE);
 	}
 	//filename=argv[optind];
-	fin=fopen(filename,"r");
+	fin=fopen(filename.c_str(), "r");
 	if(fin!=NULL)
 	{
-		char *filename_new;
+		std::string filename_new;
 
 		if(force)
 		{
@@ -335,9 +335,9 @@ int main(int argc,char **argv)
 				progname, filename, progname);
 			exit(EXIT_FAILURE);
 		}
-		auto remotes=read_config(fin, filename);
+		auto remotes=read_config(fin, filename.c_str());
 		fclose(fin);
-		if (remotes == nullptr)
+		if (remotes.empty())
 		{
 			fprintf(stderr,
 				"%s: file \"%s\" does not contain valid "
@@ -358,16 +358,15 @@ int main(int argc,char **argv)
 			hw.send_mode		= 0;
 			hw.wait_for_data	= nullptr;
 
-			for_each_remote(remotes.get(), analyse_remote);
+			for (auto& remote : remotes) { analyse_remote(&remote); }
 			return EXIT_SUCCESS;
 		}
 		using_template = 1;
 
-		remote=std::move(*remotes);
+		remote = std::move(remotes.front());
 		remote.name.clear();
 		remote.codes.clear();
 		remote.last_code = nullptr;
-		remote.next.reset();
 		if(remote.pre_p==0 && remote.pre_s==0 &&
 			remote.post_p==0 && remote.post_s==0)
 		{
@@ -375,23 +374,14 @@ int main(int argc,char **argv)
 			remote.pre_data_bits=0;
 			remote.post_data_bits=0;
 		}
-		if(remote.next!=NULL)
+		if(remotes.size() > 1)
 		{
 			fprintf(stderr,
 				"%s: only first remote definition "
 				"in file \"%s\" used\n",
 				progname,filename);
 		}
-		filename_new=(char*)malloc(strlen(filename)+10);
-		if(filename_new==NULL)
-		{
-			fprintf(stderr,"%s: out of memory\n",
-				progname);
-			exit(EXIT_FAILURE);
-		}
-		strcpy(filename_new, filename);
-		strcat(filename_new, ".conf");
-		filename = filename_new;
+		filename = filename + ".conf";
 	}
 	else
 	{
@@ -402,7 +392,7 @@ int main(int argc,char **argv)
 			analyse = 0;
 		}
 	}
-	fout=fopen(filename,"w");
+	fout=fopen(filename.c_str(), "w");
 	if(fout==NULL)
 	{
 		fprintf(stderr,"%s: could not open file %s\n",progname,
@@ -423,7 +413,7 @@ int main(int argc,char **argv)
 			" (lircd running ? --> close it, "
 			"check permissions)\n",progname);
 		fclose(fout);
-		_unlink(filename);
+		_unlink(filename.c_str());
 		exit(EXIT_FAILURE);
 	}
 	
@@ -433,7 +423,7 @@ int main(int argc,char **argv)
 	{
 		fprintf(stderr,"%s: no config file necessary\n",progname);
 		fclose(fout);
-		_unlink(filename);
+		_unlink(filename.c_str());
 		irDriver.deinit();
 		exit(EXIT_SUCCESS);
 	}
@@ -443,7 +433,7 @@ int main(int argc,char **argv)
 	{
 		fprintf(stderr,"%s: mode not supported\n",progname);
 		fclose(fout);
-		_unlink(filename);
+		_unlink(filename.c_str());
 		irDriver.deinit();
 		exit(EXIT_FAILURE);
 	}
@@ -500,7 +490,7 @@ int main(int argc,char **argv)
 				fprintf(stderr,"%s: gap not found,"
 					" can't continue\n",progname);
 				fclose(fout);
-				_unlink(filename);
+				_unlink(filename.c_str());
 				irDriver.deinit();
 				exit(EXIT_FAILURE);
 			}
@@ -532,7 +522,7 @@ int main(int argc,char **argv)
 			fprintf(stderr,"%s: gap not found,"
 				" can't continue\n",progname);
 			fclose(fout);
-			_unlink(filename);
+			_unlink(filename.c_str());
 			irDriver.deinit();
 			exit(EXIT_FAILURE);
 		}
@@ -544,13 +534,13 @@ int main(int argc,char **argv)
 		Sleep(1000);
 		while(availabledata())
 		{
-			irDriver.decodeIR(NULL,NULL, 0);
+			irDriver.decodeIR(nullptr,0, nullptr, 0);
 		}
 		if(!get_toggle_bit_mask(&remote))
 		{
 			printf("But I know for sure that RC6 has a toggle bit!\n");
 			fclose(fout);
-			_unlink(filename);
+			_unlink(filename.c_str());
 			irDriver.deinit();
 			exit(EXIT_FAILURE);
 		}
@@ -611,7 +601,7 @@ int main(int argc,char **argv)
 		{
 			while(availabledata())
 			{
-				irDriver.decodeIR(NULL,NULL,0);
+				irDriver.decodeIR(nullptr, 0, nullptr, 0);
 			}
 		}
 		printf("\nNow hold down button \"%s\".\n",buffer);
@@ -710,7 +700,7 @@ int main(int argc,char **argv)
 			Sleep(1000);
 			while(availabledata())
 			{
-				irDriver.decodeIR(NULL,NULL,0);
+				irDriver.decodeIR(nullptr, 0, nullptr, 0);
 
 				if(hw.decode_func(&rec_buffer, &hw,&remote,&pre,&code,&post,
 					&repeat_flag,
@@ -726,7 +716,7 @@ int main(int argc,char **argv)
 				ncode.name=buffer;
 				ncode.code=code;
 
-				irDriver.decodeIR(nullptr, nullptr, 0);
+				irDriver.decodeIR(nullptr, 0, nullptr, 0);
 				ir_code code2;
 				if(hw.decode_func(&rec_buffer, &hw,&remote,&pre,&code2,&post,
 					&repeat_flag,
@@ -794,16 +784,16 @@ int main(int argc,char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	fin=fopen(filename,"r");
+	fin=fopen(filename.c_str(), "r");
 	if(fin==NULL)
 	{
 		fprintf(stderr,"%s: could not reopen config file\n",progname);
 		irDriver.deinit();
 		exit(EXIT_FAILURE);
 	}
-	auto remotes=read_config(fin,filename);
+	auto remotes=read_config(fin,filename.c_str());
 	fclose(fin);
-	if(remotes==nullptr)
+	if(remotes.empty())
 	{
 		fprintf(stderr,"%s: config file contains no valid "
 			"remote control definition\n",progname);
@@ -812,22 +802,22 @@ int main(int argc,char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	if(!has_toggle_bit_mask(&*remotes))
+	if(!has_toggle_bit_mask(&remotes[0]))
 	{
 		if(!using_template &&
 			strcmp(hw.name, "devinput") != 0)
-			get_toggle_bit_mask(&*remotes);
+			get_toggle_bit_mask(&remotes[0]);
 	}
 	else
 	{
-		set_toggle_bit_mask(&*remotes, remotes->toggle_bit_mask);
+		set_toggle_bit_mask(&remotes[0], remotes[0].toggle_bit_mask);
 	}
 	irDriver.deinit();
-	get_pre_data(&*remotes);
-	get_post_data(&*remotes);
+	get_pre_data(&remotes[0]);
+	get_post_data(&remotes[0]);
 
 	/* write final config file */
-	fout=fopen(filename,"w");
+	fout=fopen(filename.c_str(), "w");
 	if(fout==NULL)
 	{
 		fprintf(stderr,"%s: could not open file \"%s\"\n",progname,
@@ -836,7 +826,7 @@ int main(int argc,char **argv)
 		return(EXIT_FAILURE);
 	}
 	fprint_copyright(fout);
-	fprint_remotes(fout, &*remotes, hw);
+	fprint_remotes(fout, remotes.data(), remotes.size(), hw);
 	printf("Successfully written config file.\n");
 	return(EXIT_SUCCESS);
 }
@@ -916,7 +906,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 	seq=repeats=0;found=0;
 	while(availabledata())
 	{
-		irDriver.decodeIR(NULL,NULL,0);
+		irDriver.decodeIR(nullptr, 0, nullptr, 0);
 	}
 	while(retval==EXIT_SUCCESS && retries>0)
 	{
@@ -928,7 +918,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 			break;
 		}
 
-		irDriver.decodeIR(remote,message,sizeof(message));
+		irDriver.decodeIR(remote,1, message,sizeof(message));
 
 		if(is_rc6(remote) && remote->rc6_mask==0)
 		{
@@ -1163,15 +1153,15 @@ void get_post_data(ir_remote* remote)
 	}
 }
 
-void for_each_remote(ir_remote* remotes, remote_func func)
-{
-	ir_remote* remote = remotes;
-	while (remote != nullptr)
-	{
-		func(remote);
-		remote = remote->next.get();
-	}
-}
+//void for_each_remote(ir_remote* remotes, remote_func func)
+//{
+//	ir_remote* remote = remotes;
+//	while (remote != nullptr)
+//	{
+//		func(remote);
+//		remote = remote->next.get();
+//	}
+//}
 
 void analyse_remote(struct ir_remote *raw_data)
 {
@@ -1246,7 +1236,7 @@ void analyse_remote(struct ir_remote *raw_data)
 		}
 	}
 	remote.codes = std::move(new_codes);
-	fprint_remotes(stdout, &remote, hw);
+	fprint_remotes(stdout, &remote, 1, hw);
 	remote.codes = std::vector<ir_ncode>{};
 }
 
@@ -2057,7 +2047,7 @@ int get_gap_length(struct ir_remote *remote)
 	{
 		while(availabledata())
 		{
-			irDriver.decodeIR(NULL,NULL,0);
+			irDriver.decodeIR(nullptr, 0, nullptr, 0);
 		}
 		if(!waitfordata(10000000))
 		{
@@ -2067,7 +2057,7 @@ int get_gap_length(struct ir_remote *remote)
 		start = steady_clock::now();
 		while(availabledata())
 		{
-			irDriver.decodeIR(NULL,NULL,0);
+			irDriver.decodeIR(nullptr, 0, nullptr, 0);
 		}
 		end = steady_clock::now();
 		if(flag)

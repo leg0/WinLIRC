@@ -19,19 +19,16 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include <Windows.h>
 #include <sys/timeb.h>
 #include "SendReceiveData.h"
 #include "Settings.h"
 
-extern Settings settings;
+extern irtoy::Settings settings;
 
 extern HANDLE threadExitEvent;
 extern HANDLE dataReadyEvent;
 
 extern SendReceiveData *sendReceiveData;
-
-#endif

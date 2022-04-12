@@ -42,10 +42,10 @@ int	CIRDriver::sendIR(ir_remote* remote, ir_ncode* code, int repeats) const
 		return 0;
 }
 
-int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) const
+int	CIRDriver::decodeIR(struct ir_remote *remote, size_t remotes_count, char *out, size_t out_size) const
 {
 	if (auto decodeFn = plugin_.interface_.decodeIR)
-		return decodeFn(remote, out, out_size);
+		return decodeFn(remote, remotes_count, out, out_size);
 	else
 		return 0;
 }

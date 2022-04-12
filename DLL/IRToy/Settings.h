@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of the WinLIRC package, which was derived from
  * LIRC (Linux Infrared Remote Control) 0.8.6.
  *
@@ -19,27 +19,21 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
-class Settings 
+namespace irtoy {
+class Settings
 {
-
 public:
-	Settings();
+	static constexpr wchar_t const* tag = L"IRToyPlugin";
+	Settings() { loadSettings(); }
 
-	void	setComPort		(int port);
-	int		getComPort		();
-
-	void	saveSettings	();			// to ini file
-	void	loadSettings	();
+	void setComPort(int port);
+	int  getComPort() const { return comPort; }
+	void saveSettings() const;
+	void loadSettings();
 
 private:
-
-	//==========
-	int comPort;
-	//==========
+	int comPort{ 1 };
 };
-
-#endif
-
+}

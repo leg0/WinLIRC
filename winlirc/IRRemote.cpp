@@ -7,11 +7,9 @@
 #include <sys/timeb.h>
 #include <string.h>
 #include <limits.h>
+#include <span>
 
-ir_remote *decoding		= nullptr;
-ir_remote *last_remote	= nullptr;
-ir_remote *repeat_remote	= nullptr;
-ir_ncode *repeat_code	= nullptr;
+ir_remote* last_remote = nullptr;
 
 WINLIRC_API int winlirc_map_code(struct ir_remote *remote,
 	     ir_code *prep,ir_code *codep,ir_code *postp,
@@ -276,14 +274,14 @@ static unsigned long long set_code(ir_remote *remote, ir_ncode *found,
 	unsigned long long code;
 	static struct ir_remote *last_decoded = nullptr;
 
-	auto const current = std::chrono::steady_clock::now();
+	auto const now = std::chrono::steady_clock::now();
 
 	using namespace std::chrono_literals;
 
 	if(remote==last_decoded &&
 	   (found==remote->last_code || (found->next!=nullptr && found->current!=nullptr)) &&
 	   repeat_flag &&
-	   current - remote->last_send < 1s &&
+	   now - remote->last_send < 1s &&
 	   (!has_toggle_bit_mask(remote) || toggle_bit_mask_state==remote->toggle_bit_mask_state))
 	{
 		if(has_toggle_mask(remote))
@@ -323,7 +321,7 @@ static unsigned long long set_code(ir_remote *remote, ir_ncode *found,
 	last_remote=remote;
 	last_decoded=remote;
 	if(found->current==nullptr) remote->last_code=found;
-	remote->last_send=current;
+	remote->last_send=now;
 	remote->min_remaining_gap=min_remaining_gap;
 	remote->max_remaining_gap=max_remaining_gap;
 	
@@ -361,7 +359,7 @@ static int write_message(char *buffer, size_t size, const char *remote_name,
 		     remote_name);
 }
 
-WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
+WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, ir_remote *remotes, size_t remotes_count, char *out, size_t out_size)
 {
     auto& hw = *phw;
 	ir_code pre,code,post;
@@ -372,61 +370,53 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, s
 	
 	/* use remotes carefully, it may be changed on SIGHUP */
 	ir_remote* remote = remotes;
-	decoding = remotes;
-	while (remote)
+	auto decoding = remotes;
+	for (auto& remote : std::span{ remotes, remotes_count })
 	{
 		//LOGPRINTF(1,"trying \"%s\" remote",remote->name);
 		
-		if(hw.decode_func(prec_buffer, &hw,remote,&pre,&code,&post,&repeat_flag,
+		if(hw.decode_func(prec_buffer, &hw,&remote,&pre,&code,&post,&repeat_flag,
 				  &min_remaining_gap, &max_remaining_gap) &&
-		   (ncode=get_code(remote,pre,code,post,&toggle_bit_mask_state)))
+		   (ncode=get_code(&remote,pre,code,post,&toggle_bit_mask_state)))
 		{
 			int len;
 
-			code=set_code(remote,ncode,toggle_bit_mask_state,
+			code=set_code(&remote,ncode,toggle_bit_mask_state,
 				      repeat_flag,
 				      min_remaining_gap,
 				      max_remaining_gap);
-			if((has_toggle_mask(remote) &&
-			    remote->toggle_mask_state%2) ||
+			if((has_toggle_mask(&remote) &&
+			    remote.toggle_mask_state%2) ||
 			   ncode->current!=nullptr)
 			{
 				decoding=nullptr;
 				return false;
 			}
 
-			for(auto scan = decoding; scan != nullptr; scan = scan->next.get())
+			for(auto& scan: std::span{ remotes, remotes_count })
 			{
-				for (auto& scan_ncode : scan->codes)
+				for (auto& scan_ncode : scan.codes)
 				{
 					scan_ncode.current = nullptr;
 				}
 			}
-			if(is_xmp(remote))
+			if(is_xmp(&remote))
 			{
-				remote->last_code->current = remote->last_code->next.get();
+				remote.last_code->current = remote.last_code->next.get();
 			}
 			
 			len = write_message(out, out_size,
-					    remote->name.c_str(),
-					    remote->last_code->name->c_str(), "", code,
-					    remote->reps-(ncode->next ? 1:0));
+					    remote.name.c_str(),
+					    remote.last_code->name->c_str(), "", code,
+					    remote.reps-(ncode->next ? 1:0));
 			decoding=nullptr;
-			if(len>=PACKET_SIZE+1)
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
+			return len <= out_size;
 		}
 		else
 		{
 			//LOGPRINTF(1,"failed \"%s\" remote",remote->name);
 		}
-		remote->toggle_mask_state=0;
-		remote=remote->next.get();
+		remote.toggle_mask_state=0;
 	}
 	decoding=nullptr;
 	last_remote=nullptr;
