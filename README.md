@@ -16,7 +16,7 @@ to get all the depepndencies and initialize Visual Studio solution. You can buil
 or you can open the generated .sln file and build it with Visual Studio. Here's an eample how to build and install
 WinLIRC with CMake on command line:
 
-    c:\winlirc> quickstart.bat x64
+    c:\winlirc> bootstrap.bat x64
     c:\winlirc> cd _build-x64
     c:\winlirc\_build-x64> cmake --build . --config RelWithDebInfo
     c:\winlirc\_build-x64> cmake --install . --prefix %userprofile%\winlirc --config RelWithDebInfo
