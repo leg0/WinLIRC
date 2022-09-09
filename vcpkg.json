@@ -1,0 +1,10 @@
+{
+  "name": "winlirc",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "ms-gsl",
+    "wtl",
+    "gtest",
+    "tinyxml2"
+  ]
+}

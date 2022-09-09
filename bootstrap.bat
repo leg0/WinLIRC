@@ -18,7 +18,6 @@ git submodule update --init
 
 pushd vcpkg
 if not exist vcpkg.exe (call bootstrap-vcpkg.bat)
-vcpkg install @%source_dir%\cmake\vcpkg_%arch%-windows.txt 
 popd
 
 mkdir %build_dir%

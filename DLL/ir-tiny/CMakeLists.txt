@@ -26,7 +26,7 @@ endif()
 
 target_compile_definitions(ir-tiny PRIVATE UNICODE _UNICODE)
 
-find_path(WTL_INCLUDE_DIRS "wtl/atlapp.h")
+find_path(WTL_INCLUDE_DIRS "atlapp.h")
 target_include_directories(ir-tiny PRIVATE
     ${WTL_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/DLL
