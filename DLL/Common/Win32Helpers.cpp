@@ -1,2 +1,2 @@
 #include <Windows.h>
-#include "Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Common/Event.h"
-#include "Common/fifo.h"
+#include <winlirc-common/Event.h>
+#include <winlirc-common/fifo.h>
 
 namespace irtiny
 {

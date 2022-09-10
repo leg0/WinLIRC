@@ -1,6 +1,6 @@
 #include "SendReceive.h"
 #include <stdio.h>
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>
 
 DWORD WINAPI XBThread(void *recieveClass) {
 

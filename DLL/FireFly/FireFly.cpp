@@ -21,7 +21,7 @@
 
 #include <Windows.h>
 #include <winlirc/WLPluginAPI.h>
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>
 #include <stdio.h>
 #include "Globals.h"
 #include <tchar.h>

@@ -24,7 +24,7 @@
 #include "Globals.h"
 #include <tchar.h>
 #include <stdio.h>
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 

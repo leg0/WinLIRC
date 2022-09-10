@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "ConfigDialog.h"
-#include "Common/enumSerialPorts.h"
+#include <winlirc-common/enumSerialPorts.h>
 #include "winlirc/winlirc_api.h"
 
 LRESULT irtiny::ConfigDialog::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

@@ -1,10 +1,8 @@
-#ifndef SERVER_H
-#define SERVER_H
-
+#pragma once
 
 #include <winsock2.h>
 #include <Windows.h>
-#include "../Common/Socket.h"
+#include <winlirc-common/Socket.h>
 #include <winlirc/WLPluginAPI.h>
 #include <chrono>
 
@@ -33,5 +31,3 @@ private:
 	UCHAR		bufferStart;
 	UCHAR		bufferEnd;
 };
-
-#endif

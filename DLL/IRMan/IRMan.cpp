@@ -21,10 +21,10 @@
 
 #include <Windows.h>
 #include <tchar.h>
-#include "../Common/enumSerialPorts.h"
+#include <winlirc-common/enumSerialPorts.h>
 #include <winlirc/WLPluginAPI.h>
 #include <winlirc/winlirc_api.h>
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>
 #include "Globals.h"
 #include "resource.h"
 

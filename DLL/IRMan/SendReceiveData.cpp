@@ -23,8 +23,8 @@
 #include <tchar.h>
 #include "SendReceiveData.h"
 #include "Globals.h"
-#include "../Common/DebugOutput.h"
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/DebugOutput.h>
+#include <winlirc-common/Win32Helpers.h>
 #include <iterator>
 
 DWORD WINAPI IRMan(void *recieveClass) {

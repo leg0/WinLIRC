@@ -11,6 +11,22 @@ set (PUBLIC_API_FILES
 	include/winlirc/winlirc_api.h
 	include/winlirc/WLPluginApi.h)
 
+add_library(winlirc-plugin STATIC
+	Plugin.cpp
+	Plugin.h)
+
+target_include_directories(winlirc-plugin
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/include
+	INTERFACE
+		${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+target_link_libraries(winlirc-plugin
+	PRIVATE
+		winlirc-common
+	INTERFACE
+		winlirc-common)
+
 add_executable(winlirc WIN32
 	config.cpp
 	drvdlg.cpp
@@ -18,7 +34,6 @@ add_executable(winlirc WIN32
 	irconfig.cpp
 	irdriver.cpp
 	IRRemote.cpp
-	Plugin.cpp
 	Receive.cpp
 	Send.cpp
 	server.cpp
@@ -80,13 +95,12 @@ target_link_libraries(winlirc
 	PRIVATE
 		Microsoft.GSL::GSL
 		winlirc-common
+		winlirc-plugin
 	INTERFACE
 		Microsoft.GSL::GSL
 	)
 
 target_include_directories(winlirc
-	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/include
 	INTERFACE
 		${CMAKE_CURRENT_SOURCE_DIR}/include)
 

@@ -26,7 +26,7 @@
 #include "drvdlg.h"
 #include "version.h"
 #include "wl_debug.h"
-#include <Event.h>
+#include <winlirc-common/Event.h>
 
 #include <algorithm>
 #include <string>

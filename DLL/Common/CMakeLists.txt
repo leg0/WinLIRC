@@ -6,13 +6,16 @@ find_package(Microsoft.GSL CONFIG REQUIRED)
 
 
 add_library(winlirc-common STATIC
-	DebugOutput.h
-	enumSerialPorts.h
-	Event.h
-	fifo.h
-	UniqueHandle.h
+	include/winlirc-common/DebugOutput.h
+	include/winlirc-common/enumSerialPorts.h
+	include/winlirc-common/Event.h
+	include/winlirc-common/fifo.h
+	include/winlirc-common/UniqueHandle.h
 	Win32Helpers.cpp
-	Win32Helpers.h)
+	include/winlirc-common/Win32Helpers.h)
 
-target_include_directories(winlirc-common INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(winlirc-common
+	INTERFACE
+		${CMAKE_CURRENT_SOURCE_DIR}/include
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/include)

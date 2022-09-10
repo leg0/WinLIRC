@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "../DLL/Common/Event.h"
-#include "../DLL/Common/Socket.h"
+#include <winlirc-common/Event.h>
+#include <winlirc-common/Socket.h>
 
 #include <array>
 #include <string_view>

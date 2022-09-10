@@ -2,7 +2,7 @@
 #include "Globals.h"
 #include <stdio.h>
 #include <winlirc/winlirc_api.h>
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>
 
 DWORD WINAPI ServerThread(void *server) {
 

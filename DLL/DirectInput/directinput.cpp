@@ -1,7 +1,7 @@
 #define DIRECTINPUT_VERSION 0x0800
 
 #include <Windows.h>
-#include "../Common/UniqueHandle.h"
+#include <winlirc-common/UniqueHandle.h>
 #include <winlirc/WLPluginAPI.h>
 
 #include <atlbase.h> // CComPtr
@@ -150,7 +150,7 @@ WL_API int decodeIR(struct ir_remote*, char *out, size_t out_size)
                         btn += sprintf(btn, "BUTTON");
                         foundButton = true;
                     }
-                    auto const n = sprintf(btn, "_%u", i);
+                    auto const n = sprintf(btn, "_%zu", i);
                     if (n > bytesLeft)
                     {
                         foundButton = false;
@@ -166,7 +166,7 @@ WL_API int decodeIR(struct ir_remote*, char *out, size_t out_size)
             // TODO: add support for analogue inputs
             if (foundButton)
             {
-                _snprintf_s(out, out_size, out_size, "%016llx %02x %s DirectInput\n", int64_t{0}, 1, buttonName);
+                _snprintf_s(out, out_size, out_size, "%016llx %02x %s DirectInput\n", int64_t{0}, 1, buttonName.data());
                 return 1;
             }
         }

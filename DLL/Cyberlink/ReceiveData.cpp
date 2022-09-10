@@ -25,8 +25,8 @@
 #include <setupapi.h>
 #include "Globals.h"
 #include "ReceiveData.h"
-#include "../Common/DebugOutput.h"
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/DebugOutput.h>
+#include <winlirc-common/Win32Helpers.h>
 
 #define CLMAKECODE(a, b, c, d) ( (a)<<24 | (b)<<16 | (c)<<8 | (d) )
 #define CLBADCODE	0xFFFFFFFF
