@@ -23,7 +23,7 @@
 #include <MMSystem.h>
 #include <tchar.h>
 #include "Globals.h"
-#include "../Common/DebugOutput.h"
+#include <winlirc-common/DebugOutput.h>
 
 #pragma comment(lib,"winmm.lib")
 

@@ -23,19 +23,6 @@
 
 #include "irdriver.h"
 	
-CIRDriver::CIRDriver()
-{
-	initFunction			= NULL;
-	deinitFunction			= NULL;
-	hasGuiFunction			= NULL;
-	loadSetupGuiFunction	= NULL;
-	sendFunction			= NULL;
-	decodeFunction			= NULL;
-	getHardwareFunction		= NULL;
-
-	dllFile					= NULL;
-}
-
 CIRDriver::~CIRDriver()
 {
 	unloadPlugin();

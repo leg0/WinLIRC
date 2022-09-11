@@ -1,4 +1,4 @@
-#include <UniqueHandle.h>
+#include <winlirc-common/UniqueHandle.h>
 #include <functional>
 #include <gtest/gtest.h>
 

@@ -1,21 +1,8 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once 
+#include <optional>
+#include <string>
 
-#include <Tchar.h>
-
-class Settings {
-
-public:
-	Settings();
-
-	bool getPluginName(TCHAR out[128]);
-
-private:
-
-	//====================
-	TCHAR pluginName[128];
-	//====================
-
-};
-
-#endif
+namespace Settings
+{
+	std::optional<std::wstring> getPluginName();
+}

@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <tchar.h>
 #include <winlirc/winlirc_api.h>
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>
 #include <iterator>
 
 static sbuf send_buffer;

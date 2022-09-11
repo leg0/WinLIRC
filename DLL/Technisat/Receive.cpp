@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <tchar.h>
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>
 #include "Receive.h"
 #include "Globals.h"
 

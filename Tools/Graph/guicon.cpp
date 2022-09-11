@@ -5,24 +5,11 @@
 #include <iostream>
 #include <fstream>
 
-#ifndef _USE_OLD_IOSTREAMS
-
-using namespace std;
-
-#endif
-
 // maximum mumber of lines the output console should have
 
-static const WORD MAX_CONSOLE_LINES = 500;
+static const WORD MAX_CONSOLE_LINES = 5000;
 
 void RedirectIOToConsole() {
-
-	int		hConHandle;
-	long	lStdHandle;
-
-	CONSOLE_SCREEN_BUFFER_INFO coninfo;
-
-	FILE	*fp;
 
 	// allocate a console for this app
 
@@ -30,6 +17,7 @@ void RedirectIOToConsole() {
 
 	// set the screen buffer to be big enough to let us scroll text
 
+	CONSOLE_SCREEN_BUFFER_INFO coninfo;
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
 
 	coninfo.dwSize.Y = MAX_CONSOLE_LINES;
@@ -37,47 +25,49 @@ void RedirectIOToConsole() {
 	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
 
 	// redirect unbuffered STDOUT to the console
+	{
+		auto const lStdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+		auto const hConHandle = _open_osfhandle(reinterpret_cast<intptr_t>(lStdHandle), _O_TEXT);
 
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+		auto const fp = _fdopen(hConHandle, "w");
 
-	fp = _fdopen( hConHandle, "w" );
+		*stdout = *fp;
 
-	*stdout = *fp;
-
-	setvbuf( stdout, NULL, _IONBF, 0 );
+		setvbuf(stdout, NULL, _IONBF, 0);
+	}
 
 	// redirect unbuffered STDIN to the console
+	{
+		auto const lStdHandle = GetStdHandle(STD_INPUT_HANDLE);
 
-	lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+		auto const hConHandle = _open_osfhandle(reinterpret_cast<intptr_t>(lStdHandle), _O_TEXT);
 
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+		auto const fp = _fdopen(hConHandle, "r");
 
-	fp = _fdopen( hConHandle, "r" );
+		*stdin = *fp;
 
-	*stdin = *fp;
-
-	setvbuf( stdin, NULL, _IONBF, 0 );
+		setvbuf( stdin, NULL, _IONBF, 0 );
+	}
 
 	// redirect unbuffered STDERR to the console
+	{
+		auto const lStdHandle = GetStdHandle(STD_ERROR_HANDLE);
 
-	lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+		auto const hConHandle = _open_osfhandle(reinterpret_cast<intptr_t>(lStdHandle), _O_TEXT);
 
-	hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+		auto const fp = _fdopen(hConHandle, "w");
 
-	fp = _fdopen( hConHandle, "w" );
+		*stderr = *fp;
 
-	*stderr = *fp;
-
-	setvbuf( stderr, NULL, _IONBF, 0 );
-
+		setvbuf(stderr, NULL, _IONBF, 0);
+	}
 	
 	// make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog 
 
 	// point to console as well
 
-	ios::sync_with_stdio();
+	std::ios::sync_with_stdio();
 
 }
 

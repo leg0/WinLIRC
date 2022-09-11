@@ -23,8 +23,8 @@
 #include "SendReceiveData.h"
 #include "Globals.h"
 #include <winlirc/winlirc_api.h>
-#include "../Common/DebugOutput.h"
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/DebugOutput.h>
+#include <winlirc-common/Win32Helpers.h>
 
 static sbuf send_buffer;
 

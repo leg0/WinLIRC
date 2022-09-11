@@ -26,8 +26,8 @@
 #include "Globals.h"
 #include <stdio.h>
 #include <winlirc/winlirc_api.h>
-#include "../Common/DebugOutput.h"
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/DebugOutput.h>
+#include <winlirc-common/Win32Helpers.h>
 
 sbuf send_buffer;
 

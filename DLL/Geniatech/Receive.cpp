@@ -3,7 +3,7 @@
 #include "LWExtDLL.h"
 #include <stdio.h>
 #include <tchar.h>
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 

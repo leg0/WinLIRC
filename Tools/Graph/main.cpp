@@ -1,21 +1,22 @@
 #include <Windows.h>
 #include <tchar.h>
 #include "Opengl.h"
-#include "irdriver.h"
+#include <winlirc-plugin/Plugin.h>
 #include "Settings.h"
 #include "guicon.h"
+#include <winlirc-common/Event.h>
 
 #define	IDT_TIMER1 1
 
 //===========================
 Opengl			opengl;
-CIRDriver		irDriver;
+Plugin irDriver;
 //===========================
 
-hardware const* hw = NULL;
+hardware const* hw = nullptr;
 
-HWND		mainWindowHandle	= NULL;
-UINT_PTR	timerID				= NULL;
+HWND		mainWindowHandle	= nullptr;
+UINT_PTR	timerID				= 0;
 
 VOID CALLBACK timerFunction(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime) {
 
@@ -76,16 +77,16 @@ void createWindow(HINSTANCE hInstance, int nCmdShow) {
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(NULL, IDI_WINLOGO);
-	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= NULL;
-	wcex.lpszMenuName	= NULL;
+	wcex.hIcon			= LoadIcon(nullptr, IDI_WINLOGO);
+	wcex.hCursor		= LoadCursor(nullptr, IDC_ARROW);
+	wcex.hbrBackground	= nullptr;
+	wcex.lpszMenuName	= nullptr;
 	wcex.lpszClassName	= _T("OpenglGraph");
-	wcex.hIconSm		= NULL;
+	wcex.hIconSm		= nullptr;
 
 	RegisterClassEx(&wcex);
 
-	mainWindowHandle = CreateWindowEx(0,_T("OpenglGraph"),_T("IRGraph"),WS_OVERLAPPEDWINDOW,CW_USEDEFAULT,CW_USEDEFAULT,800,200,NULL,NULL,hInstance,NULL);
+	mainWindowHandle = CreateWindowEx(0,_T("OpenglGraph"),_T("IRGraph"),WS_OVERLAPPEDWINDOW,CW_USEDEFAULT,CW_USEDEFAULT,800,200,nullptr,nullptr,hInstance,nullptr);
 
 	ShowWindow(mainWindowHandle, nCmdShow);
 	UpdateWindow(mainWindowHandle);
@@ -98,44 +99,38 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
                      LPTSTR    lpCmdLine,
                      int       nCmdShow)
 {
-	//====================
-	MSG msg;
-	Settings settings;
-	TCHAR pluginPath[128];
-	//====================
-
 	//RedirectIOToConsole();
+	std::filesystem::current_path(L".\\plugins\\");
 
-	SetCurrentDirectory(_T(".\\plugins\\"));
+	if(auto pluginPath = Settings::getPluginName()) {
 
-	if(settings.getPluginName(pluginPath)) {
+		if (irDriver = Plugin{ *pluginPath }) {
 
-		if(irDriver.loadPlugin(pluginPath)) {
+			hw = irDriver.interface_.getHardware();
 
-			hw = irDriver.getHardware();
-
-			if(hw==NULL ) {
-				MessageBox(NULL,_T("The plugin doesn't export the required functions."),_T("Error"),MB_OK);
+			if(hw==nullptr ) {
+				MessageBox(nullptr,_T("The plugin doesn't export the required functions."),_T("Error"),MB_OK);
 				return 0;
 			}
 		}
 		else {
-			MessageBox(NULL,_T("Loading plugin failed."),_T("Error"),MB_OK);
+			MessageBox(nullptr,_T("Loading plugin failed."),_T("Error"),MB_OK);
 			return 0;
 		}
 	}
 	else {
-		MessageBox(NULL,_T("No valid plugins found."),_T("Error"),MB_OK);
+		MessageBox(nullptr,_T("No valid plugins found."),_T("Error"),MB_OK);
 		return 0;
 	}
 
 	if(hw->rec_mode!=LIRC_MODE_MODE2) {
-		MessageBox(NULL,_T("The graphing tool is incompatible with this plugin."),_T("Error"),MB_OK);
+		MessageBox(nullptr,_T("The graphing tool is incompatible with this plugin."),_T("Error"),MB_OK);
 		return 0;
 	}
 
-	if(!irDriver.init()) {
-		MessageBox(NULL,_T("Initialising plugin failed."),_T("Error"),MB_OK);
+	auto e = winlirc::Event::manualResetEvent();
+	if(!irDriver.interface_.init(reinterpret_cast<WLEventHandle>(e.get()))) {
+		MessageBox(nullptr,_T("Initialising plugin failed."),_T("Error"),MB_OK);
 		return 0;
 	}
 
@@ -144,13 +139,16 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	SetTimer(mainWindowHandle,IDT_TIMER1,16,&timerFunction);
 
 	// Main message loop:
-	while (GetMessage(&msg, NULL, 0, 0))
+	MSG msg;
+	while (GetMessage(&msg, nullptr, 0, 0))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 
-	irDriver.deinit();
+	e.setEvent();
+	irDriver.interface_.deinit();
+	::Sleep(500);
 
 	return (int) msg.wParam;
 }

@@ -1,27 +1,18 @@
 #include  <Windows.h>
 #include "Settings.h"
+#include <filesystem>
 
-Settings::Settings() {
+namespace fs = std::filesystem;
 
-}
+std::optional<std::wstring> Settings::getPluginName()
+{
+	auto const path = fs::current_path() / L"WinLIRC.ini";
 
-bool Settings::getPluginName(TCHAR out[]) {
+	wchar_t pluginName[128];
+	auto const count = GetPrivateProfileStringW(L"WinLIRC", L"Plugin", nullptr, pluginName, std::size(pluginName), path.c_str());
 
-	//=====================
-	TCHAR path[MAX_PATH];
-	int count;
-	//=====================
-
-	GetCurrentDirectory(MAX_PATH,path);
-
-	_tcscat_s(path,_countof(path),_T("\\WinLIRC.ini"));
-
-	count = GetPrivateProfileString(_T("WinLIRC"),_T("Plugin"),NULL,pluginName,_countof(pluginName),path);
-
-	if(count) {
-		_tcscpy_s(out,128,pluginName);
-		return true;
-	}
-
-	return false;
+	if (count > 0)
+		return pluginName;
+	else
+		return {};
 }

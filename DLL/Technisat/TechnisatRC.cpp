@@ -7,7 +7,7 @@
 #include "Settings.h"
 #include <winlirc/WLPluginAPI.h>
 #include <winlirc/winlirc_api.h>
-#include "../Common/Win32helpers.h"
+#include <winlirc-common/Win32helpers.h>
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 void initHardwareStruct();

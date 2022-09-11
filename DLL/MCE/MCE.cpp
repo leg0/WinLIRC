@@ -23,7 +23,7 @@
 #include <tchar.h>
 #include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
-#include "../Common/Win32Helpers.h"
+#include <winlirc-common/Win32Helpers.h>
 #include "resource.h"
 #include "Globals.h"
 #include "SendReceiveData.h"
