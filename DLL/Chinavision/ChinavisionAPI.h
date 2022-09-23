@@ -1,5 +1,4 @@
-#ifndef ChinavisionAPI_H
-#define ChinavisionAPI_H
+#pragma once
 
 #include <Windows.h>
 #include "winusb.h"
@@ -40,5 +39,3 @@ private:
 	WINUSB_INTERFACE_HANDLE m_usbHandle;
 	//======================
 };
-
-#endif

@@ -20,8 +20,7 @@
  * Copyright (C) 2013 Jan Dubiec <jdx(at)onet(dot)pl>
  */
 
-#ifndef _RECEIVEDATA_H_
-#define _RECEIVEDATA_H_
+#pragma once
 
 #include <winlirc/WLPluginAPI.h>
 #include <chrono>
@@ -64,5 +63,3 @@ private:
 	HANDLE			exitEvent[2];
 	//==========================
 };
-
-#endif /* #ifndef _RECEIVEDATA_H_ */

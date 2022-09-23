@@ -1,5 +1,4 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include <Windows.h>
 #include "Receive.h"
@@ -15,6 +14,3 @@ extern Settings settings;
 extern std::chrono::steady_clock::time_point start,end,last;
 
 extern ir_code irCode;
-
-#endif
-

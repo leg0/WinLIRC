@@ -6,8 +6,7 @@
 // B2C2_Guids.h
 
 
-#ifndef _B2C2_GUIDS_H_
-#define _B2C2_GUIDS_H_
+#pragma once
 
 // B2C2 MPEG2 Filter GUID
 
@@ -90,6 +89,3 @@ DEFINE_GUID(IID_IB2C2MPEG2TimeshiftCtrl,
 // {0B5A8A87-7133-4a37-846E-77F568A52155}
 DEFINE_GUID(IID_IB2C2MPEG2MulticastCtrl, 
 0xb5a8a87, 0x7133, 0x4a37, 0x84, 0x6e, 0x77, 0xf5, 0x68, 0xa5, 0x21, 0x55);
-
-
-#endif	// _B2C2_GUIDS_H_

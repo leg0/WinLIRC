@@ -19,9 +19,6 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef CHINAVISION_H
-#define CHINAVISION_H
+#pragma once
 
 #include <winlirc/WLPluginAPI.h>
-
-#endif

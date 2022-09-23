@@ -19,8 +19,7 @@
  * Copyright (C) 2011 Artem Golubev
  */
 
-#ifndef RECEIVEDATA_H
-#define RECEIVEDATA_H
+#pragma once
 
 #include <windows.h>
 #include <tchar.h>
@@ -48,5 +47,3 @@ private:
 	HANDLE	threadHandle;
 	HANDLE	exitEvent;
 };
-
-#endif

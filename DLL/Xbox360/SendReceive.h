@@ -1,5 +1,4 @@
-#ifndef STREAMZAPAPI_H
-#define STREAMZAPAPI_H
+#pragma once
 
 #include <Windows.h>
 #include "XInput.h"
@@ -30,5 +29,3 @@ private:
 	int				m_repeats;
 	//================================
 };
-
-#endif

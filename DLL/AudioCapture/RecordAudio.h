@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef RECORDAUDIO_H
-#define RECORDAUDIO_H
+#pragma once
 
 #include <Windows.h>
 #include "Settings.h"
@@ -53,5 +52,3 @@ private:
 	BOOL	m_skipFirst;
 
 };
-
-#endif

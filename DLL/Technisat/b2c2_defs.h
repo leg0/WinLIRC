@@ -23,8 +23,7 @@
 
 ---------------------------------------------------------------------------------------*/
 
-#ifndef _B2C2_DEFS_H_
-#define _B2C2_DEFS_H_
+#pragma once
 
 /* 
  *	FEC enumeration used by SetFEC()/GetFEC()
@@ -298,5 +297,3 @@ typedef enum
 	PID_CAPTURE_ALL_INCLUDING_NULLS = 0x2000,
 	PID_CAPTURE_ALL_EXCLUDING_NULLS = 0x2001,
 } tSpecialPids;
-
-#endif	// _B2C2_DEFS_H_

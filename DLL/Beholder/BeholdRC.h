@@ -5,8 +5,7 @@
 // http://www.beholder.ru
 // mailto:support@beholder.ru
 
-#ifndef __BEHOLDRC_H
-#define __BEHOLDRC_H
+#pragma once
 
 #include "windows.h"
 #include <tchar.h>
@@ -155,5 +154,3 @@ extern "C" {
 //   92  -  Freeze
 //
 /////////////////////////////////////////////////////////////////////////////
-
-#endif

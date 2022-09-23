@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include <winsock2.h>
 #include <Windows.h>
@@ -30,5 +29,3 @@ extern HANDLE threadExitEvent;
 extern HANDLE dataReadyEvent;
 
 extern Server *server;
-
-#endif

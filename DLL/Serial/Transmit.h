@@ -1,5 +1,4 @@
-#ifndef _TRANSMIT_H_
-#define _TRANSMIT_H_
+#pragma once
 
 #include <winlirc/WLPluginAPI.h>
 
@@ -9,5 +8,3 @@
 
 void	SetTransmitPort(HANDLE hCom,unsigned type);
 int		Transmit(ir_ncode *data,struct ir_remote *rem, int repeats);
-
-#endif

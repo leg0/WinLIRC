@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef RECEIVEDATA_H
-#define RECEIVEDATA_H
+#pragma once
 
 #include <chrono>
 
@@ -62,5 +61,3 @@ private:
 	UINT		repeats;
 	//=====================
 };
-
-#endif

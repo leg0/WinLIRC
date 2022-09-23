@@ -1,5 +1,4 @@
-#ifndef RECEIVE_H
-#define RECEIVE_H
+#pragma once
 
 #include <windows.h>
 #include <winlirc/WLPluginAPI.h>
@@ -71,5 +70,3 @@ private:
 	//===================
 
 };
-
-#endif

@@ -20,8 +20,7 @@
  * Copyright (C) 2013 Jan Dubiec <jdx(at)onet(dot)pl>
  */
 
-#ifndef _GLOBALS_H_
-#define _GLOBALS_H_
+#pragma once
 
 #include <Windows.h>
 #include "ReceiveData.h"
@@ -35,5 +34,3 @@ extern HANDLE dataReadyEvent;
 extern ir_code irCode;
 
 extern std::chrono::steady_clock::time_point start,end,last;
-
-#endif /* #ifndef _GLOBALS_H_ */

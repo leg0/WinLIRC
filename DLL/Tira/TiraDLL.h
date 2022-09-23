@@ -1,5 +1,4 @@
-#ifndef TIRADLL_H
-#define TIRADLL_H
+#pragma once
 
 #define TIRA_TRUE				0	//tira uses 0 as everything went okay
 #define TIRA_FALSE				1	//tira false 
@@ -61,5 +60,3 @@ private:
 	t_tira_get_version			p_tira_get_version;
 	t_tira_access_feature		p_tira_access_feature;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef STREAMZAPAPI_H
-#define STREAMZAPAPI_H
+#pragma once
 
 #include <Windows.h>
 #include <winlirc/WLPluginAPI.h>
@@ -45,5 +44,3 @@ private:
 	HANDLE	m_deviceHandle;
 	//======================
 };
-
-#endif

@@ -14,8 +14,7 @@
 // File: ib2c2mpeg2datactrl.h
 //
 
-#ifndef _IB2C2MPEG2DataCtrl_H_
-#define _IB2C2MPEG2DataCtrl_H_
+#pragma once
 
 
 #if defined __linux__
@@ -347,6 +346,3 @@ DECLARE_INTERFACE_(IB2C2MPEG2DataCtrl6, IB2C2MPEG2DataCtrl5)
 }
 #endif
 #endif //defined WIN32
-
-#endif // ! _IB2C2MPEG2DataCtrl_H_
-

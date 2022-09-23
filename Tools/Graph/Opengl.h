@@ -1,5 +1,4 @@
-#ifndef OPENGL_H
-#define OPENGL_H
+#pragma once
 
 #include <windows.h>
 #include <gl\gl.h>
@@ -28,5 +27,3 @@ private:
 	bool redraw;
 	//===================
 };
-
-#endif

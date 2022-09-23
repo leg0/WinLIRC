@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include <windows.h>
 #include "SendReceiveData.h"
@@ -37,5 +36,3 @@ extern CRITICAL_SECTION criticalSection;
 extern std::chrono::steady_clock::time_point start,end,last;
 
 extern ir_code irCode;
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef MCEDEFINES_H
-#define MCEDEFINES_H
+#pragma once
 
 #define MCE_DEVICE_BUFFER_SIZE 100
 
@@ -112,7 +111,3 @@ static int GetHighBit(int mask, int bitCount)
 
 	return 0;
 }
-
-
-
-#endif
