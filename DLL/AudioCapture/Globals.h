@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include "RecordAudio.h"
 #include "AnalyseAudio.h"
@@ -34,5 +33,3 @@ extern HANDLE		dataReadyEvent;
 extern HANDLE		threadExitEvent;
 
 bool waitTillDataIsReady(std::chrono::microseconds timeout);
-
-#endif

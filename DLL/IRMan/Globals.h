@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include <Windows.h>
 #include "SendReceiveData.h"
@@ -40,5 +39,3 @@ extern std::chrono::steady_clock::time_point start, end, last;
 extern ir_code irCode;
 
 extern SendReceiveData *sendReceiveData;
-
-#endif

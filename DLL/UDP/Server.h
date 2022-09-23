@@ -1,5 +1,4 @@
-#ifndef SERVER_H
-#define SERVER_H
+#pragma once
 
 
 #include <winsock2.h>
@@ -33,5 +32,3 @@ private:
 	UCHAR		bufferStart;
 	UCHAR		bufferEnd;
 };
-
-#endif

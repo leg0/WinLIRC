@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include "Settings.h"
 #include "irdriver.h"
@@ -30,5 +29,3 @@ extern HANDLE		threadExitEvent;
 extern CIRDriver	*irDriver;
 
 void KillThread(CWinThread **ThreadHandle, CEvent *ThreadEvent);
-
-#endif

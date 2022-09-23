@@ -1,5 +1,4 @@
-#ifndef __IR_DEVICE_LIST_H_INCLUDED__
-#define __IR_DEVICE_LIST_H_INCLUDED__
+#pragma once
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -20,5 +19,3 @@ protected:
 
 	StringList m_List;
 };
-
-#endif

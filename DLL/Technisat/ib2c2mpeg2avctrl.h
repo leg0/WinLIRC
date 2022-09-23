@@ -9,8 +9,7 @@
 // and IB2C2MPEG2AVCtrl3
 
 
-#ifndef _IB2C2MPEG2AVCTRL_H_
-#define _IB2C2MPEG2AVCTRL_H_
+#pragma once
 
 #if defined __linux__	// Class implementation for Linux
 
@@ -182,5 +181,3 @@ DECLARE_INTERFACE_(IB2C2MPEG2AVCtrl3, IB2C2MPEG2AVCtrl2) {
 #endif
 
 #endif //defined WIN32
-
-#endif // _IB2C2MPEG2AVCTRL_H_

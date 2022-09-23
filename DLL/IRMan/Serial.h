@@ -17,8 +17,7 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 
-#ifndef __SERIAL_H
-#define __SERIAL_H
+#pragma once
 
 
 //////////////////////////////////////////////////////////////////////
@@ -364,5 +363,3 @@ protected:
 	// CancelIo wrapper (for Win95 compatibility)
 	BOOL CancelCommIo (void);
 };
-
-#endif	// __SERIAL_H

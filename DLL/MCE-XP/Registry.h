@@ -1,9 +1,6 @@
-#ifndef REGISTRY_H
-#define REGISTRY_H
+#pragma once
 
 namespace RegistrySettings {
 	BOOL hidEnabled();
 	BOOL setHIDState(BOOL enabled);
 }
-
-#endif

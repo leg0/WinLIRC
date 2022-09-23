@@ -1,5 +1,4 @@
-#ifndef __XBMC_CLIENT_H__
-#define __XBMC_CLIENT_H__
+#pragma once
 
 /*
  *  Copyright (C) 2008-2009 Team XBMC http://www.xbmc.org
@@ -830,5 +829,3 @@ public:
     action.Send(m_Socket, m_Addr, m_UID);
   }
 };
-
-#endif

@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef RECEIVEDATA_H
-#define RECEIVEDATA_H
+#pragma once
 
 #include "MCEDefines.h"
 #include "IrDeviceList.h"
@@ -77,5 +76,3 @@ private:
 	MCEDeviceCapabilities	mceDeviceCapabilities;
 	//==========================
 };
-
-#endif

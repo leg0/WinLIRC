@@ -19,8 +19,7 @@
 // File: ib2c2mpeg2tunerctrl.h
 //
 
-#ifndef _IB2C2MPEG2TunerCtrl_H_
-#define _IB2C2MPEG2TunerCtrl_H_
+#pragma once
 
 
 #if defined __linux__
@@ -297,6 +296,3 @@ DECLARE_INTERFACE_(IB2C2MPEG2TunerCtrl4, IB2C2MPEG2TunerCtrl3)
 }
 #endif
 #endif //!defined __linux__
-
-#endif // ! _IB2C2MPEG2TunerCtrl_H_
-

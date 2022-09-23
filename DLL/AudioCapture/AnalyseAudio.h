@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef ANALYSEAUDIO_H
-#define ANALYSEAUDIO_H
+#pragma once
 
 #include <Windows.h>
 #include "Settings.h"
@@ -61,5 +60,3 @@ private:
 	UCHAR	m_bufferEnd;
 	//=======================
 };
-
-#endif

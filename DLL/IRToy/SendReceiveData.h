@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef RECEIVEDATA_H
-#define RECEIVEDATA_H
+#pragma once
 
 #include "Serial.h"
 #include <winlirc/WLPluginAPI.h>
@@ -57,5 +56,3 @@ private:
 	OVERLAPPED	overlapped;
 	//==========================
 };
-
-#endif

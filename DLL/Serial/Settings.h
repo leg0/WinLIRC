@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
 #include "stdafx.h"
 #include <tchar.h>
@@ -47,6 +46,3 @@ public:
 private:
 
 };
-
-#endif
-

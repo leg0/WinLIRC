@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include <Windows.h>
 #include "SendReceiveData.h"
@@ -32,5 +31,3 @@ extern HANDLE dataReadyEvent;
 extern SendReceiveData *sendReceiveData;
 
 extern Settings settings;
-
-#endif

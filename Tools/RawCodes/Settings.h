@@ -1,5 +1,4 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
 #include <Tchar.h>
 
@@ -17,5 +16,3 @@ private:
 	//====================
 
 };
-
-#endif

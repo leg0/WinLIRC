@@ -19,8 +19,7 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
 class Settings 
 {
@@ -39,6 +38,3 @@ private:
 	int devNumber;
 	//======================
 };
-
-#endif
-
