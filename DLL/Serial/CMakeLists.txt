@@ -25,9 +25,11 @@ add_library(Serial MODULE
     Transmit.h
 	)
 
-add_definitions(
-	-DUNICODE
-	-D_UNICODE
+target_compile_definitions(Serial
+	PRIVATE
+		UNICODE
+		_UNICODE
+		_AFXDLL
 	)
 
 configure_plugin(Serial)

@@ -24,6 +24,14 @@ add_executable(XBMC_Keymap WIN32
 	)
 
 target_link_libraries(XBMC_Keymap PRIVATE tinyxml2::tinyxml2)
-target_compile_definitions(XBMC_Keymap PRIVATE UNICODE _UNICODE)
+target_compile_definitions(XBMC_Keymap PRIVATE UNICODE _UNICODE _AFXDLL)
+
+if (${CMAKE_GENERATOR} STREQUAL "Ninja")
+	# https://gitlab.kitware.com/cmake/cmake/-/issues/21202
+	target_link_options(XBMC_Keymap
+		PRIVATE
+			/entry:wWinMainCRTStartup
+		)
+endif()
 
 configure_tool(XBMC_Keymap "Tools")

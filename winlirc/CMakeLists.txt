@@ -1,7 +1,3 @@
-cmake_minimum_required (VERSION 3.16)
-
-project(WinLIRC)
-
 find_package(Microsoft.GSL CONFIG REQUIRED)
 
 # Use MFC in a shared DLL.
@@ -71,8 +67,8 @@ target_compile_definitions(winlirc
 	PRIVATE
 		UNICODE
 		_UNICODE
-		NOMINMAX
-	INTERFACE
+		_AFXDLL
+	PUBLIC
 		NOMINMAX
 	)
 
@@ -83,6 +79,14 @@ target_link_libraries(winlirc
 	INTERFACE
 		Microsoft.GSL::GSL
 	)
+
+if (${CMAKE_GENERATOR} STREQUAL "Ninja")
+	# https://gitlab.kitware.com/cmake/cmake/-/issues/21202
+	target_link_options(winlirc
+		PRIVATE
+			/entry:wWinMainCRTStartup
+		)
+endif()
 
 target_include_directories(winlirc
 	PRIVATE
