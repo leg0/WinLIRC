@@ -28,7 +28,6 @@
 #include "remote.h"
 #include "server.h" //so we can send SIGHUP
 #include "InputPlugin.h"
-#include "version.h"
 #include "wl_debug.h"
 
 #include <string>
@@ -346,7 +345,6 @@ BOOL Cdrvdlg::OnInitDialog()
 	CDialog::OnInitDialog();
 	m_ircode_edit="";
 	UpdateData(FALSE);
-	GetDlgItem(IDC_VERSION)->SetWindowTextW(WIDE(WINLIRC_VERSION));
 	UpdateRemoteComboLists();
 	return TRUE;
 }

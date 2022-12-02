@@ -1,4 +1,6 @@
 .build*/
+out/
+build/
 *.aps
 *.bak
 *.exp
@@ -17,3 +19,4 @@
 *.tmp
 *.orig
 *.log
+

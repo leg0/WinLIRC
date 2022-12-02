@@ -21,7 +21,6 @@
 #define IDC_BN_CREATE_CONFIG            1006
 #define IDC_OUT                         1007
 #define IDC_IN                          1008
-#define IDC_VERSION                     1012
 #define IDC_SENDCODE                    1013
 #define IDC_REMOTE_EDIT                 1014
 #define IDC_REPS_EDIT                   1015

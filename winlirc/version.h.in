@@ -1,0 +1,10 @@
+#pragma once
+
+#define WINLIRC_VERSION "@WinLIRC_VERSION@"
+
+#ifndef APSTUDIO_INVOKED
+static wchar_t const WINLIRC_IDW[] = L"WinLIRC @WinLIRC_VERSION@ by <jim@jtan.com>, <baily@uiuc.edu> and <i.curtis@gmail.com>";
+static char const WINLIRC_ID[] = "WinLIRC @WinLIRC_VERSION@ by <jim@jtan.com>, <baily@uiuc.edu> and <i.curtis@gmail.com>";
+static wchar_t const idw[] = L"@WinLIRC_VERSION@";
+static char const id[] = "@WinLIRC_VERSION@";
+#endif // APSTUDIO_INVOKED

@@ -21,6 +21,7 @@ if not exist vcpkg.exe (call bootstrap-vcpkg.bat)
 popd
 
 mkdir %build_dir%
+echo "*" > %build_dir%\.gitignore
 
 for /f "usebackq tokens=*" %%a in (`where cmake.exe`) do (
 	set cmake=%%a

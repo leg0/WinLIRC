@@ -8,6 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
+#include "version.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -33,6 +34,7 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
+    "#include ""version.h""\r\n"
     "\0"
 END
 
@@ -68,7 +70,7 @@ BEGIN
     LTEXT           "This program is distributed under the GNU Public\nLicense and comes with absolutely NO WARRANTY.",IDC_STATIC,30,124,173,17
     GROUPBOX        "",IDC_STATIC,7,118,217,23
     LTEXT           "WinLIRC version",IDC_STATIC,35,12,55,8
-    LTEXT           "(version)",IDC_VERSION,91,12,35,8
+    LTEXT           WINLIRC_VERSION,IDC_STATIC,91,12,35,8
     LTEXT           "code",IDC_STATIC,19,102,17,8
     LTEXT           "remote",IDC_STATIC,14,81,22,8
     LTEXT           "repeats",IDC_STATIC,164,80,24,8
