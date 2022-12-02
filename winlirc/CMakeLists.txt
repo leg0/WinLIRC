@@ -37,7 +37,7 @@ add_executable(winlirc WIN32
     server.h
     stdafx.h
     trayicon.h
-    version.h
+    include/version.h
     winlircapp.h
 	wl_string.h
 	ir_remote.cpp
@@ -50,6 +50,8 @@ add_executable(winlirc WIN32
 
 source_group(Common FILES ${COMMON_SOURCES})
 source_group("Public API" FILES ${PUBLIC_API_FILES})
+
+configure_file(version.h.in include/version.h @ONLY)
 
 set_target_properties(winlirc PROPERTIES
 	ENABLE_EXPORTS on
@@ -74,9 +76,8 @@ target_compile_definitions(winlirc
 
 target_link_libraries(winlirc
 	PRIVATE
-		Microsoft.GSL::GSL
 		winlirc-common
-	INTERFACE
+	PUBLIC
 		Microsoft.GSL::GSL
 	)
 
@@ -90,8 +91,8 @@ endif()
 
 target_include_directories(winlirc
 	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/include
-	INTERFACE
+		${CMAKE_CURRENT_BINARY_DIR}/include
+	PUBLIC
 		${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 install(TARGETS winlirc 
