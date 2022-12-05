@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of the WinLIRC package, which was derived from
  * LIRC (Linux Infrared Remote Control) 0.9.0.
  *
@@ -24,47 +24,43 @@
 #include <winlirc/WLPluginAPI.h>
 #include <memory>
 
+using namespace std::chrono_literals;
+
 std::unique_ptr<SendReceive> sendReceive;
 
-WL_API int init(WLEventHandle exitEvent) {
+static int xbox360_init(WLEventHandle exitEvent) {
 
-	sendReceive = std::make_unique<SendReceive>();
-
-	return sendReceive->init(reinterpret_cast<HANDLE>(exitEvent));
+    sendReceive = std::make_unique<SendReceive>(reinterpret_cast<HANDLE>(exitEvent));
+    return 1;
 }
 
-WL_API void deinit() {
-
-	if(sendReceive) {
-		sendReceive->deinit();
-		sendReceive.reset();
-	}
+static void xbox360_deinit() {
+    sendReceive.reset();
 }
 
-WL_API int hasGui() {
+static int xbox360_decodeIR(struct ir_remote* remotes, char* out, size_t out_size) {
 
-	return FALSE;
+    if (sendReceive) {
+        if (!sendReceive->waitTillDataIsReady(0us)) {
+            return 0;
+        }
+
+        return sendReceive->decodeCommand(out, out_size);
+    }
+
+    return 0;
 }
 
-WL_API void	loadSetupGui() {
-
-}
-
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
-
-	return 0;
-}
-
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
-
-	if(sendReceive) {
-		using namespace std::chrono_literals;
-		if(!sendReceive->waitTillDataIsReady(0us)) {
-			return 0;
-		}
-
-		return sendReceive->decodeCommand(out, out_size);
-	}
-
-	return 0;
+WL_API plugin_interface const* getPluginInterface()
+{
+    static plugin_interface const pi{
+        .plugin_api_version = winlirc_plugin_api_version,
+        .init = xbox360_init,
+        .deinit = xbox360_deinit,
+        .hasGui = []() { return FALSE; },
+        .loadSetupGui = [] {},
+        .sendIR = [](auto, auto, auto) { return 0; },
+        .decodeIR = xbox360_decodeIR
+    };
+    return &pi;
 }
