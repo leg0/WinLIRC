@@ -40,10 +40,6 @@ SerialDialog::SerialDialog(CWnd* pParent /*=nullptr*/)
 	inverted		= FALSE;
 }
 
-SerialDialog::~SerialDialog()
-{
-}
-
 void SerialDialog::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
