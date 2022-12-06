@@ -21,10 +21,9 @@
 
 #include "stdafx.h"
 #include "Globals.h"
-#include "App.h"
 
 Settings settings;
-App app;
+CWinApp app;
 CIRDriver *irDriver = nullptr;
 
 HANDLE	threadExitEvent	= nullptr;

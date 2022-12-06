@@ -32,7 +32,6 @@ class SerialDialog : public CDialog
 
 public:
 	SerialDialog(CWnd* pParent = nullptr);   // standard constructor
-	virtual ~SerialDialog();
 
 // Dialog Data
 	enum { IDD = IDD_SERIALDIALOG };

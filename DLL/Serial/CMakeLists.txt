@@ -4,9 +4,7 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_MFC_FLAG 2)
 
 add_library(Serial MODULE
-	App.cpp
 	Globals.cpp
-	hardware.cpp
 	irdriver.cpp
 	Serial.cpp
 	SerialDialog.cpp
@@ -15,7 +13,6 @@ add_library(Serial MODULE
 
 	winlirc.rc
 
-    App.h
     Globals.h
     irdriver.h
     resource.h

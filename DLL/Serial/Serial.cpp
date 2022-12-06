@@ -1,4 +1,4 @@
-/* 
+/*
  * This file is part of the WinLIRC package, which was derived from
  * LIRC (Linux Infrared Remote Control) 0.8.6.
  *
@@ -28,71 +28,114 @@
 #include <winlirc/WLPluginAPI.h>
 #include "Transmit.h"
 
-void initHardwareStruct();
-extern hardware hw;
-extern rbuf rec_buffer;
+static rbuf rec_buffer;
 
-WL_API int init(WLEventHandle exitEvent) {
 
-	threadExitEvent	= reinterpret_cast<HANDLE>(exitEvent);
+static lirc_t serial_readData(lirc_t timeout) {
 
-	initHardwareStruct();
-	winlirc_init_rec_buffer(&rec_buffer);
+    if (!irDriver) return 0;
 
-	irDriver = new CIRDriver();
-	if(irDriver->InitPort()) return 1;
-
-	return 0;
+    return irDriver->readData(std::chrono::microseconds{ timeout });
 }
 
-WL_API void deinit() {
+static void serial_wait_for_data(lirc_t timeout) {
 
-	threadExitEvent = nullptr;	//this one is created outside the DLL
+    if (!irDriver) return;
 
-	if(irDriver) {
-		delete irDriver;
-		irDriver = nullptr;
-	}
+    irDriver->waitTillDataIsReady(std::chrono::microseconds{ timeout });
 }
 
-WL_API int hasGui() {
+static int serial_data_ready() {
 
-	return TRUE;
+    if (!irDriver) return 0;
+
+    if (irDriver->dataReady()) return 1;
+
+    return 0;
 }
 
-WL_API void loadSetupGui() {
+static hardware const serial_hw{
+    .plugin_api_version = winlirc_plugin_api_version,
+    .device = "hw",
+    .name = "SerialDevice",
 
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	SerialDialog serialDialog;
-	serialDialog.DoModal();
+    .features = LIRC_CAN_REC_MODE2,
+    .send_mode = 0,
+    .rec_mode = LIRC_MODE_MODE2,
+    .code_length = 0,
+    .resolution = 0,
+
+    .decode_func = &winlirc_receive_decode,
+    .readdata = &serial_readData,
+    .wait_for_data = &serial_wait_for_data,
+    .data_ready = &serial_data_ready,
+    .get_ir_code = nullptr,
+};
+
+
+static int serial_init(WLEventHandle exitEvent) {
+
+    threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
+
+    winlirc_init_rec_buffer(&rec_buffer);
+
+    irDriver = new CIRDriver();
+    if (irDriver->InitPort()) return 1;
+
+    return 0;
 }
 
-WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
+static void serial_deinit() {
 
-	return Transmit(code,remotes,repeats);
+    threadExitEvent = nullptr;	//this one is created outside the DLL
+
+    if (irDriver) {
+        delete irDriver;
+        irDriver = nullptr;
+    }
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static void serial_loadSetupGui() {
 
-	if(irDriver) {
-		using namespace std::chrono_literals;
-		if(!irDriver->waitTillDataIsReady(0us)) {
-			return 0;
-		}
-	}
-
-	winlirc_clear_rec_buffer(&rec_buffer, &hw);
-
-	if(winlirc_decodeCommand(&rec_buffer, &hw, remotes, out, out_size)) {
-		return 1;
-	}
-	
-	return 0;
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    SerialDialog serialDialog;
+    serialDialog.DoModal();
 }
 
-WL_API hardware const* getHardware() {
+static int serial_sendIR(struct ir_remote* remotes, struct ir_ncode* code, int repeats) {
 
-	initHardwareStruct();	//make sure values are setup
+    return Transmit(code, remotes, repeats);
+}
 
-	return &hw;
+static int serial_decodeIR(struct ir_remote* remotes, char* out, size_t out_size) {
+
+    if (irDriver) {
+        using namespace std::chrono_literals;
+        if (!irDriver->waitTillDataIsReady(0us)) {
+            return 0;
+        }
+    }
+
+    winlirc_clear_rec_buffer(&rec_buffer, &serial_hw);
+
+    if (winlirc_decodeCommand(&rec_buffer, &serial_hw, remotes, out, out_size)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+    static constexpr plugin_interface pi{
+        .plugin_api_version = winlirc_plugin_api_version,
+        .init = serial_init,
+        .deinit = serial_deinit,
+        .hasGui = [] { return 1; },
+        .loadSetupGui = serial_loadSetupGui,
+        .sendIR = serial_sendIR,
+        .decodeIR = serial_decodeIR,
+        .getHardware = [] { return &serial_hw; },
+        .hardware = &serial_hw
+    };
+    return &pi;
 }
