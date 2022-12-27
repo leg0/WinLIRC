@@ -12,14 +12,7 @@
 #include <utility>
 #include <vector>
 
-struct HwndTraits
-{
-    typedef HWND HandleType;
-    constexpr static HandleType invalidValue() noexcept { return nullptr; }
-    static void close(HandleType h) noexcept { ::DestroyWindow(h); }
-};
-
-using Window = winlirc::UniqueHandle<HwndTraits>;
+using Window = winlirc::UniqueHandle<HWND, ::DestroyWindow>;
 
 CComPtr<IDirectInput8> g_di;
 CComPtr<IDirectInputDevice8> g_diJoystick;
@@ -99,7 +92,7 @@ WL_API void deinit()
     if (g_initialized)
     {
         g_diJoystick.Release();
-        g_window.reset();
+        g_window = {};
         g_di.Release();
         g_initialized = false;
         ::CoUninitialize();

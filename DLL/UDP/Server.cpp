@@ -30,7 +30,7 @@ int Server::init() {
 		return 0;		// win sock version not supported
 	}
 
-	server.reset(socket(AF_INET, SOCK_DGRAM, 0));
+	server.attach(socket(AF_INET, SOCK_DGRAM, 0));
 
 	if(!server) {
 		//printf("failed socket\n");
@@ -66,7 +66,7 @@ void Server::deinit() {
 
 	KillThread(exitThread,threadHandle);
 
-	server.reset();
+	server = {};
 	SAFE_CLOSE_HANDLE(exitThread);
 
 	WSACleanup();

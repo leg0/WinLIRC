@@ -32,5 +32,5 @@ struct Plugin
 	bool canRecord() const noexcept;
 
 	plugin_interface interface_ = { 0 };
-	Dll dllFile_;
+	winlirc::Dll dllFile_;
 };
