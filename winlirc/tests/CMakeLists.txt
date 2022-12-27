@@ -4,7 +4,6 @@ add_executable(winlirc_tests
 	test.cpp
 	config_test.cpp
 	remote_test.cpp
-	unique_handle_test.cpp
 	../config.cpp
 	../wl_string.cpp)
 

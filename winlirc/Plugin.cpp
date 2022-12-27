@@ -5,7 +5,7 @@
 Plugin::Plugin(std::wstring const& path) noexcept
 	: dllFile_ { LoadLibraryW(path.c_str()) }
 {
-	if (Dll& d = dllFile_)
+	if (auto& d = dllFile_)
 	{
 		auto getPluginInterface = (GetPluginInterfaceFunction)GetProcAddress(d.get(), "getPluginInterface");
 		if (getPluginInterface)

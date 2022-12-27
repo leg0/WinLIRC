@@ -124,10 +124,10 @@ void Cserver::stopServer()
 
     for (auto& client : m_clients)
     {
-        client.reset();
+        client = {};
     }
 
-    m_server.reset();
+    m_server = {};
 }
 
 void Cserver::sendToClients(std::string_view s) const
@@ -244,7 +244,7 @@ void Cserver::ThreadProc()
                         if (bytes == 0 || bytes == SOCKET_ERROR)
                         {
                             /* Connection was closed or something's screwy */
-                            m_clients[i].reset();
+                            m_clients[i] = {};
                             WL_DEBUG("Client connection %d closed\n", i);
                         }
                         else /* bytes > 0, we read data */
