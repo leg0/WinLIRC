@@ -1,0 +1,33 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 13,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "vcpkg",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            }
+        },
+        {
+            "name": "x86",
+            "inherits": [ "vcpkg" ],
+            "binaryDir": "${sourceDir}/_build-${presetName}",
+            "architecture": "Win32",
+            "displayName": "Windows x86"
+        },
+        {
+            "name": "x64",
+            "inherits": [ "vcpkg" ],
+            "binaryDir": "${sourceDir}/_build-${presetName}",
+            "architecture": "x64",
+            "displayName": "Windows x64"
+        }
+
+    ]
+}
+
