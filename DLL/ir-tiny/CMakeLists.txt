@@ -18,12 +18,6 @@ add_library(ir-tiny MODULE
     stdafx.h
     )
 
-if (MSVC)
-    set_target_properties(ir-tiny PROPERTIES COMPILE_FLAGS "/Yustdafx.h /Zi")
-    set_target_properties(ir-tiny  PROPERTIES LINK_FLAGS "/DEBUG")
-    set_source_files_properties(stdafx.cpp PROPERTIES COMPILE_FLAGS "/Ycstdafx.h")
-endif()
-
 target_compile_definitions(ir-tiny PRIVATE UNICODE _UNICODE)
 
 find_path(WTL_INCLUDE_DIRS "atlapp.h")

@@ -14,6 +14,13 @@
             }
         },
         {
+            "name": "unity",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_UNITY_BUILD": "ON"
+            }
+        },
+        {
             "name": "x86",
             "inherits": [ "vcpkg" ],
             "binaryDir": "${sourceDir}/_build-${presetName}",
@@ -21,13 +28,20 @@
             "displayName": "Windows x86"
         },
         {
+            "name": "x86-unity",
+            "inherits": [ "x86", "unity" ]
+        },
+        {
             "name": "x64",
             "inherits": [ "vcpkg" ],
             "binaryDir": "${sourceDir}/_build-${presetName}",
             "architecture": "x64",
             "displayName": "Windows x64"
+        },
+        {
+            "name": "x64-unity",
+            "inherits": [ "x64", "unity" ]
         }
-
     ]
 }
 
