@@ -42,6 +42,17 @@ WinLIRC with CMake on command line:
 Open the root folder of the repo in Visual Studio. Let Visual Studio configure the project. When
 Visual Studio finishes generating the build system, then just start building.
 
+# Create an installer
+
+After building, you may want to build an installer. This requires [Wix3](https://wixtoolset.org/docs/wix3/) to be in
+your `PATH` (CMake does not support Wix4 yet).
+
+Once winlirc has been built, assuming x64:
+
+    c:\winlirc> cd _build-x64
+    c:\winlirc\_build-x64> cpack --preset default
+
+
 # Share a config file
 
 Have a config file you want to share? Please go to https://github.com/leg0/winlirc-configs and create a pull request.
