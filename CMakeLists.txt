@@ -44,16 +44,34 @@ macro(configure_tool tool_name)
 endmacro()
 
 
-if (MSVC)
-  add_compile_options(/std:c++latest /MP)
-else()
-  set(CMAKE_CXX_STANDARD 17)
-endif()
+add_compile_options(/std:c++latest /MP)
 
 add_subdirectory(winlirc)
-
 add_subdirectory(DLL)
-
 add_subdirectory(Tools)
 
-install(DIRECTORY configs DESTINATION .)
+
+
+install(
+    DIRECTORY configs
+    DESTINATION .
+    PATTERN ".git" EXCLUDE
+    )
+
+# Set CPack variables for the installer
+set(CPACK_PACKAGE_VENDOR "open source")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "winlirc infrared receiver and sender")
+
+set(CPACK_GENERATOR WIX)
+set(CPACK_WIX_UPGRADE_GUID "772e8de1-5874-4bed-b53c-fdf25dfd228b")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_LIST_DIR}/LICENSE.txt")
+set(CPACK_WIX_PRODUCT_ICON "${CMAKE_CURRENT_LIST_DIR}/winlirc/lirc.ico")
+set(CPACK_MONOLITHIC_INSTALL FALSE)
+set(CPACK_SOURCE_IGNORE_FILES
+    \\\\.git/
+    .git/
+    \\\\.swp$
+    \\\\.orig$
+)
+include(CPack)
+

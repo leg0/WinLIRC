@@ -2,7 +2,7 @@
     "version": 6,
     "cmakeMinimumRequired": {
         "major": 3,
-        "minor": 13,
+        "minor": 24,
         "patch": 0
     },
     "configurePresets": [
@@ -41,6 +41,17 @@
         {
             "name": "x64-unity",
             "inherits": [ "x64", "unity" ]
+        }
+    ]
+    ,
+    "packagePresets": [
+        {
+            "name": "default",
+            "displayName": "MSI Installer for WinLIRC",
+            "configurePreset": "x64",
+            "generators": [ "WIX" ],
+            "configurations": [ "MinSizeRel" ],
+            "vendorName": "open source"
         }
     ]
 }
