@@ -112,11 +112,11 @@ void CIRDriver::DaemonThreadProc() const {
 	char message[PACKET_SIZE+1];
 	auto decodeIr = [&]() {
 		std::lock_guard lock{ m_dllLock };
-		std::lock_guard lock2{ CS_global_remotes };
-
-		auto pluginDecodeIr = m_dll.interface_.decodeIR;
-		ASSERT(pluginDecodeIr != nullptr);
-		return pluginDecodeIr(global_remotes.get(), message, sizeof(message));
+		return app.config->use_global_remotes([&](ir_remote* global_remotes) {
+			auto pluginDecodeIr = m_dll.interface_.decodeIR;
+			ASSERT(pluginDecodeIr != nullptr);
+			return pluginDecodeIr(global_remotes, message, sizeof(message));
+		});
 	};
 
 	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {

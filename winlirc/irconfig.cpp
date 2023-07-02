@@ -29,25 +29,9 @@
 #include "config.h"
 #include "wl_debug.h"
 
-std::unique_ptr<ir_remote> global_remotes;
-std::mutex CS_global_remotes;
-
 CIRConfig::CIRConfig(std::filesystem::path iniFilePath)
 	: iniFilePath{iniFilePath.wstring()}
 {
-	std::lock_guard lock{ CS_global_remotes };
-	global_remotes.reset();
-}
-
-CIRConfig::~CIRConfig()
-{
-	WL_DEBUG("~CIRConfig\n");
-		
-	std::lock_guard lock{ CS_global_remotes };
-
-	global_remotes.reset();
-	
-	WL_DEBUG("~CIRConfig done\n");
 }
 
 bool CIRConfig::readConfig() {

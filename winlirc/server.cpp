@@ -302,133 +302,128 @@ void Cserver::ThreadProc()
 
 std::pair<bool, std::string> Cserver::parseSendString(char const* string)
 {
-    std::lock_guard lock{ CS_global_remotes };
+    return app.config->use_global_remotes([=](ir_remote* global_remotes) -> std::pair<bool, std::string> {
 
-    char remoteName[128] = "";
-    char keyName[128] = "";
-    int repeats = 0;
-    int result = sscanf_s(string, "%*s %s %s %i",
-        remoteName, static_cast<uint32_t>(sizeof(remoteName)),
-        keyName, static_cast<uint32_t>(sizeof(keyName)),
-        &repeats);
+        char remoteName[128] = "";
+        char keyName[128] = "";
+        int repeats = 0;
+        int result = sscanf_s(string, "%*s %s %s %i",
+            remoteName, static_cast<uint32_t>(sizeof(remoteName)),
+            keyName, static_cast<uint32_t>(sizeof(keyName)),
+            &repeats);
 
-    if (result < 2)
-        return { false, "DATA\n1\nremote or code missing\n"s };
+        if (result < 2)
+            return { false, "DATA\n1\nremote or code missing\n"s };
 
-    ir_remote* const sender = get_remote_by_name(global_remotes.get(), remoteName);
+        ir_remote* const sender = get_remote_by_name(global_remotes, remoteName);
 
-    if (sender == nullptr)
-        return { false, "DATA\n1\nremote not found\n"s };
+        if (sender == nullptr)
+            return { false, "DATA\n1\nremote not found\n"s };
 
-    auto codes = get_code_by_name(sender->codes, keyName);
+        auto codes = get_code_by_name(sender->codes, keyName);
 
-    if (codes == end(sender->codes))
-        return { false, "DATA\n1\ncode not found\n"s };
+        if (codes == end(sender->codes))
+            return { false, "DATA\n1\ncode not found\n"s };
 
-    repeats = std::max(repeats, sender->min_repeat);
-    repeats = std::min(repeats, 10);	// sanity check
+        repeats = std::max(repeats, sender->min_repeat);
+        repeats = std::min(repeats, 10);	// sanity check
 
-    // reset toggle masks
+        // reset toggle masks
 
-    if (has_toggle_mask(sender)) {
-        sender->toggle_mask_state = 0;
-    }
+        if (has_toggle_mask(sender)) {
+            sender->toggle_mask_state = 0;
+        }
 
-    if (has_toggle_bit_mask(sender)) {
-        sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state ^ sender->toggle_bit_mask);
-    }
+        if (has_toggle_bit_mask(sender)) {
+            sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state ^ sender->toggle_bit_mask);
+        }
 
-    BOOL const success = app.dlg->driver.sendIR(sender, &*codes, repeats);
+        BOOL const success = app.dlg->driver.sendIR(sender, &*codes, repeats);
 
-    if (!success)
-        return { false, "DATA\n1\nsend failed/not supported\n"s };
+        if (!success)
+            return { false, "DATA\n1\nsend failed/not supported\n"s };
 
-    app.dlg->GoBlue();
+        app.dlg->GoBlue();
 
-    return { true, ""s };
+        return { true, ""s };
+    });
 }
 
 std::pair<bool, std::string> Cserver::parseListString(const char* string)
 {
-    //====================
-    char* remoteName;
-    char* codeName;
-    int		n;
-    struct ir_remote* all;
-    //====================
+    return app.config->use_global_remotes([&](ir_remote* global_remotes) -> std::pair<bool, std::string> {
 
-    std::lock_guard lock{ CS_global_remotes };
+        auto remoteName = strtok(nullptr, " \t\r");
+        auto codeName = strtok(nullptr, " \t\r");
+        int n = 0;
+        auto all = global_remotes;
 
-    remoteName = strtok(nullptr, " \t\r");
-    codeName = strtok(nullptr, " \t\r");
-    n = 0;
-    all = global_remotes.get();
-
-    if (!remoteName)
-    {
-        while (all)
+        if (!remoteName)
         {
-            n++;
-            all = all->next.get();
-        }
-
-        std::string response;
-        if (n != 0)
-        {
-            response = "DATA\n"s + std::to_string(n) + "\n";
-            all = global_remotes.get();
-
             while (all)
             {
-                response += all->name;
-                response += "\n";
+                n++;
                 all = all->next.get();
             }
+
+            std::string response;
+            if (n != 0)
+            {
+                response = "DATA\n"s + std::to_string(n) + "\n";
+                all = global_remotes;
+
+                while (all)
+                {
+                    response += all->name;
+                    response += "\n";
+                    all = all->next.get();
+                }
+            }
+
+            return { true, std::move(response) };
         }
 
-        return { true, std::move(response) };
-    }
+        // find remote name 
 
-    // find remote name 
+        if (remoteName) {
 
-    if (remoteName) {
+            all = get_remote_by_name(all, remoteName);
+            if (!all)
+                return { false, "DATA\n1\nunknown remote: "s + remoteName + "\n" };
+        }
 
-        all = get_remote_by_name(all, remoteName);
-        if (!all)
-            return { false, "DATA\n1\nunknown remote: "s + remoteName + "\n" };
-    }
-
-    if (remoteName && !codeName)
-    {
-        std::string response;
-        if (!all->codes.empty())
+        if (remoteName && !codeName)
         {
-            response = "DATA\n"s + std::to_string(all->codes.size()) + "\n";
-
-            for (auto& c : all->codes)
+            std::string response;
+            if (!all->codes.empty())
             {
-                response += *c.name;
-                response += "\n";
+                response = "DATA\n"s + std::to_string(all->codes.size()) + "\n";
+
+                for (auto& c : all->codes)
+                {
+                    response += *c.name;
+                    response += "\n";
+                }
+            }
+            return { true, std::move(response) };
+        }
+
+        if (remoteName && codeName)
+        {
+            auto code = get_code_by_name(all->codes, codeName);
+            if (code != end(all->codes))
+            {
+                char buf[100];
+                sprintf(buf, "DATA\n1\n%016llX %s\n", code->code, code->name->c_str());
+                return { true, buf };
+            }
+            else
+            {
+                return { false, "DATA\n1\nunknown code: "s + codeName + "\n" };
             }
         }
-        return { true, std::move(response) };
-    }
-
-    if (remoteName && codeName)
-    {
-        auto code = get_code_by_name(all->codes, codeName);
-        if (code != end(all->codes))
-        {
-            char buf[100];
-            sprintf(buf, "DATA\n1\n%016llX %s\n", code->code, code->name->c_str());
-            return { true, buf };
-        }
-        else
-        {
-            return { false, "DATA\n1\nunknown code: "s + codeName + "\n" };
-        }
-    }
-    return { false, "DATA\n1\nerror\n"s };
+        return { false, "DATA\n1\nerror\n"s };
+    });
 }
 
 std::pair<bool, std::string> Cserver::parseVersion(const char* string)

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "irdriver.h"
+#include "ir_remote.h"
+
 #include <sal.h>
 #include <filesystem>
 #include <memory>
@@ -12,7 +14,6 @@ class CIRConfig
 {
 public:
 	explicit CIRConfig(std::filesystem::path iniFilePath);
-	~CIRConfig();
 
 	bool readConfig	();
 	bool writeINIFile() const;
@@ -54,8 +55,14 @@ public:
 	bool	exitOnError = false;
 	//=============================
 	std::wstring iniFilePath;
-};
 
-/* Change this stuff */
-extern std::unique_ptr<ir_remote> global_remotes;
-extern std::mutex CS_global_remotes;
+	template <typename Fun>
+	auto use_global_remotes(Fun&& fun)
+    {
+        std::lock_guard lock(CS_global_remotes);
+        return fun(global_remotes.get());
+    }
+private:
+	std::unique_ptr<ir_remote> global_remotes;
+	std::mutex CS_global_remotes;
+};
