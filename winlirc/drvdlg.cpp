@@ -359,51 +359,52 @@ void Cdrvdlg::OnSendcode()
 	m_remote_edit.TrimLeft();
 	m_ircode_edit.TrimLeft();
 
-	std::lock_guard lock{ CS_global_remotes };
+	app.config->use_global_remotes([&](ir_remote* global_remotes) {
 
-	USES_CONVERSION;
-	const char *remoteName	= T2A(m_remote_edit);
-	const char *codeName	= T2A(m_ircode_edit);
+		USES_CONVERSION;
+		const char* remoteName = T2A(m_remote_edit);
+		const char* codeName = T2A(m_ircode_edit);
 
-	ir_remote* sender = get_remote_by_name(global_remotes.get(), remoteName);
+		ir_remote* sender = get_remote_by_name(global_remotes, remoteName);
 
-	if (sender==nullptr) {
-		MessageBox(_T("No match found for remote!"));
-	}
-	else {
-
-		auto codes = get_code_by_name(sender->codes, codeName);
-
-		if (codes == end(sender->codes)) {
-			MessageBox(_T("No match found for ircode!"));
+		if (sender == nullptr) {
+			MessageBox(_T("No match found for remote!"));
 		}
 		else {
 
-			if (m_reps_edit < sender->min_repeat) {
-				m_reps_edit = sender->min_repeat;		//set minimum number of repeats
-				UpdateData(FALSE);						//update the display
-			}
+			auto codes = get_code_by_name(sender->codes, codeName);
 
-			//reset toggle masks
-
-			if(has_toggle_mask(sender)) {
-				sender->toggle_mask_state = 0;
-			}
-
-			if(has_toggle_bit_mask(sender)) {
-				sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state^sender->toggle_bit_mask);
-			}
-
-			//send code
-
-			if (driver.sendIR(sender, &*codes, m_reps_edit)) {
-				GoBlue();
+			if (codes == end(sender->codes)) {
+				MessageBox(_T("No match found for ircode!"));
 			}
 			else {
-				MessageBox(_T("Send failed/not supported."));
+
+				if (m_reps_edit < sender->min_repeat) {
+					m_reps_edit = sender->min_repeat;		//set minimum number of repeats
+					UpdateData(FALSE);						//update the display
+				}
+
+				//reset toggle masks
+
+				if (has_toggle_mask(sender)) {
+					sender->toggle_mask_state = 0;
+				}
+
+				if (has_toggle_bit_mask(sender)) {
+					sender->toggle_bit_mask_state = (sender->toggle_bit_mask_state ^ sender->toggle_bit_mask);
+				}
+
+				//send code
+
+				if (driver.sendIR(sender, &*codes, m_reps_edit)) {
+					GoBlue();
+				}
+				else {
+					MessageBox(_T("Send failed/not supported."));
+				}
 			}
 		}
-	}
+	});
 
 	UpdateData(FALSE);
 	EnableWindow(TRUE);
@@ -425,13 +426,16 @@ void Cdrvdlg::UpdateRemoteComboLists()
 	UpdateData(TRUE);
 	m_remote_DropDown.ResetContent();
 
-	//Fill remote combo box
-	ir_remote* sender = global_remotes.get();
-	while (sender != nullptr)
-	{
-		m_remote_DropDown.AddString(A2T(sender->name.c_str()));
-		sender = sender->next.get();
-	}
+	app.config->use_global_remotes([&](ir_remote const* global_remotes) {
+		//Fill remote combo box
+		ir_remote const* sender = global_remotes;
+		while (sender != nullptr)
+		{
+			m_remote_DropDown.AddString(A2T(sender->name.c_str()));
+			sender = sender->next.get();
+		}
+	});
+
 	//Set selected item
 	if (m_remote_DropDown.SelectString(-1,m_remote_edit) == CB_ERR)
 	{
@@ -449,17 +453,19 @@ void Cdrvdlg::UpdateIrCodeComboLists()
 	UpdateData(TRUE);
 	
 	//Retrieve pointer to remote by name
-	ir_remote* selected_remote = get_remote_by_name(global_remotes.get(), T2A(m_remote_edit.GetBuffer()));
+	app.config->use_global_remotes([&](ir_remote* global_remotes) {
+		ir_remote* selected_remote = get_remote_by_name(global_remotes, T2A(m_remote_edit.GetBuffer()));
 
-	m_IrCodeEditCombo.ResetContent();
+		m_IrCodeEditCombo.ResetContent();
 
-	if (selected_remote)
-	{
-		for (auto& c : selected_remote->codes)
+		if (selected_remote)
 		{
-			m_IrCodeEditCombo.AddString(A2T(c.name->c_str()));
+			for (auto& c : selected_remote->codes)
+			{
+				m_IrCodeEditCombo.AddString(A2T(c.name->c_str()));
+			}
 		}
-	}
+	});
 
 	if (m_IrCodeEditCombo.SelectString(-1,m_ircode_edit) == CB_ERR)
 	{
