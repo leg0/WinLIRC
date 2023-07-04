@@ -5,6 +5,7 @@
 #include "drvdlg.h"
 #include "server.h"
 #include "winlircapp.h"
+#include "wl_debug.h"
 
 CIRDriver::CIRDriver()
 	: m_daemonThreadEvent{ CreateEvent(nullptr, TRUE, FALSE, nullptr) }
@@ -110,13 +111,16 @@ void CIRDriver::DaemonThreadProc() const {
 	/* and send the result to clients.	*/
 
 	char message[PACKET_SIZE+1];
+	auto gr = app.config->use_global_remotes([&](ir_remote* global_remotes) {
+		return std::make_unique<ir_remote>(*global_remotes);
+	});
 	auto decodeIr = [&]() {
 		std::lock_guard lock{ m_dllLock };
-		return app.config->use_global_remotes([&](ir_remote* global_remotes) {
-			auto pluginDecodeIr = m_dll.interface_.decodeIR;
-			ASSERT(pluginDecodeIr != nullptr);
-			return pluginDecodeIr(global_remotes, message, sizeof(message));
-		});
+		auto pluginDecodeIr = m_dll.interface_.decodeIR;
+		ASSERT(pluginDecodeIr != nullptr);
+		auto const res = pluginDecodeIr(&*gr, message, sizeof(message));
+		WL_DEBUG("decodeIR: res=%d, %.*s", res, std::size(message), message);
+		return res;
 	};
 
 	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {

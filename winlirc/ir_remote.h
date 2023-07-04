@@ -10,31 +10,30 @@
 
 struct ir_code_node
 {
-	~ir_code_node() noexcept
-	{
-		next.reset();
-	}
-	ir_code_node() = default;
-	ir_code_node(ir_code_node const&) = delete;
-	ir_code_node& operator=(ir_code_node const&) = delete;
-	ir_code_node(ir_code_node&&) = default;
-	ir_code_node& operator=(ir_code_node&&) = default;
+	ir_code_node() noexcept = default;
+	ir_code_node(ir_code_node const&) noexcept;
+	ir_code_node& operator=(ir_code_node const&) noexcept;
+	ir_code_node(ir_code_node&&) noexcept = default;
+	ir_code_node& operator=(ir_code_node&&) noexcept = default;
 
-	ir_code code;
+	ir_code code{};
 	std::unique_ptr<ir_code_node> next;
 };
 
+inline std::unique_ptr<ir_code_node> clone(std::unique_ptr<ir_code_node> const& node) noexcept
+{
+	if (node)
+		return std::make_unique<ir_code_node>(*node);
+	return nullptr;
+}
+
 struct ir_ncode
 {
-	~ir_ncode() noexcept
-	{
-		next.reset();
-	}
-	ir_ncode() = default;
-	ir_ncode(ir_ncode const&) = delete;
-	ir_ncode& operator=(ir_ncode const&) = delete;
-	ir_ncode(ir_ncode&&) = default;
-	ir_ncode& operator=(ir_ncode&&) = default;
+	ir_ncode() noexcept = default;
+	ir_ncode(ir_ncode const&) noexcept;
+	ir_ncode& operator=(ir_ncode const&) noexcept;
+	ir_ncode(ir_ncode&&) noexcept = default;
+	ir_ncode& operator=(ir_ncode&&) noexcept = default;
 
 	std::optional<std::string> name;
 	ir_code code = 0;
@@ -45,18 +44,20 @@ struct ir_ncode
 	ir_code_node* transmit_state;
 };
 
+inline std::unique_ptr<ir_ncode> clone(std::unique_ptr<ir_ncode> const& node) noexcept
+{
+	if (node)
+		return std::make_unique<ir_ncode>(*node);
+	return nullptr;
+}
+
 struct ir_remote
 {
-	~ir_remote() noexcept
-	{
-		codes.clear();
-		next.reset();
-	}
-	ir_remote() = default;
-	ir_remote(ir_remote const&) = delete;
-	ir_remote& operator=(ir_remote const&) = delete;
-	ir_remote(ir_remote&&) = default;
-	ir_remote& operator=(ir_remote&&) = default;
+	ir_remote() noexcept = default;
+	ir_remote(ir_remote const&) noexcept;
+	ir_remote& operator=(ir_remote const&) noexcept;
+	ir_remote(ir_remote&&) noexcept = default;
+	ir_remote& operator=(ir_remote&&) noexcept = default;
 
 	std::string name;                 /* name of remote control */
 	std::vector<ir_ncode> codes;
@@ -121,3 +122,10 @@ struct ir_remote
 	lirc_t max_remaining_gap;   /* gap range */
 	std::unique_ptr<ir_remote> next;
 };
+
+inline std::unique_ptr<ir_remote> clone(std::unique_ptr<ir_remote> const& node) noexcept
+{
+    if (node)
+        return std::make_unique<ir_remote>(*node);
+    return nullptr;
+}
