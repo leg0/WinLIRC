@@ -33,14 +33,5 @@ static constexpr flaglist all_flags[]=
     {"REPEAT_HEADER",   REPEAT_HEADER},
 };
 
-/*
-  config stuff
-*/
-
-enum directive {ID_none,ID_remote,ID_codes,ID_raw_codes,ID_raw_name};
-
-/* some safer functions */
 struct ir_remote;
-
-int checkMode(int is_mode, int c_mode, char const* error);
 std::unique_ptr<ir_remote> read_config(FILE *f, const char *name);

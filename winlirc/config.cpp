@@ -1,4 +1,5 @@
 #include <winlirc/winlirc_api.h>
+#include <cassert>
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -16,34 +17,35 @@
 #include <charconv>
 #include <filesystem>
 
+enum directive { ID_none, ID_remote, ID_codes, ID_raw_codes, ID_raw_name };
+
 static constexpr size_t LINE_LEN = 1024;
 static constexpr uint32_t MAX_INCLUDES = 10;
 static constexpr char whitespace[] = " \t";
-static int line;
-static int parse_error;
+static int g_line;
+static int g_parse_error;
 
-static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth);
+static std::unique_ptr<ir_remote> read_config_recursive(FILE *f, winlirc::istring_view name, int depth);
 
 template <typename Int, typename Char, typename CharTraits>
 requires(std::is_integral_v<Int>)
 static Int s_str_to_int(std::basic_string_view<Char, CharTraits> s)
 {
-    Int        out;
-    auto       end  = s.data() + s.size();
     auto const base = [&]() {
         if (s.starts_with("0x"))
         {
             s.remove_prefix(2);
             return 16;
         }
-        else
-            return 10;
+        return 10;
     }();
-    auto res = std::from_chars(s.data(), end, out, base);
+	Int out;
+	auto end = s.data() + s.size();
+	auto res = std::from_chars(s.data(), end, out, base);
     if (res.ec == std::errc{} && res.ptr == end)
         return out;
 
-    parse_error = 1;
+    g_parse_error = 1;
     return Int{};
 }
 
@@ -77,25 +79,25 @@ static lirc_t s_strtolirc_t(std::basic_string_view<Char, CharTraits> val)
     return s_str_to_int<lirc_t>(val);
 }
 
-int checkMode(int is_mode, int c_mode, char const* error)
+static int checkMode(int is_mode, int c_mode, char const* error) noexcept
 {
 	if (is_mode!=c_mode)
 	{
-		parse_error=1;
-		return(0);
+		g_parse_error=1;
+		return 0;
 	}
-	return(1);
+	return 1;
 }
 
-int addSignal(std::vector<lirc_t>& signals, winlirc::istring_view val)
+static int addSignal(std::vector<lirc_t>& signals, winlirc::istring_view val) noexcept
 {
 	auto t=s_strtolirc_t(val);
-	if(parse_error) return(0);
+	if(g_parse_error) return(0);
 	signals.push_back(t);
 	return(1);
 }
 
-ir_ncode* defineCode(winlirc::istring_view key, winlirc::istring_view val, ir_ncode* code)
+static ir_ncode* defineCode(winlirc::istring_view key, winlirc::istring_view val, ir_ncode* code) noexcept
 {
 	*code = ir_ncode{};
 	code->name = std::string{ begin(key), end(key) };
@@ -103,7 +105,7 @@ ir_ncode* defineCode(winlirc::istring_view key, winlirc::istring_view val, ir_nc
 	return code;
 }
 
-ir_code_node* defineNode(ir_ncode* code, winlirc::istring_view val)
+static ir_code_node* defineNode(ir_ncode* code, winlirc::istring_view val) noexcept
 {
 	auto node = std::make_unique<ir_code_node>();
 	auto const res = node.get();
@@ -123,7 +125,7 @@ ir_code_node* defineNode(ir_ncode* code, winlirc::istring_view val)
 	return res;
 }
 
-int parseFlags(winlirc::istring_view val)
+static int parseFlags(winlirc::istring_view val) noexcept
 {
     int flags = 0;
     while (!val.empty())
@@ -136,7 +138,7 @@ int parseFlags(winlirc::istring_view val)
           flagIt == std::end(all_flags) ||
           (flagIt->flag & IR_PROTOCOL_MASK) && (flags & IR_PROTOCOL_MASK))
         {
-            parse_error = 1;
+            g_parse_error = 1;
             return 0;
         }
         flags = flags | flagIt->flag;
@@ -144,7 +146,11 @@ int parseFlags(winlirc::istring_view val)
     return flags;
 }
 
-int defineRemote(winlirc::istring_view key, winlirc::istring_view val, winlirc::istring_view val2, ir_remote *rem)
+static int defineRemote(
+    winlirc::istring_view key,
+    winlirc::istring_view val,
+    winlirc::istring_view val2,
+    ir_remote* rem) noexcept
 {
 	if ("name" == key){
 		rem->name.assign(val.begin(), val.end());	
@@ -255,7 +261,7 @@ int defineRemote(winlirc::istring_view key, winlirc::istring_view val, winlirc::
 	else if ("serial_mode" == key){
 		if(val[0]<'5' || val[0]>'9')
 		{
-			parse_error=1;
+			g_parse_error=1;
 			return 0;
 		}
 		rem->bits_in_byte=val[0]-'0';
@@ -271,7 +277,7 @@ int defineRemote(winlirc::istring_view key, winlirc::istring_view val, winlirc::
 			rem->parity = IR_PARITY_ODD;
 			break;
 		default:
-			parse_error=1;
+			g_parse_error=1;
 			return 0;
 		}
 		if(val.substr(2) == "1.5")
@@ -332,7 +338,7 @@ int defineRemote(winlirc::istring_view key, winlirc::istring_view val, winlirc::
 			return(2);
 		}
 	}
-	parse_error=1;
+	g_parse_error=1;
 	return(0);
 }
 
@@ -371,24 +377,21 @@ static int sanityChecks(ir_remote *rem)
 	return 1;
 }
 
-ir_remote* sort_by_bit_count(ir_remote *remotes)
+static std::unique_ptr<ir_remote> sort_by_bit_count(std::unique_ptr<ir_remote> remotes) noexcept
 {
-	std::vector<ir_remote*> v;
-	for (auto rem = remotes; rem != nullptr; rem = rem->next.get())
+	assert(remotes);
+	std::vector<std::unique_ptr<ir_remote>> v;
+	while (remotes)
 	{
-		v.push_back(rem);
+		v.push_back(std::exchange(remotes, std::move(remotes->next)));
 	}
-	std::sort(v.begin(), v.end(), [](auto& a, auto& b) { return bit_count(a) < bit_count(b); });
-	for (ir_remote* rem : v)
+	std::sort(v.begin(), v.end(), [](auto& a, auto& b) { return bit_count(a.get()) < bit_count(b.get()); });
+
+	for (size_t i = v.size() - 2; i != ~size_t{}; --i)
 	{
-		rem->next.release();
+		v[i]->next = std::move(v[i + 1]);
 	}
-	for (size_t i = 1; i < v.size(); ++i)
-	{
-		v[i - 1]->next.reset(v[i]);
-	}
-	v.back()->next.reset();
-	return v[0];
+	return std::move(v[0]);
 }
 
 static winlirc::istring_view lirc_parse_include(winlirc::istring_view s)
@@ -418,15 +421,16 @@ static winlirc::istring lirc_parse_relative(winlirc::istring_view child, winlirc
 
 std::unique_ptr<ir_remote> read_config(FILE *f, const char *name)
 {
-	return std::unique_ptr<ir_remote>{ read_config_recursive(f, name, 0) };
+	return read_config_recursive(f, name, 0);
 }
 
-static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth)
+static std::unique_ptr<ir_remote> read_config_recursive(FILE *f, winlirc::istring_view name, int depth)
 {
     char bufx[LINE_LEN + 1];
 	winlirc::istring_view key, val, val2;
 	int argc;
-	ir_remote *top_rem=nullptr,*rem=nullptr;
+	std::unique_ptr<ir_remote> top_rem;
+	ir_remote* rem = nullptr;
 	std::vector<ir_ncode> codes_list,raw_codes;
 	std::vector<lirc_t> signals;
 	ir_ncode raw_code{};
@@ -434,16 +438,16 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 	ir_ncode *code;
 	int mode=ID_none;
 
-	line=0;
-	parse_error=0;
+	g_line=0;
+	g_parse_error=0;
 
 	while(fgets(bufx,LINE_LEN,f)!=nullptr)
 	{
         winlirc::istring_view buf{ bufx };
-		line++;
+		g_line++;
         if (buf.size() == LINE_LEN && buf.back() != '\n')
 		{
-			parse_error=1;
+			g_parse_error=1;
 			break;
 		}
 
@@ -464,19 +468,19 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 
 			if ("include" == key){
 				if (depth > MAX_INCLUDES) {
-					parse_error=-1;
+					g_parse_error=-1;
 					break;
 				}
 
 				auto childName = lirc_parse_include(val);
 				if (childName.empty()){
-					parse_error=-1;
+					g_parse_error=-1;
 					break;
 				}
 
 				auto fullPath = lirc_parse_relative(childName, name);
 				if (fullPath.empty()) {
-					parse_error=-1;
+					g_parse_error=-1;
 					break;
 				}
 
@@ -484,24 +488,20 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				auto const openResult = fopen_s(&childFile, fullPath.c_str(), "r");
 				if (childFile != nullptr)
 				{
-					int save_line = line;
+					int save_line = g_line;
 
 					if (!top_rem){
 						/* create first remote */
-						rem = read_config_recursive(childFile, fullPath, depth + 1);
-						if(rem != (void *) -1 && rem != nullptr) {
-							top_rem = rem;
-						} else {
-							rem = nullptr;
-						}
+						top_rem = read_config_recursive(childFile, fullPath, depth + 1);
+						rem = top_rem.get();
 					}else{
 						/* create new remote */
 
-						rem->next.reset(read_config_recursive(childFile, fullPath, depth + 1));
-						rem=rem->next.get();
+						rem->next = read_config_recursive(childFile, fullPath, depth + 1);
+						rem = rem->next.get();
 					}
 					fclose(childFile);
-					line = save_line;
+					g_line = save_line;
 				}
 			}else if ("begin" == key){
 				if ("codes" == val){
@@ -510,7 +510,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					if (!checkMode(mode, ID_remote,
 						"begin codes")) break;
 					if (!rem->codes.empty()){
-						parse_error=1;
+						g_parse_error=1;
 						break;
 					}
 
@@ -524,7 +524,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 						"begin raw_codes")) break;
 					if (!rem->codes.empty()){
 
-						parse_error=1;
+						g_parse_error=1;
 						break;
 					}
 					set_protocol(rem, RAW_CODES);
@@ -535,22 +535,23 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				}else if("remote" == val){
 					/* create new remote */
 					
-					if(!checkMode(mode, ID_none,
-						"begin remote")) break;
+					if(!checkMode(mode, ID_none, "begin remote"))
+						break;
 					mode=ID_remote;
 					if (!top_rem){
 						/* create first remote */
 						
-						rem = top_rem = new ir_remote{};
+						top_rem = std::make_unique<ir_remote>();
+						rem = top_rem.get();
 					}else{
 						/* create new remote */
 						
-						rem->next.reset(new ir_remote{});
-						rem=rem->next.get();
+						rem->next = std::make_unique<ir_remote>();
+						rem = rem->next.get();
 					}
 				}else if(mode==ID_codes){
 					code=defineCode(key, val, &name_code);
-					while(!parse_error && !val2.empty())
+					while(!g_parse_error && !val2.empty())
 					{
 						struct ir_code_node *node;
 
@@ -561,7 +562,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					code->current=nullptr;
 					codes_list.push_back(std::move(*code));
 				}else{
-					parse_error=1;
+					g_parse_error=1;
 				}
 			}else if ("end" == key){
 
@@ -581,7 +582,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 						raw_code.signals=signals;
 						if(raw_code.length()%2==0)
 						{
-							parse_error=1;
+							g_parse_error=1;
 						}
 						raw_codes.push_back(std::move(raw_code));
 						mode=ID_raw_codes;
@@ -597,7 +598,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					if (!checkMode(mode,ID_remote,
 						"end remote")) break;
 					if(!sanityChecks(rem)) {
-						parse_error=1;
+						g_parse_error=1;
 						break;
 					}
 
@@ -608,7 +609,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					mode=ID_none;     /* switch back */
 				}else if(mode==ID_codes){
 					code=defineCode(key, val, &name_code);
-					while(!parse_error && !val2.empty())
+					while(!g_parse_error && !val2.empty())
 					{
 						if(val2[0]=='#') break; /* comment */
 						ir_code_node* node=defineNode(code, val2);
@@ -617,7 +618,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 					code->current=nullptr;
 					codes_list.push_back(std::move(*code));
 				}else{
-					parse_error=1;
+					g_parse_error=1;
 				}
 			} else {
 				switch (mode){
@@ -626,7 +627,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		break;
 	case ID_codes:
 		code=defineCode(key, val, &name_code);
-		while(!parse_error && !val2.empty())
+		while(!g_parse_error && !val2.empty())
 		{
 			if(val2[0]=='#') break; /* comment */
 			ir_code_node* node=defineNode(code, val2);
@@ -643,7 +644,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				raw_code.signals = std::move(signals);
 				if(raw_code.length()%2==0)
 				{
-					parse_error=1;
+					g_parse_error=1;
 				}
 				raw_codes.push_back(std::move(raw_code));
 			}
@@ -655,7 +656,7 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		}else{
 			if(mode==ID_raw_codes)
 			{
-				parse_error=1;
+				g_parse_error=1;
 				break;
 			}
 			if(!addSignal(signals, key)) break;
@@ -678,10 +679,10 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 				break;
 			}
 		}else{
-			parse_error=1;
+			g_parse_error=1;
 			break;
 		}
-		if (parse_error){
+		if (g_parse_error){
 			break;
 		}
 	}
@@ -702,25 +703,24 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 			rem->codes = std::move(codes_list);
 			break;
 		}
-		if(!parse_error)
+		if(!g_parse_error)
 		{
-			parse_error=1;
+			g_parse_error=1;
 		}
 	}
-	if (parse_error){
+	if (g_parse_error){
 		static int print_error = 1;
 
 		if(print_error) {
 
 		}
-		delete top_rem;
 		if(depth == 0) print_error = 1;
 		return nullptr;
 	}
 	/* kick reverse flag */
 	/* handle RC6 flag to be backwards compatible: previous RC-6
 	config files did not set rc6_mask */
-	rem=top_rem;
+	rem=top_rem.get();
 	while(rem!=nullptr)
 	{
 		if((!is_raw(rem)) && rem->flags&REVERSE)
@@ -803,9 +803,5 @@ static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, in
 		rem=rem->next.get();
 	}
 
-	top_rem = sort_by_bit_count(top_rem);
-#       if defined(DEBUG) && !defined(DAEMONIZE)
-	/*fprint_remotes(stderr, top_rem);*/
-#       endif
-	return (top_rem);
+	return sort_by_bit_count(std::move(top_rem));
 }
