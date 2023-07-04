@@ -1,3 +1,4 @@
+
 #include "stdafx.h"
 #include "wl_debug.h"
 #include <mutex>
@@ -5,23 +6,22 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-void winlirc_debug(const char* file, int line, char const* format, ...)
+void winlirc_debug(std::source_location loc, char const* format, ...)
 {
+    va_list args;
+    va_start(args, format);
 
-	va_list args;
-	va_start(args,format);
+    CStringA s;
+    s.Format("(%i): ", loc.line());
+    CStringA t;
+    t.FormatV(format, args);
 
-	CStringA s;
-	s.Format("(%i): ",line);
-	CStringA t;
-	t.FormatV(format,args);
+    auto const hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	auto const hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-
-	static std::mutex debugOutputMutex;
-	std::lock_guard g{ debugOutputMutex };
-	WriteConsoleA(hStdOut, file, strlen(file), nullptr, nullptr);
-	WriteConsoleA(hStdOut, static_cast<char const*>(s), s.GetLength(), nullptr, nullptr);
-	WriteConsoleA(hStdOut, static_cast<char const*>(t), t.GetLength(), nullptr, nullptr);
-	WriteConsoleA(hStdOut, "\n", 1, nullptr, nullptr);
+    static std::mutex debugOutputMutex;
+    std::lock_guard g{ debugOutputMutex };
+    WriteConsoleA(hStdOut, loc.file_name(), strlen(loc.file_name()), nullptr, nullptr);
+    WriteConsoleA(hStdOut, static_cast<char const*>(s), s.GetLength(), nullptr, nullptr);
+    WriteConsoleA(hStdOut, static_cast<char const*>(t), t.GetLength(), nullptr, nullptr);
+    WriteConsoleA(hStdOut, "\n", 1, nullptr, nullptr);
 }

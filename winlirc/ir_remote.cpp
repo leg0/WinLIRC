@@ -1,11 +1,13 @@
 #include "ir_remote.h"
 
-ir_remote::ir_remote(ir_remote const& other)
+#include <memory>
+
+ir_remote::ir_remote(ir_remote const& other) noexcept
 {
     *this = other;
 }
 
-ir_remote& ir_remote::operator=(ir_remote const& other)
+ir_remote& ir_remote::operator=(ir_remote const& other) noexcept
 {
     if (this != &other)
     {
@@ -64,8 +66,41 @@ ir_remote& ir_remote::operator=(ir_remote const& other)
         last_send = other.last_send;
         min_remaining_gap = other.min_remaining_gap;
         max_remaining_gap = other.max_remaining_gap;
-        next = std::make_unique<ir_remote>(*other.next);
+        next = clone(other.next);
     }
     return *this;
 }
 
+ir_ncode::ir_ncode(ir_ncode const& other) noexcept
+{
+    *this = other;
+}
+
+ir_ncode& ir_ncode::operator=(ir_ncode const& other) noexcept
+{
+    if (this != &other)
+    {
+        name = other.name;
+        code = other.code;
+        signals = other.signals;
+        next = clone(other.next);
+        current = other.current;
+        transmit_state = other.transmit_state;
+    }
+    return *this;
+}
+
+ir_code_node::ir_code_node(ir_code_node const& other) noexcept
+{
+    *this = other;
+}
+
+ir_code_node& ir_code_node::operator=(ir_code_node const& other) noexcept
+{
+    if (this != &other)
+    {
+        code = other.code;
+        next = clone(other.next);
+    }
+    return *this;
+}

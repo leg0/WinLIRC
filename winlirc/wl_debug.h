@@ -1,8 +1,9 @@
 #pragma once
 
 #ifdef _DEBUG
-	#define WL_DEBUG(...) winlirc_debug(__FILE__,__LINE__,__VA_ARGS__)
-	extern void winlirc_debug(const char* file, int line, char const* format, ...);
+	#include <source_location>
+	#define WL_DEBUG(...) winlirc_debug(std::source_location::current(),__VA_ARGS__)
+	extern void winlirc_debug(std::source_location loc, char const* format, ...);
 #else
-	#define WL_DEBUG(a, ...)
+	#define WL_DEBUG(...)
 #endif

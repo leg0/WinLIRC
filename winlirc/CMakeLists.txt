@@ -43,10 +43,11 @@ add_executable(winlirc WIN32
 	ir_remote.cpp
 	ir_remote.h
 	constants.h
-	wl_debug.cpp
-	wl_debug.h
+	$<$<CONFIG:Debug>:wl_debug.cpp>
+	$<$<CONFIG:Debug>:wl_debug.h>
 	${PUBLIC_API_FILES}
 	)
+
 
 source_group(Common FILES ${COMMON_SOURCES})
 source_group("Public API" FILES ${PUBLIC_API_FILES})
