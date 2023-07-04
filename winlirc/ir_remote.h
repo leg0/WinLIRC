@@ -53,8 +53,8 @@ struct ir_remote
 		next.reset();
 	}
 	ir_remote() = default;
-	ir_remote(ir_remote const&) = delete;
-	ir_remote& operator=(ir_remote const&) = delete;
+	ir_remote(ir_remote const&);
+	ir_remote& operator=(ir_remote const&);
 	ir_remote(ir_remote&&) = default;
 	ir_remote& operator=(ir_remote&&) = default;
 
