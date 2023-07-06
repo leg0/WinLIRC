@@ -24,8 +24,6 @@ enum directive { ID_none, ID_remote, ID_codes, ID_raw_codes, ID_raw_name };
 static constexpr size_t LINE_LEN = 1024;
 static constexpr uint32_t MAX_INCLUDES = 10;
 static constexpr char whitespace[] = " \t";
-static int g_line;
-//static int g_parse_error;
 
 static std::unique_ptr<ir_remote> read_config_recursive(FILE* f, winlirc::istring_view name, int depth);
 
@@ -179,7 +177,7 @@ std::expected<T, E> operator&&(std::expected<T, E>&& lhs, Fun&& fun)
     return lhs;
 }
 
-static std::expected<void, std::error_code> defineRemote(
+static std::expected<void, std::error_code> parse_field(
     winlirc::istring_view key,
     winlirc::istring_view val,
     winlirc::istring_view val2,
@@ -430,7 +428,7 @@ static std::unique_ptr<ir_remote> read_config_recursive(FILE* f, winlirc::istrin
     ir_ncode* code;
     int mode = ID_none;
 
-    g_line = 0;
+    int g_line = 0;
 
     while (fgets(bufx, LINE_LEN, f) != nullptr)
     {
@@ -475,8 +473,6 @@ static std::unique_ptr<ir_remote> read_config_recursive(FILE* f, winlirc::istrin
                 auto const openResult = fopen_s(&childFile, fullPath.c_str(), "r");
                 if (childFile != nullptr)
                 {
-                    int save_line = g_line;
-
                     if (!top_rem) {
                         /* create first remote */
                         top_rem = read_config_recursive(childFile, fullPath, depth + 1);
@@ -489,7 +485,6 @@ static std::unique_ptr<ir_remote> read_config_recursive(FILE* f, winlirc::istrin
                         rem = rem->next.get();
                     }
                     fclose(childFile);
-                    g_line = save_line;
                 }
             }
             else if ("begin" == key) {
@@ -624,7 +619,7 @@ static std::unique_ptr<ir_remote> read_config_recursive(FILE* f, winlirc::istrin
             else {
                 switch (mode) {
                 case ID_remote:
-                    defineRemote(key, val, val2, rem);
+                    parse_field(key, val, val2, rem);
                     break;
                 case ID_codes: {
                     auto c = defineCode(key, val, &name_code);
@@ -707,10 +702,6 @@ static std::unique_ptr<ir_remote> read_config_recursive(FILE* f, winlirc::istrin
             rem->codes = std::move(codes_list);
             break;
         }
-        //if (!g_parse_error)
-        //{
-        //    g_parse_error = 1;
-        //}
     }
 
     /* kick reverse flag */
