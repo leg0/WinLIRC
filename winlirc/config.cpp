@@ -166,10 +166,16 @@ static std::expected<void, std::error_code> parse_field(
 }
 
 template <typename T, typename E, typename Fun>
+requires (std::is_same_v<void, T> && std::is_invocable_v<Fun> ||
+    !std::is_same_v<void, T> && std::is_invocable_v<Fun, T>)
 std::expected<T, E> operator&&(std::expected<T, E>&& lhs, Fun&& fun)
 {
-    if (lhs)
-        return fun(std::move(lhs));
+    if (lhs) {
+        if constexpr (std::is_same_v<void, T>)
+            return fun();
+        else
+            return fun(std::move(*lhs));
+    }
     return lhs;
 }
 
@@ -291,39 +297,39 @@ static std::expected<void, std::error_code> defineRemote(
     {
         if ("header" == key) {
             return parse_field(&ir_remote::phead, s_strtolirc_t(val), rem)
-                .and_then([&] { return parse_field(&ir_remote::shead, s_strtolirc_t(val2), rem); });
+                && [&] { return parse_field(&ir_remote::shead, s_strtolirc_t(val2), rem); };
         }
         else if ("three" == key) {
             return parse_field(&ir_remote::pthree, s_strtolirc_t(val), rem)
-                .and_then([&] { return parse_field(&ir_remote::sthree, s_strtolirc_t(val2), rem); });
+                &&  [&] { return parse_field(&ir_remote::sthree, s_strtolirc_t(val2), rem); };
         }
         else if ("two" == key) {
             return parse_field(&ir_remote::ptwo, s_strtolirc_t(val), rem)
-                .and_then([&] { return parse_field(&ir_remote::stwo, s_strtolirc_t(val2), rem); });
+                && [&] { return parse_field(&ir_remote::stwo, s_strtolirc_t(val2), rem); };
         }
         else if ("one" == key) {
             return parse_field(&ir_remote::pone, s_strtolirc_t(val), rem)
-                .and_then([&] { return parse_field(&ir_remote::sone, s_strtolirc_t(val2), rem); });
+                && [&] { return parse_field(&ir_remote::sone, s_strtolirc_t(val2), rem); };
         }
         else if ("zero" == key) {
             return parse_field(&ir_remote::pzero, s_strtolirc_t(val), rem)
-                .and_then([&] { return parse_field(&ir_remote::szero, s_strtolirc_t(val2), rem); });
+                && [&] { return parse_field(&ir_remote::szero, s_strtolirc_t(val2), rem); };
         }
         else if ("foot" == key) {
             return parse_field(&ir_remote::pfoot, s_strtolirc_t(val), rem)
-                .and_then([&] { return parse_field(&ir_remote::sfoot, s_strtolirc_t(val2), rem); });
+                && [&] { return parse_field(&ir_remote::sfoot, s_strtolirc_t(val2), rem); };
         }
         else if ("repeat" == key) {
             return parse_field(&ir_remote::prepeat, s_strtolirc_t(val), rem)
-                .and_then([&] { return parse_field(&ir_remote::srepeat, s_strtolirc_t(val2), rem); });
+                && [&] { return parse_field(&ir_remote::srepeat, s_strtolirc_t(val2), rem); };
         }
         else if ("pre" == key) {
             return parse_field(&ir_remote::pre_p, s_strtolirc_t(val), rem)
-                .and_then([&] { return parse_field(&ir_remote::pre_s, s_strtolirc_t(val2), rem); });
+                && [&] { return parse_field(&ir_remote::pre_s, s_strtolirc_t(val2), rem); };
         }
         else if ("post" == key) {
             return parse_field(&ir_remote::post_p, s_strtolirc_t(val), rem)
-                .and_then([&] { return parse_field(&ir_remote::post_s, s_strtolirc_t(val2), rem); });
+                && [&] { return parse_field(&ir_remote::post_s, s_strtolirc_t(val2), rem); };
         }
     }
     return std::unexpected{std::make_error_code(std::errc::invalid_argument)};
