@@ -60,7 +60,7 @@ CIRDriver irDriver;
 hardware hw;
 rbuf rec_buffer;
 
-extern struct ir_remote *last_remote;
+extern struct ir_remote *g_last_remote;
 
 char *progname;
 const char *usage="Usage: %s [options] file\n";
@@ -163,20 +163,19 @@ void logprintf(int prio, char const* format_str, ...)
 
 void logperror(int prio,const char *s)
 {
-	if(s!=NULL)
+	if (s != nullptr)
 	{
 		logprintf(prio,"%s: %s",s,strerror(errno));
 	}
 	else
 	{
-		logprintf(prio,"%s",strerror(errno));
+		logprintf(prio, "%s", strerror(errno));
 	}
 }
 
 int main(int argc,char **argv)
 {
-	char *filename = 0;
-	FILE *fout,*fin;
+	std::string filename;
 	int retval=EXIT_SUCCESS;
 	ir_code pre,code,post;
 	int repeat_flag;
@@ -185,7 +184,6 @@ int main(int argc,char **argv)
 	int disable_namespace = 0;
 	int retries;
 	int no_data = 0;
-	char *device=NULL;
 	int using_template = 0;
 	int analyse = 0;
 #ifdef DEBUG
@@ -195,41 +193,6 @@ int main(int argc,char **argv)
 	progname=argv[0];
 	force=0;
 
-	/*
-
-	while(1)
-	{
-		int c;
-
-		if(c==-1)
-			break;
-		switch (c)
-		{
-		case 'h':
-			printf(usage,progname);
-			printf("\t -h --help\t\tdisplay this message\n");
-			printf("\t -v --version\t\tdisplay version\n");
-			printf("\t -a --analyse\t\tanalyse raw_codes config files\n");
-			printf("\t -f --force\t\tforce raw mode\n");
-			printf("\t -d --device=device\tread from given device\n");
-			exit(EXIT_SUCCESS);
-		case 'v':
-			printf("irrecord %s\n",IRRECORD_VERSION);
-			exit(EXIT_SUCCESS);
-		case 'a':
-			analyse = 1;
-			break;
-		case 'f':
-			force=1;
-			break;
-
-		default:
-			printf("Try %s -h for help!\n",progname);
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	*/
 	if(argc==1)
 	{
 		printf(usage,progname);
@@ -307,12 +270,6 @@ int main(int argc,char **argv)
 
 	}
 
-	/*
-	if(device!=NULL)
-	{
-		hw.device=device;
-	}
-	*/
 	if(strcmp(hw.name, "null")==0)
 	{
 		fprintf(stderr,
@@ -320,28 +277,26 @@ int main(int argc,char **argv)
 			progname);
 		exit(EXIT_FAILURE);
 	}
-	//filename=argv[optind];
-	fin=fopen(filename,"r");
-	if(fin!=NULL)
-	{
-		char *filename_new;
 
+	FILE* fin = fopen(filename.c_str(), "r");
+	if (fin != nullptr)
+	{
 		if(force)
 		{
 			fprintf(stderr,
 				"%s: file \"%s\" already exists\n"
 				"%s: you cannot use the --force option "
 				"together with a template file\n",
-				progname, filename, progname);
+				progname, filename.c_str(), progname);
 			exit(EXIT_FAILURE);
 		}
-		auto remotes=read_config(fin, filename);
+		auto remotes = read_config(fin, filename);
 		fclose(fin);
 		if (remotes == nullptr)
 		{
 			fprintf(stderr,
 				"%s: file \"%s\" does not contain valid "
-				"data\n", progname, filename);
+				"data\n", progname, filename.c_str());
 			exit(EXIT_FAILURE);
 		}
 		if(analyse)
@@ -375,23 +330,14 @@ int main(int argc,char **argv)
 			remote.pre_data_bits=0;
 			remote.post_data_bits=0;
 		}
-		if(remote.next!=NULL)
+		if (remote.next != nullptr)
 		{
 			fprintf(stderr,
 				"%s: only first remote definition "
 				"in file \"%s\" used\n",
-				progname,filename);
+				progname, filename.c_str());
 		}
-		filename_new=(char*)malloc(strlen(filename)+10);
-		if(filename_new==NULL)
-		{
-			fprintf(stderr,"%s: out of memory\n",
-				progname);
-			exit(EXIT_FAILURE);
-		}
-		strcpy(filename_new, filename);
-		strcat(filename_new, ".conf");
-		filename = filename_new;
+		filename += ".conf";
 	}
 	else
 	{
@@ -402,11 +348,11 @@ int main(int argc,char **argv)
 			analyse = 0;
 		}
 	}
-	fout=fopen(filename,"w");
-	if(fout==NULL)
+	FILE* fout = fopen(filename.c_str(), "w");
+	if (fout == nullptr)
 	{
-		fprintf(stderr,"%s: could not open file %s\n",progname,
-			filename);
+		fprintf(stderr, "%s: could not open file %s\n", progname,
+			filename.c_str());
 		perror(progname);
 		exit(EXIT_FAILURE);
 	}
@@ -423,7 +369,7 @@ int main(int argc,char **argv)
 			" (lircd running ? --> close it, "
 			"check permissions)\n",progname);
 		fclose(fout);
-		_unlink(filename);
+		_unlink(filename.c_str());
 		exit(EXIT_FAILURE);
 	}
 	
@@ -433,7 +379,7 @@ int main(int argc,char **argv)
 	{
 		fprintf(stderr,"%s: no config file necessary\n",progname);
 		fclose(fout);
-		_unlink(filename);
+		_unlink(filename.c_str());
 		irDriver.deinit();
 		exit(EXIT_SUCCESS);
 	}
@@ -443,7 +389,7 @@ int main(int argc,char **argv)
 	{
 		fprintf(stderr,"%s: mode not supported\n",progname);
 		fclose(fout);
-		_unlink(filename);
+		_unlink(filename.c_str());
 		irDriver.deinit();
 		exit(EXIT_FAILURE);
 	}
@@ -500,7 +446,7 @@ int main(int argc,char **argv)
 				fprintf(stderr,"%s: gap not found,"
 					" can't continue\n",progname);
 				fclose(fout);
-				_unlink(filename);
+				_unlink(filename.c_str());
 				irDriver.deinit();
 				exit(EXIT_FAILURE);
 			}
@@ -532,7 +478,7 @@ int main(int argc,char **argv)
 			fprintf(stderr,"%s: gap not found,"
 				" can't continue\n",progname);
 			fclose(fout);
-			_unlink(filename);
+			_unlink(filename.c_str());
 			irDriver.deinit();
 			exit(EXIT_FAILURE);
 		}
@@ -544,13 +490,13 @@ int main(int argc,char **argv)
 		Sleep(1000);
 		while(availabledata())
 		{
-			irDriver.decodeIR(NULL,NULL, 0);
+			irDriver.decodeIR(nullptr, nullptr, 0);
 		}
 		if(!get_toggle_bit_mask(&remote))
 		{
 			printf("But I know for sure that RC6 has a toggle bit!\n");
 			fclose(fout);
-			_unlink(filename);
+			_unlink(filename.c_str());
 			irDriver.deinit();
 			exit(EXIT_FAILURE);
 		}
@@ -611,7 +557,7 @@ int main(int argc,char **argv)
 		{
 			while(availabledata())
 			{
-				irDriver.decodeIR(NULL,NULL,0);
+				irDriver.decodeIR(nullptr, nullptr, 0);
 			}
 		}
 		printf("\nNow hold down button \"%s\".\n",buffer);
@@ -698,26 +644,24 @@ int main(int argc,char **argv)
 		retries=RETRIES;
 		while(retries>0)
 		{
-			int flag;
-
 			if(!waitfordata(10000000))
 			{
 				no_data = 1;
 				break;
 			}
-			last_remote=NULL;
-			flag=0;
+			g_last_remote = nullptr;
 			Sleep(1000);
+			bool flag = false;
 			while(availabledata())
 			{
-				irDriver.decodeIR(NULL,NULL,0);
+				irDriver.decodeIR(nullptr, nullptr, 0);
 
 				if(hw.decode_func(&rec_buffer, &hw,&remote,&pre,&code,&post,
 					&repeat_flag,
 					&min_remaining_gap,
 					&max_remaining_gap))
 				{
-					flag=1;
+					flag = true;
 					break;
 				}
 			}
@@ -794,14 +738,14 @@ int main(int argc,char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	fin=fopen(filename,"r");
-	if(fin==NULL)
+	fin = fopen(filename.c_str(), "r");
+	if (fin == nullptr)
 	{
 		fprintf(stderr,"%s: could not reopen config file\n",progname);
 		irDriver.deinit();
 		exit(EXIT_FAILURE);
 	}
-	auto remotes=read_config(fin,filename);
+	auto remotes = read_config(fin, filename);
 	fclose(fin);
 	if(remotes==nullptr)
 	{
@@ -827,11 +771,11 @@ int main(int argc,char **argv)
 	get_post_data(&*remotes);
 
 	/* write final config file */
-	fout=fopen(filename,"w");
-	if(fout==NULL)
+	fout = fopen(filename.c_str(), "w");
+	if (fout == nullptr)
 	{
-		fprintf(stderr,"%s: could not open file \"%s\"\n",progname,
-			filename);
+		fprintf(stderr, "%s: could not open file \"%s\"\n", progname,
+			filename.c_str());
 		perror(progname);
 		return(EXIT_FAILURE);
 	}
@@ -916,7 +860,7 @@ int get_toggle_bit_mask(struct ir_remote *remote)
 	seq=repeats=0;found=0;
 	while(availabledata())
 	{
-		irDriver.decodeIR(NULL,NULL,0);
+		irDriver.decodeIR(nullptr, nullptr, 0);
 	}
 	while(retval==EXIT_SUCCESS && retries>0)
 	{
@@ -1255,12 +1199,12 @@ void analyse_remote(struct ir_remote *raw_data)
 
 enum analyse_mode {MODE_GAP,MODE_HAVE_GAP};
 
-struct lengths *first_space=NULL,*first_pulse=NULL;
-struct lengths *first_sum=NULL,*first_gap=NULL,*first_repeat_gap=NULL;
-struct lengths *first_signal_length=NULL;
-struct lengths *first_headerp=NULL,*first_headers=NULL;
-struct lengths *first_1lead=NULL,*first_3lead=NULL,*first_trail=NULL;
-struct lengths *first_repeatp=NULL,*first_repeats=NULL;
+struct lengths* first_space = nullptr, * first_pulse = nullptr;
+struct lengths* first_sum = nullptr, * first_gap = nullptr, * first_repeat_gap = nullptr;
+struct lengths* first_signal_length = nullptr;
+struct lengths* first_headerp = nullptr, * first_headers = nullptr;
+struct lengths* first_1lead = nullptr, * first_3lead = nullptr, * first_trail = nullptr;
+struct lengths* first_repeatp = nullptr, * first_repeats = nullptr;
 unsigned long lengths[MAX_SIGNALS];
 unsigned long first_length,first_lengths,second_lengths;
 unsigned int count,count_spaces,count_3repeats,count_5repeats,count_signals;
@@ -1351,7 +1295,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 						}
 						scan=scan->next;
 					}
-					if(scan==NULL)
+					if (scan == nullptr)
 					{
 						scan=first_gap;
 						while(scan)
@@ -1366,7 +1310,7 @@ int get_lengths(struct ir_remote *remote, int force, int interactive)
 							scan=scan->next;
 						}
 					}
-					if(scan!=NULL)
+					if (scan != nullptr)
 					{
 						i_printf(interactive, "Please keep on pressing buttons like described above.\n");
 						mode=MODE_HAVE_GAP;
@@ -1621,31 +1565,31 @@ void get_scheme(struct ir_remote *remote, int interactive)
 	{
 		struct lengths *maxp,*max2p,*maxs,*max2s;
 
-		maxp=get_max_length(first_pulse,NULL);
+		maxp = get_max_length(first_pulse, nullptr);
 		unlink_length(&first_pulse,maxp);
-		if(first_pulse==NULL)
+		if(first_pulse==nullptr)
 		{
 			first_pulse=maxp;
 		}
 		else
 		{
-			max2p=get_max_length(first_pulse,NULL);
+			max2p = get_max_length(first_pulse, nullptr);
 			maxp->next=first_pulse;
 			first_pulse=maxp;
 
-			maxs=get_max_length(first_space,NULL);
+			maxs = get_max_length(first_space, nullptr);
 			unlink_length(&first_space,maxs);
-			if(first_space==NULL)
+			if (first_space == nullptr)
 			{
-				first_space=maxs;
+				first_space = maxs;
 			}
 			else
 			{
-				max2s=get_max_length(first_space,NULL);
+				max2s = get_max_length(first_space, nullptr);
 				maxs->next=first_space;
 				first_space=maxs;
 
-				maxs=get_max_length(first_space,NULL);
+				maxs = get_max_length(first_space, nullptr);
 
 				if(length > 20 &&
 					(calc_signal(maxp)<TH_RC6_SIGNAL ||
@@ -1744,7 +1688,7 @@ int get_header_length(struct ir_remote *remote, int interactive)
 	lirc_t headerp,headers;
 	struct lengths *max_plength,*max_slength;
 
-	if(first_headerp!=NULL)
+	if (first_headerp != nullptr)
 	{
 		max_plength=get_max_length(first_headerp,&sum);
 		max_count=max_plength->count;
@@ -1844,8 +1788,7 @@ int get_repeat_length(struct ir_remote *remote, int interactive)
 			remote->srepeat=repeats;
 			if(!(remote->flags&CONST_LENGTH))
 			{
-				max_slength=get_max_length(first_repeat_gap,
-					NULL);
+				max_slength=get_max_length(first_repeat_gap, nullptr);
 				repeat_gap=calc_signal(max_slength);
 				i_printf(interactive, "Found repeat gap: %lu\n",
 					(unsigned long) repeat_gap);
@@ -1877,12 +1820,12 @@ int get_data_length(struct ir_remote *remote, int interactive)
 	{
 		unlink_length(&first_pulse,max_plength);
 
-		max2_plength=get_max_length(first_pulse,NULL);
-		if(max2_plength!=NULL)
-		{
-			if(max2_plength->count<max_count*TH_IS_BIT/100)
-				max2_plength=NULL;
-		}
+        max2_plength = get_max_length(first_pulse, nullptr);
+        if (max2_plength != nullptr)
+        {
+            if (max2_plength->count < max_count * TH_IS_BIT / 100)
+                max2_plength = nullptr;
+        }
 
 #               ifdef DEBUG
 		printf("Pulse canditates: ");
@@ -1904,11 +1847,11 @@ int get_data_length(struct ir_remote *remote, int interactive)
 		{
 			unlink_length(&first_space,max_slength);
 
-			max2_slength=get_max_length(first_space,NULL);
-			if(max2_slength!=NULL)
+			max2_slength=get_max_length(first_space,nullptr);
+			if(max2_slength!=nullptr)
 			{
 				if(max2_slength->count<max_count*TH_IS_BIT/100)
-					max2_slength=NULL;
+					max2_slength=nullptr;
 			}
 
 #                       ifdef DEBUG
@@ -1926,7 +1869,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 			remote->aeps=aeps;
 			if(is_biphase(remote))
 			{
-				if(max2_plength==NULL || max2_slength==NULL)
+				if(max2_plength==nullptr || max2_slength==nullptr)
 				{
 					printf("Unknown encoding found.\n");
 					return(0);
@@ -1944,8 +1887,8 @@ int get_data_length(struct ir_remote *remote, int interactive)
 			}
 			else
 			{
-				if(max2_plength==NULL &&
-					max2_slength==NULL)
+				if(max2_plength==nullptr &&
+					max2_slength==nullptr)
 				{
 					printf("No encoding found.\n");
 					return(0);
@@ -2010,7 +1953,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 				lirc_t data_length;
 
 				signal_length=get_max_length(first_signal_length,
-					NULL);
+					nullptr);
 				data_length=calc_signal(signal_length)-
 					remote->plead-
 					remote->phead-
@@ -2041,7 +1984,7 @@ int get_data_length(struct ir_remote *remote, int interactive)
 
 int get_gap_length(struct ir_remote *remote)
 {
-	struct lengths *gaps=NULL;
+	struct lengths *gaps=nullptr;
 	steady_clock::time_point start,end,last;
 	int count,flag;
 	struct lengths *scan;
@@ -2057,7 +2000,7 @@ int get_gap_length(struct ir_remote *remote)
 	{
 		while(availabledata())
 		{
-			irDriver.decodeIR(NULL,NULL,0);
+			irDriver.decodeIR(nullptr,nullptr,0);
 		}
 		if(!waitfordata(10000000))
 		{
@@ -2067,7 +2010,7 @@ int get_gap_length(struct ir_remote *remote)
 		start = steady_clock::now();
 		while(availabledata())
 		{
-			irDriver.decodeIR(NULL,NULL,0);
+			irDriver.decodeIR(nullptr,nullptr,0);
 		}
 		end = steady_clock::now();
 		if(flag)

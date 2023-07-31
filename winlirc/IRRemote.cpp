@@ -8,10 +8,10 @@
 #include <string.h>
 #include <limits.h>
 
-ir_remote *decoding		= nullptr;
-ir_remote *last_remote	= nullptr;
-ir_remote *repeat_remote	= nullptr;
-ir_ncode *repeat_code	= nullptr;
+static ir_remote *g_decoding      = nullptr;
+ir_remote *g_last_remote          = nullptr;
+static ir_remote *g_repeat_remote = nullptr;
+static ir_ncode *g_repeat_code    = nullptr;
 
 WINLIRC_API int winlirc_map_code(ir_remote const* remote,
 	     ir_code *prep,ir_code *codep,ir_code *postp,
@@ -19,26 +19,24 @@ WINLIRC_API int winlirc_map_code(ir_remote const* remote,
 	     int bits,ir_code code,
 	     int post_bits,ir_code post)
 {
-	ir_code all;
-	
 	if(pre_bits+bits+post_bits!=
 	   remote->pre_data_bits+remote->bits+remote->post_data_bits)
 	{
-		return(0);
+		return 0;
 	}
-	all=(pre&gen_mask(pre_bits));
-	all<<=bits;
-	all|=(code&gen_mask(bits));
-	all<<=post_bits;
-	all|=(post&gen_mask(post_bits));
-	
-	*postp=(all&gen_mask(remote->post_data_bits));
-	all>>=remote->post_data_bits;
-	*codep=(all&gen_mask(remote->bits));
-	all>>=remote->bits;
-	*prep=(all&gen_mask(remote->pre_data_bits));
+	ir_code all = pre & gen_mask(pre_bits);
+	all <<= bits;
+    all |= code & gen_mask(bits);
+    all <<= post_bits;
+    all |= post & gen_mask(post_bits);
+
+    *postp = all & gen_mask(remote->post_data_bits);
+    all >>= remote->post_data_bits;
+    *codep = all & gen_mask(remote->bits);
+    all >>= remote->bits;
+    *prep = all & gen_mask(remote->pre_data_bits);
 		
-	return(1);
+	return 1;
 }
 
 WINLIRC_API void winlirc_map_gap(
@@ -122,30 +120,27 @@ static ir_ncode* get_code(ir_remote* remote,
 		post_mask |= remote->ignore_mask &
 		            gen_mask(remote->post_data_bits);
 	}
-	if(has_toggle_mask(remote) && remote->toggle_mask_state%2)
-	{
-		ir_code *affected,mask,mask_bit;
-		int bit,current_bit;
-		
-		affected=&post;
-		mask=remote->toggle_mask;
-		for(bit=current_bit=0;bit<bit_count(remote);bit++,current_bit++)
-		{
-			if(bit==remote->post_data_bits)
-			{
-				affected=&code;
-				current_bit=0;
-			}
-			if(bit==remote->post_data_bits+remote->bits)
-			{
-				affected=&pre;
-				current_bit=0;
-			}
-			mask_bit=mask&1;
-			(*affected)^=(mask_bit<<current_bit);
-			mask>>=1;
-		}
-	}
+    if (has_toggle_mask(remote) && remote->toggle_mask_state % 2)
+    {
+        ir_code* affected = &post;
+        ir_code mask = remote->toggle_mask;
+        for (int bit = 0, current_bit = 0; bit < bit_count(remote); bit++, current_bit++)
+        {
+            if (bit == remote->post_data_bits)
+            {
+                affected = &code;
+                current_bit = 0;
+            }
+            if (bit == remote->post_data_bits + remote->bits)
+            {
+                affected = &pre;
+                current_bit = 0;
+            }
+			ir_code const mask_bit = mask & 1;
+            *affected ^= mask_bit << current_bit;
+            mask >>= 1;
+        }
+    }
 	if(has_pre(remote))
 	{
 		if((pre|pre_mask)!=(remote->pre_data|pre_mask))
@@ -260,13 +255,13 @@ static ir_ncode* get_code(ir_remote* remote,
 			if(found!=remote->toggle_code)
 			{
 				remote->toggle_code=nullptr;
-				return(nullptr);
+				return nullptr;
 			}
 			remote->toggle_code=nullptr;
 		}
 	}
 	*toggle_bit_mask_statep=toggle_bit_mask_state;
-	return(found);
+	return found;
 }
 
 static unsigned long long set_code(ir_remote *remote, ir_ncode *found,
@@ -320,7 +315,7 @@ static unsigned long long set_code(ir_remote *remote, ir_ncode *found,
 			remote->toggle_bit_mask_state=toggle_bit_mask_state;
 		}
 	}
-	last_remote=remote;
+	g_last_remote = remote;
 	last_decoded=remote;
 	if(found->current==nullptr) remote->last_code=found;
 	remote->last_send=current;
@@ -372,7 +367,7 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, i
 	
 	/* use remotes carefully, it may be changed on SIGHUP */
 	ir_remote* remote = remotes;
-	decoding = remotes;
+	g_decoding = remotes;
 	while (remote)
 	{
 		//LOGPRINTF(1,"trying \"%s\" remote",remote->name);
@@ -381,8 +376,6 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, i
 				  &min_remaining_gap, &max_remaining_gap) &&
 		   (ncode=get_code(remote,pre,code,post,&toggle_bit_mask_state)))
 		{
-			int len;
-
 			code=set_code(remote,ncode,toggle_bit_mask_state,
 				      repeat_flag,
 				      min_remaining_gap,
@@ -391,11 +384,11 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, i
 			    remote->toggle_mask_state%2) ||
 			   ncode->current!=nullptr)
 			{
-				decoding=nullptr;
+				g_decoding = nullptr;
 				return false;
 			}
 
-			for(auto scan = decoding; scan != nullptr; scan = scan->next.get())
+			for(auto scan = g_decoding; scan != nullptr; scan = scan->next.get())
 			{
 				for (auto& scan_ncode : scan->codes)
 				{
@@ -407,29 +400,19 @@ WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, i
 				remote->last_code->current = remote->last_code->next.get();
 			}
 			
-			len = write_message(out, out_size,
+			int const len = write_message(out, out_size,
 					    remote->name.c_str(),
 					    remote->last_code->name->c_str(), "", code,
 					    remote->reps-(ncode->next ? 1:0));
-			decoding=nullptr;
-			if(len>=PACKET_SIZE+1)
-			{
-				return false;
-			}
-			else
-			{
-				return true;
-			}
+			g_decoding = nullptr;
+			return len < (PACKET_SIZE + 1);
 		}
-		else
-		{
-			//LOGPRINTF(1,"failed \"%s\" remote",remote->name);
-		}
+
 		remote->toggle_mask_state=0;
 		remote=remote->next.get();
 	}
-	decoding=nullptr;
-	last_remote=nullptr;
+	g_decoding = nullptr;
+	g_last_remote = nullptr;
 
 	return false;
 }
