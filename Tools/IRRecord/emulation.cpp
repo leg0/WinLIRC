@@ -15,10 +15,7 @@ extern char *progname;
 extern hardware hw;
 extern rbuf rec_buffer;
 
-ir_remote *decoding		= nullptr;
-ir_remote *last_remote	= nullptr;
-ir_remote *repeat_remot	= nullptr;
-ir_ncode *repeat_code;
+ir_remote *g_last_remote	= nullptr;
 
 
 //=========================================================================================
@@ -461,12 +458,12 @@ inline lirc_t sync_rec_buffer(struct ir_remote *remote)
 {
 	int count=0;
 	lirc_t deltas=get_next_space(1000000);
-	if(deltas==0) return(0);
+	if(deltas==0) return 0;
 	
-	if(last_remote!=NULL && !is_rcmm(remote))
+	if (g_last_remote != nullptr && !is_rcmm(remote))
 	{
-		while(!expect_at_least(last_remote, deltas,
-				       last_remote->min_remaining_gap))
+		while(!expect_at_least(g_last_remote, deltas,
+				       g_last_remote->min_remaining_gap))
 		{
 			lirc_t const deltap=get_next_pulse(1000000);
 			if(deltap==0) return(0);
@@ -476,22 +473,22 @@ inline lirc_t sync_rec_buffer(struct ir_remote *remote)
 			if(count>REC_SYNC) /* no sync found, 
 					      let's try a diffrent remote */
 			{
-				return(0);
+				return 0;
 			}
 		}
 		if(has_toggle_mask(remote))
 		{
-			if(!expect_at_most(last_remote, deltas,
-					   last_remote->max_remaining_gap))
+			if(!expect_at_most(g_last_remote, deltas,
+					   g_last_remote->max_remaining_gap))
 			{
 				remote->toggle_mask_state=0;
-				remote->toggle_code=NULL;
+				remote->toggle_code=nullptr;
 			}
 			
 		}
 	}
 	rec_buffer.sum=0;
-	return(deltas);
+	return deltas;
 }
 
 inline int get_header(struct ir_remote *remote)
@@ -1122,7 +1119,7 @@ int receive_decode(struct ir_remote *remote,
 
 		//LOGPRINTF(1,"sync");
 
-		if(has_repeat(remote) && last_remote==remote)
+		if(has_repeat(remote) && g_last_remote==remote)
 		{
 			if(remote->flags&REPEAT_HEADER && has_header(remote))
 			{
@@ -1352,7 +1349,7 @@ int receive_decode(struct ir_remote *remote,
 		/* Most TV cards don't pass each signal to the
                    driver. This heuristic should fix repeat in such
                    cases. */
-		if(current - remote->last_send < 325000us)
+		if(current - remote->last_send < 325ms)
 		{
 			*repeat_flagp=1;
 		}
@@ -1396,12 +1393,9 @@ ir_ncode *get_code(ir_remote *remote,
 	}
 	if(has_toggle_mask(remote) && remote->toggle_mask_state%2)
 	{
-		ir_code *affected,mask,mask_bit;
-		int bit,current_bit;
-		
-		affected=&post;
-		mask=remote->toggle_mask;
-		for(bit=current_bit=0;bit<bit_count(remote);bit++,current_bit++)
+		ir_code* affected=&post;
+		ir_code mask=remote->toggle_mask;
+		for(int bit=0, current_bit=0;bit<bit_count(remote);bit++,current_bit++)
 		{
 			if(bit==remote->post_data_bits)
 			{
@@ -1413,7 +1407,7 @@ ir_ncode *get_code(ir_remote *remote,
 				affected=&pre;
 				current_bit=0;
 			}
-			mask_bit=mask&1;
+			auto const mask_bit=mask&1;
 			(*affected)^=(mask_bit<<current_bit);
 			mask>>=1;
 		}
@@ -1421,23 +1415,13 @@ ir_ncode *get_code(ir_remote *remote,
 	if(has_pre(remote))
 	{
 		if((pre|pre_mask)!=(remote->pre_data|pre_mask))
-		{
-			//LOGPRINTF(1,"bad pre data");
-			//LOGPRINTF(2,"%llx %llx",pre,remote->pre_data);
-			return(0);
-		}
-		//LOGPRINTF(1,"pre");
+			return 0;
 	}
 	
 	if(has_post(remote))
 	{
 		if((post|post_mask)!=(remote->post_data|post_mask))
-		{
-			//LOGPRINTF(1,"bad post data");
-			//LOGPRINTF(2,"%llx %llx",post,remote->post_data);
-			return(0);
-		}
-		//LOGPRINTF(1,"post");
+			return 0;
 	}
 
 	all = gen_ir_code(remote, pre, code, post);
@@ -1478,9 +1462,7 @@ ir_ncode *get_code(ir_remote *remote,
 		else
 		{
 			/* find longest matching sequence */
-			struct ir_code_node* search;
-
-			search = c.next.get();
+			ir_code_node* search = c.next.get();
 			if (search == nullptr ||
 				c.next != nullptr && c.current == nullptr)
 			{

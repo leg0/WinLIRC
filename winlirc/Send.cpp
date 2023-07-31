@@ -172,9 +172,8 @@ static void send_trail(sbuf& send_buffer, ir_remote *remote)
 
 static void send_data(sbuf& send_buffer, ir_remote *remote,ir_code data,int bits,int done)
 {
-	int i;
-	int all_bits = bit_count(remote);
-	int toggle_bit_mask_bits = bits_set(remote->toggle_bit_mask);
+	auto const all_bits = bit_count(remote);
+	auto const toggle_bit_mask_bits = bits_set(remote->toggle_bit_mask);
 	ir_code mask;
 	
 	data=reverse(data,bits);
@@ -185,7 +184,7 @@ static void send_data(sbuf& send_buffer, ir_remote *remote,ir_code data,int bits
 		{
 			return;
 		}
-		for(i=0;i<bits;i+=2,mask>>=2)
+		for(int i=0;i<bits;i+=2,mask>>=2)
 		{
 			switch(data&3)
 			{
@@ -217,11 +216,9 @@ static void send_data(sbuf& send_buffer, ir_remote *remote,ir_code data,int bits
 		{
 			return;
 		}
-		for(i = 0; i < bits; i += 4)
+		for(int i = 0; i < bits; i += 4)
 		{
-			ir_code nibble;
-
-			nibble = reverse(data & 0xf, 4);
+			ir_code nibble = reverse(data & 0xf, 4);
 			send_pulse(send_buffer, remote->pzero);
 			send_space(send_buffer, (unsigned long)(remote->szero + nibble*remote->sone));
 			data >>= 4;
@@ -230,7 +227,7 @@ static void send_data(sbuf& send_buffer, ir_remote *remote,ir_code data,int bits
 	}
 
 	mask=((ir_code) 1)<<(all_bits-1-done);
-	for(i=0;i<bits;i++,mask>>=1)
+	for(int i=0;i<bits;i++,mask>>=1)
 	{
 		if(has_toggle_bit_mask(remote) && mask&remote->toggle_bit_mask)
 		{

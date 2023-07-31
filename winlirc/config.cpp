@@ -416,9 +416,9 @@ static winlirc::istring lirc_parse_relative(winlirc::istring_view child, winlirc
 	return cur.string().c_str();
 }
 
-std::unique_ptr<ir_remote> read_config(FILE *f, const char *name)
+std::unique_ptr<ir_remote> read_config(FILE *f, std::string_view name)
 {
-	return std::unique_ptr<ir_remote>{ read_config_recursive(f, name, 0) };
+	return std::unique_ptr<ir_remote>{ read_config_recursive(f, winlirc::istring_view{name.data(), name.size()}, 0) };
 }
 
 static ir_remote * read_config_recursive(FILE *f, winlirc::istring_view name, int depth)

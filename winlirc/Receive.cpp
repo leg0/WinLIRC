@@ -32,10 +32,7 @@
 
 using namespace std::chrono;
 
-extern struct ir_remote *decoding;
-extern struct ir_remote *last_remote;
-extern struct ir_remote *repeat_remote;
-extern struct ir_ncode *repeat_code;
+extern ir_remote* g_last_remote;
 
 inline void set_pending_pulse(rbuf& rec_buffer, lirc_t deltap)
 {
@@ -187,7 +184,7 @@ static inline lirc_t get_next_space(rbuf& rec_buffer, hardware const& hw, lirc_t
 	return(data);
 }
 
-static inline int sync_pending_pulse(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
+static inline int sync_pending_pulse(rbuf& rec_buffer, hardware const& hw, ir_remote *remote)
 {
 	if(rec_buffer.pendingp>0)
 	{
@@ -201,7 +198,7 @@ static inline int sync_pending_pulse(rbuf& rec_buffer, hardware const& hw, struc
 	return 1;
 }
 
-static int sync_pending_space(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
+static int sync_pending_space(rbuf& rec_buffer, hardware const& hw, ir_remote *remote)
 {
 	if(rec_buffer.pendings>0)
 	{
@@ -213,7 +210,7 @@ static int sync_pending_space(rbuf& rec_buffer, hardware const& hw, struct ir_re
 	return 1;
 }
 
-static int expectpulse(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,int exdelta)
+static int expectpulse(rbuf& rec_buffer, hardware const& hw, ir_remote *remote,int exdelta)
 {
 	lirc_t deltap;
 	int retval;
@@ -236,7 +233,7 @@ static int expectpulse(rbuf& rec_buffer, hardware const& hw, struct ir_remote *r
 	return(retval);
 }
 
-static int expectspace(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,int exdelta)
+static int expectspace(rbuf& rec_buffer, hardware const& hw, ir_remote *remote,int exdelta)
 {
 	lirc_t deltas;
 	int retval;
@@ -259,7 +256,7 @@ static int expectspace(rbuf& rec_buffer, hardware const& hw, struct ir_remote *r
 	return(retval);
 }
 
-static int expectone(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,int bit)
+static int expectone(rbuf& rec_buffer, hardware const& hw, ir_remote *remote,int bit)
 {
 	if(is_biphase(remote))
 	{
@@ -324,7 +321,7 @@ static int expectone(rbuf& rec_buffer, hardware const& hw, struct ir_remote *rem
 	return(1);
 }
 
-static int expectzero(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote,int bit)
+static int expectzero(rbuf& rec_buffer, hardware const& hw, ir_remote *remote,int bit)
 {
 	if(is_biphase(remote))
 	{
@@ -387,28 +384,26 @@ static int expectzero(rbuf& rec_buffer, hardware const& hw, struct ir_remote *re
 	return(1);
 }
 
-static lirc_t sync_rec_buffer(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
+static lirc_t sync_rec_buffer(rbuf& rec_buffer, hardware const& hw, ir_remote *remote, ir_remote const* last_remote)
 {
-	lirc_t deltap;
-	
 	auto count=0;
 	auto deltas=get_next_space(rec_buffer, hw,1000000);
-	if(deltas==0) return(0);
+	if(deltas==0) return 0;
 	
 	if(last_remote!=nullptr && !is_rcmm(remote))
 	{
 		while(!expect_at_least(last_remote, deltas,
 				       last_remote->min_remaining_gap))
 		{
-			deltap=get_next_pulse(rec_buffer, hw, 1000000);
-			if (deltap == 0) return(0);
+			lirc_t const deltap=get_next_pulse(rec_buffer, hw, 1000000);
+			if (deltap == 0) return 0;
 			deltas = get_next_space(rec_buffer, hw,1000000);
-			if(deltas==0) return(0);
+			if(deltas==0) return 0;
 			count++;
 			if(count>REC_SYNC) /* no sync found, 
 					      let's try a diffrent remote */
 			{
-				return(0);
+				return 0;
 			}
 		}
 		if(has_toggle_mask(remote))
@@ -423,7 +418,7 @@ static lirc_t sync_rec_buffer(rbuf& rec_buffer, hardware const& hw, struct ir_re
 		}
 	}
 	rec_buffer.sum=0;
-	return(deltas);
+	return deltas;
 }
 
 static int get_header(rbuf& rec_buffer, hardware const& hw, struct ir_remote *remote)
@@ -1003,13 +998,13 @@ WINLIRC_API int winlirc_receive_decode(
 {
     auto& hw = *phw;
 	auto& rec_buffer = *prec_buffer;
-	ir_code pre,code,post;
-	int header;
 	steady_clock::time_point current;
 
 	lirc_t sync=0;
-	code=pre=post=0;
-	header=0;
+	ir_code code = 0;
+	ir_code pre = 0;
+	ir_code post = 0;
+	int header=0;
 
 	if(hw.rec_mode==LIRC_MODE_MODE2 ||
 	   hw.rec_mode==LIRC_MODE_PULSE ||
@@ -1019,12 +1014,12 @@ WINLIRC_API int winlirc_receive_decode(
 		rec_buffer.is_biphase=is_biphase(remote) ? 1:0;
 		
 		/* we should get a long space first */
-		if(!(sync=sync_rec_buffer(rec_buffer, hw,remote)))
+		if(!(sync=sync_rec_buffer(rec_buffer, hw,remote, g_last_remote)))
 		{	
-			return(0);
+			return 0;
 		}
 
-		if(has_repeat(remote) && last_remote==remote)
+		if(has_repeat(remote) && g_last_remote==remote)
 		{
 			if(remote->flags&REPEAT_HEADER && has_header(remote))
 			{
@@ -1063,7 +1058,7 @@ WINLIRC_API int winlirc_receive_decode(
 			else
 			{
 				rewind_rec_buffer(rec_buffer);
-				sync_rec_buffer(rec_buffer, hw,remote);
+				sync_rec_buffer(rec_buffer, hw,remote, g_last_remote);
 			}
 
 		}
@@ -1101,7 +1096,7 @@ WINLIRC_API int winlirc_receive_decode(
 				{
 					found = nullptr;
 					rewind_rec_buffer(rec_buffer);
-					sync_rec_buffer(rec_buffer, hw,remote);
+					sync_rec_buffer(rec_buffer, hw,remote, g_last_remote);
 					break;
 				}
 				if(i<c.length() &&
@@ -1109,7 +1104,7 @@ WINLIRC_API int winlirc_receive_decode(
 				{
 					found = nullptr;
 					rewind_rec_buffer(rec_buffer);
-					sync_rec_buffer(rec_buffer, hw, remote);
+					sync_rec_buffer(rec_buffer, hw, remote, g_last_remote);
 					break;
 				}
 			}

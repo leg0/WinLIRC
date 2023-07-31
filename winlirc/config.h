@@ -2,6 +2,7 @@
 
 #include "constants.h"
 #include <memory>
+#include <string_view>
 #include <stdio.h>
 #include <sys/types.h>
 
@@ -43,4 +44,4 @@ enum directive {ID_none,ID_remote,ID_codes,ID_raw_codes,ID_raw_name};
 struct ir_remote;
 
 int checkMode(int is_mode, int c_mode, char const* error);
-std::unique_ptr<ir_remote> read_config(FILE *f, const char *name);
+std::unique_ptr<ir_remote> read_config(FILE *f, std::string_view name);
