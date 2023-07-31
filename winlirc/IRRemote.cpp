@@ -13,7 +13,7 @@ ir_remote *last_remote	= nullptr;
 ir_remote *repeat_remote	= nullptr;
 ir_ncode *repeat_code	= nullptr;
 
-WINLIRC_API int winlirc_map_code(struct ir_remote *remote,
+WINLIRC_API int winlirc_map_code(ir_remote const* remote,
 	     ir_code *prep,ir_code *codep,ir_code *postp,
 	     int pre_bits,ir_code pre,
 	     int bits,ir_code code,
@@ -42,7 +42,7 @@ WINLIRC_API int winlirc_map_code(struct ir_remote *remote,
 }
 
 WINLIRC_API void winlirc_map_gap(
-		ir_remote *remote,
+		ir_remote const* remote,
 		int64_t time_elapsed_us,
 		lirc_t signal_length,
 		int *repeat_flagp,
@@ -101,7 +101,7 @@ WINLIRC_API void winlirc_map_gap(
 	}	
 }
 
-struct ir_ncode *get_code(struct ir_remote *remote,
+static ir_ncode* get_code(ir_remote* remote,
 			  ir_code pre,ir_code code,ir_code post,
 			  ir_code *toggle_bit_mask_statep)
 {
@@ -361,11 +361,11 @@ static int write_message(char *buffer, size_t size, const char *remote_name,
 		     remote_name);
 }
 
-WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, struct ir_remote *remotes, char *out, size_t out_size)
+WINLIRC_API bool winlirc_decodeCommand(rbuf* prec_buffer, hardware const* phw, ir_remote *remotes, char *out, size_t out_size)
 {
     auto& hw = *phw;
 	ir_code pre,code,post;
-	ir_ncode *ncode;
+	ir_ncode* ncode = nullptr;
 	int repeat_flag;
 	ir_code toggle_bit_mask_state;
 	lirc_t min_remaining_gap, max_remaining_gap;
