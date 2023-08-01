@@ -26,6 +26,7 @@
 #include <Windows.h>
 #include <atlstr.h>
 #include <winlirc/WLPluginAPI.h>
+#include <filesystem>
 
 struct ir_remote;
 class CIRDriver {
@@ -34,7 +35,7 @@ public:
 	CIRDriver();
    ~CIRDriver();
 
-	BOOL	loadPlugin	(CString plugin);
+	BOOL	loadPlugin	(std::filesystem::path const& plugin);
 	void	unloadPlugin();
 	BOOL	init		();
 	void	deinit		();
@@ -62,7 +63,7 @@ private:
 	GetHardware				getHardwareFunction;
 
 	//==============================
-	CString		loadedPlugin;
+	std::filesystem::path loadedPlugin;
 	HMODULE		dllFile;
 	//==============================
 };

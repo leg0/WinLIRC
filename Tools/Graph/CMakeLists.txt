@@ -13,8 +13,6 @@ add_executable(Graph WIN32
 	main.cpp
 	Opengl.cpp
 	Opengl.h
-	Settings.cpp
-	Settings.h
 	)
 
 add_definitions(

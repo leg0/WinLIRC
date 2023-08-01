@@ -25,15 +25,15 @@
 	
 CIRDriver::CIRDriver()
 {
-	initFunction			= NULL;
-	deinitFunction			= NULL;
-	hasGuiFunction			= NULL;
-	loadSetupGuiFunction	= NULL;
-	sendFunction			= NULL;
-	decodeFunction			= NULL;
-	getHardwareFunction		= NULL;
+	initFunction			= nullptr;
+	deinitFunction			= nullptr;
+	hasGuiFunction			= nullptr;
+	loadSetupGuiFunction	= nullptr;
+	sendFunction			= nullptr;
+	decodeFunction			= nullptr;
+	getHardwareFunction		= nullptr;
 
-	dllFile					= NULL;
+	dllFile					= nullptr;
 }
 
 CIRDriver::~CIRDriver()
@@ -41,7 +41,7 @@ CIRDriver::~CIRDriver()
 	unloadPlugin();
 }
 
-BOOL CIRDriver::loadPlugin(CString plugin) {
+BOOL CIRDriver::loadPlugin(std::filesystem::path const& plugin) {
 
 	//
 	//make sure we have cleaned up first
@@ -49,7 +49,7 @@ BOOL CIRDriver::loadPlugin(CString plugin) {
 	unloadPlugin();
 
 	loadedPlugin	= plugin;
-	dllFile			= LoadLibrary(plugin);
+	dllFile			= LoadLibraryW(plugin.c_str());
 
 	if(!dllFile) return FALSE;
 
@@ -75,19 +75,19 @@ void CIRDriver::unloadPlugin() {
 	//
 	deinit();
 
-	initFunction			= NULL;
-	deinitFunction			= NULL;
-	hasGuiFunction			= NULL;
-	loadSetupGuiFunction	= NULL;
-	sendFunction			= NULL;
-	decodeFunction			= NULL;
-	getHardwareFunction		= NULL;
+	initFunction			= nullptr;
+	deinitFunction			= nullptr;
+	hasGuiFunction			= nullptr;
+	loadSetupGuiFunction	= nullptr;
+	sendFunction			= nullptr;
+	decodeFunction			= nullptr;
+	getHardwareFunction		= nullptr;
 
 	if(dllFile) {
 		FreeLibrary(dllFile);
 	}
 
-	dllFile					= NULL;
+	dllFile					= nullptr;
 }
 
 BOOL CIRDriver::init() {
@@ -136,7 +136,7 @@ int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
 
 hardware const* CIRDriver::getHardware() {
 
-	if(!getHardwareFunction) return NULL;
+	if(!getHardwareFunction) return nullptr;
 
 	return getHardwareFunction();
 }
