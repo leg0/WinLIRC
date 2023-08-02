@@ -25,14 +25,11 @@
 #include <winlirc/WLPluginAPI.h>
 #include <winlirc/winlirc_api.h>
 
-void initHardwareStruct();
-extern hardware hw;
+extern hardware const hw;
 extern rbuf rec_buffer;
 
-WL_API int init( WLEventHandle exitEvent )
+static int beholder_init( WLEventHandle exitEvent )
 {
-	initHardwareStruct();
-
 	InitializeCriticalSection(&criticalSection);
 
 	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
@@ -47,7 +44,7 @@ WL_API int init( WLEventHandle exitEvent )
 	return 1;
 }
 
-WL_API void deinit()
+static void beholder_deinit()
 {
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
@@ -65,22 +62,12 @@ WL_API void deinit()
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui()
-{
-	return FALSE;
-}
-
-WL_API void	loadSetupGui()
-{
-   // @TODO
-}
-
-WL_API int sendIR( struct ir_remote *remote, struct ir_ncode *code, int repeats )
+static int beholder_sendIR( struct ir_remote *remote, struct ir_ncode *code, int repeats )
 {
 	return 0;
 }
 
-WL_API int decodeIR( struct ir_remote *remotes, char *out, size_t out_size )
+static int beholder_decodeIR( struct ir_remote *remotes, char *out, size_t out_size )
 {
 	if(sendReceiveData) {
 
@@ -100,8 +87,25 @@ WL_API int decodeIR( struct ir_remote *remotes, char *out, size_t out_size )
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+hardware const* beholder_getHardware() {
 
-	initHardwareStruct();
 	return &hw;
+}
+
+WL_API plugin_interface const* getPluginInterface()
+{
+	static constexpr plugin_interface p {
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = beholder_init,
+		.deinit = beholder_deinit,
+		.hasGui = [] { return FALSE; },
+		.loadSetupGui = [] {},
+		.sendIR = beholder_sendIR,
+		.decodeIR = beholder_decodeIR,
+		.setTransmitters = [](uint32_t) { return 0; },
+		.getHardware = beholder_getHardware,
+		.hardware = &hw
+	};
+
+	return &p;
 }
