@@ -1,4 +1,6 @@
 .build*/
+_build-x64/
+_build-x86/
 out/
 build/
 *.aps
