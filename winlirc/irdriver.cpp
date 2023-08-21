@@ -7,16 +7,10 @@
 #include "winlircapp.h"
 #include "wl_debug.h"
 
-CIRDriver::CIRDriver()
-	: m_daemonThreadEvent{ CreateEvent(nullptr, TRUE, FALSE, nullptr) }
-{ }
-
 CIRDriver::~CIRDriver()
 {
 	unloadPlugin();
 	ASSERT(!m_daemonThreadHandle.joinable());
-	if(m_daemonThreadEvent)
-		CloseHandle(m_daemonThreadEvent);
 }
 
 bool CIRDriver::loadPlugin(std::filesystem::path plugin)
@@ -52,15 +46,15 @@ bool CIRDriver::init()
 
 	if (auto pluginInit = m_dll.interface_.init)
 	{
-		if (pluginInit(reinterpret_cast<WLEventHandle>(m_daemonThreadEvent)))
-		{
-			m_daemonThreadHandle = std::thread{ [&]() {
-				::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_IDLE);
-				this->DaemonThreadProc();
-			} };
+		m_pluginStopEvent = winlirc::Event::manualResetEvent();
 
-			if (m_daemonThreadHandle.joinable())
-				return true;
+		if (pluginInit(reinterpret_cast<WLEventHandle>(m_pluginStopEvent.get())))
+		{
+			m_daemonThreadHandle = std::jthread{ [&](std::stop_token stop) {
+				::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_IDLE);
+				this->DaemonThreadProc(stop);
+			} };
+			return true;
 		}
 		else
 		{
@@ -103,7 +97,7 @@ int CIRDriver::setTransmitters(unsigned int transmitterMask) const
 	return 0;
 }
 
-void CIRDriver::DaemonThreadProc() const {
+void CIRDriver::DaemonThreadProc(std::stop_token stop) const {
 
 	/* Accept client connections,		*/
 	/* and watch the data buffer.		*/
@@ -123,7 +117,7 @@ void CIRDriver::DaemonThreadProc() const {
 		return res;
 	};
 
-	while(WaitForSingleObject(m_daemonThreadEvent, 0) == WAIT_TIMEOUT) {
+	while(!stop.stop_requested()) {
 
 		if(decodeIr()) {
 
@@ -159,7 +153,6 @@ void CIRDriver::DaemonThreadProc() const {
 			app.dlg->GoGreen();
 			app.server.sendToClients(message);
 		}
-
 	}
 }
 
@@ -167,7 +160,7 @@ void CIRDriver::stopDaemonThread()
 {
 	if (m_daemonThreadHandle.joinable())
 	{
-		::SetEvent(m_daemonThreadEvent);
+		m_pluginStopEvent.setEvent();
 		m_daemonThreadHandle.join();
 	}
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../Common/Event.h"
 #include "Plugin.h"
 #include <filesystem>
 #include <mutex>
@@ -12,7 +13,6 @@ struct ir_ncode;
 class CIRDriver
 {
 public:
-	CIRDriver();
 	~CIRDriver();
 
 	bool loadPlugin(std::filesystem::path plugin);
@@ -25,14 +25,13 @@ public:
 
 
 private:
-	void DaemonThreadProc() const;
+	void DaemonThreadProc(std::stop_token stop) const;
 	void stopDaemonThread();
 
 	/// Protects access to the functions imported from plug-in dll, and the
 	/// DLL handle.
 	mutable std::mutex m_dllLock;
 	Plugin m_dll;
-
-	HANDLE const m_daemonThreadEvent;
-	std::thread m_daemonThreadHandle;
+	winlirc::Event m_pluginStopEvent;
+	std::jthread m_daemonThreadHandle;
 };
