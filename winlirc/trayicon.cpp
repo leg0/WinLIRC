@@ -52,13 +52,13 @@ void CTrayIcon::SetNotificationWnd(CWnd* notifywnd, UINT message) noexcept
 {
     if (notifywnd == nullptr || !::IsWindow(notifywnd->GetSafeHwnd()))
     {
-        WL_DEBUG("Invalid window\n");
+        WL_DEBUG("Invalid window");
         return;
     }
 
     if (message != 0 && message < WM_USER)
     {
-        WL_DEBUG("Invalid message\n");
+        WL_DEBUG("Invalid message");
         message = 0;
     }
 

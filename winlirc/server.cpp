@@ -73,7 +73,7 @@ bool Cserver::startServer()
 
     if (!server)
     {
-        WL_DEBUG("socket failed, WSAGetLastError=%d\n", WSAGetLastError());
+        WL_DEBUG("socket failed, WSAGetLastError=%d", WSAGetLastError());
         return false;
     }
 
@@ -89,13 +89,13 @@ bool Cserver::startServer()
 
     if (bind(server.get(), reinterpret_cast<sockaddr*>(&serv_addr), sizeof(serv_addr)) == SOCKET_ERROR)
     {
-        WL_DEBUG("bind failed\n");
+        WL_DEBUG("bind failed");
         return false;
     }
 
     if (listen(server.get(), LISTENQ) == SOCKET_ERROR)
     {
-        WL_DEBUG("listen failed\n");
+        WL_DEBUG("listen failed");
         return false;
     }
 
@@ -108,7 +108,7 @@ bool Cserver::startServer()
         this->ThreadProc();
     } };
     if (!m_serverThreadHandle.joinable()) {
-        WL_DEBUG("starting server thread failed\n");
+        WL_DEBUG("starting server thread failed");
         return false;
     }
     return true;
@@ -199,7 +199,7 @@ void Cserver::ThreadProc()
 
         if (res == WAIT_OBJECT_0)
         {
-            WL_DEBUG("ServerThread terminating\n");
+            WL_DEBUG("ServerThread terminating");
             return;
         }
         else if (res == (WAIT_OBJECT_0 + 1))
@@ -218,7 +218,7 @@ void Cserver::ThreadProc()
 
             if (!tempSocket)
             {
-                WL_DEBUG("accept() failed\n");
+                WL_DEBUG("accept() failed");
                 continue;
             }
             m_clients[i] = std::move(tempSocket);
@@ -226,7 +226,7 @@ void Cserver::ThreadProc()
             WSAEventSelect(m_clients[i].get(), clientEvent[i].get(), FD_CLOSE | FD_READ);
             clientEvent[i].resetEvent();
             clientData[i][0] = '\0';
-            WL_DEBUG("Client connection %d accepted\n", i);
+            WL_DEBUG("Client connection %d accepted", i);
         }
         else /* client closed or data received */
         {
@@ -245,7 +245,7 @@ void Cserver::ThreadProc()
                         {
                             /* Connection was closed or something's screwy */
                             m_clients[i].reset();
-                            WL_DEBUG("Client connection %d closed\n", i);
+                            WL_DEBUG("Client connection %d closed", i);
                         }
                         else /* bytes > 0, we read data */
                         {
@@ -262,7 +262,7 @@ void Cserver::ThreadProc()
                                     *nl = '\0';
                                     // ----------------------------
                                     // Do something with the received line (cur)
-                                    WL_DEBUG("Got string: %s\n", cur);
+                                    WL_DEBUG("Got string: %s", cur);
 
                                     strcpy_s(toparse, cur);
                                     char* command = strtok(toparse, " \t\r");	// strtok is not thread safe ..
