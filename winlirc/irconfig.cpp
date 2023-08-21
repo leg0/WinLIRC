@@ -57,7 +57,7 @@ bool CIRConfig::readConfig() {
 	{
 		if (sr->codes.empty())
 		{
-			WL_DEBUG("read_config returned remote with null codes\n");
+			WL_DEBUG("read_config returned remote with null codes");
 			global_remotes.reset();
 			return false;
 		}
@@ -65,7 +65,7 @@ bool CIRConfig::readConfig() {
 
 	if (global_remotes == nullptr)
 	{
-		WL_DEBUG("read_config returned null\n");
+		WL_DEBUG("read_config returned null");
 		return false;
 	}
 

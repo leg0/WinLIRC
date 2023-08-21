@@ -159,7 +159,7 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 			Sleep(1000);
 
 			if(driver.init()==false) {
-				WL_DEBUG("InitPort failed\n");
+				WL_DEBUG("InitPort failed");
 				if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Initialization Error"));
 				retval = false;
 				break;

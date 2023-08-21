@@ -110,7 +110,7 @@ BOOL WinLircApp::InitInstance() {
 		MessageBoxW(nullptr,L"Server could not be started. Try checking the port.", L"WinLIRC", MB_OK|MB_ICONERROR);
 	}
 
-	WL_DEBUG("Creating main dialog...\n");
+	WL_DEBUG("Creating main dialog...");
 
 	dlg.reset(new Cdrvdlg());
 
