@@ -1,16 +1,21 @@
 #include "stdafx.h"
 #include "irdriver.h"
 
-irtiny::CIRDriver::CIRDriver(HANDLE finishEvent, std::wstring port)
-    : serialPort_{ std::move(port) }
+#include <cassert>
+
+irtiny::CIRDriver::CIRDriver(HANDLE finishEvent, std::wstring const& port)
+    : serialPort_{ port }
     , dataReadyEvent_{ Event::manualResetEvent() }
     , finishEvent_{ Event::fromHandle(finishEvent) }
 { }
 
 irtiny::CIRDriver::~CIRDriver()
 {
-    if (thread_.joinable())
+    if (thread_.joinable()) {
+        thread_.request_stop();
+        finishEvent_.setEvent();
         thread_.join();
+    }
 
     // we're not owning that.
     finishEvent_.release();
@@ -18,42 +23,40 @@ irtiny::CIRDriver::~CIRDriver()
 
 bool irtiny::CIRDriver::initPort()
 {
-    buffer_.clear();
-
+    assert(!thread_.joinable());
     if (thread_.joinable())
-    {
-        finishEvent_.setEvent();
-        thread_.join();
-    }
+        return false;
+
+    buffer_.clear();
 
     if (!serialPort_)
         return false;
 
-    DCB dcb = { 0 };
-
     // The device is powered by RTS
     // and running at fixed baud rate.
 
-    dcb.DCBlength = sizeof(dcb);
-    dcb.BaudRate = CBR_115200;
-    dcb.fBinary = TRUE;
-    dcb.fRtsControl = RTS_CONTROL_ENABLE;
-    dcb.ByteSize = 8;
-    dcb.Parity = NOPARITY;
-    dcb.StopBits = ONESTOPBIT;
+    DCB const dcb = {
+        .DCBlength = sizeof(dcb),
+        .BaudRate = CBR_115200,
+        .fBinary = TRUE,
+        .fRtsControl = RTS_CONTROL_ENABLE,
+        .ByteSize = 8,
+        .Parity = NOPARITY,
+        .StopBits = ONESTOPBIT,
+    };
 
-    if (!SetCommState(serialPort_.get(), &dcb))
+    if (!SetCommState(serialPort_, dcb))
         return false;
 
-    PurgeComm(serialPort_.get(), PURGE_RXABORT | PURGE_RXCLEAR);
-    ClearCommError(serialPort_.get(), nullptr, nullptr);
+    PurgeComm(serialPort_, PURGE_RXABORT | PURGE_RXCLEAR);
+    ClearCommError(serialPort_);
 
-    thread_ = std::thread([=]() { threadProc(); });
+    thread_ = std::jthread([=](std::stop_token t) { threadProc(t); });
 
     return true;
 }
 
-void irtiny::CIRDriver::threadProc()
+void irtiny::CIRDriver::threadProc(std::stop_token stop)
 {
     Event overlappedEvent = Event::manualResetEvent();
     OVERLAPPED ov = { 0 };
@@ -62,22 +65,23 @@ void irtiny::CIRDriver::threadProc()
     HANDLE const events[2] = { ov.hEvent, finishEvent_.get() };
 
     // Send a byte to force RTS
-    ::WriteFile(serialPort_.get(), "x", 1, nullptr, &ov);
+    DWORD nBytesWritten{};
+    WriteFile(serialPort_, "x", 1, nBytesWritten, ov);
 
     ::Sleep(100);
 
-    for (;;)
+    while (!stop.stop_requested())
     {
         overlappedEvent.resetEvent();
 
         // We want to be notified of RX changes
-        if (SetCommMask(serialPort_.get(), EV_RXCHAR) == 0)
+        if (SetCommMask(serialPort_, EV_RXCHAR) == 0)
         {
             //DEBUG("SetCommMask returned zero, error=%d\n",GetLastError());
         }
         // Start waiting for the event
-        DWORD event;
-        if (WaitCommEvent(serialPort_.get(), &event, &ov) == 0 && GetLastError() != 997)
+        DWORD event{};
+        if (WaitCommEvent(serialPort_, event, ov) == 0 && GetLastError() != 997)
         {
             //DEBUG("WaitCommEvent error: %d\n",GetLastError());
         }
@@ -92,7 +96,7 @@ void irtiny::CIRDriver::threadProc()
             {
                 uint8_t buf[2];
                 DWORD bytesRead = 0;
-                auto const readSuccessful = ReadFile(serialPort_.get(), buf, 2, &bytesRead, &ov);
+                auto const readSuccessful = ReadFile(serialPort_, buf, 2, bytesRead, ov);
                 if (bytesRead == 2)
                 {
                     uint16_t const val = MAKEWORD(buf[1], buf[0]) & 0x7FFF;
@@ -106,8 +110,8 @@ void irtiny::CIRDriver::threadProc()
                 }
                 else
                 {
-                    ::ClearCommError(serialPort_.get(), nullptr, nullptr);
-                    ::PurgeComm(serialPort_.get(), PURGE_RXABORT | PURGE_RXCLEAR);
+                    ClearCommError(serialPort_);
+                    PurgeComm(serialPort_, PURGE_RXABORT | PURGE_RXCLEAR);
                     break;
                 }
             }

@@ -5,6 +5,8 @@
 #include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
 
+using namespace std::chrono_literals;
+
 static std::unique_ptr<irtiny::CIRDriver> irDriver;
 
 static lirc_t irtiny_readData(lirc_t timeout)
@@ -25,8 +27,6 @@ static int irtiny_dataReady()
 {
     return irDriver && irDriver->dataReady();
 }
-
-rbuf rec_buffer;
 
 extern "C" static int irtiny_init(WLEventHandle exitEvent)
 {
@@ -52,7 +52,6 @@ extern "C" static void irtiny_loadSetupGui()
     dlg.DoModal();
 }
 
-// XXX WTF TODO: refactor common so that the functions that are hardcoded to use global variable hw take it as a parameter.
 static constexpr hardware irtiny_hardware =
 {
     .plugin_api_version = winlirc_plugin_api_version,
@@ -72,12 +71,13 @@ static constexpr hardware irtiny_hardware =
 
 extern "C" int static irtiny_decodeIR(ir_remote* remotes, char* out, size_t out_size)
 {
-    using namespace std::chrono_literals;
     if (!irDriver || !irDriver->waitTillDataIsReady(0us))
         return 0;
 
-    winlirc_clear_rec_buffer(&rec_buffer, &irtiny_hardware);
-    return winlirc_decodeCommand(&rec_buffer, &irtiny_hardware, remotes, out, out_size);
+    static rbuf irtiny_rec_buffer;
+
+    winlirc_clear_rec_buffer(&irtiny_rec_buffer, &irtiny_hardware);
+    return winlirc_decodeCommand(&irtiny_rec_buffer, &irtiny_hardware, remotes, out, out_size);
 }
 
 extern "C" hardware const* irtiny_getHardware()

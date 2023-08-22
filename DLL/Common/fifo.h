@@ -7,35 +7,32 @@ namespace winlirc {
 class Fifo
 {
 public:
-    Fifo()
-        : bufferStart(0)
-        , bufferEnd(0)
-    { }
+    Fifo() noexcept = default;
 
-    void push(std::uint32_t value)
+    void push(std::uint32_t value) noexcept
     {
         dataBuffer[bufferEnd++] = value;
     }
 
-    std::uint32_t pop()
+    std::uint32_t pop() noexcept
     {
         return dataBuffer[bufferStart++];
     }
 
-    bool empty() const
+    bool empty() const noexcept
     {
         return bufferStart == bufferEnd;
     }
 
-    void clear()
+    void clear() noexcept
     {
         bufferStart = bufferEnd = 0;
     }
 
 private:
-    std::uint32_t dataBuffer[256];
-    std::uint8_t  bufferStart;
-    std::uint8_t  bufferEnd;
+    std::uint32_t dataBuffer[256]{};
+    std::uint8_t  bufferStart{};
+    std::uint8_t  bufferEnd{};
 };
 
 } // namespace winlirc
