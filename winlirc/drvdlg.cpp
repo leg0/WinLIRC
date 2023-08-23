@@ -28,9 +28,20 @@
 #include "remote.h"
 #include "server.h" //so we can send SIGHUP
 #include "InputPlugin.h"
-#include "wl_debug.h"
 
+#include <spdlog/spdlog.h>
+
+#include <source_location>
 #include <string>
+
+template<>
+struct fmt::formatter<std::source_location> : fmt::formatter<std::string>
+{
+	auto format(std::source_location sl, format_context& ctx) const
+	{
+		return std::format_to(ctx.out(), "{}({})", sl.file_name(), sl.line());
+	}
+};
 
 using namespace std::string_literals;
 
@@ -104,6 +115,8 @@ void Cdrvdlg::OnCancel()
 
 int Cdrvdlg::OnCreate(LPCREATESTRUCT lpCreateStruct) 
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	if (CDialog::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
@@ -117,6 +130,8 @@ int Cdrvdlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	LRESULT retval = TRUE;
 
 	switch (wPowerEvent)
@@ -159,7 +174,7 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 			Sleep(1000);
 
 			if(driver.init()==false) {
-				WL_DEBUG("InitPort failed");
+				spdlog::debug("InitPort failed");
 				if(config.showTrayIcon) ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_ERROR),_T("WinLIRC / Initialization Error"));
 				retval = false;
 				break;
@@ -185,6 +200,8 @@ afx_msg LRESULT Cdrvdlg::OnPowerBroadcast(WPARAM wPowerEvent,LPARAM lP)
 
 LRESULT Cdrvdlg::OnTrayNotification(WPARAM uID, LPARAM lEvent)
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	if(AllowTrayNotification)
 		return ti.OnTrayNotification(uID, lEvent);
 	else
@@ -193,6 +210,8 @@ LRESULT Cdrvdlg::OnTrayNotification(WPARAM uID, LPARAM lEvent)
 
 void Cdrvdlg::OnToggleWindow() 
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	if(IsWindowVisible())
 	{
 		ShowWindow(SW_HIDE);
@@ -208,12 +227,16 @@ void Cdrvdlg::OnToggleWindow()
 
 void Cdrvdlg::OnHideme() 
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	if(IsWindowVisible())
 		OnToggleWindow();
 }
 
 void Cdrvdlg::GoGreen()
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	if(!app.config->showTrayIcon) {
 		return;
 	}
@@ -224,6 +247,8 @@ void Cdrvdlg::GoGreen()
 }
 void Cdrvdlg::GoBlue()
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	if(!app.config->showTrayIcon) {
 		return;
 	}
@@ -235,6 +260,8 @@ void Cdrvdlg::GoBlue()
 
 void Cdrvdlg::OnTimer(UINT_PTR nIDEvent) {
 
+	spdlog::debug("{}", std::source_location::current());
+
 	if(nIDEvent==1) {
 		KillTimer(1);
 		ti.SetIcon(AfxGetApp()->LoadIcon(IDI_LIRC_OK),_T("WinLIRC / Ready"));
@@ -245,6 +272,8 @@ void Cdrvdlg::OnTimer(UINT_PTR nIDEvent) {
 
 bool Cdrvdlg::DoInitializeDaemon()
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	AllowTrayNotification=false;
 	for(;;)
 	{
@@ -276,6 +305,8 @@ bool Cdrvdlg::DoInitializeDaemon()
 }
 
 bool Cdrvdlg::InitializeDaemon() {
+
+	spdlog::debug("{}", std::source_location::current());
 
 	//==============
 	CWaitCursor foo;
@@ -336,12 +367,16 @@ void Cdrvdlg::OnConfig()
 
 void Cdrvdlg::OnExitLirc() 
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	OnCancel();
 }
 
 
 BOOL Cdrvdlg::OnInitDialog() 
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	CDialog::OnInitDialog();
 	m_ircode_edit="";
 	UpdateData(FALSE);
@@ -351,6 +386,8 @@ BOOL Cdrvdlg::OnInitDialog()
 
 void Cdrvdlg::OnSendcode()
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	EnableWindow(FALSE);
 	UpdateData(TRUE);
 
@@ -422,6 +459,8 @@ BOOL Cdrvdlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 
 void Cdrvdlg::UpdateRemoteComboLists()
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	USES_CONVERSION;
 	UpdateData(TRUE);
 	m_remote_DropDown.ResetContent();
@@ -449,6 +488,8 @@ void Cdrvdlg::UpdateRemoteComboLists()
 
 void Cdrvdlg::UpdateIrCodeComboLists()
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	USES_CONVERSION;
 	UpdateData(TRUE);
 	
@@ -477,6 +518,8 @@ void Cdrvdlg::UpdateIrCodeComboLists()
 
 void Cdrvdlg::OnDropdownIrcodeEdit() 
 {
+	spdlog::debug("{}", std::source_location::current());
+
 	// TODO: Add your control notification handler code here
 	UpdateIrCodeComboLists();
 }

@@ -23,12 +23,19 @@
 #include "winlircapp.h"
 #include "drvdlg.h"
 #include "server.h"
-#include "wl_debug.h"
 
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/msvc_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
+#include <spdlog/async.h>
+
+#include <chrono>
 #include <filesystem>
 #include <string_view>
 
 namespace fs = std::filesystem;
+using namespace std::chrono_literals;
 
 WinLircApp app;
 
@@ -49,8 +56,10 @@ BOOL WinLircApp::InitInstance() {
 #ifdef _DEBUG
 	AllocConsole();
 #endif
+	spdlog::set_default_logger(spdlog::create_async<spdlog::sinks::stdout_color_sink_mt>("winlirc"));
+	spdlog::set_level(spdlog::level::debug);
 
-	WL_DEBUG("Winlirc starting");
+	spdlog::debug("Winlirc starting");
 	AfxInitRichEdit();
 
 	auto const pluginsDirectory = getPluginsDirectory();
@@ -110,7 +119,7 @@ BOOL WinLircApp::InitInstance() {
 		MessageBoxW(nullptr,L"Server could not be started. Try checking the port.", L"WinLIRC", MB_OK|MB_ICONERROR);
 	}
 
-	WL_DEBUG("Creating main dialog...");
+	spdlog::debug("Creating main dialog...");
 
 	dlg.reset(new Cdrvdlg());
 
@@ -130,5 +139,8 @@ BOOL WinLircApp::InitInstance() {
 int WinLircApp::ExitInstance()
 {
 	dlg.reset();
+
+	spdlog::debug("Winlirc exiting");
+	spdlog::shutdown();
 	return CWinApp::ExitInstance();
 }

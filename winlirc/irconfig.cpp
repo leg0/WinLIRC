@@ -27,7 +27,8 @@
 #include "config.h"
 #include "remote.h"
 #include "config.h"
-#include "wl_debug.h"
+
+#include <spdlog/spdlog.h>
 
 CIRConfig::CIRConfig(std::filesystem::path iniFilePath)
 	: iniFilePath{iniFilePath.wstring()}
@@ -57,7 +58,7 @@ bool CIRConfig::readConfig() {
 	{
 		if (sr->codes.empty())
 		{
-			WL_DEBUG("read_config returned remote with null codes");
+			spdlog::debug("read_config returned remote with null codes");
 			global_remotes.reset();
 			return false;
 		}
@@ -65,7 +66,7 @@ bool CIRConfig::readConfig() {
 
 	if (global_remotes == nullptr)
 	{
-		WL_DEBUG("read_config returned null");
+		spdlog::debug("read_config returned null");
 		return false;
 	}
 

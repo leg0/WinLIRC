@@ -5,7 +5,8 @@
 #include "drvdlg.h"
 #include "server.h"
 #include "winlircapp.h"
-#include "wl_debug.h"
+
+#include <spdlog/spdlog.h>
 
 CIRDriver::~CIRDriver()
 {
@@ -113,7 +114,10 @@ void CIRDriver::DaemonThreadProc(std::stop_token stop) const {
 		auto pluginDecodeIr = m_dll.interface_.decodeIR;
 		ASSERT(pluginDecodeIr != nullptr);
 		auto const res = pluginDecodeIr(&*gr, message, sizeof(message));
-		WL_DEBUG("decodeIR: res=%d, %.*s", res, std::size(message), message);
+		if (res)
+			spdlog::debug("decodeIR: res={}, {}", res, message);
+		else
+			spdlog::debug("decodeIR: res={}", res);
 		return res;
 	};
 
