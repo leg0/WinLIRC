@@ -25,8 +25,9 @@
 #include "winlircapp.h"
 #include "drvdlg.h"
 #include "version.h"
-#include "wl_debug.h"
 #include <Event.h>
+
+#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <string>
@@ -73,7 +74,7 @@ bool Cserver::startServer()
 
     if (!server)
     {
-        WL_DEBUG("socket failed, WSAGetLastError=%d", WSAGetLastError());
+        spdlog::debug("socket failed, WSAGetLastError={}", WSAGetLastError());
         return false;
     }
 
@@ -89,13 +90,13 @@ bool Cserver::startServer()
 
     if (bind(server.get(), reinterpret_cast<sockaddr*>(&serv_addr), sizeof(serv_addr)) == SOCKET_ERROR)
     {
-        WL_DEBUG("bind failed");
+        spdlog::debug("bind failed");
         return false;
     }
 
     if (listen(server.get(), LISTENQ) == SOCKET_ERROR)
     {
-        WL_DEBUG("listen failed");
+        spdlog::debug("listen failed");
         return false;
     }
 
@@ -108,7 +109,7 @@ bool Cserver::startServer()
         this->ThreadProc();
     } };
     if (!m_serverThreadHandle.joinable()) {
-        WL_DEBUG("starting server thread failed");
+        spdlog::debug("starting server thread failed");
         return false;
     }
     return true;
@@ -199,7 +200,7 @@ void Cserver::ThreadProc()
 
         if (res == WAIT_OBJECT_0)
         {
-            WL_DEBUG("ServerThread terminating");
+            spdlog::debug("ServerThread terminating");
             return;
         }
         else if (res == (WAIT_OBJECT_0 + 1))
@@ -218,7 +219,7 @@ void Cserver::ThreadProc()
 
             if (!tempSocket)
             {
-                WL_DEBUG("accept() failed");
+                spdlog::debug("accept() failed");
                 continue;
             }
             m_clients[i] = std::move(tempSocket);
@@ -226,7 +227,7 @@ void Cserver::ThreadProc()
             WSAEventSelect(m_clients[i].get(), clientEvent[i].get(), FD_CLOSE | FD_READ);
             clientEvent[i].resetEvent();
             clientData[i][0] = '\0';
-            WL_DEBUG("Client connection %d accepted", i);
+            spdlog::debug("Client connection {} accepted", i);
         }
         else /* client closed or data received */
         {
@@ -245,7 +246,7 @@ void Cserver::ThreadProc()
                         {
                             /* Connection was closed or something's screwy */
                             m_clients[i].reset();
-                            WL_DEBUG("Client connection %d closed", i);
+                            spdlog::debug("Client connection {} closed", i);
                         }
                         else /* bytes > 0, we read data */
                         {
@@ -262,7 +263,7 @@ void Cserver::ThreadProc()
                                     *nl = '\0';
                                     // ----------------------------
                                     // Do something with the received line (cur)
-                                    WL_DEBUG("Got string: %s", cur);
+                                    spdlog::debug("Got string: {}", cur);
 
                                     strcpy_s(toparse, cur);
                                     char* command = strtok(toparse, " \t\r");	// strtok is not thread safe ..

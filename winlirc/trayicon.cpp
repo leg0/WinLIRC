@@ -25,7 +25,8 @@
 #include <afxpriv.h>
 #include "trayicon.h"
 #include "winlircapp.h"
-#include "wl_debug.h"
+
+#include <spdlog/spdlog.h>
 
 #include <iterator>
 
@@ -52,13 +53,13 @@ void CTrayIcon::SetNotificationWnd(CWnd* notifywnd, UINT message) noexcept
 {
     if (notifywnd == nullptr || !::IsWindow(notifywnd->GetSafeHwnd()))
     {
-        WL_DEBUG("Invalid window");
+        spdlog::debug("Invalid window");
         return;
     }
 
     if (message != 0 && message < WM_USER)
     {
-        WL_DEBUG("Invalid message");
+        spdlog::debug("Invalid message");
         message = 0;
     }
 

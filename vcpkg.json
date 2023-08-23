@@ -5,6 +5,7 @@
     "ms-gsl",
     "wtl",
     "gtest",
-    "tinyxml2"
+    "tinyxml2",
+    "spdlog"
   ]
 }

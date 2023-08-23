@@ -43,8 +43,6 @@ add_executable(winlirc WIN32
 	ir_remote.cpp
 	ir_remote.h
 	constants.h
-	$<$<CONFIG:Debug>:wl_debug.cpp>
-	$<$<CONFIG:Debug>:wl_debug.h>
 	${PUBLIC_API_FILES}
 	)
 
@@ -75,9 +73,11 @@ target_compile_definitions(winlirc
 		NOMINMAX
 	)
 
+ find_package(spdlog CONFIG REQUIRED)
 target_link_libraries(winlirc
 	PRIVATE
 		winlirc-common
+        spdlog::spdlog_header_only
 	PUBLIC
 		Microsoft.GSL::GSL
 	)
