@@ -26,10 +26,10 @@
 
 ChinavisionAPI *chinavisionAPI = nullptr;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_api const* winlirc) {
 
 	chinavisionAPI = new ChinavisionAPI();
-	return chinavisionAPI->init(reinterpret_cast<HANDLE>(exitEvent));
+	return chinavisionAPI->init(reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc)));
 }
 
 WL_API void deinit() {

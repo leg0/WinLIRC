@@ -27,9 +27,9 @@ Window g_window;
 HANDLE g_exitEvent = INVALID_HANDLE_VALUE;
 bool g_initialized = false;
 
-WL_API int init(WLEventHandle wlExitEvent)
+WL_API int init(winlirc_api const* winlirc)
 {
-    HANDLE const exitEvent = reinterpret_cast<HANDLE>(wlExitEvent);
+    HANDLE const exitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 
     if (g_initialized || exitEvent == INVALID_HANDLE_VALUE)
         return 0;
@@ -166,7 +166,7 @@ WL_API int decodeIR(struct ir_remote*, char *out, size_t out_size)
             // TODO: add support for analogue inputs
             if (foundButton)
             {
-                _snprintf_s(out, out_size, out_size, "%016llx %02x %s DirectInput\n", int64_t{0}, 1, buttonName);
+                _snprintf_s(out, out_size, out_size, "%016llx %02x %s DirectInput\n", int64_t{0}, 1, buttonName.data());
                 return 1;
             }
         }

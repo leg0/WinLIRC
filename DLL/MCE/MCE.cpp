@@ -35,7 +35,7 @@ extern hardware hw;
 extern rbuf rec_buffer;
 HANDLE hMutexLockout = nullptr;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_api const* winlirc) {
 
 	hMutexLockout = CreateMutex(0,FALSE,_T("WinLIRC_MCE_Plugin_Lock_Out"));
 
@@ -46,7 +46,7 @@ WL_API int init(WLEventHandle exitEvent) {
 	winlirc_init_rec_buffer(&rec_buffer);
 	initHardwareStruct();
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
+	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	sendReceiveData = new SendReceiveData();

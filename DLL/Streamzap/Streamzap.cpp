@@ -29,14 +29,14 @@ void initHardwareStruct();
 extern hardware hw;
 extern rbuf rec_buffer;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_api const* winlirc) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
 	initHardwareStruct();
 
 	streamzapAPI = new StreamzapAPI();
 
-	return streamzapAPI->init(reinterpret_cast<HANDLE>(exitEvent));
+	return streamzapAPI->init(reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc)));
 }
 
 WL_API void deinit() {

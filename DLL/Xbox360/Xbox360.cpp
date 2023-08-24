@@ -28,9 +28,9 @@ using namespace std::chrono_literals;
 
 std::unique_ptr<SendReceive> sendReceive;
 
-static int xbox360_init(WLEventHandle exitEvent) {
+static int xbox360_init(winlirc_api const* winlirc) {
 
-    sendReceive = std::make_unique<SendReceive>(reinterpret_cast<HANDLE>(exitEvent));
+    sendReceive = std::make_unique<SendReceive>(reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc)));
     return 1;
 }
 

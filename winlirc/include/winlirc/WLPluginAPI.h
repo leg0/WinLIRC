@@ -29,10 +29,15 @@ typedef int lirc_t;
 typedef uintptr_t WLEventHandle;
 
 #pragma pack(push, 4)
+typedef struct winlirc_api {
+	uint32_t const plugin_api_version;
+	WLEventHandle(* const getExitEvent)(winlirc_api const*);
+} winlirc_api;
+
 struct plugin_interface
 {
 	uint32_t plugin_api_version;
-	int	(*init)(WLEventHandle exitEvent);
+	int	(*init)(winlirc_api const* exitEvent);
 	void (*deinit)(void);
 	int	(*hasGui)(void);
 	void (*loadSetupGui)(void);
@@ -71,7 +76,8 @@ struct hardware
 
 WL_API plugin_interface const* getPluginInterface();
 
-WL_API int	init			(WLEventHandle exitEvent);
+
+WL_API int	init			(_In_ winlirc_api const*);
 WL_API void	deinit			();
 WL_API int	hasGui			();
 WL_API void	loadSetupGui	();
