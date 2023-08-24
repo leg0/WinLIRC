@@ -37,7 +37,7 @@ extern hardware hw;
 extern rbuf rec_buffer;
 extern sbuf send_buffer;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_api const* winlirc) {
 
 	//==========
 	int success;
@@ -47,7 +47,7 @@ WL_API int init(WLEventHandle exitEvent) {
 	winlirc_init_send_buffer	(&send_buffer);
 	initHardwareStruct	();
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
+	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	success = init_commandir();

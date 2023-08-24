@@ -29,9 +29,9 @@
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_api const* winlirc) {
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
+	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	sendReceiveData = new SendReceiveData();

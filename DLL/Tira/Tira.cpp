@@ -21,12 +21,12 @@ Settings	settings;
 
 int WINAPI tiraCallbackFunction(const char * eventstring);
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_api const* winlirc) {
 
 	if(tiraDLL.tira_init()!=TIRA_TRUE) 
 		return 0;
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
+	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	InitializeCriticalSection(&criticalSection);

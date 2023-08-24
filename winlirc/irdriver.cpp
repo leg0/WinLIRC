@@ -8,6 +8,16 @@
 
 #include <spdlog/spdlog.h>
 
+CIRDriver::CIRDriver() noexcept
+	: winlirc_api{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.getExitEvent = [](winlirc_api const* wa) {
+			auto const self = static_cast<CIRDriver const*>(wa);
+			return reinterpret_cast<WLEventHandle>(self->m_pluginStopEvent.get());
+		}
+	}
+{ }
+
 CIRDriver::~CIRDriver()
 {
 	unloadPlugin();
@@ -49,7 +59,7 @@ bool CIRDriver::init()
 	{
 		m_pluginStopEvent = winlirc::Event::manualResetEvent();
 
-		if (pluginInit(reinterpret_cast<WLEventHandle>(m_pluginStopEvent.get())))
+		if (pluginInit(this))
 		{
 			m_daemonThreadHandle = std::jthread{ [&](std::stop_token stop) {
 				::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_IDLE);

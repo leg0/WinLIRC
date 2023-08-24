@@ -43,7 +43,7 @@ int			indexNumber = 0;
 Settings	*guiSettings = nullptr;
 //==============================
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_api const* winlirc) {
 
 	//=====================
 	wchar_t	deviceName[32];
@@ -57,7 +57,7 @@ WL_API int init(WLEventHandle exitEvent) {
 	settings		= new Settings();
 	recordAudio		= new RecordAudio();
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
-	threadExitEvent	= reinterpret_cast<HANDLE>(exitEvent);
+	threadExitEvent	= reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 
 	initHardwareStruct();
 	winlirc_init_rec_buffer(&rec_buffer);

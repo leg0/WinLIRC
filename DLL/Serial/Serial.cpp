@@ -73,9 +73,9 @@ static hardware const serial_hw{
 };
 
 
-static int serial_init(WLEventHandle exitEvent) {
+static int serial_init(winlirc_api const* winlirc) {
 
-    threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
+    threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 
     winlirc_init_rec_buffer(&rec_buffer);
 

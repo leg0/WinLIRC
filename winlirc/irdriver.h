@@ -10,9 +10,10 @@
 struct ir_remote;
 struct ir_ncode;
 
-class CIRDriver
+class CIRDriver : private winlirc_api
 {
 public:
+	CIRDriver() noexcept;
 	~CIRDriver();
 
 	bool loadPlugin(std::filesystem::path plugin);

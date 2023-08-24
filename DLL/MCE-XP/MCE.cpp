@@ -34,13 +34,13 @@ extern hardware hw;
 rbuf rec_buffer;
 static sbuf send_buffer;
 
-WL_API int init(WLEventHandle exitEvent) {
+WL_API int init(winlirc_api const* winlirc) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
 	winlirc_init_send_buffer(&send_buffer);
 	initHardwareStruct();
 
-	threadExitEvent = reinterpret_cast<HANDLE>(exitEvent);
+	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
 	sendReceiveData = new SendReceiveData();

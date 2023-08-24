@@ -28,11 +28,11 @@ static int irtiny_dataReady()
 
 rbuf rec_buffer;
 
-extern "C" static int irtiny_init(WLEventHandle exitEvent)
+extern "C" static int irtiny_init(winlirc_api const* winlirc)
 {
     wchar_t port[32];
     winlirc_settings_get_wstring(L"ir-tiny", L"port", port, std::size(port), L"");
-    irDriver = std::make_unique<irtiny::CIRDriver>(reinterpret_cast<HANDLE>(exitEvent), port);
+    irDriver = std::make_unique<irtiny::CIRDriver>(reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc)), port);
     return irDriver->initPort();
 }
 
