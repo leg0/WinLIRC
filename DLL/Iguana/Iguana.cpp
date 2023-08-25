@@ -30,8 +30,7 @@
 #include "SendReceiveData.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-void initHardwareStruct();
-extern hardware iguana_hw;
+extern hardware const iguana_hw;
 extern rbuf rec_buffer;
 extern sbuf send_buffer;
 
@@ -39,7 +38,6 @@ WL_API int init(winlirc_api const* winlirc) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
 	winlirc_init_send_buffer(&send_buffer);
-	initHardwareStruct();
 
 	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
@@ -215,7 +213,5 @@ WL_API int setTransmitters(unsigned int transmitterMask) {
 
 WL_API hardware const* getHardware() {
 
-	initHardwareStruct();
 	return &iguana_hw;
-
 }

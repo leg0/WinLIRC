@@ -32,8 +32,6 @@ extern rbuf rec_buffer;
 
 WL_API int init(winlirc_api const* winlirc)
 {
-	initHardwareStruct();
-
 	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
 
@@ -94,6 +92,5 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
 
 WL_API hardware const* getHardware()
 {
-	initHardwareStruct();
 	return &cyberlink_hw;
 }
