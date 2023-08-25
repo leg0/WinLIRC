@@ -23,7 +23,7 @@
 #include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
 
-hardware hw;
+hardware iguana_hw;
 rbuf rec_buffer;
 
 lirc_t readData(lirc_t timeout) {
@@ -61,18 +61,18 @@ int data_ready() {
 
 void initHardwareStruct() {
 
-	hw.decode_func	= &winlirc_receive_decode;
-	hw.readdata		= &readData;
-	hw.wait_for_data= &wait_for_data;
-	hw.data_ready	= &data_ready;
-	hw.get_ir_code	= nullptr;
+	iguana_hw.decode_func	= &winlirc_receive_decode;
+	iguana_hw.readdata		= &readData;
+	iguana_hw.wait_for_data= &wait_for_data;
+	iguana_hw.data_ready	= &data_ready;
+	iguana_hw.get_ir_code	= nullptr;
 
-	hw.features		= LIRC_CAN_REC_MODE2;
-	hw.send_mode	= 0;
-	hw.rec_mode		= LIRC_MODE_MODE2;
-	hw.code_length	= 0;
-	hw.resolution	= 0;
+	iguana_hw.features		= LIRC_CAN_REC_MODE2;
+	iguana_hw.send_mode	= 0;
+	iguana_hw.rec_mode		= LIRC_MODE_MODE2;
+	iguana_hw.code_length	= 0;
+	iguana_hw.resolution	= 0;
 
-	strcpy(hw.device,"hw");
-	strcpy(hw.name,"iguanaIR");
+	strcpy(iguana_hw.device,"hw");
+	strcpy(iguana_hw.name,"iguanaIR");
 }
