@@ -79,23 +79,20 @@ int data_ready() {
 	return sendReceiveData->dataReady();
 }
 
-hardware hw;
 rbuf rec_buffer;
 
-void initHardwareStruct() {
-
-	hw.decode_func	= &irman_decode;
-	hw.readdata		= nullptr;
-	hw.wait_for_data= &wait_for_data;
-	hw.data_ready	= &data_ready;
-	hw.get_ir_code	= &irman_get_ir_code;
-
-	hw.features		= LIRC_CAN_REC_LIRCCODE;
-	hw.send_mode	= 0;
-	hw.rec_mode		= LIRC_MODE_LIRCCODE;
-	hw.code_length	= 64;
-	hw.resolution	= 0;
-
-	strcpy_s(hw.device,"hw");
-	strcpy_s(hw.name,"irman");
-}
+extern hardware const irman_hw = {
+	.plugin_api_version = winlirc_plugin_api_version,
+	.device        = "hw",
+	.name          = "irman",
+	.features      = LIRC_CAN_REC_LIRCCODE,
+	.send_mode     = 0,
+	.rec_mode      = LIRC_MODE_LIRCCODE,
+	.code_length   = 64,
+	.resolution    = 0,
+	.decode_func   = &irman_decode,
+	.readdata      = nullptr,
+	.wait_for_data = &wait_for_data,
+	.data_ready    = &data_ready,
+	.get_ir_code   = &irman_get_ir_code,
+};
