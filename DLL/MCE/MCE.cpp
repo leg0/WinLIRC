@@ -30,8 +30,7 @@
 #include "Registry.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-void initHardwareStruct();
-extern hardware hw;
+extern hardware const mce_hw;
 extern rbuf rec_buffer;
 HANDLE hMutexLockout = nullptr;
 
@@ -44,7 +43,6 @@ WL_API int init(winlirc_api const* winlirc) {
 	}
 
 	winlirc_init_rec_buffer(&rec_buffer);
-	initHardwareStruct();
 
 	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
@@ -213,9 +211,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 			return 0;
 		}
 
-		winlirc_clear_rec_buffer(&rec_buffer, &hw);
+		winlirc_clear_rec_buffer(&rec_buffer, &mce_hw);
 
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&rec_buffer, &mce_hw,remotes,out,out_size)) {
 			return 1;
 		}
 	}
@@ -234,8 +232,5 @@ WL_API int setTransmitters(unsigned int transmitterMask) {
 }
 
 WL_API hardware const* getHardware() {
-
-	initHardwareStruct();
-	return &hw;
-
+	return &mce_hw;
 }

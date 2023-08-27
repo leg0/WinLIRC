@@ -25,14 +25,12 @@
 #include <stdio.h>
 #include "Globals.h"
 
-void initHardwareStruct();
-extern hardware hw;
+extern hardware const streamzap_hw;
 extern rbuf rec_buffer;
 
 WL_API int init(winlirc_api const* winlirc) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
-	initHardwareStruct();
 
 	streamzapAPI = new StreamzapAPI();
 
@@ -70,9 +68,9 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 			return 0;
 		}
 
-		winlirc_clear_rec_buffer(&rec_buffer, &hw);
+		winlirc_clear_rec_buffer(&rec_buffer, &streamzap_hw);
 		
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out, out_size)) {
+		if(winlirc_decodeCommand(&rec_buffer, &streamzap_hw,remotes,out, out_size)) {
 			return 1;
 		}
 	}
@@ -81,7 +79,5 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 }
 
 WL_API hardware const* getHardware() {
-
-	initHardwareStruct();
-	return &hw;
+	return &streamzap_hw;
 }

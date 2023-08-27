@@ -56,23 +56,20 @@ int data_ready() {
 	return 0;
 }
 
-hardware hw;
 rbuf rec_buffer;
 
-void initHardwareStruct() {
-
-	hw.decode_func	= &winlirc_receive_decode;
-	hw.readdata		= &readData;
-	hw.wait_for_data= &wait_for_data;
-	hw.data_ready	= &data_ready;
-	hw.get_ir_code	= nullptr;
-
-	hw.features		= LIRC_CAN_REC_MODE2;
-	hw.send_mode	= 0;
-	hw.rec_mode		= LIRC_MODE_MODE2;
-	hw.code_length	= 0;
-	hw.resolution	= 0;
-
-	strcpy(hw.device,"hw");
-	strcpy(hw.name,"IRToy");
-}
+extern hardware const irtoy_hw = {
+	.plugin_api_version = winlirc_plugin_api_version,
+	.device        = "hw",
+	.name          = "IRToy",
+	.features      = LIRC_CAN_REC_MODE2,
+	.send_mode     = 0,
+	.rec_mode      = LIRC_MODE_MODE2,
+	.code_length   = 0,
+	.resolution    = 0,
+	.decode_func   = &winlirc_receive_decode,
+	.readdata      = &readData,
+	.wait_for_data = &wait_for_data,
+	.data_ready    = &data_ready,
+	.get_ir_code   = nullptr,
+};

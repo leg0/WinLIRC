@@ -71,23 +71,20 @@ int data_ready() {
 	return receive->dataReady();
 }
 
-hardware hw;
 rbuf rec_buffer;
 
-void initHardwareStruct() {
-
-	hw.decode_func	= &tevii_decode;
-	hw.readdata		= nullptr;
-	hw.wait_for_data= &wait_for_data;
-	hw.data_ready	= &data_ready;
-	hw.get_ir_code	= &get_ir_code;
-
-	hw.features		= LIRC_CAN_REC_LIRCCODE;
-	hw.send_mode	= 0;
-	hw.rec_mode		= LIRC_MODE_LIRCCODE;
-	hw.code_length	= 32;
-	hw.resolution	= 0;
-
-	strcpy(hw.device,"hw");
-	strcpy(hw.name,"TeVii-BDA");
-}
+extern hardware const tevii_hw = {
+	.plugin_api_version = winlirc_plugin_api_version,
+	.device        = "hw",
+	.name          = "TeVii-BDA",
+	.features      = LIRC_CAN_REC_LIRCCODE,
+	.send_mode     = 0,
+	.rec_mode      = LIRC_MODE_LIRCCODE,
+	.code_length   = 32,
+	.resolution    = 0,
+	.decode_func   = &tevii_decode,
+	.readdata      = nullptr,
+	.wait_for_data = &wait_for_data,
+	.data_ready    = &data_ready,
+	.get_ir_code   = &get_ir_code,
+};

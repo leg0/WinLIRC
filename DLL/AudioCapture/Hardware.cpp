@@ -24,7 +24,6 @@
 #include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
 
-hardware hw;
 rbuf rec_buffer;
 
 lirc_t readdata(lirc_t timeout) {
@@ -56,20 +55,18 @@ void wait_for_data(lirc_t uSecs) {
 	waitTillDataIsReady(std::chrono::microseconds{ uSecs });
 }
 
-void initHardwareStruct() {
-
-	hw.decode_func	= &winlirc_receive_decode;
-	hw.readdata		= &readdata;
-	hw.wait_for_data= &wait_for_data;
-	hw.data_ready	= &data_ready;
-	hw.get_ir_code	= nullptr;
-
-	hw.features		= LIRC_CAN_REC_MODE2;
-	hw.send_mode	= 0;
-	hw.rec_mode		= LIRC_MODE_MODE2;
-	hw.code_length	= 0;
-	hw.resolution	= 0;
-
-	strcpy(hw.device,"hw");
-	strcpy(hw.name,"audio");
-}
+extern hardware const audio_hw = {
+	.plugin_api_version = winlirc_plugin_api_version,
+	.device        = "hw",
+	.name          = "audio",
+	.features      = LIRC_CAN_REC_MODE2,
+	.send_mode     = 0,
+	.rec_mode      = LIRC_MODE_MODE2,
+	.code_length   = 0,
+	.resolution    = 0,
+	.decode_func   = &winlirc_receive_decode,
+	.readdata      = &readdata,
+	.wait_for_data = &wait_for_data,
+	.data_ready    = &data_ready,
+	.get_ir_code   = nullptr,
+};

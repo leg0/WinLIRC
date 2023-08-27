@@ -26,7 +26,6 @@
 
 #define CODE_LENGTH 32
 
-hardware hw;
 rbuf rec_buffer;
 
 static int cyberlink_receive_decode (rbuf* rec_buffer, hardware const*, ir_remote *remote, ir_code *prep, ir_code *codep,
@@ -71,20 +70,18 @@ int data_ready() {
 	return 0;
 }
 
-void initHardwareStruct() {
-
-	hw.decode_func	= &cyberlink_receive_decode;
-	hw.readdata		= nullptr;
-	hw.wait_for_data= &wait_for_data;
-	hw.data_ready	= &data_ready;
-	hw.get_ir_code	= &get_ir_code;
-
-	hw.features		= LIRC_CAN_REC_LIRCCODE;
-	hw.send_mode	= 0;
-	hw.rec_mode		= LIRC_MODE_LIRCCODE;
-	hw.code_length	= 32;
-	hw.resolution	= 0;
-
-	strcpy_s(hw.device,"hw");
-	strcpy_s(hw.name,"CyberLink");
-}
+extern hardware const cyberlink_hw = {
+    .plugin_api_version = winlirc_plugin_api_version,
+    .device        = "hw",
+    .name          = "CyberLink",
+    .features      = LIRC_CAN_REC_LIRCCODE,
+    .send_mode     = 0,
+    .rec_mode      = LIRC_MODE_LIRCCODE,
+    .code_length   = 32,
+    .resolution    = 0,
+    .decode_func   = &cyberlink_receive_decode,
+    .readdata      = nullptr,
+    .wait_for_data = &wait_for_data,
+    .data_ready    = &data_ready,
+    .get_ir_code   = &get_ir_code,
+};
