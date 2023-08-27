@@ -10,13 +10,10 @@
 #include "../Common/Win32helpers.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
-void initHardwareStruct();
-extern hardware hw;
+extern hardware const technisat_hw;
 extern rbuf rec_buffer;
 
 WL_API int init(winlirc_api const* winlirc) {
-
-	initHardwareStruct();
 
 	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,FALSE,FALSE,nullptr);
@@ -159,7 +156,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 		receive->getData(&irCode);
 		end = std::chrono::steady_clock::now();
 
-		if(winlirc_decodeCommand(&rec_buffer, &hw,remotes,out,out_size)) {
+		if(winlirc_decodeCommand(&rec_buffer, &technisat_hw,remotes,out,out_size)) {
 			ResetEvent(dataReadyEvent);
 			return 1;
 		}
@@ -171,7 +168,5 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 }
 
 WL_API hardware const* getHardware() {
-
-	initHardwareStruct();
-	return &hw;
+	return &technisat_hw;
 }
