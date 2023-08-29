@@ -33,7 +33,7 @@ extern hardware const mcexp_hw;
 rbuf rec_buffer;
 static sbuf send_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int mcexp_init(winlirc_api const* winlirc) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
 	winlirc_init_send_buffer(&send_buffer);
@@ -48,7 +48,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return 1;
 }
 
-WL_API void deinit() {
+static void mcexp_deinit() {
 
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
@@ -61,7 +61,7 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int mcexp_hasGui() {
 
 	return TRUE;
 }
@@ -161,7 +161,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	mcexp_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -184,7 +184,7 @@ WL_API void	loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int mcexp_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	if(sendReceiveData) {
 		return sendReceiveData->send(remote,code,repeats);
@@ -193,7 +193,7 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int mcexp_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 
@@ -212,6 +212,21 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* mcexp_getHardware() {
 	return &mcexp_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = mcexp_init,
+		.deinit = mcexp_deinit,
+		.hasGui = mcexp_hasGui,
+		.loadSetupGui = mcexp_loadSetupGui,
+		.sendIR = mcexp_sendIR,
+		.decodeIR = mcexp_decodeIR,
+		.getHardware = mcexp_getHardware,
+		.hardware = &mcexp_hw,
+	};
+	return &p;
 }

@@ -30,7 +30,7 @@
 extern hardware const udp_hw;
 extern rbuf rec_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int udp_init(winlirc_api const* winlirc) {
 
 	//===========
 	BOOL success;
@@ -47,7 +47,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return success;
 }
 
-WL_API void deinit() {
+static void udp_deinit() {
 
 	if(server) {
 		server->deinit();
@@ -60,21 +60,21 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int udp_hasGui() {
 
 	return FALSE;
 }
 
-WL_API void	loadSetupGui() {
+static void	udp_loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int udp_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int udp_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(server) {
 		using namespace std::chrono_literals;
@@ -92,7 +92,22 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* udp_getHardware() {
 
 	return &udp_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = udp_init,
+		.deinit = udp_deinit,
+		.hasGui = udp_hasGui,
+		.loadSetupGui = udp_loadSetupGui,
+		.sendIR = udp_sendIR,
+		.decodeIR = udp_decodeIR,
+		.getHardware = udp_getHardware,
+		.hardware = &udp_hw,
+	};
+	return &p;
 }

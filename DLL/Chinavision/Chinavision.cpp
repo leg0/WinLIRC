@@ -26,13 +26,13 @@
 
 ChinavisionAPI *chinavisionAPI = nullptr;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int chinavision_init(winlirc_api const* winlirc) {
 
 	chinavisionAPI = new ChinavisionAPI();
 	return chinavisionAPI->init(reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc)));
 }
 
-WL_API void deinit() {
+static void chinavision_deinit() {
 
 	if(chinavisionAPI) {
 		chinavisionAPI->deinit();
@@ -41,21 +41,21 @@ WL_API void deinit() {
 	}
 }
 
-WL_API int hasGui() {
+static int chinavision_hasGui() {
 
 	return FALSE;
 }
 
-WL_API void	loadSetupGui() {
+static void	chinavision_loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int chinavision_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int chinavision_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(chinavisionAPI) {
 		using namespace std::chrono_literals;
@@ -64,4 +64,20 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	}
 
 	return 0;
+}
+
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = chinavision_init,
+		.deinit = chinavision_deinit,
+		.hasGui = chinavision_hasGui,
+		.loadSetupGui = chinavision_loadSetupGui,
+		.sendIR = chinavision_sendIR,
+		.decodeIR = chinavision_decodeIR,
+		.getHardware = []() -> hardware const* { return nullptr; },
+		.hardware = nullptr,
+	};
+	return &p;
 }

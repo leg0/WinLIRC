@@ -32,7 +32,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 extern hardware const irman_hw;
 extern rbuf rec_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int irman_init(winlirc_api const* winlirc) {
 
 	InitializeCriticalSection(&criticalSection);
 
@@ -46,7 +46,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return 1;
 }
 
-WL_API void deinit() {
+static void irman_deinit() {
 
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
@@ -61,7 +61,7 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int irman_hasGui() {
 
 	return TRUE;
 }
@@ -135,7 +135,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	irman_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -158,12 +158,12 @@ WL_API void	loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int irman_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int irman_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 		using namespace std::chrono_literals;
@@ -183,7 +183,22 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* irman_getHardware() {
 
 	return &irman_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = irman_init,
+		.deinit = irman_deinit,
+		.hasGui = irman_hasGui,
+		.loadSetupGui = irman_loadSetupGui,
+		.sendIR = irman_sendIR,
+		.decodeIR = irman_decodeIR,
+		.getHardware = irman_getHardware,
+		.hardware = &irman_hw,
+	};
+	return &p;
 }

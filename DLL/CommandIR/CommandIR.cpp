@@ -36,7 +36,7 @@ extern hardware const commandir_hw;
 extern rbuf rec_buffer;
 extern sbuf send_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int commandir_init(winlirc_api const* winlirc) {
 
 	//==========
 	int success;
@@ -53,7 +53,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return success;
 }
 
-WL_API void deinit() {
+static void commandir_deinit() {
 
 	deinit_commandir();
 
@@ -62,21 +62,21 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int commandir_hasGui() {
 
 	return FALSE;
 }
 
-WL_API void	loadSetupGui() {
+static void	commandir_loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int commandir_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return send(remote,code,repeats);
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int commandir_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(!waitTillDataIsReady(0)) {
 		return 0;
@@ -91,15 +91,30 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API int setTransmitters(unsigned int transmitterMask) {
+static int commandir_setTransmitters(unsigned int transmitterMask) {
 
 	currentTransmitterMask = transmitterMask;
 
 	return 1;	// assume success ... for now :p
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* commandir_getHardware() {
 
 	return &commandir_hw;
 
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = commandir_init,
+		.deinit = commandir_deinit,
+		.hasGui = commandir_hasGui,
+		.loadSetupGui = commandir_loadSetupGui,
+		.sendIR = commandir_sendIR,
+		.decodeIR = commandir_decodeIR,
+		.getHardware = commandir_getHardware,
+		.hardware = &commandir_hw,
+	};
+	return &p;
 }

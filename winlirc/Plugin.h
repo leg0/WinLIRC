@@ -6,14 +6,6 @@
 #include <string>
 
 using GetPluginInterfaceFunction = decltype(::getPluginInterface)*;
-using InitFunction = decltype(::init)*;
-using DeinitFunction = decltype(::deinit)*;
-using HasGuiFunction = decltype(::hasGui)*;
-using LoadSetupGuiFunction = decltype(::loadSetupGui)*;
-using SendFunction = decltype(::sendIR)*;
-using DecodeFunction = decltype(::decodeIR)*;
-using SetTransmittersFunction = decltype(::setTransmitters)*;
-using GethardwareFunction = decltype(::getHardware)*;
 
 struct Plugin
 {

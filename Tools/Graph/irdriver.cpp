@@ -23,19 +23,6 @@
 
 #include "irdriver.h"
 	
-CIRDriver::CIRDriver()
-{
-	initFunction			= NULL;
-	deinitFunction			= NULL;
-	hasGuiFunction			= NULL;
-	loadSetupGuiFunction	= NULL;
-	sendFunction			= NULL;
-	decodeFunction			= NULL;
-	getHardwareFunction		= NULL;
-
-	dllFile					= NULL;
-}
-
 CIRDriver::~CIRDriver()
 {
 	unloadPlugin();
@@ -51,21 +38,20 @@ BOOL CIRDriver::loadPlugin(CString plugin) {
 	loadedPlugin	= plugin;
 	dllFile			= LoadLibrary(plugin);
 
-	if(!dllFile) return FALSE;
+	if(!dllFile)
+		return false;
 
-	initFunction			= (InitFunction)		GetProcAddress(dllFile,"init");
-	deinitFunction			= (DeinitFunction)		GetProcAddress(dllFile,"deinit");
-	hasGuiFunction			= (HasGuiFunction)		GetProcAddress(dllFile,"hasGui");
-	loadSetupGuiFunction	= (LoadSetupGuiFunction)GetProcAddress(dllFile,"loadSetupGui");
-	sendFunction			= (SendFunction)		GetProcAddress(dllFile,"sendIR");
-	decodeFunction			= (DecodeFunction)		GetProcAddress(dllFile,"decodeIR");
-	getHardwareFunction		= (GetHardware)			GetProcAddress(dllFile,"getHardware");
-
-	if(initFunction && deinitFunction && hasGuiFunction && loadSetupGuiFunction && sendFunction && decodeFunction) {
-		return TRUE;
+	auto gpf = (decltype(&::getPluginInterface))GetProcAddress(dllFile, "getPluginInterface");
+	if (gpf) {
+		auto pi = gpf();
+		if (pi && pi->plugin_api_version == winlirc_plugin_api_version
+			&& pi->init && pi->deinit && pi->hasGui && pi->loadSetupGui && pi->sendIR && pi->decodeIR) {
+			pluginInterface = pi;
+			return true;
+		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 void CIRDriver::unloadPlugin() {
@@ -75,30 +61,22 @@ void CIRDriver::unloadPlugin() {
 	//
 	deinit();
 
-	initFunction			= NULL;
-	deinitFunction			= NULL;
-	hasGuiFunction			= NULL;
-	loadSetupGuiFunction	= NULL;
-	sendFunction			= NULL;
-	decodeFunction			= NULL;
-	getHardwareFunction		= NULL;
-
 	if(dllFile) {
 		FreeLibrary(dllFile);
 	}
 
-	dllFile					= NULL;
+	dllFile = nullptr;
 }
 
-BOOL CIRDriver::init() {
+BOOL CIRDriver::init() const {
 
 	//
 	// safe to call deinit first
 	//
 	deinit();
 
-	if(initFunction) {
-		if(initFunction(0)) {
+	if(pluginInterface && pluginInterface->init) {
+		if(pluginInterface->init(0)) {
 
 			return TRUE;
 		}
@@ -107,36 +85,34 @@ BOOL CIRDriver::init() {
 	return FALSE;
 }
 
-void CIRDriver::deinit() {
+void CIRDriver::deinit() const {
 
-	if(deinitFunction) {
-		deinitFunction();
+	if(pluginInterface && pluginInterface->deinit) {
+		pluginInterface->deinit();
 	}
-
-	//KillThread2(&daemonThreadHandle,daemonThreadEvent);
 }
 
-int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeats) {
+int	CIRDriver::sendIR(struct ir_remote *remote,struct ir_ncode *code, int repeats) const {
 
-	if(sendFunction) {
-		return sendFunction(remote,code,repeats);
-	}
-
-	return 0;
-}
-
-int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) {
-
-	if(decodeFunction) {
-		return decodeFunction(remote,out, out_size);
+	if(pluginInterface && pluginInterface->sendIR) {
+		return pluginInterface->sendIR(remote,code,repeats);
 	}
 
 	return 0;
 }
 
-hardware const* CIRDriver::getHardware() {
+int	CIRDriver::decodeIR(struct ir_remote *remote, char *out, size_t out_size) const {
 
-	if(!getHardwareFunction) return NULL;
+	if(pluginInterface && pluginInterface->decodeIR) {
+		return pluginInterface->decodeIR(remote,out, out_size);
+	}
 
-	return getHardwareFunction();
+	return 0;
+}
+
+hardware const* CIRDriver::getHardware() const {
+
+	if(!pluginInterface || !pluginInterface->getHardware) return nullptr;
+
+	return pluginInterface->getHardware();
 }

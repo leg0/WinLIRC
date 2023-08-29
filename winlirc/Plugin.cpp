@@ -10,17 +10,6 @@ Plugin::Plugin(std::wstring const& path) noexcept
 		auto getPluginInterface = (GetPluginInterfaceFunction)GetProcAddress(d.get(), "getPluginInterface");
 		if (getPluginInterface)
 			interface_ = *getPluginInterface();
-		else
-		{
-			interface_.init = (InitFunction)GetProcAddress(d.get(), "init");
-			interface_.deinit = (DeinitFunction)GetProcAddress(d.get(), "deinit");
-			interface_.hasGui = (HasGuiFunction)GetProcAddress(d.get(), "hasGui");
-			interface_.loadSetupGui = (LoadSetupGuiFunction)GetProcAddress(d.get(), "loadSetupGui");
-			interface_.sendIR = (SendFunction)GetProcAddress(d.get(), "sendIR");
-			interface_.decodeIR = (DecodeFunction)GetProcAddress(d.get(), "decodeIR");
-			interface_.setTransmitters = (SetTransmittersFunction)GetProcAddress(d.get(), "setTransmitters");
-			interface_.getHardware = (GethardwareFunction)GetProcAddress(d.get(), "getHardware");
-		}
 	}
 }
 

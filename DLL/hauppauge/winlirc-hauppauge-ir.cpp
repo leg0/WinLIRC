@@ -50,7 +50,7 @@ bool getLibraryPath(wchar_t *path, size_t maxPathLen)
 // WinLIRC-Interface //
 ///////////////////////
 
-WL_API int init(winlirc_api const* winlirc)
+static int hauppauge_init(winlirc_api const* winlirc)
 {
 	trace(L"init");
 	g_exitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
@@ -78,7 +78,7 @@ WL_API int init(winlirc_api const* winlirc)
 	return TRUE;
 }
 
-WL_API void	deinit()
+static void	hauppauge_deinit()
 {
 	trace(L"deinit");
 
@@ -89,13 +89,13 @@ WL_API void	deinit()
 	}
 }
 
-WL_API int hasGui()
+static int hauppauge_hasGui()
 {
 	trace(L"hasGui");
 	return TRUE;
 }
 
-WL_API void	loadSetupGui()
+static void	hauppauge_loadSetupGui()
 {
 	trace(L"loadSetupGui");
 
@@ -144,13 +144,13 @@ WL_API void	loadSetupGui()
 	}
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats)
+static int hauppauge_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats)
 {
 	trace(L"sendIR");
 	return FALSE;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
+static int hauppauge_decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
 {
 	trace(L"decodeIR");
 
@@ -167,4 +167,19 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
 	else
 		trace(L"called without correct initialization!");
 	return FALSE;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = hauppauge_init,
+		.deinit = hauppauge_deinit,
+		.hasGui = hauppauge_hasGui,
+		.loadSetupGui = hauppauge_loadSetupGui,
+		.sendIR = hauppauge_sendIR,
+		.decodeIR = hauppauge_decodeIR,
+		.getHardware = []() -> hardware const* { return nullptr; },
+		.hardware = nullptr,
+	};
+	return &p;
 }

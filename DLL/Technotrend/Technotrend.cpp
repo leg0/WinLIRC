@@ -15,7 +15,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 extern hardware const technotrend_hw;
 extern rbuf rec_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int technotrend_init(winlirc_api const* winlirc) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
 
@@ -26,7 +26,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return receive->init(settings.getDeviceNumber(),settings.getBusyLED(),settings.getPowerLED());
 }
 
-WL_API void deinit() {
+static void technotrend_deinit() {
 
 	if(receive) {
 		receive->deinit();
@@ -39,7 +39,7 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int technotrend_hasGui() {
 
 	return TRUE;
 }
@@ -131,7 +131,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	technotrend_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -154,12 +154,12 @@ WL_API void	loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int technotrend_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int technotrend_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	//wait till data is ready
 
@@ -178,6 +178,21 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* technotrend_getHardware() {
 	return &technotrend_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = technotrend_init,
+		.deinit = technotrend_deinit,
+		.hasGui = technotrend_hasGui,
+		.loadSetupGui = technotrend_loadSetupGui,
+		.sendIR = technotrend_sendIR,
+		.decodeIR = technotrend_decodeIR,
+		.getHardware = technotrend_getHardware,
+		.hardware = &technotrend_hw,
+	};
+	return &p;
 }

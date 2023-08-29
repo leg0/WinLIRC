@@ -28,7 +28,7 @@
 extern hardware const streamzap_hw;
 extern rbuf rec_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int streamzap_init(winlirc_api const* winlirc) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
 
@@ -37,7 +37,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return streamzapAPI->init(reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc)));
 }
 
-WL_API void deinit() {
+static void streamzap_deinit() {
 
 	if(streamzapAPI) {
 		streamzapAPI->deinit();
@@ -46,21 +46,21 @@ WL_API void deinit() {
 	}
 }
 
-WL_API int hasGui() {
+static int streamzap_hasGui() {
 
 	return FALSE;
 }
 
-WL_API void	loadSetupGui() {
+static void	streamzap_loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int streamzap_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int streamzap_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(streamzapAPI) {
 		using namespace std::chrono_literals;
@@ -78,6 +78,21 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* streamzap_getHardware() {
 	return &streamzap_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = streamzap_init,
+		.deinit = streamzap_deinit,
+		.hasGui = streamzap_hasGui,
+		.loadSetupGui = streamzap_loadSetupGui,
+		.sendIR = streamzap_sendIR,
+		.decodeIR = streamzap_decodeIR,
+		.getHardware = streamzap_getHardware,
+		.hardware = &streamzap_hw,
+	};
+	return &p;
 }

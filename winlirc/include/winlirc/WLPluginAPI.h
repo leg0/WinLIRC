@@ -77,16 +77,6 @@ struct hardware
 WL_API plugin_interface const* getPluginInterface();
 
 
-WL_API int	init			(_In_ winlirc_api const*);
-WL_API void	deinit			();
-WL_API int	hasGui			();
-WL_API void	loadSetupGui	();
-WL_API int	sendIR			(ir_remote* remote, ir_ncode *code, int repeats);
-WL_API int	decodeIR		(ir_remote* remotes, char* out, size_t out_size);
-WL_API int	setTransmitters	(unsigned int transmitterMask);
-WL_API hardware const* getHardware();							// optional API for IRRecord
-
-
 #define LIRC_MODE2SEND(x) (x)
 #define LIRC_SEND2MODE(x) (x)
 #define LIRC_MODE2REC(x) ((x) << 16)

@@ -27,7 +27,7 @@
 #include <tchar.h>
 #include "resource.h"
 
-WL_API int init(winlirc_api const* winlirc) {
+static int firefly_init(winlirc_api const* winlirc) {
 
 	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
@@ -39,7 +39,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return 1;
 }
 
-WL_API void deinit() {
+static void firefly_deinit() {
 
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
@@ -52,21 +52,21 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int firefly_hasGui() {
 
 	return FALSE;
 }
 
-WL_API void	loadSetupGui() {
+static void	firefly_loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int firefly_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int firefly_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 		using namespace std::chrono_literals;
@@ -78,4 +78,19 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	}
 
 	return 0;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = firefly_init,
+		.deinit = firefly_deinit,
+		.hasGui = firefly_hasGui,
+		.loadSetupGui = firefly_loadSetupGui,
+		.sendIR = firefly_sendIR,
+		.decodeIR = firefly_decodeIR,
+		.getHardware = []() -> hardware const* { return nullptr; },
+		.hardware = nullptr,
+	};
+	return &p;
 }

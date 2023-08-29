@@ -19,7 +19,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 extern hardware const tevii_hw;
 extern rbuf rec_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int tevii_init(winlirc_api const* winlirc) {
 
 	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,FALSE,FALSE,nullptr);
@@ -29,7 +29,7 @@ WL_API int init(winlirc_api const* winlirc) {
 
 }
 
-WL_API void deinit() {
+static void tevii_deinit() {
 
 	if(receive) {
 		receive->deinit();
@@ -42,7 +42,7 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int tevii_hasGui() {
 
 	return TRUE;
 }
@@ -114,7 +114,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	tevii_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -137,12 +137,12 @@ WL_API void	loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int tevii_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int tevii_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	//wait till data is ready
 
@@ -168,6 +168,21 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* tevii_getHardware() {
 	return &tevii_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = tevii_init,
+		.deinit = tevii_deinit,
+		.hasGui = tevii_hasGui,
+		.loadSetupGui = tevii_loadSetupGui,
+		.sendIR = tevii_sendIR,
+		.decodeIR = tevii_decodeIR,
+		.getHardware = tevii_getHardware,
+		.hardware = &tevii_hw,
+	};
+	return &p;
 }

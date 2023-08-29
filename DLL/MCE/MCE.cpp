@@ -34,7 +34,7 @@ extern hardware const mce_hw;
 extern rbuf rec_buffer;
 HANDLE hMutexLockout = nullptr;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int mce_init(winlirc_api const* winlirc) {
 
 	hMutexLockout = CreateMutex(0,FALSE,_T("WinLIRC_MCE_Plugin_Lock_Out"));
 
@@ -56,7 +56,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return 1;
 }
 
-WL_API void deinit() {
+static void mce_deinit() {
 
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
@@ -70,7 +70,7 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int mce_hasGui() {
 
 	return TRUE;
 }
@@ -170,7 +170,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	mce_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -193,7 +193,7 @@ WL_API void	loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int mce_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	if(sendReceiveData) {
 		return sendReceiveData->send(remote,code,repeats);
@@ -202,7 +202,7 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int mce_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 
@@ -221,7 +221,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API int setTransmitters(unsigned int transmitterMask) {
+static int mce_setTransmitters(unsigned int transmitterMask) {
 
 	if(sendReceiveData) {
 		sendReceiveData->setTransmitters(transmitterMask);
@@ -231,6 +231,21 @@ WL_API int setTransmitters(unsigned int transmitterMask) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* mce_getHardware() {
 	return &mce_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = mce_init,
+		.deinit = mce_deinit,
+		.hasGui = mce_hasGui,
+		.loadSetupGui = mce_loadSetupGui,
+		.sendIR = mce_sendIR,
+		.decodeIR = mce_decodeIR,
+		.getHardware = mce_getHardware,
+		.hardware = &mce_hw,
+	};
+	return &p;
 }
