@@ -20,7 +20,7 @@ Settings	settings;
 
 int WINAPI tiraCallbackFunction(const char * eventstring);
 
-WL_API int init(winlirc_api const* winlirc) {
+static int tira_init(winlirc_api const* winlirc) {
 
 	if(tiraDLL.tira_init()!=TIRA_TRUE) 
 		return 0;
@@ -41,7 +41,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return 1;
 }
 
-WL_API void deinit() {
+static void tira_deinit() {
 
 	tiraDLL.tira_stop();
 	tiraDLL.tira_cleanup();
@@ -56,7 +56,7 @@ WL_API void deinit() {
 	DeleteCriticalSection(&criticalSection);
 }
 
-WL_API int hasGui() {
+static int tira_hasGui() {
 
 	return TRUE;
 }
@@ -144,7 +144,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	tira_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -167,7 +167,7 @@ WL_API void	loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
+static int tira_sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats) {
 
 	//
 	// return false - since we don't support this function yet .. Tira should be able to send though
@@ -178,7 +178,7 @@ WL_API int sendIR(struct ir_remote *remotes, struct ir_ncode *code, int repeats)
 
 extern bool waitForData(std::chrono::microseconds timeout);
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int tira_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	last = end;
 
@@ -201,6 +201,21 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* tira_getHardware() {
 	return &tira_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = tira_init,
+		.deinit = tira_deinit,
+		.hasGui = tira_hasGui,
+		.loadSetupGui = tira_loadSetupGui,
+		.sendIR = tira_sendIR,
+		.decodeIR = tira_decodeIR,
+		.getHardware = tira_getHardware,
+		.hardware = &tira_hw,
+	};
+	return &p;
 }

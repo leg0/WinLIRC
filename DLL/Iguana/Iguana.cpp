@@ -34,7 +34,7 @@ extern hardware const iguana_hw;
 extern rbuf rec_buffer;
 extern sbuf send_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int iguana_init(winlirc_api const* winlirc) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
 	winlirc_init_send_buffer(&send_buffer);
@@ -50,7 +50,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return 1;
 }
 
-WL_API void deinit() {
+static void iguana_deinit() {
 
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
@@ -63,7 +63,7 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int iguana_hasGui() {
 
 	return TRUE;
 }
@@ -152,7 +152,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	iguana_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -175,7 +175,7 @@ WL_API void	loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int iguana_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	if(sendReceiveData) {
 		return sendReceiveData->send(remote,code,repeats);
@@ -184,7 +184,7 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int iguana_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 
@@ -202,7 +202,7 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API int setTransmitters(unsigned int transmitterMask) {
+static int iguana_setTransmitters(unsigned int transmitterMask) {
 
 	if(sendReceiveData) {
 		return sendReceiveData->setTransmitters(transmitterMask);
@@ -211,7 +211,22 @@ WL_API int setTransmitters(unsigned int transmitterMask) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* iguana_getHardware() {
 
 	return &iguana_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = iguana_init,
+		.deinit = iguana_deinit,
+		.hasGui = iguana_hasGui,
+		.loadSetupGui = iguana_loadSetupGui,
+		.sendIR = iguana_sendIR,
+		.decodeIR = iguana_decodeIR,
+		.getHardware = iguana_getHardware,
+		.hardware = &iguana_hw,
+	};
+	return &p;
 }

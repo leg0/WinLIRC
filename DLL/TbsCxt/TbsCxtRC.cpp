@@ -15,7 +15,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 extern hardware const tbscxt_hw;
 extern rbuf rec_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int tbscxt_init(winlirc_api const* winlirc) {
 	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,FALSE,FALSE,nullptr);
 
@@ -23,7 +23,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return receive->init(settings.getDeviceNumber());
 }
 
-WL_API void deinit() {
+static void tbscxt_deinit() {
 
 	if(receive) {
 		receive->deinit();
@@ -36,7 +36,7 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;	
 }
 
-WL_API int hasGui() {
+static int tbscxt_hasGui() {
 
 	return TRUE;
 }
@@ -164,7 +164,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	tbscxt_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -187,12 +187,12 @@ WL_API void	loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int tbscxt_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int tbscxt_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	//wait till data is ready
 
@@ -220,6 +220,21 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* tbscxt_getHardware() {
 	return &tbscxt_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = tbscxt_init,
+		.deinit = tbscxt_deinit,
+		.hasGui = tbscxt_hasGui,
+		.loadSetupGui = tbscxt_loadSetupGui,
+		.sendIR = tbscxt_sendIR,
+		.decodeIR = tbscxt_decodeIR,
+		.getHardware = tbscxt_getHardware,
+		.hardware = &tbscxt_hw,
+	};
+	return &p;
 }

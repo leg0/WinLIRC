@@ -30,7 +30,7 @@
 extern hardware const cyberlink_hw;
 extern rbuf rec_buffer;
 
-WL_API int init(winlirc_api const* winlirc)
+static int cyberlink_init(winlirc_api const* winlirc)
 {
 	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(nullptr,TRUE,FALSE,nullptr);
@@ -42,7 +42,7 @@ WL_API int init(winlirc_api const* winlirc)
 	return 1;
 }
 
-WL_API void deinit()
+static void cyberlink_deinit()
 {
 	if ( receiveData ) {
 		receiveData->deinit();
@@ -55,16 +55,16 @@ WL_API void deinit()
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui()
+static int cyberlink_hasGui()
 {
 	return FALSE;
 }
 
-WL_API void	loadSetupGui()
+static void	cyberlink_loadSetupGui()
 {
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats)
+static int cyberlink_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats)
 {
 	//
 	// return false - we don't support this function
@@ -72,7 +72,7 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats)
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
+static int cyberlink_decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
 {
 	if ( receiveData ) {
 		using namespace std::chrono_literals;
@@ -90,7 +90,22 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size)
 	return 0;
 }
 
-WL_API hardware const* getHardware()
+static hardware const* cyberlink_getHardware()
 {
 	return &cyberlink_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = cyberlink_init,
+		.deinit = cyberlink_deinit,
+		.hasGui = cyberlink_hasGui,
+		.loadSetupGui = cyberlink_loadSetupGui,
+		.sendIR = cyberlink_sendIR,
+		.decodeIR = cyberlink_decodeIR,
+		.getHardware = cyberlink_getHardware,
+		.hardware = &cyberlink_hw,
+	};
+	return &p;
 }

@@ -19,7 +19,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 extern hardware const geniatech_hw;
 extern rbuf rec_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int geniatech_init(winlirc_api const* winlirc) {
 
 	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
 	dataReadyEvent	= CreateEvent(NULL,FALSE,FALSE,NULL);
@@ -28,7 +28,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return receive->init();
 }
 
-WL_API void deinit() {
+static void geniatech_deinit() {
 
 	if(receive) {
 		receive->deinit();
@@ -41,7 +41,7 @@ WL_API void deinit() {
 	threadExitEvent = NULL;
 }
 
-WL_API int hasGui() {
+static int geniatech_hasGui() {
 
 	return TRUE;
 }
@@ -86,7 +86,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	geniatech_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -107,12 +107,12 @@ WL_API void	loadSetupGui() {
     }
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int geniatech_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int geniatech_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(receive)
 	{
@@ -136,7 +136,22 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* geniatech_getHardware() {
 
 	return &geniatech_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = geniatech_init,
+		.deinit = geniatech_deinit,
+		.hasGui = geniatech_hasGui,
+		.loadSetupGui = geniatech_loadSetupGui,
+		.sendIR = geniatech_sendIR,
+		.decodeIR = geniatech_decodeIR,
+		.getHardware = geniatech_getHardware,
+		.hardware = &geniatech_hw,
+	};
+	return &p;
 }

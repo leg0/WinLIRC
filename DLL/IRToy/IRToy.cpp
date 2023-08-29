@@ -33,7 +33,7 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 extern hardware const irtoy_hw;
 extern rbuf rec_buffer;
 
-WL_API int init(winlirc_api const* winlirc) {
+static int irtoy_init(winlirc_api const* winlirc) {
 
 	winlirc_init_rec_buffer(&rec_buffer);
 
@@ -47,7 +47,7 @@ WL_API int init(winlirc_api const* winlirc) {
 	return 1;
 }
 
-WL_API void deinit() {
+static void irtoy_deinit() {
 
 	if(sendReceiveData) {
 		sendReceiveData->deinit();
@@ -60,7 +60,7 @@ WL_API void deinit() {
 	threadExitEvent = nullptr;
 }
 
-WL_API int hasGui() {
+static int irtoy_hasGui() {
 
 	return TRUE;
 }
@@ -134,7 +134,7 @@ INT_PTR CALLBACK dialogProc (HWND hwnd,
 
 }
 
-WL_API void	loadSetupGui() {
+static void	irtoy_loadSetupGui() {
 
 	//==============
 	HWND	hDialog;
@@ -157,7 +157,7 @@ WL_API void	loadSetupGui() {
 
 }
 
-WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
+static int irtoy_sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) {
 
 	if(sendReceiveData) {
 		return sendReceiveData->send(remote,code,repeats);
@@ -166,7 +166,7 @@ WL_API int sendIR(struct ir_remote *remote, struct ir_ncode *code, int repeats) 
 	return 0;
 }
 
-WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
+static int irtoy_decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 
 	if(sendReceiveData) {
 		using namespace std::chrono_literals;
@@ -184,7 +184,22 @@ WL_API int decodeIR(struct ir_remote *remotes, char *out, size_t out_size) {
 	return 0;
 }
 
-WL_API hardware const* getHardware() {
+static hardware const* irtoy_getHardware() {
 
 	return &irtoy_hw;
+}
+
+WL_API plugin_interface const* getPluginInterface() {
+	static constexpr plugin_interface p{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = irtoy_init,
+		.deinit = irtoy_deinit,
+		.hasGui = irtoy_hasGui,
+		.loadSetupGui = irtoy_loadSetupGui,
+		.sendIR = irtoy_sendIR,
+		.decodeIR = irtoy_decodeIR,
+		.getHardware = irtoy_getHardware,
+		.hardware = &irtoy_hw,
+	};
+	return &p;
 }

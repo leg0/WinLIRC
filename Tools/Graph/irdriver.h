@@ -31,38 +31,23 @@ struct ir_remote;
 class CIRDriver {
 
 public:
-	CIRDriver();
-   ~CIRDriver();
+	~CIRDriver();
 
 	BOOL	loadPlugin	(CString plugin);
 	void	unloadPlugin();
-	BOOL	init		();
-	void	deinit		();
-	int		sendIR		(ir_remote *remote, ir_ncode *code, int repeats);
-	int		decodeIR	(ir_remote *remote, char *out, size_t out_size);
+	BOOL	init		() const;
+	void	deinit		() const;
+	int		sendIR		(ir_remote *remote, ir_ncode *code, int repeats) const;
+	int		decodeIR	(ir_remote *remote, char *out, size_t out_size) const;
 
-	hardware const* getHardware();
+	hardware const* getHardware() const;
 
 private:
 
-	using InitFunction = decltype(::init)*;
-	using DeinitFunction = decltype(::deinit)*;
-	using HasGuiFunction = decltype(hasGui)*;
-	using LoadSetupGuiFunction = decltype(::loadSetupGui)*;
-	using SendFunction = decltype(::sendIR)*;
-	using DecodeFunction = decltype(::decodeIR)*;
-	using GetHardware = decltype(::getHardware)*;
-
-	InitFunction			initFunction;
-	DeinitFunction			deinitFunction;
-	HasGuiFunction			hasGuiFunction;
-	LoadSetupGuiFunction	loadSetupGuiFunction;
-	SendFunction			sendFunction;
-	DecodeFunction			decodeFunction;
-	GetHardware				getHardwareFunction;
+	plugin_interface const *pluginInterface = nullptr;
 
 	//==============================
 	CString		loadedPlugin;
-	HMODULE		dllFile;
+	HMODULE		dllFile = nullptr;
 	//==============================
 };
