@@ -22,12 +22,9 @@
 #pragma once
 
 #include <Windows.h>
-#include "SendReceiveData.h"
 #include "Settings.h"
 
 extern HANDLE threadExitEvent;
 extern HANDLE dataReadyEvent;
-
-extern SendReceiveData *sendReceiveData;
 
 extern Settings settings;

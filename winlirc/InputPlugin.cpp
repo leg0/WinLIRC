@@ -40,7 +40,7 @@ void InputPlugin::listDllFiles()
 
 	if (plugins.empty())
 	{
-		MessageBox(_T("No valid dlls found."));
+		MessageBoxW(L"No valid dlls found.");
 		m_plugins.clear();
 		return;
 	}
@@ -64,8 +64,9 @@ void InputPlugin::listDllFiles()
 
 void InputPlugin::enableWindows(bool canRecord) {
 
-	auto hasGuiFn = m_plugin.interface_.hasGui;
-	m_setupButton.EnableWindow(hasGuiFn && hasGuiFn());
+	auto i = m_plugin.interface_;
+	auto hasGui = i->hasGui;
+	m_setupButton.EnableWindow(hasGui && hasGui(i));
 	m_configPath.EnableWindow(canRecord);
 	m_createConfigButton.EnableWindow(canRecord);
 	m_browseButton.EnableWindow(canRecord);
@@ -143,7 +144,7 @@ void InputPlugin::OnBnClickedOk() {
 	CString tempString;
 	//=================
 
-	m_configPath.GetWindowText(confPath);
+	m_configPath.GetWindowTextW(confPath);
 
 	//
 	// some basic error checking
@@ -151,15 +152,11 @@ void InputPlugin::OnBnClickedOk() {
 
 	if(confPath!="") {
 
-		//========
-		FILE *tmp;
-		//========
-
-		tmp = _tfopen(confPath,_T("r"));
+		auto const tmp = _wfopen(confPath, L"r");
 
 		if(tmp==nullptr) {
-			MessageBox(	_T("The configuration filename is invalid.\n")
-				_T("Please try again."),_T("Configuration Error"));
+			MessageBoxW(L"The configuration filename is invalid.\n"
+				L"Please try again.", L"Configuration Error");
 			return;
 		}
 		else {
@@ -203,23 +200,15 @@ void InputPlugin::OnBnClickedOk() {
 	}
 
 	{
-		//===========
-		int tempPort;
-		//===========
-
 		m_editDefaultPort.GetWindowText(tempString);
 
+		int tempPort = 8765;
 		if(tempString!="")	{ tempPort = _tstoi(tempString); }
-		else				{ tempPort = 8765; }
 
 		if(tempPort!=config.serverPort) {
 
-			//===========
-			bool success;
-			//===========
-
 			config.serverPort = tempPort;
-			success = app.server.restartServer();
+			bool const success = app.server.restartServer();
 
 			if(!success) {
 				MessageBox(_T("Server could not be started. Try checking the port."),_T("WinLIRC"),MB_OK|MB_ICONERROR);
@@ -240,7 +229,7 @@ void InputPlugin::OnBnClickedBrowse() {
 	CFileDialog fileDlg(TRUE,nullptr,nullptr,OFN_PATHMUSTEXIST|OFN_NOCHANGEDIR|OFN_ENABLESIZING,nullptr,this,0,TRUE);
 
 	if( fileDlg.DoModal ()==IDOK ) {
-		m_configPath.SetWindowText(fileDlg.GetPathName());
+		m_configPath.SetWindowTextW(fileDlg.GetPathName());
 	}
 }
 
@@ -251,10 +240,11 @@ void InputPlugin::OnBnClickedCancel()
 
 void InputPlugin::OnBnClickedPluginSetup()
 {
-	if (auto loadSetupGui = m_plugin.interface_.loadSetupGui)
+	auto i = m_plugin.interface_;
+	if (auto loadSetupGui = i->loadSetupGui)
 	{
 		this->EnableWindow(FALSE);
-		loadSetupGui();
+		loadSetupGui(i);
 		this->EnableWindow(TRUE);
 		this->SetFocus();
 	}
@@ -262,19 +252,16 @@ void InputPlugin::OnBnClickedPluginSetup()
 
 BOOL InputPlugin::OnInitDialog() {
 
-	//===========
-	CString temp;
-	//===========
-
 	CDialog::OnInitDialog();
 
 	listDllFiles();
 
 	auto& config = *app.config;
-	m_configPath.SetWindowText(config.remoteConfig.c_str());
+	m_configPath.SetWindowTextW(config.remoteConfig.c_str());
 
-	temp.Format(_T("%i"),config.disableFirstKeyRepeats);
-	m_disableFirstRepeats.SetWindowText(temp);
+	CString temp;
+	temp.Format(L"%i", config.disableFirstKeyRepeats);
+	m_disableFirstRepeats.SetWindowTextW(temp);
 
 	if(config.disableRepeats) {
 		m_disableKeyRepeats.SetCheck(BST_CHECKED);
@@ -294,8 +281,8 @@ BOOL InputPlugin::OnInitDialog() {
 		m_startWithWindows.SetCheck(BST_CHECKED);
 	}
 
-	temp.Format(_T("%i"),config.serverPort);
-	m_editDefaultPort.SetWindowText(temp);
+	temp.Format(L"%i", config.serverPort);
+	m_editDefaultPort.SetWindowTextW(temp);
    
 	return TRUE;
 

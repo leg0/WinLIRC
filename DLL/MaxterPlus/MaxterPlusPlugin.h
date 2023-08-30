@@ -21,7 +21,10 @@
 
 #pragma once
 
+#include <Windows.h>
+#include <winlirc/WLPluginAPI.h>
 #include <chrono>
+#include <thread>
 
 #if !defined __drv_maxIRQL
 #define __drv_maxIRQL(x)
@@ -33,16 +36,16 @@ extern "C" {
 	#include "hid.h"
 }
 
-class SendReceiveData
+class MaxterPlusPlugin : public plugin_interface
 {
 public:
-	SendReceiveData();
+	MaxterPlusPlugin() noexcept;
 
 	bool	init();
 	void	deinit();
 
 	bool	waitTillDataIsReady(std::chrono::microseconds maxUSecs);
-	void	threadProc();
+	void	threadProc(std::stop_token stop);
 	int		decodeCommand(char *out, size_t out_size);
 	
 private:
@@ -50,14 +53,14 @@ private:
 	BOOL	setFeatures();
 	void	restoreFeatures();
 
-	HANDLE	threadHandle;
-	HANDLE	exitEvent;
+	std::jthread threadHandle;
+	HANDLE	exitEvent{ nullptr };
 
 	//=====================
-	HID_DEVICE	device;
-	BOOL		toggleBit;
-	UCHAR		irCode;
-	UCHAR		lastValue;
-	UINT		repeats;
+	HID_DEVICE	device{};
+	BOOL		toggleBit{};
+	UCHAR		irCode{};
+	UCHAR		lastValue{};
+	UINT		repeats{};
 	//=====================
 };

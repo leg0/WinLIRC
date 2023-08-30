@@ -19,28 +19,172 @@
  * Copyright (C) 2010 Ian Curtis
  */
 
-#include <windows.h>
-#include "SendReceiveData.h"
+#include "MaxterPlusPlugin.h"
+
 #include "Globals.h"
 #include <tchar.h>
-#include <stdio.h>
 #include "../Common/Win32Helpers.h"
+#include <winlirc/WLPluginAPI.h>
+#include "resource.h"
+#include <chrono>
 
+using namespace std::chrono_literals;
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-DWORD WINAPI MaxterPlus(void *recieveClass) {
+static int maxterplus_init(plugin_interface* self, winlirc_api const* winlirc) {
+	auto const sendReceiveData = static_cast<MaxterPlusPlugin*>(self);
 
-	((SendReceiveData*)recieveClass)->threadProc();
+	threadExitEvent = reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc));
+	dataReadyEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+
+	if (!sendReceiveData->init()) return 0;
+
+	return 1;
+}
+
+static void maxterplus_deinit(plugin_interface* self) {
+	auto const sendReceiveData = static_cast<MaxterPlusPlugin*>(self);
+
+	if (sendReceiveData) {
+		sendReceiveData->deinit();
+		delete sendReceiveData;
+	}
+
+	SAFE_CLOSE_HANDLE(dataReadyEvent);
+
+	threadExitEvent = nullptr;
+}
+
+static int maxterplus_hasGui(plugin_interface* self) {
+
+	return TRUE;
+}
+
+static INT_PTR CALLBACK dialogProc(HWND hwnd,
+	UINT message,
+	WPARAM wParam,
+	LPARAM lParam) {
+
+	switch (message) {
+
+	case WM_INITDIALOG: {
+
+		auto const buttonSettings = settings.getSettings();
+
+		if (!(buttonSettings & 0x02)) { SendDlgItemMessage(hwnd, IDC_CHECK1, BM_SETCHECK, BST_CHECKED, 0); }
+		if (!(buttonSettings & 0x04)) { SendDlgItemMessage(hwnd, IDC_CHECK2, BM_SETCHECK, BST_CHECKED, 0); }
+		if (!(buttonSettings & 0x08)) { SendDlgItemMessage(hwnd, IDC_CHECK3, BM_SETCHECK, BST_CHECKED, 0); }
+		if (!(buttonSettings & 0x10)) { SendDlgItemMessage(hwnd, IDC_CHECK4, BM_SETCHECK, BST_CHECKED, 0); }
+		if (!(buttonSettings & 0x20)) { SendDlgItemMessage(hwnd, IDC_CHECK5, BM_SETCHECK, BST_CHECKED, 0); }
+
+		ShowWindow(hwnd, SW_SHOW);
+
+		return TRUE;
+	}
+
+	case WM_COMMAND: {
+
+		switch (LOWORD(wParam)) {
+
+		case IDOK: {
+
+			int buttonSettings = 0;
+
+			if (SendDlgItemMessage(hwnd, IDC_CHECK1, BM_GETSTATE, 0, 0) == BST_UNCHECKED) { buttonSettings = buttonSettings | 0x02; }
+			if (SendDlgItemMessage(hwnd, IDC_CHECK2, BM_GETSTATE, 0, 0) == BST_UNCHECKED) { buttonSettings = buttonSettings | 0x04; }
+			if (SendDlgItemMessage(hwnd, IDC_CHECK3, BM_GETSTATE, 0, 0) == BST_UNCHECKED) { buttonSettings = buttonSettings | 0x08; }
+			if (SendDlgItemMessage(hwnd, IDC_CHECK4, BM_GETSTATE, 0, 0) == BST_UNCHECKED) { buttonSettings = buttonSettings | 0x10; }
+			if (SendDlgItemMessage(hwnd, IDC_CHECK5, BM_GETSTATE, 0, 0) == BST_UNCHECKED) { buttonSettings = buttonSettings | 0x20; }
+
+			settings.setSettings(buttonSettings);
+			settings.saveSettings();
+
+			DestroyWindow(hwnd);
+			return TRUE;
+		}
+
+		case IDCANCEL: {
+			//
+			//ignore changes
+			//
+			DestroyWindow(hwnd);
+			return TRUE;
+		}
+
+		}
+
+		return FALSE;
+
+	}
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return TRUE;
+	case WM_CLOSE:
+		DestroyWindow(hwnd);
+		return TRUE;
+	}
+
+	return FALSE;
+
+}
+
+static void	maxterplus_loadSetupGui(plugin_interface* self) {
+
+	//==============
+	HWND	hDialog;
+	MSG		msg;
+	INT		status;
+	//==============
+
+	hDialog = CreateDialog((HINSTANCE)(&__ImageBase), MAKEINTRESOURCE(IDD_DIALOG1), nullptr, dialogProc);
+
+	while ((status = GetMessage(&msg, 0, 0, 0)) != 0) {
+
+		if (status == -1) return;
+
+		if (!IsDialogMessage(hDialog, &msg)) {
+
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+}
+
+static int maxterplus_sendIR(plugin_interface* self, ir_remote* remote, ir_ncode* code, int repeats) {
+
 	return 0;
 }
 
-SendReceiveData::SendReceiveData() {
+static int maxterplus_decodeIR(plugin_interface* self, ir_remote* remotes, char* out, size_t out_size) {
+	auto const sendReceiveData = static_cast<MaxterPlusPlugin*>(self);
+	if (sendReceiveData) {
 
-	threadHandle	= nullptr;
-	exitEvent		= nullptr;
+		if (!sendReceiveData->waitTillDataIsReady(0us)) {
+			return 0;
+		}
+
+		return sendReceiveData->decodeCommand(out, out_size);
+	}
+
+	return 0;
 }
 
-bool SendReceiveData::init() {
+MaxterPlusPlugin::MaxterPlusPlugin() noexcept
+	: plugin_interface{
+		.plugin_api_version = winlirc_plugin_api_version,
+		.init = maxterplus_init,
+		.deinit = maxterplus_deinit,
+		.hasGui = maxterplus_hasGui,
+		.loadSetupGui = maxterplus_loadSetupGui,
+		.sendIR = maxterplus_sendIR,
+		.decodeIR = maxterplus_decodeIR,
+		.getHardware = [](plugin_interface const*) -> struct hardware const* { return nullptr; },
+		.hardware = nullptr,
+	}
+{
+}
+
+bool MaxterPlusPlugin::init() {
 
 	//==========================
 	PHID_DEVICE	devices;
@@ -78,23 +222,21 @@ bool SendReceiveData::init() {
 
 		if(OpenHidDevice(deviceName,TRUE,TRUE,TRUE,FALSE,&device)) {
 
-			threadHandle = CreateThread(nullptr,0,MaxterPlus,(void *)this,0,nullptr);
-
-			if(threadHandle) {
-				return true;
-			}
+			threadHandle = std::jthread{ [this](std::stop_token stop) { this->threadProc(stop); } };
+			return true;
 		}
 	}
 
 	return false;
 }
 
-void SendReceiveData::deinit() {
+void MaxterPlusPlugin::deinit() {
 
-	KillThread(exitEvent,threadHandle);
+	threadHandle.request_stop();
+	::SetEvent(exitEvent);
 }
 
-void SendReceiveData::threadProc() {
+void MaxterPlusPlugin::threadProc(std::stop_token stop) {
 
 	OVERLAPPED	overlappedRead = { 0 };
 	overlappedRead.hEvent = CreateEvent(nullptr,FALSE,FALSE,nullptr);
@@ -104,7 +246,7 @@ void SendReceiveData::threadProc() {
 
 	setFeatures();
 
-	while(1) {
+	while(!stop.stop_requested()) {
 
 		UCHAR buffer[5];
 		DWORD bytesRead;
@@ -145,7 +287,7 @@ void SendReceiveData::threadProc() {
 	SAFE_CLOSE_HANDLE(overlappedRead.hEvent);
 }
 
-bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
+bool MaxterPlusPlugin::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 
 	HANDLE events[2]={dataReadyEvent,threadExitEvent};
 	DWORD const evt = (threadExitEvent==nullptr) ? 1 : 2;
@@ -167,7 +309,7 @@ bool SendReceiveData::waitTillDataIsReady(std::chrono::microseconds maxUSecs) {
 	return true;
 }
 
-BOOL SendReceiveData::setFeatures() {
+BOOL MaxterPlusPlugin::setFeatures() {
 
 	device.FeatureReportBuffer[0] = 6;
 	device.FeatureReportBuffer[1] = (CHAR)0xFF;	//to shut the compiler up
@@ -179,7 +321,7 @@ BOOL SendReceiveData::setFeatures() {
 
 }
 
-void SendReceiveData::restoreFeatures() {
+void MaxterPlusPlugin::restoreFeatures() {
 
 	device.FeatureReportBuffer[0] = 6;
 	device.FeatureReportBuffer[1] = (CHAR)0xFF;	//to shut the compiler up
@@ -190,7 +332,7 @@ void SendReceiveData::restoreFeatures() {
 	HidD_SetFeature (device.HidDevice, device.FeatureReportBuffer, device.Caps.FeatureReportByteLength);
 }
 
-int SendReceiveData::decodeCommand(char *out, size_t out_size) {
+int MaxterPlusPlugin::decodeCommand(char *out, size_t out_size) {
 
 	//==================
 	UINT outCode;
@@ -282,3 +424,7 @@ int SendReceiveData::decodeCommand(char *out, size_t out_size) {
 }
 
 
+
+WL_API plugin_interface* getPluginInterface() {
+	return new MaxterPlusPlugin();
+}

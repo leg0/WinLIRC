@@ -36,16 +36,16 @@ typedef struct winlirc_api {
 
 struct plugin_interface
 {
-	uint32_t plugin_api_version;
-	int	(*init)(winlirc_api const* exitEvent);
-	void (*deinit)(void);
-	int	(*hasGui)(void);
-	void (*loadSetupGui)(void);
-	int	(*sendIR)(ir_remote* remote, ir_ncode* code, int32_t repeats);
-	int	(*decodeIR)(ir_remote* remotes, char* out, size_t out_size);
-	int	(*setTransmitters)(uint32_t transmitterMask);
-	hardware const* (*getHardware)(void);
-	hardware const* hardware;
+	uint32_t const plugin_api_version;
+	int	(* const init)(plugin_interface* self, winlirc_api const* exitEvent);
+	void (* const deinit)(plugin_interface* self);
+	int	(* const hasGui)(plugin_interface* self);
+	void (* const loadSetupGui)(plugin_interface* self);
+	int	(* const sendIR)(plugin_interface* self, ir_remote* remote, ir_ncode* code, int32_t repeats);
+	int	(* const decodeIR)(plugin_interface* self, ir_remote* remotes, char* out, size_t out_size);
+	int	(* const setTransmitters)(plugin_interface const* self, uint32_t transmitterMask);
+	hardware const* (* const getHardware)(plugin_interface const* self);
+	hardware const* const hardware;
 };
 
 struct hardware
@@ -74,7 +74,7 @@ struct hardware
 };
 #pragma pack(pop)
 
-WL_API plugin_interface const* getPluginInterface();
+WL_API plugin_interface* getPluginInterface();
 
 
 #define LIRC_MODE2SEND(x) (x)

@@ -55,11 +55,11 @@ bool CIRDriver::init()
 	// daemon thread should be dead now.
 	ASSERT(!m_daemonThreadHandle.joinable());
 
-	if (auto pluginInit = m_dll.interface_.init)
+	if (auto pluginInit = m_dll.interface_->init)
 	{
 		m_pluginStopEvent = winlirc::Event::manualResetEvent();
 
-		if (pluginInit(this))
+		if (pluginInit(m_dll.interface_, this))
 		{
 			m_daemonThreadHandle = std::jthread{ [&](std::stop_token stop) {
 				::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_IDLE);
@@ -80,31 +80,31 @@ void CIRDriver::deinit()
 {
 	stopDaemonThread();
 
-	if(auto pluginDeinit = m_dll.interface_.deinit)
-		pluginDeinit();
+	if(auto pluginDeinit = m_dll.interface_->deinit)
+		pluginDeinit(m_dll.interface_);
 }
 
 int CIRDriver::sendIR(ir_remote* remote, ir_ncode* code, int repeats) const
 {
 	std::lock_guard lock{ m_dllLock };
-	if (auto pluginSendIr = m_dll.interface_.sendIR)
-		return pluginSendIr(remote, code, repeats);
+	if (auto pluginSendIr = m_dll.interface_->sendIR)
+		return pluginSendIr(m_dll.interface_, remote, code, repeats);
 	return 0;
 }
 
 int CIRDriver::decodeIR(ir_remote* remote, char* out, size_t out_size) const
 {
 	std::lock_guard lock{ m_dllLock };
-	if(auto pluginDecodeIr = m_dll.interface_.decodeIR)
-		return pluginDecodeIr(remote,out, out_size);
+	if(auto pluginDecodeIr = m_dll.interface_->decodeIR)
+		return pluginDecodeIr(m_dll.interface_, remote,out, out_size);
 	return 0;
 }
 
 int CIRDriver::setTransmitters(unsigned int transmitterMask) const
 {
 	std::lock_guard lock{ m_dllLock };
-	if(auto pluginSetTransmitters = m_dll.interface_.setTransmitters)
-		return pluginSetTransmitters(transmitterMask);
+	if(auto pluginSetTransmitters = m_dll.interface_->setTransmitters)
+		return pluginSetTransmitters(m_dll.interface_, transmitterMask);
 	return 0;
 }
 
@@ -121,9 +121,9 @@ void CIRDriver::DaemonThreadProc(std::stop_token stop) const {
 	});
 	auto decodeIr = [&]() {
 		std::lock_guard lock{ m_dllLock };
-		auto pluginDecodeIr = m_dll.interface_.decodeIR;
+		auto pluginDecodeIr = m_dll.interface_->decodeIR;
 		ASSERT(pluginDecodeIr != nullptr);
-		auto const res = pluginDecodeIr(&*gr, message, sizeof(message));
+		auto const res = pluginDecodeIr(m_dll.interface_, &*gr, message, sizeof(message));
 		if (res)
 			spdlog::debug("decodeIR: res={}, {}", res, message);
 		else

@@ -25,6 +25,4 @@
 HANDLE	threadExitEvent	= nullptr;
 HANDLE	dataReadyEvent	= nullptr;
 
-SendReceiveData *sendReceiveData = nullptr;
-
 Settings settings;

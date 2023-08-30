@@ -1,18 +1,59 @@
-#include "SendReceive.h"
-#include <stdio.h>
+#include "XBox360Plugin.h"
 
-SendReceive::SendReceive(HANDLE exit)
-    : m_dataReadyEvent{ winlirc::Event::manualResetEvent() }
+
+#include <Windows.h>
+#include <winlirc/WLPluginAPI.h>
+
+using namespace std::chrono_literals;
+
+static int xbox360_init(plugin_interface* self, winlirc_api const* winlirc) {
+
+    auto const sendReceive = static_cast<XBox360Plugin*>(self);
+    sendReceive->init(reinterpret_cast<HANDLE>(winlirc->getExitEvent(winlirc)));
+    return 1;
+}
+
+static void xbox360_deinit(plugin_interface* self) {
+    delete self;
+}
+
+static int xbox360_decodeIR(plugin_interface* self, ir_remote* remotes, char* out, size_t out_size) {
+    auto const sendReceive = static_cast<XBox360Plugin*>(self);
+    if (sendReceive) {
+        if (!sendReceive->waitTillDataIsReady(0us)) {
+            return 0;
+        }
+
+        return sendReceive->decodeCommand(out, out_size);
+    }
+
+    return 0;
+}
+
+XBox360Plugin::XBox360Plugin() noexcept
+    : plugin_interface {
+        .plugin_api_version = winlirc_plugin_api_version,
+        .init = xbox360_init,
+        .deinit = xbox360_deinit,
+        .hasGui = [](plugin_interface*) { return FALSE; },
+        .loadSetupGui = [](plugin_interface*) {},
+        .sendIR = [](auto, auto, auto, auto) { return 0; },
+        .decodeIR = xbox360_decodeIR
+
+    }
+    , m_dataReadyEvent{ winlirc::Event::manualResetEvent() }
     , m_threadExitEvent{ exit }
-{
+{ }
+
+void XBox360Plugin::init(HANDLE exit) noexcept {
     m_threadHandle = std::jthread{ [this](std::stop_token st) { threadProc(st); } };
 }
 
-SendReceive::~SendReceive() noexcept {
+XBox360Plugin::~XBox360Plugin() noexcept {
     m_threadHandle.request_stop();
 }
 
-void SendReceive::threadProc(std::stop_token stop) {
+void XBox360Plugin::threadProc(std::stop_token stop) {
 
     {
         std::scoped_lock l{ m_stateMutex };
@@ -47,7 +88,7 @@ void SendReceive::threadProc(std::stop_token stop) {
     }
 }
 
-bool SendReceive::waitTillDataIsReady(std::chrono::microseconds maxUSecs) const {
+bool XBox360Plugin::waitTillDataIsReady(std::chrono::microseconds maxUSecs) const {
 
     HANDLE const events[] = { m_dataReadyEvent.get(), m_threadExitEvent };
     DWORD const count = (m_threadExitEvent == nullptr) ? 1 : 2;
@@ -70,12 +111,12 @@ bool SendReceive::waitTillDataIsReady(std::chrono::microseconds maxUSecs) const 
     return true;
 }
 
-bool SendReceive::dataReady() const {
+bool XBox360Plugin::dataReady() const {
     std::scoped_lock l{ m_stateMutex };
     return m_value != 0;
 }
 
-int SendReceive::decodeCommand(char* out, size_t out_size) {
+int XBox360Plugin::decodeCommand(char* out, size_t out_size) {
 
     auto const [value, repeats] = [this]() {
         std::scoped_lock l{ m_stateMutex };
@@ -127,3 +168,7 @@ int SendReceive::decodeCommand(char* out, size_t out_size) {
     }
 }
 
+WL_API plugin_interface* getPluginInterface()
+{
+    return new XBox360Plugin();
+}

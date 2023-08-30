@@ -23,6 +23,6 @@ struct Plugin
 	bool hasValidInterface() const noexcept;
 	bool canRecord() const noexcept;
 
-	plugin_interface interface_ = { 0 };
+	plugin_interface* interface_{ nullptr };
 	Dll dllFile_;
 };

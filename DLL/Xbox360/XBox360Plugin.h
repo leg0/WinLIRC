@@ -3,15 +3,18 @@
 #include <Windows.h>
 #include <XInput.h>
 #include "../Common/Event.h"
+#include <winlirc/WLPluginAPI.h>
 
 #include <chrono>
 #include <thread>
 #include <mutex>
 
-class SendReceive {
+class XBox360Plugin : public plugin_interface {
 public:
-    explicit SendReceive(HANDLE exit);
-    ~SendReceive() noexcept;
+    XBox360Plugin() noexcept;
+    ~XBox360Plugin() noexcept;
+
+    void init(HANDLE exit) noexcept;
     bool waitTillDataIsReady(std::chrono::microseconds maxUSecs) const;
     bool dataReady() const;
     int	 decodeCommand(char* out, size_t out_size);

@@ -5,9 +5,8 @@ cmake_minimum_required(VERSION 3.0)
 
 add_library(MaxterPlus MODULE
 	Globals.cpp
-	MaxterPlus.cpp
 	pnp.c
-	SendReceiveData.cpp
+	MaxterPlusPlugin.cpp
 	Settings.cpp
 
     MaxterPlus.rc
@@ -18,7 +17,7 @@ add_library(MaxterPlus MODULE
     hidsdi.h
     hidusage.h
     resource.h
-    SendReceiveData.h
+    MaxterPlusPlugin.h
     Settings.h
 	)
 
