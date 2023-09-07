@@ -6,15 +6,14 @@ else()
 	add_library(Technotrend MODULE
 		Globals.cpp
 		hardware.cpp
-		SendReceive.cpp
 		Settings.cpp
-		Technotrend.cpp
+		TechnotrendPlugin.cpp
+		TechnotrendPlugin.h
 
 		Technotrend.rc
 
 		Globals.h
 		resource.h
-		SendReceive.h
 		Settings.h
 		ttusbirapiexp.h
 		)

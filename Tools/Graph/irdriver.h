@@ -28,15 +28,16 @@
 #include <winlirc/WLPluginAPI.h>
 
 struct ir_remote;
-class CIRDriver {
+class CIRDriver : winlirc_api {
 
 public:
+	CIRDriver();
 	~CIRDriver();
 
 	BOOL	loadPlugin	(CString plugin);
 	void	unloadPlugin();
 	BOOL	init		() const;
-	void	deinit		() const;
+	void	deinit		();
 	int		sendIR		(ir_remote *remote, ir_ncode *code, int repeats) const;
 	int		decodeIR	(ir_remote *remote, char *out, size_t out_size) const;
 
@@ -44,7 +45,7 @@ public:
 
 private:
 
-	plugin_interface const *pluginInterface = nullptr;
+	plugin_interface* pluginInterface = nullptr;
 
 	//==============================
 	CString		loadedPlugin;

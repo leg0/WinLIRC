@@ -37,14 +37,38 @@ typedef struct winlirc_api {
 struct plugin_interface
 {
 	uint32_t const plugin_api_version;
-	int	(* const init)(plugin_interface* self, winlirc_api const* exitEvent);
-	void (* const deinit)(plugin_interface* self);
-	int	(* const hasGui)(plugin_interface* self);
-	void (* const loadSetupGui)(plugin_interface* self);
-	int	(* const sendIR)(plugin_interface* self, ir_remote* remote, ir_ncode* code, int32_t repeats);
-	int	(* const decodeIR)(plugin_interface* self, ir_remote* remotes, char* out, size_t out_size);
-	int	(* const setTransmitters)(plugin_interface const* self, uint32_t transmitterMask);
-	hardware const* (* const getHardware)(plugin_interface const* self);
+	_Must_inspect_result_ int (* const init)(
+		_In_ plugin_interface* self,
+		_In_ winlirc_api const* exitEvent);
+
+	// self is no longer usable after this call
+	void (* const deinit)(
+		_Post_invalid_ plugin_interface* self);
+
+	_Check_return_ int(* const hasGui)(
+		_In_ plugin_interface* self);
+
+	void (* const loadSetupGui)(
+		_In_ plugin_interface* self);
+
+	_Check_return_ int(* const sendIR)(
+		_In_ plugin_interface* self,
+		_In_ ir_remote* remote,
+		_In_ ir_ncode* code,
+		int32_t repeats);
+
+	_Check_return_ int(* const decodeIR)(
+		_In_ plugin_interface* self,
+		_In_ ir_remote* remotes,
+		_Out_writes_(out_size) char* out, size_t out_size);
+
+	_Check_return_ int(* const setTransmitters)(
+		_In_ plugin_interface const* self,
+		uint32_t transmitterMask);
+
+	_Check_return_ hardware const* (* const getHardware)(
+		_In_ plugin_interface const* self);
+
 	hardware const* const hardware;
 };
 
@@ -74,7 +98,7 @@ struct hardware
 };
 #pragma pack(pop)
 
-WL_API plugin_interface* getPluginInterface();
+WL_API _Must_inspect_result_ plugin_interface* getPluginInterface();
 
 
 #define LIRC_MODE2SEND(x) (x)

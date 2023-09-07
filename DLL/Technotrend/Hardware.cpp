@@ -20,40 +20,37 @@
  */
 
 #include "Globals.h"
+#include "TechnotrendPlugin.h"
 #include <winlirc/winlirc_api.h>
 #include <winlirc/WLPluginAPI.h>
 
-lirc_t readData(lirc_t timeout) {
-
-	//==========
-	lirc_t data;
-	//==========
-
-	data = 0;
-
-	if(!receive) return 0;
+lirc_t readData(plugin_interface* self, lirc_t timeout)
+{
+	auto receive = static_cast<TechnotrendPlugin*>(self);
+	if(!receive)
+		return 0;
 
 	receive->waitTillDataIsReady(timeout);
 
+	lirc_t data = 0;
 	receive->getData(&data);
 
 	return data;
 }
 
-void wait_for_data(lirc_t timeout) {
-
-	if(!receive) return;
+void wait_for_data(plugin_interface* self, lirc_t timeout)
+{
+	auto receive = static_cast<TechnotrendPlugin*>(self);
+	if(!receive)
+		return;
 
 	receive->waitTillDataIsReady(timeout);
 }
 
-int data_ready() {
-
-	if(!receive) return 0;
-
-	if(receive->dataReady()) return 1;
-
-	return 0;
+int data_ready(plugin_interface* self)
+{
+	auto receive = static_cast<TechnotrendPlugin*>(self);
+	return receive && receive->dataReady();
 }
 
 rbuf rec_buffer;
